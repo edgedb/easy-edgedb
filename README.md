@@ -70,3 +70,5 @@ INSERT City {
 ```
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis are just fine: you could create a `City` called '🤠' if you wanted to.
+
+Now that we have some data, we can begin using the `SELECT` keyword to look at it.
