@@ -44,6 +44,13 @@ type City {
 }
 ```
 
+We haven't created our database yet, though. To do that, we need to do a migration. Migrations are not difficult:
+
+- First you start them with `START MIGRATION TO {}`
+- Inside this you add at least one `module`, so your types can be accessed. If you wrote `module default` for example and then `type Person`, the type `Person` would be located at `default::Person`.
+- Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
+- Finally, you type `COMMIT MIGRATION` and the migration is done.
+
 Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. By the way, keywords in EdgeDB are case insensitive, so `INSERT`, `insert` and `InSeRT` are all the same. But using capital letters is the normal practice for databases so it's best to use that.
 
 We use the `:=` operator to declare, while `=` is used for equality (not `==`).
