@@ -62,16 +62,16 @@ INSERT Person {
 };
 
 INSERT City {
-    name := 'Munich'
+    name := 'Munich',
 };
 
 INSERT City {
-    name := 'Buda-Pesth'
+    name := 'Buda-Pesth',
     modern_name := 'Budapest'
 };
 
 INSERT City {
-    name := 'Bistritz'
+    name := 'Bistritz',
     modern_name := 'Bistrița'
 };
 ```
