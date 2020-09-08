@@ -44,7 +44,15 @@ type City {
 }
 ```
 
-We haven't created our database yet, though. To do that, we need to do a migration. Migrations are not difficult:
+We haven't created our database yet, though. There are two small steps that we need to do first. First we create a database with the `CREATE DATABASE` keyword:
+
+```
+CREATE DATABASE dracula;
+```
+
+Then we type ```\c dracula``` to connect to it.
+
+Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult:
 
 - First you start them with `START MIGRATION TO {}`
 - Inside this you add at least one `module`, so your types can be accessed. If you wrote `module default` for example and then `type Person`, the type `Person` would be located at `default::Person`.
