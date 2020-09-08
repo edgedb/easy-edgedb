@@ -6,9 +6,9 @@ In this course, we will be using EdgeDB and its query language EdgeQL to put tog
 
 # Chapter 1 - Jonathan Harker heads towards Transylvania
 
-In the beginning of the book, we see the main character Jonathan Harker who a young lawyer who is going to meet a client. The client is a nobleman named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he is enjoying the trip. Here is how the book begins:
+In the beginning of the book, we see the main character Jonathan Harker who a young lawyer who is going to meet a client. The client is a nobleman named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he is enjoying the trip. Here is how the book begins, with parts that could be good for a database in bold:
 
->3 May. Bistritz.—Left Munich at 8:35 P.M., on 1st May, arriving at Vienna early next morning; should have arrived at 6:46, but train was an hour late. Buda-Pesth seems a wonderful place, from the glimpse which I got of it from the train...
+>**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
 This is already a lot of information, and it helps us start to think about our database schema. EdgeQL uses something called [SDL (schema definition language)](https://edgedb.com/docs/edgeql/sdl/index#ref-eql-sdl) that makes migration easy. So far our schema needs the following:
 
