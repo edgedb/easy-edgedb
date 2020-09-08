@@ -127,3 +127,9 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
+# Chapter 2 - at the Golden Krone Hotel
+
+We continue to read the story as we think about the database we need to store the information. The important information is in bold.
+
+In Chapter 2, Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen.
+
