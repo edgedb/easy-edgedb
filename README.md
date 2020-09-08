@@ -59,21 +59,21 @@ We use the `:=` operator to declare, while `=` is used for equality (not `==`).
 INSERT Person {
     name := 'Jonathan Harker',
     places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
-}
+};
 
 INSERT City {
     name := 'Munich'
-}
+};
 
 INSERT City {
     name := 'Buda-Pesth'
     modern_name := 'Budapest'
-}
+};
 
 INSERT City {
     name := 'Bistritz'
     modern_name := 'Bistrița'
-}
+};
 ```
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis are just fine: you could create a `City` called '🤠' if you wanted to.
