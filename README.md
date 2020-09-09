@@ -223,5 +223,7 @@ You can cast more than once at a time if you need to. This example isn't somethi
 SELECT <str><int64><str><int32>50 is str; 
 ```
 
+That also gives us `{true}` because all we did is ask if it is a `str`, which it is. 
+
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
