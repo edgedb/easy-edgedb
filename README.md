@@ -95,7 +95,7 @@ Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the uniq
 {Object {id: d2af670c-f1d6-11ea-a30f-8b40bc5413e0}}
 ```
 
-It is also what shows up when you use `SELECT` to select a type. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
+It is also what shows up when you use `SELECT` to select a type. `SELECT` is the basic query command in EdgeDB that will give you a result based on the input that comes after `SELECT`. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
 
 ```
 SELECT City;
