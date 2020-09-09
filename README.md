@@ -165,3 +165,63 @@ scalar type Transport extending enum<'feet', 'train', 'horse-drawn carriage'>;
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
+This `Transport` type, however, is going to be useful for the characters in our game - not the characters in the book. Only characters in our game will be choosing between one type of transport or another. So maybe it's a good time to turn our `Person` type into something else. What we can do is make `Person` an `abstract type` instead. An `abstract type` is a sort of base type that you can use to build other types. Then we can have two other types called `PC` and `NPC` that draw from it with the keyword `extending`.
+
+So now this part of the schema looks like this:
+
+```
+        abstract type Person {
+            required property name -> str;
+            property places_visited -> array<str>;
+        }
+        type PC extending Person {
+            required property transport -> Transport;
+        }
+        type NPC extending Person {
+        }
+```
+
+Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. Because `Person` is now an abstract type, we can't use it directly anymore. It will give us this error if we try:
+
+```
+error: cannot insert into abstract object type 'default::Person'
+  ┌─ query:1:8
+  │
+1 │ INSERT Person {
+  │        ^^^^^^^ error
+```
+
+No problem - just change `Person` to `NPC` and it will work.
+
+Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage.
+
+```
+INSERT PC {
+     name := 'Emil Sinclair',
+     places_visited := ['Vienna', 'Germany'],
+     transport := <Transport>'horse-drawn carriage',
+};
+```
+
+Note that we didn't just write `'horse-drawn carriage'`, because transport is an `enum<str>`, not a `str`. The `<>` angle brackets do casting, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
+
+```
+SELECT 'feet' IS Transport;
+```
+
+We will get an output of `{false}`, because 'feet' is just a `str` and nothing else. But this will work:
+
+```
+SELECT <Transport>'feet' IS Transport;
+```
+
+Then we get `{true}`.
+
+You can cast more than once at a time if you need to. This example isn't something you will ever do but shows how you can cast over and over again if you want:
+
+```
+SELECT <str><int64><str><int32>50 is str; 
+```
+
+Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+
