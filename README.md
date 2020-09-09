@@ -227,3 +227,10 @@ That also gives us `{true}` because all we did is ask if it is a `str`, which it
 
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
+# Chapter 3 - Jonathan goes to Castle Dracula
+
+In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
+
+>Jonathan Harker has just arrived at Castle Dracula after a terrible ride in the horse-driven carriage through the mountains. The ride was terrible because there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan doesn't know that he's a vampire yet.
+
+This is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good to have for `Vampire` too. 
