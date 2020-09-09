@@ -233,4 +233,63 @@ In this chapter we are going to start to think about time, as you can see from w
 
 >Jonathan Harker has just arrived at Castle Dracula after a terrible ride in the horse-driven carriage through the mountains. The ride was terrible because there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan doesn't know that he's a vampire yet.
 
-This is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good to have for `Vampire` too. 
+This is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good to have for `Vampire` too. But vampires are different from humans because they can live forever. Let's add `age` to `Person` so that all the other types can use it too. Now `Person' looks like this:
+
+```
+abstract type Person {
+    required property name -> str;
+    property places_visited -> array<str>;
+    property age -> int16;
+}
+```
+
+`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it a `required property`, because we won't know everybody's age.
+
+First we'll make `Vampire` a type that extends `Person`, and adds age:
+
+```
+    type Vampire extending Person {            
+                property age -> int16;
+}
+```
+
+and then create Count Dracula:
+
+```
+insert Vampire {
+    name := 'Count Dracula',
+    places_visited := ['Hungary', 'Romania'],
+};
+{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}
+```
+
+The `uuid` there is the reply from the server showing that we were successful.
+
+That was easy, but now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `human_age`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
+
+```
+scalar type human_age extending int16 {
+    constraint max_value(120);
+}
+```
+
+Then add it to the `NPC` type:
+
+```
+type NPC extending Person {
+    property age -> human_age;
+}
+```
+
+Now it won't be able to be more than 120. So if we write this:
+
+```
+insert NPC {
+    name := 'The innkeeper',
+    age := 130
+};
+```
+
+It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for human_age is 120.` Perfect.
+
+Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
