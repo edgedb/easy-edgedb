@@ -418,8 +418,16 @@ ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:0
 So with this `Date` type, we can get the hour by doing this:
 
 ```
-SELECT Date {
+INSERT Date {
     date := '09:55:05',
+};
+```
+
+And then we can `SELECT` our `Date` types:
+
+```
+SELECT Date {
+    date,
     local_time,
     hour,
 };
@@ -443,4 +451,4 @@ So `awake` is calculated like this:
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it can't compare on a `str`, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
-
+Now if we `SELECT` this with all the properties, it will give us this: `  Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}`
