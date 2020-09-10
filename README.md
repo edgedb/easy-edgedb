@@ -129,7 +129,7 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
-# Chapter 2 - at the Golden Krone Hotel
+# Chapter 2 - At the Hotel in Bistritz
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
@@ -297,7 +297,7 @@ It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allo
 Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
 
 
-# Chapter 4 - What a strange man this Count Dracula is.
+# Chapter 4 - "What a strange man this Count Dracula is."
 
 >Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Then he quickly leaves when he sees that it is almost morning. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
 
