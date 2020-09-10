@@ -452,3 +452,11 @@ So `awake` is calculated like this:
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
 Now if we `SELECT` this with all the properties, it will give us this: `  Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}`
+
+# Chapter 5 - Jonathan tries to leave the castle
+
+Here's what happens in this chapter:
+
+>During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake, and now he is very afraid. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. He opens his eyes and sees three vampire women next to him. He can't move.
+
+Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones.
