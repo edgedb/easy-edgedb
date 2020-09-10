@@ -299,3 +299,56 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 >Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Then he quickly leaves when he sees that it is almost morning. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
 
+First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new property to the `Person` type in the schema:
+
+```
+abstract type Person {
+    required property name -> str;
+    property places_visited -> array<str>;
+    property lover -> str;
+}
+```
+
+Now when we insert Mina we can write this:
+
+```
+insert NPC {
+    name := 'Mina Murray',
+    lover := 'Jonathan Harker',
+    places_visited := ['London'],
+};
+```
+
+We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", something that lets us create a new variable that we define with `:=`. First here is a normal query:
+
+```
+select Person {
+    name,
+    lover,
+};
+```
+
+This gives us:
+
+```
+  Object {name: 'Count Dracula', lover: {}},
+  Object {name: 'Mina Murray', lover: 'Jonathan Harker'},
+  Object {name: 'Jonathan Harker', lover: 'Mina Murray'},
+```
+
+But we don't want to have to read every line ourselves - we just want `true` or `false`. Now we'll add the computable to the query:
+
+```
+select Person {
+    name,
+    is_single := EXISTS Person.lover,
+};
+```
+
+Now this prints:
+
+```
+  Object {name: 'Count Dracula', is_single: false},
+  Object {name: 'Mina Murray', is_single: true},
+  Object {name: 'Jonathan Harker', is_single: true},
+```
