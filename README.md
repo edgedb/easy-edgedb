@@ -341,14 +341,14 @@ But we don't want to have to read every line ourselves - we just want `true` or 
 ```
 select Person {
     name,
-    is_single := EXISTS Person.lover,
+    is_single := NOT EXISTS Person.lover,
 };
 ```
 
 Now this prints:
 
 ```
-  Object {name: 'Count Dracula', is_single: false},
-  Object {name: 'Mina Murray', is_single: true},
-  Object {name: 'Jonathan Harker', is_single: true},
+  Object {name: 'Count Dracula', is_single: true},
+  Object {name: 'Mina Murray', is_single: false},
+  Object {name: 'Jonathan Harker', is_single: false},
 ```
