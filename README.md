@@ -5,7 +5,7 @@ Welcome to the tutorial to easily learn EdgeDB in plain English. "Plain English"
 Nevertheless, simple English doesn't mean boring. We will imagine that we are creating the database for a game that is based on the book Bram Stoker's Dracula. Because it will use the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more.
 
 
-# Chapter 1 - Jonathan Harker heads towards Transylvania
+# Chapter 1 - Jonathan Harker travels to Transylvania
 
 ![thththt](Sample_image.png)
 
@@ -356,3 +356,16 @@ Now this prints:
 ```
 
 This also shows why abstract types are useful. Here we were able to do a quick search on the `Person` type and got data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
+
+We can also put a computable in the type itself.
+
+```
+abstract type Person {
+    required property name -> str;
+    property places_visited -> array<str>;
+    property lover -> str;
+    property is_single := NOT EXISTS .lover;
+}
+```
+
+We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
