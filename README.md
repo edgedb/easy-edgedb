@@ -117,8 +117,8 @@ Now let's add a property to the query. We'll `SELECT` all `City` types with `mod
 
 ```
 SELECT City {
-....... modern_name,
-....... };
+modern_name,
+};
 ```
 
 You will remember that one of our cities doesn't have a modern name. It still shows up though as an "empty set", because every value in EdgeDB is a set of elements. Here is the result:
@@ -369,3 +369,8 @@ abstract type Person {
 ```
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
+
+We will now learn about time in EdgeDB, because it might be important for our game: vampires can only go outside at night.
+
+The part of Romania where Jonathan Harker is has an average sunrise of 7:15 and a sunset of 7:27, so we will use that to decide if it's day or night.
+
