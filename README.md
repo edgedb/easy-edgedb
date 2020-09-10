@@ -1,6 +1,6 @@
 # Welcome!
 
-Welcome to the tutorial to easily learn EdgeDB in plain English. "Plain English" means using simple phrases and shorter sentences so you can quickly get the information you need. It's ideal if English is your second language, or if you just prefer to get the information quickly.
+Welcome to the tutorial to easily learn EdgeDB in plain English. "Plain English" means using simple phrases and shorter sentences so you can quickly get the information you need. This lets you learn EdgeDB with a minimum of distractions, and is helpful if English is your second (or third, fourth...) language.
 
 Nevertheless, simple English doesn't mean boring. We will imagine that we are creating the database for a game that is based on the book Bram Stoker's Dracula. Because it will use the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more.
 
@@ -265,10 +265,10 @@ insert Vampire {
 
 The `uuid` there is the reply from the server showing that we were successful.
 
-That was easy, but now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `human_age`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
+That was easy, but now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
 
 ```
-scalar type human_age extending int16 {
+scalar type HumanAge extending int16 {
     constraint max_value(120);
 }
 ```
@@ -277,7 +277,7 @@ Then add it to the `NPC` type:
 
 ```
 type NPC extending Person {
-    property age -> human_age;
+    property age -> HumanAge;
 }
 ```
 
@@ -290,6 +290,13 @@ insert NPC {
 };
 ```
 
-It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for human_age is 120.` Perfect.
+It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for HumanAge is 120.` Perfect.
 
 Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
+
+
+# Chapter 4 - What a strange man this Count Dracula is.
+
+>Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk through the night. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Then he quickly leaves when he sees that it is almost morning. Jonathan thinks about Mina back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
+
+We are now going to learn about links.
