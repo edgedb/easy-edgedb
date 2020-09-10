@@ -427,3 +427,20 @@ SELECT Date {
 
 That gives us a nice output that shows everything, including the hour: `{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
+Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
+
+```
+type Date {
+    required property date -> str;
+    property local_time := <cal::local_time>.date;
+    property hour := .date[0:2];
+    property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+}
+```
+
+So `awake` is calculated like this:
+
+- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it can't compare on a `str`, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
+- Then it gives us a string saying either 'asleep' or 'awake' depending on that.
+
+
