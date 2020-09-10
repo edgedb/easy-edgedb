@@ -352,3 +352,5 @@ Now this prints:
   Object {name: 'Mina Murray', is_single: false},
   Object {name: 'Jonathan Harker', is_single: false},
 ```
+
+This also shows why abstract types are useful. Here we were able to do a quick search on the `Person` type and got data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
