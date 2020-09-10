@@ -372,5 +372,58 @@ We won't keep `is_single` in the type definition though, because it's not useful
 
 We will now learn about time in EdgeDB, because it might be important for our game: vampires can only go outside at night.
 
-The part of Romania where Jonathan Harker is has an average sunrise of 7:15 and a sunset of 7:27, so we will use that to decide if it's day or night.
+The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm, so we will use that to decide if it's day or night.
+
+EdgeDB uses two types for time: 
+
+-`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
+-`cal::local_time`, which doesn't worry about the timezone. We will use this first.
+
+`cal::local_time` is easy to create, because you can just cast to it from a `str`:
+
+```
+SELECT <cal::local_time>('15:44:56');
+```
+
+This gives us the output:
+
+```
+{<cal::local_time>'15:44:56'}
+```
+
+We will imagine that our game has a clock that gives the time as a `str`. We'll make a quick `Date` type that can help. It looks like this:
+
+```
+type Date {
+    required property date -> str;
+    property local_time := <cal::local_time>.date;
+    property hour := .date[0:2];
+}
+```
+
+`.date[0:2]` is an example of "slicing". [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 instead of 9).
+
+So this won't work:
+
+```
+SELECT <cal::local_time>'9:55:05';
+```
+
+It gives this error:
+
+```
+ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
+```
+
+So with this `Date` type, we can get the hour by doing this:
+
+```
+SELECT Date {
+    date := '09:55:05',
+    local_time,
+    hour,
+};
+```
+
+That gives us a nice output that shows everything, including the hour: `{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
