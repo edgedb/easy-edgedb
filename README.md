@@ -7,6 +7,8 @@ Nevertheless, simple English doesn't mean boring. We will imagine that we are cr
 
 # Chapter 1 - Jonathan Harker heads towards Transylvania
 
+![thththt](Sample_image.png)
+
 In the beginning of the book, we see the main character Jonathan Harker who a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. Here is how the book begins, with parts that could be good for a database in bold:
 
 >**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
