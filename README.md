@@ -70,22 +70,22 @@ We use the `:=` operator to declare, while `=` is used for equality (not `==`).
 
 ```
 INSERT Person {
-    name := 'Jonathan Harker',
-    places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
+  name := 'Jonathan Harker',
+  places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
 };
 
 INSERT City {
-    name := 'Munich',
+  name := 'Munich',
 };
 
 INSERT City {
-    name := 'Buda-Pesth',
-    modern_name := 'Budapest'
+  name := 'Buda-Pesth',
+  modern_name := 'Budapest'
 };
 
 INSERT City {
-    name := 'Bistritz',
-    modern_name := 'Bistrița'
+  name := 'Bistritz',
+  modern_name := 'Bistrița'
 };
 ```
 
@@ -117,7 +117,7 @@ Now let's add a property to the query. We'll `SELECT` all `City` types with `mod
 
 ```
 SELECT City {
-modern_name,
+  modern_name,
 };
 ```
 
@@ -129,6 +129,8 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
+
+
 # Chapter 2 - At the Hotel in Bistritz
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
@@ -139,9 +141,9 @@ Right away we see that we could add another property to `City`, and will write t
 
 ```
 type City {
-    required property name -> str;
-    property modern_name -> str;
-    property important_places -> array<str>;
+  required property name -> str;
+  property modern_name -> str;
+  property important_places -> array<str>;
 }
 ```
 
@@ -151,7 +153,7 @@ But here we will look at a quick example of DDL. If we've already started our da
 
 ```
 ALTER TYPE City {
-    CREATE PROPERTY important places -> array<str>
+  CREATE PROPERTY important places -> array<str>
 };
 ```
 
@@ -172,15 +174,15 @@ This `Transport` type, however, is going to be useful for the characters in our 
 So now this part of the schema looks like this:
 
 ```
-        abstract type Person {
-            required property name -> str;
-            property places_visited -> array<str>;
-        }
-        type PC extending Person {
-            required property transport -> Transport;
-        }
-        type NPC extending Person {
-        }
+abstract type Person {
+  required property name -> str;
+  property places_visited -> array<str>;
+}
+type PC extending Person {
+  required property transport -> Transport;
+}
+type NPC extending Person {
+}
 ```
 
 Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. Because `Person` is now an abstract type, we can't use it directly anymore. It will give us this error if we try:
@@ -199,9 +201,9 @@ Let's also experiment with a player character. We'll make one called Emil Sincla
 
 ```
 INSERT PC {
-     name := 'Emil Sinclair',
-     places_visited := ['Vienna', 'Germany'],
-     transport := <Transport>'horse-drawn carriage',
+  name := 'Emil Sinclair',
+  places_visited := ['Vienna', 'Germany'],
+  transport := <Transport>'horse-drawn carriage',
 };
 ```
 
@@ -239,9 +241,9 @@ This is a good time to create a `Vampire` type. We can extend it from `abstract 
 
 ```
 abstract type Person {
-    required property name -> str;
-    property places_visited -> array<str>;
-    property age -> int16;
+  required property name -> str;
+  property places_visited -> array<str>;
+  property age -> int16;
 }
 ```
 
@@ -250,8 +252,8 @@ abstract type Person {
 First we'll make `Vampire` a type that extends `Person`, and adds age:
 
 ```
-    type Vampire extending Person {            
-                property age -> int16;
+type Vampire extending Person {            
+  property age -> int16;
 }
 ```
 
@@ -259,8 +261,8 @@ and then create Count Dracula:
 
 ```
 insert Vampire {
-    name := 'Count Dracula',
-    places_visited := ['Hungary', 'Romania'],
+  name := 'Count Dracula',
+  places_visited := ['Hungary', 'Romania'],
 };
 {Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}
 ```
@@ -271,7 +273,7 @@ That was easy, but now we want to give `age` to the `PC` and `NPC` types too. Bu
 
 ```
 scalar type HumanAge extending int16 {
-    constraint max_value(120);
+  constraint max_value(120);
 }
 ```
 
@@ -279,7 +281,7 @@ Then add it to the `NPC` type:
 
 ```
 type NPC extending Person {
-    property age -> HumanAge;
+  property age -> HumanAge;
 }
 ```
 
@@ -305,9 +307,9 @@ First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new 
 
 ```
 abstract type Person {
-    required property name -> str;
-    property places_visited -> array<str>;
-    property lover -> str;
+  required property name -> str;
+  property places_visited -> array<str>;
+  property lover -> str;
 }
 ```
 
@@ -315,9 +317,9 @@ Now when we insert Mina we can write this:
 
 ```
 insert NPC {
-    name := 'Mina Murray',
-    lover := 'Jonathan Harker',
-    places_visited := ['London'],
+  name := 'Mina Murray',
+  lover := 'Jonathan Harker',
+  places_visited := ['London'],
 };
 ```
 
@@ -325,8 +327,8 @@ We will also add Mina to Jonathan Harker as well in the same way. Now we want to
 
 ```
 select Person {
-    name,
-    lover,
+  name,
+  lover,
 };
 ```
 
@@ -342,8 +344,8 @@ But we don't want to have to read every line ourselves - we just want `true` or 
 
 ```
 select Person {
-    name,
-    is_single := NOT EXISTS Person.lover,
+  name,
+  is_single := NOT EXISTS Person.lover,
 };
 ```
 
@@ -361,10 +363,10 @@ We can also put a computable in the type itself.
 
 ```
 abstract type Person {
-    required property name -> str;
-    property places_visited -> array<str>;
-    property lover -> str;
-    property is_single := NOT EXISTS .lover;
+  required property name -> str;
+  property places_visited -> array<str>;
+  property lover -> str;
+  property is_single := NOT EXISTS .lover;
 }
 ```
 
@@ -395,9 +397,9 @@ We will imagine that our game has a clock that gives the time as a `str`. We'll 
 
 ```
 type Date {
-    required property date -> str;
-    property local_time := <cal::local_time>.date;
-    property hour := .date[0:2];
+  required property date -> str;
+  property local_time := <cal::local_time>.date;
+  property hour := .date[0:2];
 }
 ```
 
@@ -427,9 +429,9 @@ And then we can `SELECT` our `Date` types:
 
 ```
 SELECT Date {
-    date,
-    local_time,
-    hour,
+  date,
+  local_time,
+  hour,
 };
 ```
 
@@ -439,10 +441,10 @@ Finally, we can add some logic to the `Date` type to see if vampires are awake o
 
 ```
 type Date {
-    required property date -> str;
-    property local_time := <cal::local_time>.date;
-    property hour := .date[0:2];
-    property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  required property date -> str;
+  property local_time := <cal::local_time>.date;
+  property hour := .date[0:2];
+  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```
 
