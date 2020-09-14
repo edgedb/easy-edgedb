@@ -455,6 +455,33 @@ So `awake` is calculated like this:
 
 Now if we `SELECT` this with all the properties, it will give us this: `  Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}`
 
+One good trick to know is that you can `SELECT` the item you just `INSERT`ed, same as with anything else. Because when we insert a new `Date`, all we get is a `uuid`:
+
+```
+INSERT Date {
+  date := '22.44.10'
+};
+```
+
+The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2fbb84b361f8}}` But what if we want to display its properties too? 
+
+That's not hard: just wrap the whole entry in `SELECT ()`. Now that we've selected it, we can choose the properties to display, same as always:
+
+```
+SELECT ( # Start a selection
+  INSERT Date { # Put the insert inside it
+    date := '22.44.10'
+} 
+) # The bracket finishes the selection
+{ # Now just choose the properties we want
+  date,
+  hour,
+  awake
+};
+```
+
+Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake'}}` We know the date, the hour, and can see that the vampire is awake.
+
 # Chapter 5 - Jonathan tries to leave the castle
 
 Here's what happens in this chapter:
