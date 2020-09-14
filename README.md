@@ -248,7 +248,7 @@ So now this part of the schema looks like this:
 ```
 abstract type Person {
   required property name -> str;
-  property places_visited -> array<str>;
+  MULTI LINK places_visited -> City;
 }
 type PC extending Person {
   required property transport -> Transport;
@@ -314,7 +314,7 @@ This is a good time to create a `Vampire` type. We can extend it from `abstract 
 ```
 abstract type Person {
   required property name -> str;
-  property places_visited -> array<str>;
+  MULTI LINK places_visited -> City;
   property age -> int16;
 }
 ```
@@ -380,7 +380,7 @@ First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new 
 ```
 abstract type Person {
   required property name -> str;
-  property places_visited -> array<str>;
+  MULTI LINK places_visited -> City;
   property lover -> str;
 }
 ```
@@ -436,7 +436,7 @@ We can also put a computable in the type itself.
 ```
 abstract type Person {
   required property name -> str;
-  property places_visited -> array<str>;
+  MULTI LINK places_visited -> City;
   property lover -> str;
   property is_single := NOT EXISTS .lover;
 }
