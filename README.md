@@ -360,7 +360,7 @@ And if you have any `City` types with a name of `''`, even a search for index 0 
 
 In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
 
->Jonathan Harker has just arrived at Castle Dracula after a terrible ride in the horse-driven carriage through the mountains. The ride was terrible because there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan doesn't know that he's a vampire yet.
+>Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan doesn't know that he's a vampire yet.
 
 This is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good to have for `Vampire` too. But vampires are different from humans because they can live forever. Let's add `age` to `Person` so that all the other types can use it too. Now `Person' looks like this:
 
@@ -482,7 +482,7 @@ Now this prints:
   Object {name: 'Jonathan Harker', is_single: false},
 ```
 
-This also shows why abstract types are useful. Here we were able to do a quick search on the `Person` type and got data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
+This also shows why abstract types are useful. Here we did a quick search on `Person` for data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
 
 We can also put a computable in the type itself.
 
@@ -497,9 +497,9 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
-We will now learn about time in EdgeDB, because it might be important for our game: vampires can only go outside at night.
+We will now learn about time, because it might be important for our game: vampires can only go outside at night.
 
-The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm, so we will use that to decide if it's day or night.
+The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. To keep it simple, we will use that to decide if it's day or night.
 
 EdgeDB uses two types for time: 
 
