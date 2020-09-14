@@ -382,19 +382,45 @@ type Vampire extending Person {
 }
 ```
 
-and then create Count Dracula:
+and then create Count Dracula. We know that he lives in Romania, but that isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
+
+```
+abstract type Place {
+  required property name -> str;
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+type City extending Place;
+type Country extending Place;
+```
+
+Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert a `Country` objects with the name Hungary.
+
+We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes lots of things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead, inside `()`:
 
 ```
 insert Vampire {
   name := 'Count Dracula',
-  places_visited := ['Hungary', 'Romania'],
+  places_visited := (SELECT Place FILTER .name = 'Romania'),
 };
 {Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}
 ```
 
 The `uuid` there is the reply from the server showing that we were successful.
 
-That was easy, but now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
+Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `SELECT` it:
+
+```
+SELECT Vampire {
+  places_visited: {
+    name
+  }
+};
+```
+
+This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}` Perfect.
+
+Now let's think about `age`. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
 
 ```
 scalar type HumanAge extending int16 {
@@ -428,32 +454,49 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 >Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Then he quickly leaves when he sees that it is almost morning. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
 
-First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new property to the `Person` type in the schema:
+First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema:
 
 ```
 abstract type Person {
   required property name -> str;
   MULTI LINK places_visited -> City;
-  property lover -> str;
+  LINK lover -> Person;
 }
 ```
 
-Now when we insert Mina we can write this:
+We will assume that a person can only have one `lover`, so this is a `SINGLE LINK` but we can just write `LINK`.
+
+Mina is in London, and we don't know if she has been anywhere else. So for the meantime, we are just going to create the city of London. It couldn't be easier:
 
 ```
-insert NPC {
-  name := 'Mina Murray',
-  lover := 'Jonathan Harker',
-  places_visited := ['London'],
+INSERT City {
+    name := 'London',
 };
 ```
+
+To give her the city of London, we will just do a quick `SELECT City FILTER .name = 'London'`. For `lover` it is the same process but a bit mork complicated:
+
+```
+INSERT NPC {
+  name := 'Mina Murray',
+  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  places_visited := (SELECT City FILTER .name = 'London'),
+};
+```
+
+You'll notice two things here:
+
+- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type. We need to add `DETACHED` to tell EdgeDB that we are talking about a different `NPC`, not self.
+- `LIMIT 1`. This is because the link is a `SINGLE LINK`. The search for 'Jonathan Harker' might give us more than one person with this name, so we need to make sure we only get one.
 
 We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", something that lets us create a new variable that we define with `:=`. First here is a normal query:
 
 ```
 select Person {
   name,
-  lover,
+  lover: {
+    name
+  }
 };
 ```
 
@@ -490,7 +533,7 @@ We can also put a computable in the type itself.
 abstract type Person {
   required property name -> str;
   MULTI LINK places_visited -> City;
-  property lover -> str;
+  property lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
 ```
