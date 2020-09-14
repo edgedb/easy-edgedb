@@ -129,7 +129,79 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
+The last thing we should do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
 
+```
+type Person {
+  required property name -> str;
+  MULTI LINK places_visited -> City;
+}
+```
+
+We wrote `MULTI` in front of `LINK` because one `Person` should be able to link to more than one `City`. The opposite of `MULTI` is `SINGLE`, but if you just write `LINK` then EdgeDB will treat it as `SINGLE`.
+
+Now when we `INSERT` Jonathan Harker, he will be connected to the type `City`. Technically, we can now just enter this to create him now:
+
+```
+INSERT Person {
+  places_visited
+};
+```
+
+But this will only create a `Person` type connected to the `City` type with nothing in it. Let's see what's inside:
+
+```
+SELECT Person {
+  name,
+  places_visited
+};
+```
+
+Here is the output: `{Object {name: 'Jonathan Harker', places_visited: {}}}`
+
+That's not good enough. We'll change `places_visited` when we `INSERT` to `places_visited := City`. Now it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
+
+```
+select Person {
+  name,
+  places_visited
+};
+```
+
+Here is the output:
+
+```
+  Object {
+    name: 'Jonathan Harker',
+    places_visited: {
+      Object {id: 5ba2c9b2-f64d-11ea-acc7-d3a96742e345},
+      Object {id: 5bbb2368-f64d-11ea-acc7-ffb002eabe1a},
+      Object {id: 5bc2bba0-f64d-11ea-acc7-8b468bbfae39},
+    },
+  },
+```
+
+Close! Now we just need to let EdgeDB know that we want to display the `name` property of the `City` type. To do that, we add a colon and then put `name` inside curly brackets - same as with any other `SELECT`.
+
+```
+select Person {
+  name,
+  places_visited: {
+    name
+  }
+};
+```
+
+Success! Now we get the output we wanted:
+
+```
+  Object {
+    name: 'Jonathan Harker',
+    places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}},
+  },
+```
+
+Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and we will have to use `FILTER`. We will learn that in later chapters.
 
 # Chapter 2 - At the Hotel in Bistritz
 
