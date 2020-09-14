@@ -201,13 +201,14 @@ Success! Now we get the output we wanted:
   },
 ```
 
-Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and we will have to use `FILTER`. We will learn that in later chapters.
+Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and we will have to use `FILTER`. We will learn that in the next chapter.
 
 # Chapter 2 - At the Hotel in Bistritz
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
 >Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen.
+
 
 Right away we see that we could add another property to `City`, and will write this: `property important_places -> array<str>;` It will now look like this:
 
@@ -269,12 +270,12 @@ error: cannot insert into abstract object type 'default::Person'
 
 No problem - just change `Person` to `NPC` and it will work.
 
-Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage.
+Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
 
 ```
 INSERT PC {
   name := 'Emil Sinclair',
-  places_visited := ['Vienna', 'Germany'],
+  places_visited := City,
   transport := <Transport>'horse-drawn carriage',
 };
 ```
@@ -302,6 +303,58 @@ SELECT <str><int64><str><int32>50 is str;
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is. 
 
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+
+Finally, let's learn how to `FILTER` before we're done Chapter 2. You can use `FILTER` after the curly brackets in `SELECT` to only show certain results. Let's `FILTER` to only show `Person` types that have the name 'Emil Sinclair':
+
+```
+select Person {
+  name,
+  places_visited: {name},
+} FILTER .name = 'Emil Sinclair';
+```
+
+`FILTER .name` is short for `FILTER Person.name`. You can write `FILTER Person.name` too if you want - it's the same thing.
+
+The output is this: 
+
+```
+{Object {name: 'Emil Sinclair', places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}}}}
+```
+
+Let's filter the cities now. You can use `LIKE` or `ILIKE` to match on parts of a string. `LIKE` is case-sensitive ("Bistritz" matches "Bistritz" but "bistritz" does not), while `ILIKE` is not. You can also add `%` on the left and/or right which means match anything. So `ILIKE '%IsTRiT%'` would match Bistritz.
+
+Let's `FILTER` to get all the cities that start with a capital B. We'll use `LIKE` because it's case-sensitive:
+
+```
+SELECT City {
+  name,
+  modern_name,
+} FILTER .name LIKE 'B%';
+```
+
+Here is the result:
+
+```
+  Object {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  Object {name: 'Bistritz', modern_name: 'Bistrița'},
+```
+
+You can also index a string so one other way to do it is like this:
+
+```
+SELECT City {
+  name,
+  modern_name,
+} FILTER .name[0]; = 'B'; # First character must be 'B'
+```
+
+That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18, we'll get this:
+
+```
+ERROR: InvalidValueError: string index 18 is out of bounds
+```
+
+And if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use LIKE or ILIKE with an empty parameter, it will just give an empty set: `{}` instead of an error.
 
 # Chapter 3 - Jonathan goes to Castle Dracula
 
