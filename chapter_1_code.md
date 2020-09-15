@@ -2,16 +2,16 @@ Schema:
 
 ```
 START MIGRATION TO {
-    module default {
-type Person {
-  required property name -> str;
-  MULTI LINK places_visited -> City;
-}
-type City {
-  required property name -> str;
-  property modern_name -> str;
-}
+  module default {
+    type Person {
+      required property name -> str;
+      MULTI LINK places_visited -> City;
     }
+    type City {
+      required property name -> str;
+      property modern_name -> str;
+    }
+  }
 };
 
 
