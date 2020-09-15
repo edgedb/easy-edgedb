@@ -758,3 +758,9 @@ Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types
 ```
 
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated. For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
+
+
+# Chapter 6
+
+>Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream, but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors the next day, so Jonathan writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
+
