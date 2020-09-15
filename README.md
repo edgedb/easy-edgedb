@@ -675,3 +675,22 @@ And get the following output:
 `{<datetime>'2020-05-12T07:35:00Z'}`
 
 The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
+
+With this, we can see the duration between events, because EdgeDB has a `duration` type that you get when subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
+
+```
+SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
+```
+
+This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 2000 6:10 in Korean Standard Time. The result is: `{631180800s}`.
+
+Now let's try something similar. Imagine Jonathan in Castle Dracula on May 12 at 10:35 am, trying to escape. On the same day, Mina is in London at 6:10 am, drinking her morning tea. They are in different time zones, so how many seconds passed in between the two events? We can use `WITH` to declare some variables to make it easier to read. In this sample, `jonathan_wants_to_escape` and `mina_has_tea` are both of type `std::datetime`, so we can subtract one from the other:
+
+```
+WITH 
+  jonathan_wants_to_escape := to_datetime(2020, 5, 12, 10, 35, 0, 'EEST'),
+  mina_has_tea := to_datetime(2020, 5, 12, 6, 10, 0, 'UTC'),
+  SELECT jonathan_wants_to_escape - mina_has_tea;
+```
+
+The output is `{5100s}`. As long as we know the timezone, EdgeDB does the work for us.
