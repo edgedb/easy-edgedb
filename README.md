@@ -656,4 +656,22 @@ Here's what happens in this chapter:
 
 >During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake, and now he is very afraid. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. He opens his eyes and sees three vampire women next to him. He can't move.
 
-Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones.
+Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
+
+`'2020-12-06T22:12:10Z'`
+
+YYYY-MM-DDTHH:MM:SSZ
+
+The `T` inside there is just a separator, and the `Z` at the end means "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it *is* UTC.
+
+One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are multiple ways to make a `datetime` with this function. The easiest is probably the third, which looks like this: `std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime`
+
+With this, in our game we could have a function that just generates integers for times that then use `to_datetime` for a proper time stamp. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story of Dracula takes place in the same year - we'll just use 2020 for convenience. We type this:
+
+`SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');`
+
+And get the following output:
+
+`{<datetime>'2020-05-12T07:35:00Z'}`
+
+The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
