@@ -211,6 +211,8 @@ Success! Now we get the output we wanted:
 
 Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and we will have to use `FILTER`. We will learn that in the next chapter.
 
+[Here is all our code so far up to Chapter 1.](chapter_1_code.md)
+
 # Chapter 2 - At the Hotel in Bistritz
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
@@ -369,6 +371,8 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 
 And if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use LIKE or ILIKE with an empty parameter, it will just give an empty set: `{}` instead of an error.
 
+[Here is all our code so far up to Chapter 2.](chapter_2_code.md)
+
 # Chapter 3 - Jonathan goes to Castle Dracula
 
 In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
@@ -464,6 +468,7 @@ It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allo
 
 Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
 
+[Here is all our code so far up to Chapter 3.](chapter_3_code.md)
 
 # Chapter 4 - "What a strange man this Count Dracula is."
 
@@ -665,6 +670,8 @@ SELECT ( # Start a selection
 
 Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake'}}` We know the date, the hour, and can see that the vampire is awake.
 
+[Here is all our code so far up to Chapter 4.](chapter_4_code.md)
+
 # Chapter 5 - Jonathan tries to leave the castle
 
 Here's what happens in this chapter:
@@ -761,6 +768,7 @@ Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types
 
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated. For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
+[Here is all our code so far up to Chapter 5.](chapter_5_code.md)
 
 # Chapter 6
 
