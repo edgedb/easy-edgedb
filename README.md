@@ -13,6 +13,8 @@ In the beginning of the book we see the main character Jonathan Harker, who is a
 
 >**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
+## Schema, object types
+
 This is already a lot of information, and it helps us start to think about our database schema (structure). EdgeQL uses something called [SDL (schema definition language)](https://edgedb.com/docs/edgeql/sdl/index#ref-eql-sdl) that makes migration easy. So far our schema needs the following:
 
 - Some kind of City or Location type. Cities should have a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
@@ -49,6 +51,8 @@ type City {
 
 This is similar: all cities have a name in the book, but some don't have a different modern name. Vienna is still Vienna, for example. We are imagining that our game will link the city names to their modern names so we can easily place them on a map.
 
+## Migration
+
 We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://edgedb.com/download). First we create a database with the `CREATE DATABASE` keyword and our name for it:
 
 ```
@@ -63,6 +67,8 @@ Lastly, we we need to do a migration. This will give the database the structure 
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. If you wrote `module default` for example and then `type Person`, the type `Person` would be at `default::Person`. And in EdgeQL, `std::bytes` for example is the type `bytes` in the standard library (std).
 - Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
+
+## Inserting objects
 
 Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. By the way, keywords in EdgeDB are case insensitive, so `INSERT`, `insert` and `InSeRT` are all the same. But using capital letters is the normal practice for databases so it's best to use that.
 
@@ -128,6 +134,8 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 ```
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
+
+## Links
 
 The last thing we should do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
 
@@ -209,6 +217,7 @@ We continue to read the story as we think about the database we need to store th
 
 >Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen.
 
+## DDL
 
 Right away we see that we could add another property to `City`, and will write this: `property important_places -> array<str>;` It will now look like this:
 
@@ -231,6 +240,8 @@ ALTER TYPE City {
 ```
 
 And it will say `OK: ALTER` to tell us that it worked. For most of this course we will keep using SDL, so when we change a type we are changing the migration structure. But you can remember that DDL is also an option for quick changes when you need them.
+
+## Scalar types, extending
 
 We now have two types of transport in the book: train, and horse-drawn carriage. This book is based in the late 1800s and our game will let the characters use different types of transport too. Here an `enum` is probably the best choice, because an `enum` is about making one choice between options. Here we see the word `scalar` for the first time: this will be a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they hold any number of values at the same time.
 
@@ -303,6 +314,8 @@ SELECT <str><int64><str><int32>50 is str;
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is. 
 
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+
+## Filter
 
 Finally, let's learn how to `FILTER` before we're done Chapter 2. You can use `FILTER` after the curly brackets in `SELECT` to only show certain results. Let's `FILTER` to only show `Person` types that have the name 'Emil Sinclair':
 
