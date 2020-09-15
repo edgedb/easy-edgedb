@@ -152,7 +152,8 @@ Now when we `INSERT` Jonathan Harker, he will be connected to the type `City`. T
 
 ```
 INSERT Person {
-  places_visited
+  name := 'Jonathan Harker',
+  places_visited := City,
 };
 ```
 
