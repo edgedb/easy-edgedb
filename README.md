@@ -656,6 +656,8 @@ Here's what happens in this chapter:
 
 >During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake, and now he is very afraid. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. He opens his eyes and sees three vampire women next to him. He can't move.
 
+## std::datetime
+
 Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
 
 `'2020-12-06T22:12:10Z'`
@@ -694,3 +696,52 @@ WITH
 ```
 
 The output is `{5100s}`. As long as we know the timezone, EdgeDB does the work for us.
+
+## REQUIRED LINK
+
+Now we need to make a type for the three female vampires. We will call the type `MinorVampire`. These have a link to the `Vampire` type, it needs to be `REQUIRED` because they only live while Dracula lives.
+
+```
+type MinorVampire extending Vampire {
+  REQUIRED LINK master -> Vampire;
+}
+```
+
+Now that it's required, we can't just give it a name. It will give us this error: `ERROR: MissingRequiredError: missing value for required link default::MinorVampire.master`.
+
+```
+INSERT MinorVampire {
+  name := 'Woman 1',
+  master := (SELECT Vampire Filter .name = 'Count Dracula'),
+};
+```
+
+This works because there is only one 'Count Dracula' (remember, `REQUIRED LINK` is short for `REQUIRED SINGLE LINK`). If there were more than one, we would have to add `LIMIT 1`.
+
+## DESCRIBE
+
+Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can extend other types as much as you want, and it can be annoying to read each type to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
+
+- `DESCRIBE TYPE MinorVampire` - the DDL description of a type. This only shows the declaration used to make it, so it won't show the information from `Vampire` or `Person`.
+- `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL (the language we have been using).
+- `DESCRIBE TYPE MinorVampire AS TEXT` - this is what we want. It shows everything inside the type. When we enter that, it gives us everything:
+
+```
+{
+  'type default::MinorVampire extending default::Vampire {
+    required single link __type__ -> schema::Type {
+        readonly := true;
+    };
+    optional single link lover -> default::Person;
+    required single link master -> default::Vampire;
+    optional multi link places_visited -> default::Place;
+    optional single property age -> std::int16;
+    required single property id -> std::uuid {
+        readonly := true;
+    };
+    required single property name -> std::str;
+};',
+}
+```
+
+The parts that say `readonly := true` we don't need to worry about, as they are automatically generated. For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
