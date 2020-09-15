@@ -395,7 +395,9 @@ type Vampire extending Person {
 }
 ```
 
-and then create Count Dracula. We know that he lives in Romania, but that isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
+We will also take `age` out of `Person`, because `Vampire` specifies it. 
+
+Now we can create Count Dracula. We know that he lives in Romania, but that isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
 
 ```
 abstract type Place {
