@@ -798,5 +798,17 @@ INSERT NPC {
 
 You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it.
 
-Now what if Jonathan ever escapes Castle Dracula and gets to a new city? Let's pretend that he escapes and runs away to Berlin. Of course, we can change his `INSERT` signature to include `'Berlin'`. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` starts the update, and `SET` is for the parts we want to change.
+Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'`. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` starts the update, and `SET` is for the parts we want to change.
 
+```
+UPDATE NPC
+  FILTER
+  .name = 'Jonathan Harker'
+  SET {
+    places_visited += (SELECT Place FILTER .name = 'Slovakia')
+};
+```
+
+Now since Jonathan hasn't actually visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it.
+
+One other operator is `++`, which does concatenation (putting two things next to each other) instead of adding.
