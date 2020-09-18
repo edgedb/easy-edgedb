@@ -770,7 +770,33 @@ The parts that say `readonly := true` we don't need to worry about, as they are 
 
 [Here is all our code so far up to Chapter 5.](chapter_5_code.md)
 
-# Chapter 6
+# Chapter 6 - Still no escape
 
->Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream, but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors the next day, so Jonathan writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
+>Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream, but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
+
+There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
+
+```
+INSERT NPC {
+  name := 'Jonathan Harker',
+  places_visited := City,
+};
+```
+
+This was fine when we only had cities, but now we have the `Place` and `Country` type. First we'll insert a `Country` type with `name := 'Romania'`. Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;`
+
+Then we'll insert an `OtherPlace` with `name := 'Castle Dracula'`. Now we don't just have cities. Finally we will insert a `Country` with `name := 'Slovakia'`, just in case.
+
+We can insert Jonathan with `Place`, but then he'll get every `Place` in the database, including Slovakia. Let's make sure that Jonathan doesn't always get every `Place` in the database when we insert him. We can do a quick `SELECT` on all `Place` types matching the name:
+
+```
+INSERT NPC {
+  name := 'Jonathan Harker',
+  places_visited := (SELECT Place FILTER .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+};
+```
+
+You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it.
+
+Now what if Jonathan ever escapes Castle Dracula and gets to a new city? Let's pretend that he escapes and runs away to Berlin. Of course, we can change his `INSERT` signature to include `'Berlin'`. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` starts the update, and `SET` is for the parts we want to change.
 
