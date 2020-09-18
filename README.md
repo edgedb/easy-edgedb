@@ -812,3 +812,56 @@ UPDATE NPC
 Now since Jonathan hasn't actually visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it.
 
 One other operator is `++`, which does concatenation (putting two things next to each other) instead of adding.
+
+Let's also change the `Vampire` type to link it to `MinorVampire` from that side too. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
+
+```
+type Vampire extending Person {            
+  property age -> int16;
+  MULTI LINK slaves -> MinorVampire;
+}
+```
+
+But what is more interesting is that we can insert the `MinorVampire`s at the same time as Count Dracula if we want. It looks like this:
+
+```
+INSERT Vampire {
+  name := 'Count Dracula',
+  age := 800,
+  slaves := {
+    (INSERT MinorVampire {
+      name := 'Woman 1',
+      master := (SELECT DETACHED Vampire LIMIT 1),
+  }),
+    (INSERT MinorVampire {
+     name := 'Woman 2',
+      master := (SELECT DETACHED Vampire LIMIT 1),
+  }),
+    (INSERT MinorVampire {
+     name := 'Woman 3',
+      master := (SELECT DETACHED Vampire LIMIT 1),
+  }),
+ }
+};
+```
+
+This is a bit more typing than separate `INSERT`s, but it also makes the relationship very clear. Don't forget that we need to write `DETACHED` because we are referring to `Vampire` as a type, not as our `Vampire` object for the insert. Also we don't need to use `FILTER` because there is only one, but we do need `LIMIT 1` because we need to guarantee to EdgeDB that it will be a `SINGLE LINK`.
+
+Then we can do a `SELECT` to show what Count Dracula looks like now:
+
+```
+select Vampire {
+  name,
+  age,
+  slaves: {
+    name
+  }
+};
+```
+
+And the result is: 
+
+```
+Object {name: 'Count Dracula', age: 800, slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}}},
+```
+
