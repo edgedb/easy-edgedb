@@ -5,7 +5,7 @@ START MIGRATION TO {
     module default {
 abstract type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  MULTI LINK places_visited -> Place;
   LINK lover -> Person;
 }
 type Vampire extending Person {            
