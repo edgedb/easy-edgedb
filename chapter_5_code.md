@@ -67,6 +67,10 @@ INSERT City {
   modern_name := 'Bistrița'
 };
 
+INSERT City {
+    name := 'London',
+};
+
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
