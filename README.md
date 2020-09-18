@@ -865,3 +865,20 @@ And the result is:
 Object {name: 'Count Dracula', age: 800, slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}}},
 ```
 
+What do we do if we want the same output in json? That's easy: just cast using `<json>`. Any type in EdgeDB except `bytes` can be cast to it:
+
+```
+select <json>Vampire { # Only this part is different
+  name,
+  age,
+  slaves: {
+    name
+  }
+};
+```
+
+The output is:
+
+```
+"{\"age\": 800, \"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
+```
