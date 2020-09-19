@@ -135,6 +135,12 @@ You will remember that one of our cities doesn't have a modern name. It still sh
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
+If you just want to return the names without the object structure, you can write `SELECT City.modern_name`. That will give this output:
+
+```
+{'Budapest', 'Bistrița'}
+```
+
 ## Links
 
 The last thing we should do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
@@ -812,6 +818,22 @@ UPDATE NPC
 Now since Jonathan hasn't actually visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it.
 
 One other operator is `++`, which does concatenation (putting two things next to each other) instead of adding.
+
+You can do simple operations like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you are always joining strings to strings:
+
+```
+SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
+```
+
+This prints:
+
+```
+{
+  'A character from the book: Jonathan Harker, who is not Count Dracula',
+  'A character from the book: The innkeeper, who is not Count Dracula',
+  'A character from the book: Mina Murray, who is not Count Dracula',
+}
+```
 
 Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
 
