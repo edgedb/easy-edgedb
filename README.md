@@ -724,7 +724,7 @@ The output is `{5100s}`. As long as we know the timezone, EdgeDB does the work f
 Now we need to make a type for the three female vampires. We will call the type `MinorVampire`. These have a link to the `Vampire` type, it needs to be `REQUIRED` because they only live while Dracula lives.
 
 ```
-type MinorVampire extending Vampire {
+type MinorVampire extending Person {
   REQUIRED LINK master -> Vampire;
 }
 ```
@@ -813,7 +813,7 @@ Now since Jonathan hasn't actually visited Slovakia, we can use `-=` instead of 
 
 One other operator is `++`, which does concatenation (putting two things next to each other) instead of adding.
 
-Let's also change the `Vampire` type to link it to `MinorVampire` from that side too. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
+Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
 
 ```
 type Vampire extending Person {            
@@ -822,7 +822,25 @@ type Vampire extending Person {
 }
 ```
 
-But what is more interesting is that we can insert the `MinorVampire`s at the same time as Count Dracula if we want. It looks like this:
+Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the link from the `MinorVampire` type, because we don't want two objects linking to each other. There are two reasons for that:
+
+- When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `REQUIRED LINK`) will not be there.
+- If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
+
+```
+ERROR: ConstraintViolationError: deletion of default::Vampire (cc5ee436-fa23-11ea-85e0-e78b548f5a59) is prohibited by link target policy
+
+DETAILS: Object is still referenced in link master of default::MinorVampire (cc87c78e-fa23-11ea-85e0-8f5149329e3a).
+```
+
+So first we simply change `MinorVampire` to a type extending `Person`:
+
+```
+type MinorVampire extending Person {
+}
+```
+
+and then we create them all together with Count Dracula like this:
 
 ```
 INSERT Vampire {
@@ -831,54 +849,48 @@ INSERT Vampire {
   slaves := {
     (INSERT MinorVampire {
       name := 'Woman 1',
-      master := (SELECT DETACHED Vampire LIMIT 1),
   }),
     (INSERT MinorVampire {
      name := 'Woman 2',
-      master := (SELECT DETACHED Vampire LIMIT 1),
   }),
     (INSERT MinorVampire {
      name := 'Woman 3',
-      master := (SELECT DETACHED Vampire LIMIT 1),
   }),
  }
 };
 ```
 
-This is a bit more typing than separate `INSERT`s, but it also makes the relationship very clear. Don't forget that we need to write `DETACHED` because we are referring to `Vampire` as a type, not as our `Vampire` object for the insert. Also we don't need to use `FILTER` because there is only one, but we do need `LIMIT 1` because we need to guarantee to EdgeDB that it will be a `SINGLE LINK`.
-
-Then we can do a `SELECT` to show what Count Dracula looks like now:
+Then when we `select Vampire` like this:
 
 ```
-select Vampire {
+SELECT Vampire {
   name,
-  age,
-  slaves: {
-    name
-  }
+  slaves: {name}
 };
 ```
 
-And the result is: 
+We have a nice output that shows them all together:
 
 ```
-Object {name: 'Count Dracula', age: 800, slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}}},
+Object {
+  name: 'Count Dracula',
+  slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}},
+  },
 ```
 
-What do we do if we want the same output in json? That's easy: just cast using `<json>`. Any type in EdgeDB except `bytes` can be cast to it:
+What do we do if we want the same output in json? That's easy: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
 ```
-select <json>Vampire { # Only this part is different
+SELECT <json>Vampire {
   name,
-  age,
-  slaves: {
-    name
-  }
+  slaves: {name}
 };
 ```
 
 The output is:
 
 ```
-"{\"age\": 800, \"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
+{
+  "{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
+}
 ```
