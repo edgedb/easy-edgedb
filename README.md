@@ -923,3 +923,16 @@ The output is:
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. Count Dracula says that he will leave tomorrow, and Jonathan asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside. Jonathan knows that Dracula called the wolves, and asks him to close the door. Jonathan hears Dracula tell the women that they can have him tomorrow after he leaves. The next day Dracula's friends take him away (he is inside a coffin), and Jonathan is alone. Soon it will be night, and the doors are locked. He decides to escape out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" and begins to climb the wall.
 
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive`. With that, no two objects of the same type can have the same name. You can put a `constraint` in a block after the type, like this:
+
+```
+abstract type Person {
+  required property name -> str { ## Add a block
+      constraint exclusive;       ## and the constraint
+  }
+  MULTI LINK places_visited -> Place;
+  LINK lover -> Person;
+}
+```
+
+Now we know that there will only be one `Jonathan Harker`, `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and so on. In our database we'll also add `constraint exclusive` to `Place` because those are also all unique.
