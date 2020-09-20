@@ -919,7 +919,7 @@ The output is:
 
 [Here is all our code so far up to Chapter 6.](chapter_6_code.md)
 
-# Chapter 7 - 
+# Chapter 7 - Jonathan finally "leaves" the castle
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. Count Dracula says that he will leave tomorrow, and Jonathan asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside. Jonathan knows that Dracula called the wolves, and asks him to close the door. Jonathan hears Dracula tell the women that they can have him tomorrow after he leaves. The next day Dracula's friends take him away (he is inside a coffin), and Jonathan is alone. Soon it will be night, and the doors are locked. He decides to escape out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" and begins to climb the wall.
 
@@ -936,3 +936,41 @@ abstract type Person {
 ```
 
 Now we know that there will only be one `Jonathan Harker`, `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and so on. In our database we'll also add `constraint exclusive` to `Place` because those are also all unique.
+
+Let's also think about our game mechanics a bit. The book says that Dracula is extremely strong, but Jonathan can't open the doors. We can think of doors as having a strength, and people having strength as well. If the person has greater strength than the door, then he or she can open it. So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
+
+```
+type Castle extending Place {
+    property doors -> array<int16>;
+}
+```
+
+Then we'll say there are three main doors to enter and leave Castle Dracula, so we `INSERT` it as follows:
+
+```
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
+};
+```
+
+Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though maybe later on we will if we want to make every character in the book into a character for the game.
+
+When we alter the type we can just change it and do a migration again, as always. But if we don't want to do a migration, we can use some DDL to do it. You'll remember that DDL is not very good for migrations and schema, but is great for small changes. Here is how we add `strength` to `Person`:
+
+```
+ALTER TYPE Person {
+  CREATE PROPERTY strength -> int16
+};
+```
+
+Now we'll give Jonathan a strength of 5. We'll use `UPDATE` and `SET` like before:
+
+```
+UPDATE Person FILTER .name = 'Jonathan Harker'
+  SET {
+    strength := 5
+};
+```
+
+Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Of course, we can see that he can't do it but we want to make a query that can give the answer.
