@@ -1038,3 +1038,72 @@ SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more plac
 It prints: `{'There are 6 more places than castles'}`.
 
 In a few chapters we will learn how to use `CREATE FUNCTION` to make queries shorter.
+
+# Chapter 8 - Dracula takes the boat to England
+
+We are finally away from Castle Dracula. Here is what happens in this chapter:
+
+> A boat leaves from the city of Varna. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They are afraid but don't know what to do. One of them sees Dracula but the others don't believe him. On the last day the ship gets close to England and the captain is alone. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the ship hits the beach, all the men are dead and Dracula turns into a wolf and runs onto the shore. People find the captain's notebook in his hand and start to read the story.
+
+Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create this:
+
+```
+abstract type HasNumber {
+    required property number -> int16;
+}
+```
+
+We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
+
+Now we can use multiple inheritance for the `Crewman` type. It looks like this:
+
+```
+type Crewman extending HasNumber, Person {
+}
+```
+
+Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this each time:
+
+```
+INSERT Crewman {
+  number := count(DETACHED Crewman)
+};
+```
+
+So if there are no `Crewman` types, he will get the number 0. The next will get 1, and so on. So we do this five times and `SELECT Crewman{number};`. It gives us:
+
+```
+{
+  Object {number: 0},
+  Object {number: 1},
+  Object {number: 2},
+  Object {number: 3},
+  Object {number: 4},
+  Object {number: 5},
+}
+```
+
+Next is the `Sailor` type. The sailors have ranks, so first we will make an enum for that:
+
+```
+scalar type Rank extending enum<'Captain', 'First mate', 'Second mate', 'Cook'>;
+```
+
+And then a `Sailor` type that uses `Person` and this enum:
+
+```
+type Sailor extending Person {
+    property rank -> Rank;
+}
+```
+
+Then finally a `Ship` type to hold them all.
+
+```
+type Ship {
+  name -> str;
+  MULTI LINK sailors -> Sailor;
+  MULTI LINK crew -> Crewman;
+}
+```
+
