@@ -973,4 +973,40 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 };
 ```
 
-Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Of course, we can see that he can't do it but we want to make a query that can give the answer.
+Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Of course, we know that he can't do it but we want to make a query that can give the answer.
+
+There is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This almost works, but not quite:
+
+```
+WITH 
+  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
+  weakest_door := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT jonathan_strength > min(weakest_door);
+```
+
+Here's the error:
+
+```
+error: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
+```
+
+We can [look at the function signature](https://edgedb.com/docs/edgeql/funcops/set#function::std::min) to see the problem:
+
+```
+std::min(values: SET OF anytype) -> OPTIONAL anytype
+```
+
+So it needs a set, so something in curly brackets. We can't just put curly brackets around the array, because then it becomes a set of one item (one array). So `SELECT min({[5, 6]});` just returns `{[5, 6]}` because that is the minimum value of the one array.
+
+That also means that `SELECT min({[5, 6], [2, 4]});` will work by giving us `{[2, 4]}`. But that's not what we want.
+
+Instead, what we want to use is [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
+
+```
+WITH 
+  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
+  weakest_door := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT jonathan_strength > min(weakest_door);
+```
+
+That gives us `{false}`. Perfect! Now we know that Jonathan will have to climb out the window to escape.
