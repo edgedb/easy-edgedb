@@ -835,6 +835,8 @@ This prints:
 }
 ```
 
+(The concatenation operator works on arrays too, putting them into a single array. So `SELECT ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
+
 Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
 
 ```
@@ -1005,8 +1007,34 @@ Instead, what we want to use is [array_unpack()](https://edgedb.com/docs/edgeql/
 ```
 WITH 
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  weakest_door := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT jonathan_strength > min(weakest_door);
+  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
 That gives us `{false}`. Perfect! Now we know that Jonathan will have to climb out the window to escape.
+
+Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here are two examples with these functions:
+
+```
+SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
+```
+
+Don't forget that we need cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. This prints:
+
+```
+{
+  ('The innkeeper', 'Name length is: 13'),
+  ('Mina Murray', 'Name length is: 11'),
+  ('Jonathan Harker', 'Name length is: 15'),
+}
+```
+
+The other example is with `count()`, and also has a cast to a `<str>`:
+
+```
+SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more places than castles';
+```
+
+It prints: `{'There are 6 more places than castles'}`.
+
+In a few chapters we will learn how to use `CREATE FUNCTION` to make queries shorter.
