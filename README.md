@@ -1066,15 +1066,14 @@ Now that we have this type and don't need a name, it's super easy to insert our 
 
 ```
 INSERT Crewman {
-  number := count(DETACHED Crewman)
+  number := count(DETACHED Crewman) + 1
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 0. The next will get 1, and so on. So we do this five times and `SELECT Crewman{number};`. It gives us:
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So we do this five times and `SELECT Crewman{number};`. It gives us:
 
 ```
 {
-  Object {number: 0},
   Object {number: 1},
   Object {number: 2},
   Object {number: 3},
@@ -1104,6 +1103,62 @@ type Ship {
   name -> str;
   MULTI LINK sailors -> Sailor;
   MULTI LINK crew -> Crewman;
+}
+```
+
+Now to insert the sailors we just give them each a name and choose a rank from the enum:
+
+```
+INSERT Sailor {
+  name := 'The Captain',
+  rank := 'Captain'
+};
+```
+
+We do that for the Captain, First Mate, Second Mate, and Cook.
+
+```
+INSERT Ship {
+  name := 'The Demeter',
+  sailors := Sailor,
+  crew := Crewman
+};
+```
+
+Then we can look up the `Ship` to make sure that the whole crew is there:
+
+```
+SELECT Ship {
+  name,
+  sailors: {
+    name
+    },
+  crew: {
+    number
+    },
+};
+```
+
+The result is:
+
+```
+{
+  Object {
+    name: 'The Demeter',
+    sailors: {
+      Object {name: 'The First Mate'},
+      Object {name: 'The Second Mate'},
+      Object {name: 'The Cook'},
+      Object {name: 'The Captain'},
+    },
+    crew: {
+      Object {number: 1},
+      Object {number: 2},
+      Object {number: 3},
+      Object {number: 4},
+      Object {number: 5},
+    },
+  },
 }
 ```
 
