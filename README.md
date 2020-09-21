@@ -696,7 +696,7 @@ The `T` inside there is just a separator, and the `Z` at the end means "zero tim
 
 One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are multiple ways to make a `datetime` with this function. The easiest is probably the third, which looks like this: `std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime`
 
-With this, in our game we could have a function that just generates integers for times that then use `to_datetime` for a proper time stamp. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story of Dracula takes place in the same year - we'll just use 2020 for convenience. We type this:
+With this, our game could have a function that just generates integers for times that then get a proper time stamp from `to_datetime`. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
 
 `SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');`
 
@@ -706,7 +706,7 @@ And get the following output:
 
 The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
 
-With this, we can see the duration between events, because EdgeDB has a `duration` type that you get when subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
+With this we can see the duration between events, because there is a `duration` type that comes from subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
 
 ```
 SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
@@ -748,7 +748,7 @@ This works because there is only one 'Count Dracula' (remember, `REQUIRED LINK` 
 
 ## DESCRIBE
 
-Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can extend other types as much as you want, and it can be annoying to read each type to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can continue to extend other types, and it can be annoying to read each one to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
 
 - `DESCRIBE TYPE MinorVampire` - the DDL description of a type. This only shows the declaration used to make it, so it won't show the information from `Vampire` or `Person`.
 - `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL (the language we have been using).
@@ -778,7 +778,7 @@ The parts that say `readonly := true` we don't need to worry about, as they are 
 
 # Chapter 6 - Still no escape
 
->Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream, but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
+>Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
 
 There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
 
@@ -815,11 +815,11 @@ UPDATE NPC
 };
 ```
 
-Now since Jonathan hasn't actually visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it.
+And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
-One other operator is `++`, which does concatenation (putting two things next to each other) instead of adding.
+One other operator is `++`, which does concatenation (joining things together) instead of adding.
 
-You can do simple operations like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you are always joining strings to strings:
+You can do simple operations like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
 ```
 SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
@@ -846,7 +846,7 @@ type Vampire extending Person {
 }
 ```
 
-Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the link from the `MinorVampire` type, because we don't want two objects linking to each other. There are two reasons for that:
+Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the link from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
 
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `REQUIRED LINK`) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
