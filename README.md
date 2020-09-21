@@ -1131,7 +1131,8 @@ Then we can look up the `Ship` to make sure that the whole crew is there:
 SELECT Ship {
   name,
   sailors: {
-    name
+    name,
+    rank,
     },
   crew: {
     number
@@ -1146,10 +1147,10 @@ The result is:
   Object {
     name: 'The Demeter',
     sailors: {
-      Object {name: 'The First Mate'},
-      Object {name: 'The Second Mate'},
-      Object {name: 'The Cook'},
-      Object {name: 'The Captain'},
+      Object {name: 'Petrofsky', rank: First mate},
+      Object {name: 'The Second Mate', rank: Second mate},
+      Object {name: 'The Cook', rank: Cook},
+      Object {name: 'The Captain', rank: Captain},
     },
     crew: {
       Object {number: 1},
