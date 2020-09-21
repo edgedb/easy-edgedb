@@ -1,3 +1,6 @@
+Schema:
+
+```
 START MIGRATION TO {
     module default {
 abstract type Person {
@@ -51,8 +54,11 @@ type Date {
 
 POPULATE MIGRATION;
 COMMIT MIGRATION;
+```
 
+Data:
 
+```
 INSERT NPC {
   name := 'Jonathan Harker',
   places_visited := (SELECT Place FILTER .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}),
@@ -123,4 +129,4 @@ INSERT NPC {
   lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
-
+```
