@@ -1163,3 +1163,63 @@ The result is:
 }
 ```
 
+So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. But because `Person` doesn't have all of these, this query won't work:
+
+```
+SELECT Person {
+  name,
+  age,
+  number,
+};
+```
+
+The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. Luckily there is an easy fix for this using `IS` inside square brackets:
+
+```
+SELECT Person {
+  name,
+  [IS NPC].age,
+  [IS Crewman].number,
+};
+```
+
+Now it will only look for `age` for the `NPC` type and `number` for the `Crewman` type. The output is now quite large, but here is part of it:
+
+```
+{
+  Object {name: 'Woman 1', age: {}, number: {}},
+  Object {name: 'The innkeeper', age: 30, number: {}},
+  Object {name: 'Mina Murray', age: {}, number: {}},
+  Object {name: {}, age: {}, number: 1},
+  Object {name: {}, age: {}, number: 2},
+}
+```
+
+This is pretty good, but the output doesn't show us the type for each of them. To refer to self in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
+
+```
+SELECT Person {
+  __type__: { 
+    name      # Name of the type inside module default
+  },
+  name, # Person.name
+  [IS NPC].age,
+  [IS Crewman].number,
+};
+```
+
+Choosing the five objects from before from the output, it now looks like this:
+
+```
+{
+  Object {__type__: Object {name: 'default::MinorVampire'}, name: 'Woman 1', age: {}, number: {}},
+  Object {__type__: Object {name: 'default::NPC'}, name: 'The innkeeper', age: 30, number: {}},
+  Object {__type__: Object {name: 'default::NPC'}, name: 'Mina Murray', age: {}, number: {}},
+  Object {__type__: Object {name: 'default::Crewman'}, name: {}, age: {}, number: 1},
+  Object {__type__: Object {name: 'default::Crewman'}, name: {}, age: {}, number: 2},
+}
+```
+
+Once again we also see that there is no `NULL`: even properties that aren't part of a type return `{}`.
+
+# Chapter 9
