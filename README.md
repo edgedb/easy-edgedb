@@ -1244,4 +1244,36 @@ INSERT Crewman {
 };
 ```
 
+And the easiest way to set them all is to use the `UPDATE` and `SET` syntax if we know the same date for all of them.
+
+```
+UPDATE Crewman
+  SET {
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16)
+};      
+```
+
+This will of course depend on our game. Can a `PC` actually visit the ship during the trip to England? If not, then we can just choose a rough date as above.
+
 The [cal::to_local_date](https://edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function is the easiest way, as it allows you to simply insert three numbers to get a date. You can also cast from a string using `<cal::local_date>`, but the string must be in ISO8601 format.
+
+Now let's get back to inserting the new characters. First we'll insert Lucy:
+
+```
+INSERT NPC {
+  name := 'Lucy Westenra',
+  places_visited := (SELECT City FILTER .name = 'London')
+};
+```
+
+Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. Let's make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `OVERLOADED`. `OVERLOADED` is because we are changing what we inherited from `Person`, and need to specify that.
+
+```
+type NPC extending Person {
+  property age -> HumanAge;
+  OVERLOADED MULTI LINK places_visited -> Place {
+    default := (SELECT City FILTER .name = 'London');
+  }
+}
+```
