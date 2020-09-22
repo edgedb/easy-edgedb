@@ -1399,3 +1399,7 @@ UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
 ```
 
 Looks like we are mostly up to date now.
+
+# Chapter 10 - Terrible events in Whitby
+
+> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy begins to sleepwalk at night and looks very pale, and always says strange things. One night she watched the sun go down and said: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
