@@ -1232,4 +1232,16 @@ Once again we also see that there is no `NULL`: even properties that aren't part
 
 It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because will be a part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). This is a good time to add a `first_appearance` and `last_appearance` property to the `Person` type. We will choose `last_appearance` instead of `death`, because for the game it doesn't matter: we just want to have the right characters in the game at the right times.
 
-For these two properties we will use `cal::local_datetime` because we can use the year 1887 for it.
+For these two properties we will use `cal::local_date` because we can use the year 1887 for it. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (There is also a `cal::local_time` type with just the time of day)
+
+We won't insert all the `first_appearance` and `last_appearance` values here, but the format looks like this:
+
+```
+INSERT Crewman {
+  number := count(DETACHED Crewman) +1,
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16),
+};
+```
+
+The [cal::to_local_date](https://edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function is the easiest way, as it allows you to simply insert three numbers to get a date. You can also cast from a string using `<cal::local_date>`, but the string must be in ISO8601 format.
