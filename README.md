@@ -1349,6 +1349,7 @@ SET {
 };
 ```
 
+
 Now we'll select her to make sure it worked. We'll use `LIKE` this time:
 
 ```
@@ -1379,4 +1380,22 @@ Okay, let's read the rest of the introduction about Lucy:
 
 >...She chooses to marry Arthur Holmwood, and says sorry to the other two. Fortunately, the three men become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a Renfield, a man who believes that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
-Oops!
+Oops! Looks like she doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
+
+```
+UPDATE NPC FILTER .name = 'Lucy Westenra'
+  SET {
+    lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
+};
+```
+
+And then remove her from the other two:
+
+```
+UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
+  SET {
+    lover := {} # 😢
+};
+```
+
+Looks like we are mostly up to date now.
