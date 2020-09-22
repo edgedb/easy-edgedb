@@ -1277,3 +1277,49 @@ type NPC extending Person {
   }
 }
 ```
+
+So now we can enter all three of our new characters at the same time. To do this we can use a `FOR` loop, followed by the keyword `UNION`. After `FOR` we choose the variable name to use in the later part of the query.
+
+```
+FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+  UNION (
+    INSERT NPC {
+    name := character_name,
+    lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
+});
+```
+
+Then we can check to make sure that it worked:
+
+```
+SELECT NPC {
+  name,
+  places_visited: {
+    name,
+  },
+  lover: {
+  name,
+  },
+} FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
+```
+
+And we see them all connected to Lucy now:
+
+```
+  Object {
+    name: 'John Seward',
+    places_visited: {Object {name: 'London'}},
+    lover: Object {name: 'Lucy Westenra'},
+  },
+  Object {
+    name: 'Quincey Morris',
+    places_visited: {Object {name: 'London'}},
+    lover: Object {name: 'Lucy Westenra'},
+  },
+  Object {
+    name: 'Arthur Holmwood',
+    places_visited: {Object {name: 'London'}},
+    lover: Object {name: 'Lucy Westenra'},
+  },
+}
+```
