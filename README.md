@@ -1228,7 +1228,9 @@ Once again we also see that there is no `NULL`: even properties that aren't part
 
 # Chapter 9 - Strange events in England
 
-> We still don't know where Jonathan is, and the ship is on its way to England. Meanwhile, Mina Harker is writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood) who want to marry her. She chooses to marry Arthur Holmwood, and says sorry to the other two. Fortunately, the three men become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a Renfield, a man who believes that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
+Introduction part 1:
+
+> We still don't know where Jonathan is, and the ship is on its way to England. Meanwhile, Mina Harker is writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood) who want to marry her....
 
 It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because will be a part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). This is a good time to add a `first_appearance` and `last_appearance` property to the `Person` type. We will choose `last_appearance` instead of `death`, because for the game it doesn't matter: we just want to have the right characters in the game at the right times.
 
@@ -1323,3 +1325,58 @@ And we see them all connected to Lucy now:
   },
 }
 ```
+
+Now it's time to update Lucy with three lovers. But `LINK lover` in the `Person` type isn't set as MULTI so we'll have to change that. Let's try it with DDL again. You can see the usage [in the documentation here](https://edgedb.com/docs/edgeql/ddl/links#alter-link). We'll follow that:
+
+```
+ALTER TYPE Person {
+  ALTER LINK lover {
+    SET MULTI
+  }
+};
+```
+
+The output is `OK: ALTER`.
+
+Great, now we can update Lucy:
+
+```
+UPDATE NPC FILTER .name = 'Lucy Westenra'
+SET {
+  lover := (
+    SELECT Person FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+  )
+};
+```
+
+Now we'll select her to make sure it worked. We'll use `LIKE` this time:
+
+```
+SELECT NPC {
+  name,
+  lover: {
+  name
+  }
+} FILTER .name LIKE 'Lucy%';
+```
+
+And this does indeed print her out with her three lovers.
+
+```
+{
+  Object {
+    name: 'Lucy Westenra',
+    lover: {
+      Object {name: 'John Seward'},
+      Object {name: 'Quincey Morris'},
+      Object {name: 'Arthur Holmwood'},
+    },
+  },
+}
+```
+
+Okay, let's read the rest of the introduction about Lucy:
+
+>...She chooses to marry Arthur Holmwood, and says sorry to the other two. Fortunately, the three men become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a Renfield, a man who believes that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
+
+Oops!
