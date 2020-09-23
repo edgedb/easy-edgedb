@@ -1402,4 +1402,112 @@ Looks like we are mostly up to date now.
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy begins to sleepwalk at night and looks very pale, and always says strange things. One night she watched the sun go down and said: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
+> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. One night she watched the sun go down and said: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
+
+We finally have a new city: Whitby, up in the northeast. Right now our `City` type just extends `Place`. This could be a good time to give it a `property population` which can help us estimate the city size in our game. It will be an `int64` to give us the size we need.
+
+Here's the approximate population for our three cities at the time of the book:
+
+- Buda-Pesth: 402706
+- London: 3500000
+- Munich: 230023
+- Whitby: 14400
+- Bistritz: 9100
+
+Inserting Whitby is easy enough:
+
+```
+INSERT City {
+  name := 'Whitby',
+  population := 14400
+};
+```
+
+But for the rest of them it would be nice to update everything at the same time. If we have all the data together we can do it with a `FOR` loop again. The data in this case is a set of `tuple<str, int64>`, so this format:
+
+`('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
+
+You'll remember that to access part of an array, string etc. we use square brackets. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (index number 1).
+
+You can also slice strings with the same square brackets by using a colon to indicate the starting and ending index. For example:
+
+```
+SELECT NPC.name[0:10];
+```
+
+This prints the first ten letters of every NPC's name:
+
+```
+{
+  'Jonathan H',
+  'The innkee',
+  'Mina Murra',
+  'John Sewar',
+  'Quincey Mo',
+  'Lucy Weste',
+  'Arthur Hol',
+}
+```
+
+And the same can be done with a negative number to indicate how many characters from the end you want to slice. For example:
+
+```
+SELECT NPC.name[2:-2];
+```
+
+This prints from index 2 up to 2 indexes away from the end:
+
+```
+{
+  'nathan Hark',
+  'e innkeep',
+  'na Murr',
+  'hn Sewa',
+  'incey Morr',
+  'cy Westen',
+  'thur Holmwo',
+}
+```
+
+So that's how indexing and slicing works for every type except tuples, which use `()`. Tuples are different because they are more like individual object types with fields. This lets tuples hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything. So this is completely fine:
+
+```
+SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
+```
+
+The output is:
+
+```
+{
+  ('Bistritz', 9100, <cal::local_date>'1887-05-06'),
+  ('Munich', 230023, <cal::local_date>'1887-05-08'),
+}
+```
+
+But now that the type is set (this one is of type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
+
+```
+SELECT {(1, 2, 3), (4, 5, '6')};
+```
+
+EdgeDB will give an error because it won't try to work with tuples that are of different types. It complains:
+
+```
+ERROR: QueryError: operator 'UNION' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+  Hint: Consider using an explicit type cast or a conversion function.
+```
+
+In the above example we could easily just cast the last string into an integer and EdgeDB will be happy again: `SELECT {(1, 2, 3), (4, 5, <int64>'6')};`.
+
+To access the fields of a tuple you still start from the number 0, but after a `.` instead of inside `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
+
+```
+for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+  UNION (
+    UPDATE City FILTER .name = data.0
+    SET {
+    population := data.1
+});
+```
+
+So it sends each tuple into the FOR loop, filters by the string (which is data.0) and then updates with the population (which is data.1).
