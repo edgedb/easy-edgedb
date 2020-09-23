@@ -1553,3 +1553,36 @@ This returns:
 ```
 
 What's DESC? It means descending, so largest first. If you don't write DESC then it will assume that you meant ascending. If you want to specify that, you can also write ASC.
+
+For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as `math` [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
+
+```
+WITH cities := City.population
+  SELECT (
+   'Number of cities: ' ++ <str>count(cities),
+   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
+   'Total population: ' ++ <str>sum(cities),
+   'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+   'Average population: ' ++ <str>math::mean(cities),
+   'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+   'Standard deviation: ' ++ <str>math::stddev(cities)
+);
+```
+
+The result is:
+
+```
+{
+  (
+    'Number of cities: 5',
+    'All cities have more than 50,000 people: false',
+    'Total population: 4156229',
+    'Smallest and largest population: 9100, 3500000',
+    'Average population: 831245.8',
+    'At least one city has more than 5 million people: false',
+    'Standard deviation: 1500876.8248',
+  ),
+}
+```
+
+`any()`, `all()` and `count()` are particularly useful in operations to give you an idea of your data.
