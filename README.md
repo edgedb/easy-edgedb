@@ -141,6 +141,25 @@ If you just want to return the names without the object structure, you can write
 {'Budapest', 'Bistrița'}
 ```
 
+You can also change names like `modern_name` to something else if you want by using `:=` after the name you want. For example:
+
+```
+SELECT City {
+  name_in_dracula := .name,
+  name_today := .modern_name,
+};
+```
+
+This prints:
+
+```
+{
+  Object {name_in_dracula: 'Munich', name_today: {}},
+  Object {name_in_dracula: 'Buda-Pesth', name_today: 'Budapest'},
+  Object {name_in_dracula: 'Bistritz', name_today: 'Bistrița'},
+}
+```
+
 ## Links
 
 The last thing we should do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
@@ -1510,4 +1529,27 @@ for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
 });
 ```
 
-So it sends each tuple into the FOR loop, filters by the string (which is data.0) and then updates with the population (which is data.1).
+So it sends each tuple into the FOR loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+
+Now that we have some numbers, we can do some math on them. Here we order them by population:
+
+```
+SELECT City {
+  name,
+  population
+} ORDER BY .population DESC;
+```
+
+This returns:
+
+```
+{
+  Object {name: 'London', population: 3500000},
+  Object {name: 'Buda-Pesth', population: 402706},
+  Object {name: 'Munich', population: 230023},
+  Object {name: 'Whitby', population: 14400},
+  Object {name: 'Bistritz', population: 9100},
+}
+```
+
+What's DESC? It means descending, so largest first. If you don't write DESC then it will assume that you meant ascending. If you want to specify that, you can also write ASC.
