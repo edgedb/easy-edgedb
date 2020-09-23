@@ -10,7 +10,7 @@ START MIGRATION TO {
     }
     property strength -> int16;
     MULTI LINK places_visited -> Place;
-    LINK lover -> Person;
+    MULTI LINK lover -> Person;
     property first_appearance -> cal::local_date;
     property last_appearance -> cal::local_date;
   }
