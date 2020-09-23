@@ -1421,7 +1421,7 @@ Looks like we are mostly up to date now.
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. One night she watched the sun go down and said: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
+> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. One night she watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
 
 We finally have a new city: Whitby, up in the northeast. Right now our `City` type just extends `Place`. This could be a good time to give it a `property population` which can help us estimate the city size in our game. It will be an `int64` to give us the size we need.
 
@@ -1586,3 +1586,57 @@ The result is:
 ```
 
 `any()`, `all()` and `count()` are particularly useful in operations to give you an idea of your data.
+
+In the letter from Dr. Van Helsing to Dr. Seward, he starts it as follows:
+
+`Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.`
+
+This might be a good time to change our `Person` type. We have people with a lot of different types of names, in this order:
+
+Title | First name | Last name | Degree
+
+So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on. But we also have characters that don't quite have a first and last name ('Woman 1', 'The Innkeeper') so it might not be a good idea to change the `name` property. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+
+We will add these properties to `Person`:
+
+```
+property title -> str;
+property degrees -> str;
+property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
+property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+```
+
+We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
+
+Now it's time to insert Van Helsing:
+
+```
+INSERT NPC {
+  name := 'Abraham Van Helsing',
+  title := 'Dr.',
+  degrees := 'M.D., Ph. D. Lit., etc.'
+};
+```
+
+Now we can make use of these properties to liven up our conversation engine in the game. For example:
+
+```
+WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
+  SELECT(
+ 'There goes ' ++ helsing.name ++ '.',
+ 'I say! Are you ' ++ helsing.conversational_name ++ '?',
+ 'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.');
+```
+
+This gives us:
+
+```
+{
+  (
+    'There goes Abraham Van Helsing.',
+    'I say! Are you Dr. Abraham Van Helsing?',
+    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.,
+        I am sorry to say that I bring bad news about Lucy.',
+  ),
+}
+```
