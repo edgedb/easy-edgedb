@@ -195,4 +195,29 @@ INSERT Ship {
   sailors := Sailor,
   crew := Crewman
 };
+
+FOR character_name IN {'John Seward', 'Quincey Morris'}
+  UNION (
+    INSERT NPC {
+    name := character_name,
+    first_appearance := cal::to_local_date(1887, 5, 26),
+});
+
+INSERT NPC {
+  name := 'Lucy Westenra',
+  first_appearance := cal::to_local_date(1887, 5, 26),
+};
+
+INSERT NPC {
+  name := 'Arthur Holmwood',
+  first_appearance := cal::to_local_date(1887, 5, 26),
+  lover := (SELECT DETACHED NPC FILTER .name = 'Lucy Westenra'),
+};
+
+UPDATE NPC FILTER .name = 'Lucy Westenra'
+SET {
+  lover := (
+    SELECT Person FILTER .name = 'Arthur Holmwood'
+  )
+};
 ```
