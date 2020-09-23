@@ -161,29 +161,29 @@ INSERT NPC {
 
 INSERT Crewman { # Repeat this insert five times
   number := count(DETACHED Crewman) + 1
-}
+};
 
 INSERT Sailor {
   name := 'The Captain',
   rank := 'Captain'
 };
 
-insert Sailor {
+INSERT Sailor {
   name := 'The First Mate',
   rank := 'First mate'
 };
 
-insert Sailor {
+INSERT Sailor {
   name := 'The Second Mate',
   rank := 'Second mate'
 };
 
-insert Sailor {
+INSERT Sailor {
   name := 'The Cook',
   rank := 'Cook'
 };
 
-insert Ship {
+INSERT Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
