@@ -208,7 +208,7 @@ INSERT Ship {
   crew := Crewman
 };
 
-FOR character_name IN {'John Seward', 'Quincey Morris'}
+FOR character_name IN {'John Seward', 'Quincey Morris', 'Renfield'}
   UNION (
     INSERT NPC {
     name := character_name,
@@ -237,5 +237,10 @@ INSERT NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
   degrees := 'M.D., Ph. D. Lit., etc.'
+};
+
+INSERT NPC {
+  name := 'Renfield',
+  first_appearance := cal::to_local_date(1887, 5, 26),
 };
 ```
