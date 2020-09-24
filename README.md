@@ -1417,7 +1417,16 @@ UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
 };
 ```
 
-Looks like we are mostly up to date now.
+Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `FILTER` for:
+
+```
+INSERT NPC {
+  name := 'Renfield',
+  first_appearance := cal::to_local_date(1887, 5, 26),
+};
+```
+
+But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. We will have to think about that later.
 
 # Chapter 10 - Terrible events in Whitby
 
@@ -1640,3 +1649,6 @@ This gives us:
   ),
 }
 ```
+
+# Chapter 11
+
