@@ -1650,5 +1650,86 @@ This gives us:
 }
 ```
 
-# Chapter 11
+# Chapter 11 - What's wrong with Lucy?
 
+> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because he knows they won't believe him, but tells them to close the windows and put garlic everywhere, and it works. But one day Lucy's mother thinks the room needs fresh air and opens the windows, and Lucy wakes up pale and sick again. Similar events happen many times, and every time the men give Lucy their blood to help her recover. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. And one day he simply did not talk to Dr. Seward, saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
+
+We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. Since we are making a game, we want to know which characters were in which place, and when. So let's try putting together an `Event` type.
+
+This `Event` type is a bit long, but it needs to be the main type for our events in the game so it needs to be detailed. We can put it together like this:
+
+```
+scalar type EastWest extending enum<'E', 'W'>;
+
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required MULTI LINK place -> Place;
+  REQUIRED MULTI LINK people -> Person;
+  property exact_location -> tuple<float64, float64>;
+  property east_west -> EastWest;
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ <str>.east_west;
+}
+```    
+
+You can see that most of the properties now are `required`, because an `Event` type is not useful to us for our game if it doesn't have the information we need. It will always need a description, a time, place, and people participating. The interesting part of this type is the `url` property which gives us an exact url for the location if we want. The events in the book take place in the north part of the planet, but sometimes they are east of Greenwich and sometimes west. We will always need to know if it is east or west so we create an enum with 'E' and 'W' and then use the computable `url` property to generate a link.
+
+Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy.
+
+```
+INSERT Event {
+  description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
+  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  place := (SELECT Place FILTER .name = 'Whitby'),
+  people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
+  exact_location := (54.4858, 0.6206),
+  east_west := 'W'
+};
+```
+
+With all this information we can now find events by description, character, location, etc. The `description` property we can make as long as we want to make it easy to search, and we could even just paste in parts of the book if we wanted.
+
+Now let's do a query for this event:
+
+```
+SELECT Event {
+  description,
+  start_time,
+  end_time,
+  place: {
+  __type__: {
+    name
+    },
+  name
+   },
+  people: {
+  name
+    },
+  exact_location,
+  url
+} FILTER .description ILIKE '%garlic flowers%';
+```
+
+It generates a nice output that shows us everything about the event:
+
+```
+{
+  Object {
+    description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
+    start_time: <cal::local_datetime>'1857-09-11T18:00:00',
+    end_time: <cal::local_datetime>'1857-09-11T23:00:00',
+    place: {Object {__type__: Object {name: 'default::City'}, name: 'Whitby'}},
+    people: {
+      Object {name: 'John Seward'},
+      Object {name: 'Lucy Westenra'},
+      Object {name: 'Abraham Van Helsing'},
+    },
+    exact_location: (54.4858, 0.6206),
+    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W',
+  },
+}
+```
+
+The url works nicely too. Here it is: [https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W](https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W] You can see that it takes you directly to the city of Whitby.
