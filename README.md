@@ -1826,3 +1826,11 @@ Here is the output. Everyone fights once against everyone else:
 ```
 
 And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results.
+
+# Chapter 12 - From bad to worse
+
+There is no good news for our heroes this chapter:
+
+> Van Helsing gives strict instructions on how to protect Lucy, but sometimes people don't follow all of them. When this happens Dracula manages to slip in as a cloud, drink her blood and sneak away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again.
+
+But there is good news for us, because we are going to keep learning about Cartesian products.
