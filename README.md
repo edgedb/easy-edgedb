@@ -1732,4 +1732,4 @@ It generates a nice output that shows us everything about the event:
 }
 ```
 
-The url works nicely too. Here it is: [https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W](https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W] You can see that it takes you directly to the city of Whitby.
+The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W You can see that it takes you directly to the city of Whitby.
