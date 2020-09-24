@@ -1792,4 +1792,38 @@ It would give us this result:
 
 In the book this is actually incorrect because Jonathan is weaker than each of the vampire women. But we haven't given them `strength` yet so even his `5` strength counts as more.
 
-This is a good time to talk about Cartesian multiplication.
+This is a good time to talk about Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+
+![Cartesian_product.png]
+
+Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
+
+This means that if we do a `SELECT` on `Person` for our `fight()` function, it will run the function as many times as the results for one multiplied by the other.
+
+To demonstrate, let's put three objects in for each side of our function. We'll also make the output a little more clear:
+
+```
+WITH
+  one := (SELECT Person FILTER .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  two := (SELECT Person FILTER .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+  SELECT(one.name ++ ' fights against ' ++ two.name ++ '. ' ++ fight(one, two));
+```
+
+Here is the output. Everyone fights once against everyone else:
+
+```
+{
+  'Count Dracula fights against The innkeeper. The innkeeper wins!',
+  'Count Dracula fights against Mina Murray. Mina Murray wins!',
+  'Count Dracula fights against Renfield. Renfield wins!',
+  'Jonathan Harker fights against The innkeeper. The innkeeper wins!',
+  'Jonathan Harker fights against Mina Murray. Mina Murray wins!',
+  'Jonathan Harker fights against Renfield. Renfield wins!',
+  'Arthur Holmwood fights against The innkeeper. The innkeeper wins!',
+  'Arthur Holmwood fights against Mina Murray. Mina Murray wins!',
+  'Arthur Holmwood fights against Renfield. Renfield wins!',
+}
+```
+
+And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results.
+
