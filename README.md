@@ -1423,10 +1423,11 @@ Looks like we are mostly up to date now. The only thing left is to insert the my
 INSERT NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
+  strength := 10,
 };
 ```
 
-But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. We will have to think about that later.
+But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later. We will have to think about his relationship with Dracula later.
 
 # Chapter 10 - Terrible events in Whitby
 
@@ -1733,3 +1734,62 @@ It generates a nice output that shows us everything about the event:
 ```
 
 The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W You can see that it takes you directly to the city of Whitby.
+
+We saw that Renfield is quite strong.
+
+We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate the type going in and the type going out in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
+
+```
+function does_something(input: int16) -> float64
+```
+
+The `->` skinny arrow is used to show the return value.
+
+For the body of the function we do the following:
+
+- Writing `using EdgeQL` (this is the only way to create functions at the moment)
+- Write the function between `$$` to start and `$$` again to end
+- Finish with a semicolon.
+
+So let's write a function where we have two characters fight. We will make it very simple: the character with more strength wins.
+
+```
+function fight(one: Person, two: Person) -> str
+  using EdgeQL $$
+    SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+$$;
+```
+
+So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other:
+
+```
+WITH
+  renfield := (SELECT Person filter .name = 'Renfield'),
+  jonathan := (SELECT Person filter .name = 'Jonathan Harker')
+    SELECT (
+     fight(jonathan, renfield)
+     );
+```
+
+It prints what we wanted to see: `{'Renfield wins!'}`
+
+It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one. For example, say we forgot that there were three women in the castle and wrote this:
+
+```
+WITH
+  the_woman := (SELECT Person filter .name ILIKE '%woman%'),
+  jonathan := (SELECT Person filter .name = 'Jonathan Harker')
+  SELECT (
+    fight(the_woman, jonathan)
+    );
+```
+
+It would give us this result:
+
+```
+{'Jonathan Harker wins!', 'Jonathan Harker wins!', 'Jonathan Harker wins!'}
+```
+
+In the book this is actually incorrect because Jonathan is weaker than each of the vampire women. But we haven't given them `strength` yet so even his `5` strength counts as more.
+
+This is a good time to talk about Cartesian multiplication.
