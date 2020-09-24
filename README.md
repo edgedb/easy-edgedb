@@ -1826,4 +1826,3 @@ Here is the output. Everyone fights once against everyone else:
 ```
 
 And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results.
-
