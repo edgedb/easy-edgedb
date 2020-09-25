@@ -1833,4 +1833,31 @@ There is no good news for our heroes this chapter:
 
 > Van Helsing gives strict instructions on how to protect Lucy, but sometimes people don't follow all of them. When this happens Dracula manages to slip in as a cloud, drink her blood and sneak away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again.
 
-But there is good news for us, because we are going to keep learning about Cartesian products.
+But there is good news for us, because we are going to keep learning about function overloading and Cartesian products.
+
+First we should give a value for `.strength` for our characters. Jonathan Harker is actually quite strong (for a human), and has a strength of 5. We'll treat that as the maximum strength for a human. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
+ 
+```
+  SELECT <int16>round((random() * 5)); 
+```
+
+So now we'll use this to update our Person types and give them all a random strength.
+
+```
+WITH random_5 := (SELECT <int16>round((random() * 5)))
+ # WITH isn't necessary - just making the query prettier
+ 
+UPDATE Person
+  FILTER NOT EXISTS .strength
+  SET {
+    strength := random_5 
+};
+```
+
+Now let's `SELECT Person.strength;` and see if it works:
+
+```
+{3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 4, 4, 4, 4, 4}
+```
+
+Looks like it worked.
