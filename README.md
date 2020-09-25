@@ -2044,7 +2044,7 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
 
 Then we'll get this:
 
-````
+```
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
