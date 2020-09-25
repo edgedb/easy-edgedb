@@ -1962,3 +1962,121 @@ CREATE FUNCTION visited(person: str, city: str) -> bool
 ```
 
 For quick functions to simplify queries without having to do a migration, you'll probably find it easiest to declare them with DDL.
+
+Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
+
+```
+WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
+  f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
+  SELECT b_places.name ++ ' ' ++ f_places.name;
+```
+
+The output is:
+
+```
+{}
+```
+
+!! But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's try manually concatenating just to make sure:
+
+```
+SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
+```
+
+The output is...
+
+```
+error: operator '++' cannot be applied to operands of type 'std::str' and 'anytype'
+  ┌─ query:1:8
+  │
+1 │ SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
+```
+
+!!! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. Okay, one more time:
+
+```
+edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+{}
+edgedb>  
+```
+
+Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
+
+- Concatenate the two strings if they exist,
+- Return what we have if one is an empty set?
+
+To do that we can use the so-called coalescing operator, which is written `??`. Here is a quick example:
+
+```
+edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
+{'Count Dracula is now in Whitby'}
+edgedb>  
+```
+
+```
+WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
+     f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
+     SELECT 
+       b_places.name ++ ' ' ++ f_places.name IF EXISTS b_places.name AND EXISTS f_places.name 
+     ELSE 
+       b_places.name ?? f_places.name;
+```
+
+This returns:
+
+```
+{'Buda-Pesth', 'Bistritz'}
+```
+
+That's better.
+
+But remember, when we add or concatenate sets we are working with every item in each set separately. So if we change the query to search for places that start with b and m:
+
+```
+WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
+     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+     SELECT 
+       b_places.name ++ ' ' ++ m_places.name IF EXISTS b_places.name AND EXISTS m_places.name 
+     ELSE 
+       b_places.name ?? m_places.name;
+```
+
+Then we'll get this:
+
+````
+{'Buda-Pesth Munich', 'Bistritz Munich'}
+```
+
+instead of something like 'Buda-Peth, Bistritz, Munich'. To get that output, we have to do two more things:
+
+- [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg) to turn a set into an array, then
+- [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
+
+```
+WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
+     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+     SELECT
+     array_join(array_agg(b_places.name), ', ') ++ ', ' ++ array_join(array_agg(m_places.name), ', ') IF EXISTS b_places.name AND EXISTS m_places.name
+
+      ELSE
+        b_places.name ?? m_places.name;
+```
+
+Finally! The output is `{'Buda-Pesth, Bistritz, Munich'}`. Now with this more robust query we can use it on anything and don't need to worry about getting {} if we choose a letter like x. Let's look at every place that contains k or e:
+
+```
+WITH has_k := (SELECT Place FILTER Place.name ILIKE '%k%'),
+     has_e := (SELECT Place FILTER Place.name ILIKE '%e%'),
+     SELECT
+     array_join(array_agg(has_k.name), ', ') ++ ', ' ++ array_join(array_agg(has_e.name), ', ') IF EXISTS has_k.name AND EXISTS has_e.name
+     ELSE
+    has_k.name ?? has_e.name;
+```
+
+This gives us the result:
+
+```
+{'Slovakia, Buda-Pesth, Castle Dracula'}
+```
+
