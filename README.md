@@ -1950,3 +1950,15 @@ SELECT(
 ```
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
+
+The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. The same function in DDL looks like this, with `USING()` to hold the body:
+
+```
+CREATE FUNCTION visited(person: str, city: str) -> bool
+      USING(
+        WITH _person := (SELECT Person FILTER .name = person LIMIT 1),
+        SELECT city IN _person.places_visited.name
+      );
+```
+
+For quick functions to simplify queries without having to do a migration, you'll probably find it easiest to declare them with DDL.
