@@ -1921,3 +1921,32 @@ Much better:
 
 So that's how function overloading works - you can create functions with the same name as long as the signature is different. Overloading is used a lot for existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum of the same type. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
+`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. Let's make a function that we might actually use. Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
+
+```
+function visited(person: str, city: str) -> bool
+      using EdgeQL $$
+        WITH _person := (SELECT Person FILTER .name = person LIMIT 1),
+        SELECT city IN _person.places_visited.name
+      $$;
+```
+
+Now our queries are much faster:
+
+```
+edgedb> SELECT visited('Mina Murray', 'London');
+{true}
+edgedb> SELECT visited('Mina Murray', 'Bistritz');
+{false}
+```
+
+And even more complicated queries are still quite readable:
+
+```
+SELECT(
+  'Did Mina visit Bistritz? ' ++ <str>visited('Mina Murray', 'Bistritz'),
+  'What about Jonathan and Romania? ' ++ <str>visited('Jonathan Harker', 'Romania')
+ );
+```
+
+This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
