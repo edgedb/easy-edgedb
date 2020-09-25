@@ -1854,10 +1854,70 @@ UPDATE Person
 };
 ```
 
+And we'll make sure Count Dracula gets 20 strength, because he's Dracula:
+
+```
+UPDATE Vampire
+FILTER .name = 'Count Dracula'
+SET {
+  strength := 20
+  };
+```
+
 Now let's `SELECT Person.strength;` and see if it works:
 
 ```
-{3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 4, 4, 4, 4, 4}
+{3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 20, 4, 4, 4, 4}
 ```
 
 Looks like it worked.
+
+So now let's overload the `fight()` function so that more than one character can join together to fight another one. There are a lot of ways to do it, but we'll choose a simple one:
+
+```
+    function fight(names: str, one: int16, two: Person) -> str
+  using EdgeQL $$
+    SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
+$$;
+```
+
+So it's the same function name, except that we enter the names of the people (or team name) together, followed by their strength together, and then the `Person` they are fighting against.
+
+Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
+
+```
+WITH
+  jon_and_ren_strength := <int16>(SELECT sum(
+    (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength)
+    ),
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+
+  SELECT fight('Jon and Ren', jon_and_ren_strength, dracula);
+```
+
+So did they...
+
+```
+{'Count Dracula wins!'}
+```
+
+No, they didn't win. How about four people?
+
+```
+WITH
+  four_people_strength := <int16>(SELECT sum(
+    (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'}).strength)
+    ),
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+
+  SELECT fight('The four people', four_people_strength, dracula);
+```
+
+Much better:
+
+```
+{'The four people win!'}
+```
+
+So that's how function overloading works - you can create functions with the same name as long as the signature is different. Overloading is used a lot for existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum of the same type. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
+
