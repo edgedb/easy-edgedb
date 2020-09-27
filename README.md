@@ -27,7 +27,7 @@ type Person {
 }
 ```
 
-Inside this we insert the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional. 
+Inside this we add the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional. 
 
 ```
 type Person {
@@ -94,6 +94,13 @@ INSERT City {
   modern_name := 'Bistrița'
 };
 ```
+
+Hmm. We can see already that our schema needs some improvement:
+
+- We have a `Person` type, and a `City` type,
+- The `Person` type has the property `places_visited` which contains the names of the cities, but is not linked to any `City` type. There should be a relationship between these two.
+
+We'll change that in a moment by changing `array<str>` from a property to something called `MULTI LINK` to the `CITY` type which will actually join them together. But first let's look a bit closer at what happens when we use `INSERT`.
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis are just fine: you could create a `City` called '🤠' if you wanted to.
 
@@ -162,7 +169,7 @@ This prints:
 
 ## Links
 
-The last thing we should do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
+So now the last thing left to do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
 
 ```
 type Person {
