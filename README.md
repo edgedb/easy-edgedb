@@ -244,8 +244,6 @@ We continue to read the story as we think about the database we need to store th
 
 >Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen.
 
-## DDL
-
 Right away we see that we could add another property to `City`, and will write this: `property important_places -> array<str>;` It will now look like this:
 
 ```
@@ -255,18 +253,6 @@ type City {
   property important_places -> array<str>;
 }
 ```
-
-So we can add it by using SDL when we do the migration. On top of SDL, EdgeQL also has something called [DDL (data definition language)](https://edgedb.com/docs/edgeql/ddl/index) that is more low level. DDL is good for quick changes, but not as good for large migrations. One reason why is that the order matters in DDL, but not in SDL. That means that if you have a type `City` that is connected to a type `Country`, you need to create `Country` first in DDL. In SDL, the other doesn't matter. 
-
-But here we will look at a quick example of DDL. If we've already started our database, we can quickly change it like this:
-
-```
-ALTER TYPE City {
-  CREATE PROPERTY important places -> array<str>
-};
-```
-
-And it will say `OK: ALTER` to tell us that it worked. For most of this course we will keep using SDL, so when we change a type we are changing the migration structure. But you can remember that DDL is also an option for quick changes when you need them.
 
 ## Scalar types, extending
 
@@ -769,8 +755,8 @@ This works because there is only one 'Count Dracula' (remember, `REQUIRED LINK` 
 
 Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can continue to extend other types, and it can be annoying to read each one to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - the DDL description of a type. This only shows the declaration used to make it, so it won't show the information from `Vampire` or `Person`.
-- `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL (the language we have been using).
+- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on (such as quickly creating helpful functions without needing to do a migration). And if you understand SDL it will not be hard to pick up some tricks in DDL.
+- `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL.
 - `DESCRIBE TYPE MinorVampire AS TEXT` - this is what we want. It shows everything inside the type. When we enter that, it gives us everything:
 
 ```
@@ -976,14 +962,6 @@ INSERT Castle {
 ```
 
 Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though maybe later on we will if we want to make every character in the book into a character for the game.
-
-When we alter the type we can just change it and do a migration again, as always. But if we don't want to do a migration, we can use some DDL to do it. You'll remember that DDL is not very good for migrations and schema, but is great for small changes. Here is how we add `strength` to `Person`:
-
-```
-ALTER TYPE Person {
-  CREATE PROPERTY strength -> int16
-};
-```
 
 Now we'll give Jonathan a strength of 5. We'll use `UPDATE` and `SET` like before:
 
@@ -1345,19 +1323,7 @@ And we see them all connected to Lucy now:
 }
 ```
 
-Now it's time to update Lucy with three lovers. But `LINK lover` in the `Person` type isn't set as MULTI so we'll have to change that. Let's try it with DDL again. You can see the usage [in the documentation here](https://edgedb.com/docs/edgeql/ddl/links#alter-link). We'll follow that:
-
-```
-ALTER TYPE Person {
-  ALTER LINK lover {
-    SET MULTI
-  }
-};
-```
-
-The output is `OK: ALTER`.
-
-Great, now we can update Lucy:
+Now it's time to update Lucy with three lovers. But `LINK lover` in the `Person` type isn't set as MULTI so we'll have to change that. With this change made, we  can update Lucy:
 
 ```
 UPDATE NPC FILTER .name = 'Lucy Westenra'
@@ -1951,17 +1917,7 @@ SELECT(
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. The same function in DDL looks like this, with `USING()` to hold the body:
-
-```
-CREATE FUNCTION visited(person: str, city: str) -> bool
-      USING(
-        WITH _person := (SELECT Person FILTER .name = person LIMIT 1),
-        SELECT city IN _person.places_visited.name
-      );
-```
-
-For quick functions to simplify queries without having to do a migration, you'll probably find it easiest to declare them with DDL.
+The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two.
 
 Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
 
