@@ -2043,3 +2043,23 @@ This gives us the result:
 {'Slovakia, Buda-Pesth, Castle Dracula'}
 ```
 
+# Chapter 13 
+
+> This time it was too late, and Lucy lies dying. Suddenly she opens her eyes and tells Arthur to kiss her. He tries, but Van Helsing grabs him and says "Don't you dare approach her!" It was not Lucy, but the vampire inside her that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one), but the nurse steals it when nobody is looking. Vampire Lucy starts walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur can't believe him and becomes angry that he would insult Lucy by saying such things about her.
+
+Looks like Lucy has become a `MinorVampire`. Right now `MinorVampire` is nothing special, just a type that extends `Person`:
+
+```
+type MinorVampire extending Person {
+    }
+```
+
+Fortunately, she is effectively a new type as a `MinorVampire`, and the book says this too: it's not really Lucy anymore. So we can just give `MinorVampire` an optional link to `Person`:
+
+```
+type MinorVampire extending Person {
+        link former_self -> Person;
+}
+```
+
+One other thing we can remember to do is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date.
