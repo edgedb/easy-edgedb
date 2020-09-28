@@ -2136,7 +2136,7 @@ Use this after `SELECT` to get only results that are not duplicates. Right now i
 
 Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 4, 5, 7, 10}`.
 
-- Getting __type__ all the time
+- Getting `__type__` all the time
 
 You will remember that we can use `__type__` to get the types of objects in a query, and that `__type__` always has `.name` that we can access to get the actual name (otherwise we will only get the uuid). We can use this to look at the type names inside `Person`:
 
@@ -2187,3 +2187,104 @@ Here's the output:
 {default::NPC {name: 'Lucy Westenra'}, default::MinorVampire {name: 'Lucy Westenra'}}
 ```
 
+- INTROSPECT
+
+The word `introspect` we just used to get the type for every query is also its own keyword. Every type has `name`, `properties`, `links` and `target` that you can access. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is quite simple but has all four. The type is:
+
+```
+type Ship {
+  property name -> str;
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
+```
+
+The simplest `INTROSPECT` query is not useful but shows how it works: `SELECT (INTROSPECT Ship.name);` which gives us `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets.
+
+Now let's put `name`, `properties` and `links` inside:
+
+```
+SELECT (INTROSPECT Ship) {
+  name,
+  properties,
+  links,
+};
+```
+
+This gives us:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::Ship',
+    properties: {
+      schema::Property {id: 4332bd76-0134-11eb-b20a-777e9cc80030},
+      schema::Property {id: 43379841-0134-11eb-a427-dd28c7eae0ce},
+    },
+    links: {
+      schema::Link {id: 4339bd5f-0134-11eb-bdca-21c31be0f932},
+      schema::Link {id: 43360bf2-0134-11eb-b89c-a1211cb5d40e},
+      schema::Link {id: 43383b6f-0134-11eb-86db-17f19f35ac2f},
+    },
+  },
+}
+```
+
+Just like using `SELECT` on a type, if the output contains another type, property etc. we will just get an id. We will have to specify what we want there as well.
+
+Eventually we end up using this sort of query to get the information we want:
+
+```
+SELECT (INTROSPECT Ship) {
+   name,
+   properties: {
+     name,
+     target: {
+       name
+       }
+ },
+ links: {
+   name,
+ target: {
+   name
+   },
+ },
+};
+```
+
+So what this will give is: 
+
+1) The type name for `Ship`, 
+2) The properties, and their names. But we also use `target`: a `target` is what a property actually is. For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
+3) The links and their names, and the targets to the links...and the names of *their* targets too.
+
+With all that together, we get something readable and useful. The output looks like this:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::Ship',
+    properties: {
+      schema::Property {name: 'id', target: schema::ScalarType {name: 'std::uuid'}},
+      schema::Property {name: 'name', target: schema::ScalarType {name: 'std::str'}},
+    },
+    links: {
+      schema::Link {name: 'crew', target: schema::ObjectType {name: 'default::Crewman'}},
+      schema::Link {name: '__type__', target: schema::ObjectType {name: 'schema::Type'}},
+      schema::Link {name: 'sailors', target: schema::ObjectType {name: 'default::Sailor'}},
+    },
+  },
+}
+```
+
+This type of query seems complex (even in our simple schema it already goes four levels deep) but it really is just built up on top of adding extra details like `{name}` every time you get an output that only a machine can understand.
+
+Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way:
+
+```
+SELECT (INTROSPECT Ship) {
+  name,
+  properties: {name, target: {name}},
+  links: {name, target: {name}},
+};             
+```
