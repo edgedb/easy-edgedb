@@ -2062,4 +2062,39 @@ type MinorVampire extending Person {
 }
 ```
 
-One other thing we can remember to do is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date.
+One other thing we can remember to do is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date. First we will update Lucy with her `last_appearance`:
+
+```
+UPDATE Person filter .name = 'Lucy Westenra'
+  SET {
+  last_appearance := cal::to_local_date(1887,9,20)
+};
+```
+
+Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her. It also includes her strength which is her human strength plus 5.
+
+```
+WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
+INSERT Vampire {
+  name := 'Count Dracula',
+  age := 800,
+  slaves := {
+    (INSERT MinorVampire {
+      name := 'Woman 1',
+  }),
+    (INSERT MinorVampire {
+     name := 'Woman 2',
+  }),
+    (INSERT MinorVampire {
+     name := 'Woman 3',
+  }),
+    (INSERT MinorVampire {
+     name := lucy.name,
+     former_self := lucy,
+     first_appearance := lucy.last_appearance,
+     strength := lucy.strength + 5,
+    }),
+ }
+};
+```
+
