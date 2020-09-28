@@ -100,7 +100,7 @@ Hmm. We can see already that our schema needs some improvement:
 - We have a `Person` type, and a `City` type,
 - The `Person` type has the property `places_visited` which contains the names of the cities, but is not linked to any `City` type. There should be a relationship between these two.
 
-We'll change that in a moment by changing `array<str>` from a property to something called `MULTI LINK` to the `CITY` type which will actually join them together. But first let's look a bit closer at what happens when we use `INSERT`.
+We'll change that in a moment by changing `array<str>` from a property to something called `multi link` to the `City` type which will actually join them together. But first let's look a bit closer at what happens when we use `INSERT`.
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis are just fine: you could create a `City` called '🤠' if you wanted to.
 
@@ -174,7 +174,7 @@ So now the last thing left to do is change the properties for `Person`. Right no
 ```
 type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  multi link places_visited -> City;
 }
 ```
 
@@ -280,7 +280,7 @@ So now this part of the schema looks like this:
 ```
 abstract type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  multi link places_visited -> City;
 }
 type PC extending Person {
   required property transport -> Transport;
@@ -402,7 +402,7 @@ This is a good time to create a `Vampire` type. We can extend it from `abstract 
 ```
 abstract type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  multi link places_visited -> City;
   property age -> int16;
 }
 ```
@@ -497,7 +497,7 @@ First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new 
 ```
 abstract type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  multi link places_visited -> City;
   LINK lover -> Person;
 }
 ```
@@ -570,7 +570,7 @@ We can also put a computable in the type itself.
 ```
 abstract type Person {
   required property name -> str;
-  MULTI LINK places_visited -> City;
+  multi link places_visited -> City;
   property lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
@@ -849,12 +849,12 @@ This prints:
 
 (The concatenation operator works on arrays too, putting them into a single array. So `SELECT ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
 
-Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `MULTI LINK`:
+Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `multi link`:
 
 ```
 type Vampire extending Person {            
   property age -> int16;
-  MULTI LINK slaves -> MinorVampire;
+  multi link slaves -> MinorVampire;
 }
 ```
 
@@ -944,8 +944,8 @@ abstract type Person {
   required property name -> str { ## Add a block
       constraint exclusive;       ## and the constraint
   }
-  MULTI LINK places_visited -> Place;
-  LINK lover -> Person;
+  multi link places_visited -> Place;
+  link lover -> Person;
 }
 ```
 
@@ -1107,8 +1107,8 @@ Then finally a `Ship` type to hold them all.
 ```
 type Ship {
   name -> str;
-  MULTI LINK sailors -> Sailor;
-  MULTI LINK crew -> Crewman;
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
 }
 ```
 
@@ -1278,7 +1278,7 @@ Hmm, it looks like we're doing a lot of work to insert 'London' every time. We h
 ```
 type NPC extending Person {
   property age -> HumanAge;
-  OVERLOADED MULTI LINK places_visited -> Place {
+  overloaded multi link places_visited -> Place {
     default := (SELECT City FILTER .name = 'London');
   }
 }
@@ -1639,8 +1639,8 @@ type Event {
   required property description -> str;
   required property start_time -> cal::local_datetime;
   required property end_time -> cal::local_datetime;
-  required MULTI LINK place -> Place;
-  REQUIRED MULTI LINK people -> Person;
+  required multi link place -> Place;
+  required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east_west -> EastWest;
   property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ <str>.east_west;
