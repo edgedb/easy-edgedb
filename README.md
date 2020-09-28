@@ -2098,3 +2098,20 @@ INSERT Vampire {
 };
 ```
 
+With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects in the database:
+
+```
+SELECT MinorVampire {
+  name,
+  strength,
+  first_appearance,
+} FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;
+```
+
+This gives us:
+
+```
+{default::MinorVampire {name: 'Lucy Westenra', strength: 7, first_appearance: <cal::local_date>'1887-09-20'}}
+```
+
+We could have just gone with `FILTER.name IN Person.name` but two filters is better if we have more and more characters later on. And if necessary we could switch to `cal::local_datetime` instead of `cal::local_date` to make sure that we have the exact time down to the minute. But for our book, we won't need to get that precise.
