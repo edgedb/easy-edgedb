@@ -786,6 +786,8 @@ Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types
 
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated. For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
+And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
+
 [Here is all our code so far up to Chapter 5.](chapter_5_code.md)
 
 # Chapter 6 - Still no escape
@@ -2111,7 +2113,77 @@ SELECT MinorVampire {
 This gives us:
 
 ```
-{default::MinorVampire {name: 'Lucy Westenra', strength: 7, first_appearance: <cal::local_date>'1887-09-20'}}
+{
+  Object {
+    name: 'Lucy Westenra',
+    strength: 7,
+    first_appearance: <cal::local_date>'1887-09-20',
+  },
+}
 ```
 
 We could have just gone with `FILTER.name IN Person.name` but two filters is better if we have more and more characters later on. And if necessary we could switch to `cal::local_datetime` instead of `cal::local_date` to make sure that we have the exact time down to the minute. But for our book, we won't need to get that precise.
+
+Without too much new to add, let's look at some tips for making queries.
+
+- `DISTINCT`
+
+Use this after `SELECT` to get only results that are not duplicates. Right now if we look at all the strength values for our `Person` objects with `SELECT Person.strength;` we get something like this:
+
+```
+{5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 7, 5}
+```
+
+Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 4, 5, 7, 10}`.
+
+- Getting __type__ all the time
+
+You will remember that we can use `__type__` to get the types of objects in a query, and that `__type__` always has `.name` that we can access to get the actual name (otherwise we will only get the uuid). We can use this to look at the type names inside `Person`:
+
+```
+{
+  Object {name: 'default::Person'},
+  Object {name: 'default::MinorVampire'},
+  Object {name: 'default::Vampire'},
+  Object {name: 'default::NPC'},
+  Object {name: 'default::PC'},
+  Object {name: 'default::Crewman'},
+  Object {name: 'default::Sailor'},
+}
+```
+
+Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy Westenra`:
+
+```
+Select Person {
+  __type__: {
+  name
+  },
+name
+} filter .name = 'Lucy Westenra';
+```
+
+This shows us the objects that match, and of course they are `NPC` and `MinorVampire`.
+
+```
+{
+  Object {__type__: Object {name: 'default::NPC'}, name: 'Lucy Westenra'},
+  Object {__type__: Object {name: 'default::MinorVampire'}, name: 'Lucy Westenra'},
+}
+```
+
+But if you want to always get the type when you make a query, you can also just use `\set introspect-types on` to do it. Once you type that, you'll always see the type instead of `Object`. Now even a simple search like this will give us the type:
+
+```
+SELECT Person 
+  {
+name
+} FILTER .name = 'Lucy Westenra';
+```
+
+Here's the output:
+
+```
+{default::NPC {name: 'Lucy Westenra'}, default::MinorVampire {name: 'Lucy Westenra'}}
+```
+
