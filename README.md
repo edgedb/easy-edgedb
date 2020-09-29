@@ -2288,3 +2288,119 @@ SELECT (INTROSPECT Ship) {
   links: {name, target: {name}},
 };             
 ```
+
+# Chapter 14 - Jonathan Harker returns
+
+> Finally there is some good news. Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina thinks that Lucy is still alive and sends her a letter that is never opened. Meanwhile, the men find vampire Lucy in a graveyard. Arthur finally believes Van Helsing and the rest also now believe that vampires are real. They manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
+
+So we have a new city called Exeter, and adding it is of course easy. Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can be called `title` or `description`. Let's use `description`:
+
+```
+type City extending Place {
+  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  property population -> int64;
+}
+```
+
+Now we can do an `INTROSPECT` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
+
+```
+SELECT (INTROSPECT City) {
+  name,
+  properties: {name},
+  annotations: {name}
+};
+```
+
+Uh oh, not quite:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::City',
+    properties: {
+      schema::Property {name: 'id'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'name'},
+      schema::Property {name: 'population'},
+    },
+    annotations: {schema::Annotation {name: 'std::description'}},
+  },
+}
+```
+
+Ah, of course: the `annotations: {name}` part returns the name of the type, which is `std::description`. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+
+```
+SELECT (INTROSPECT City) {
+ name,
+ properties: {name},
+ annotations: {
+   name,
+   @value
+  }
+};
+```
+
+Now we see the actual annotation:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::City',
+    properties: {
+      schema::Property {name: 'id'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'name'},
+      schema::Property {name: 'population'},
+    },
+    annotations: {
+      schema::Annotation {
+        name: 'std::description',
+        @value: 'Anything with 50 or more buildings is a city - anything else is an OtherPlace',
+      },
+    },
+  },
+}
+```
+
+
+What if we want an annotation with a different name besides `title` and `description`? That's easy, just use `abstract annotation` and give it a name. We want to add a warning so that's what we'll call it:
+
+```
+abstract annotation warning;
+```
+
+We'll imagine that it is important to know not to use `OtherPlace` for `Castle` types. Now `OtherPlace` has the following two annotations:
+
+```
+type OtherPlace extending Place {
+  annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
+  annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
+}
+```
+
+Now let's do an introspect query on just its name and annotations:
+
+```
+SELECT (INTROSPECT OtherPlace) {
+  name,
+  annotations: {name, @value}
+};
+```
+
+And here it is:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::OtherPlace',
+    annotations: {
+      schema::Annotation {name: 'std::description', @value: 'A place with under 50 buildings - hamlets, small villages, etc.'},
+      schema::Annotation {name: 'default::warning', @value: 'Castles and castle towns count! Use the Castle type for that'},
+    },
+  },
+}
+```
