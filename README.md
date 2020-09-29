@@ -2073,7 +2073,7 @@ UPDATE Person filter .name = 'Lucy Westenra'
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her. It also includes her strength which is her human strength plus 5.
+Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her, a much better method than manually inserting all the information. It also includes her strength which is her human strength plus 5.
 
 ```
 WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
@@ -2293,7 +2293,9 @@ SELECT (INTROSPECT Ship) {
 
 > Finally there is some good news. Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina thinks that Lucy is still alive and sends her a letter that is never opened. Meanwhile, the men find vampire Lucy in a graveyard. Arthur finally believes Van Helsing and the rest also now believe that vampires are real. They manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
 
-So we have a new city called Exeter, and adding it is of course easy. Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can be called `title` or `description`. Let's use `description`:
+So we have a new city called Exeter, and adding it is of course easy: `INSERT City {name := 'Exeter', population := 40000};`. It doesn't have a `modern_name` that is different from the one in the book either.
+
+Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can be called `title` or `description`. Let's use `description`:
 
 ```
 type City extending Place {
