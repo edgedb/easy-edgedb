@@ -2417,3 +2417,100 @@ And here it is:
 }
 ```
 
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called `enumerate()` that gives tuples of the index and the property that we choose. For example, if we use `SELECT enumerate(Person.name);` then we get this:
+
+```
+{
+  (0, 'Renfield'),
+  (1, 'The innkeeper'),
+  (2, 'Mina Murray'),
+  (3, 'John Seward'),
+  (4, 'Quincey Morris'),
+  (5, 'Lucy Westenra'),
+  (6, 'Arthur Holmwood'),
+  (7, 'Abraham Van Helsing'),
+  (8, 'Jonathan Harker'),
+  (9, 'The Captain'),
+  (10, 'The First Mate'),
+  (11, 'The Second Mate'),
+  (12, 'The Cook'),
+  (13, 'Emil Sinclair'),
+  (14, 'Count Dracula'),
+  (15, 'Woman 1'),
+  (16, 'Woman 2'),
+  (17, 'Woman 3'),
+}
+```
+
+18! Oh, that's right: the `Crewman` objects don't have a name. We could of course try something fancy like this:
+
+```
+WITH 
+  a := array_agg((SELECT enumerate(Person.name))),
+  b:= array_agg((SELECT enumerate(Crewman.number))),
+  SELECT (a, b);
+```
+
+(`array_agg()` is to avoid multiplying sets by sets)
+
+But the result is less than satisfying:
+
+```
+{
+  (
+    [
+      (0, 'Renfield'),
+      (1, 'The innkeeper'),
+      (2, 'Mina Murray'),
+      (3, 'John Seward'),
+      (4, 'Quincey Morris'),
+      (5, 'Lucy Westenra'),
+      (6, 'Arthur Holmwood'),
+      (7, 'Abraham Van Helsing'),
+      (8, 'Jonathan Harker'),
+      (9, 'The Captain'),
+      (10, 'The First Mate'),
+      (11, 'The Second Mate'),
+      (12, 'The Cook'),
+      (13, 'Emil Sinclair'),
+      (14, 'Count Dracula'),
+      (15, 'Woman 1'),
+      (16, 'Woman 2'),
+      (17, 'Woman 3'),
+    ],
+    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)],
+  ),
+}
+```
+
+Especially the `Crewman` types who are now just numbers. Better to give them names based on the numbers. This will be easy:
+
+```
+UPDATE Crewman
+  SET {
+    name := 'Crewman ' ++ <str>.number
+};
+```
+
+So now we can see if they are dead or not. We'll compare a `cal::local_date` we input to `last_appearance` and if it's greater, then they are dead.
+
+```
+WITH p := (SELECT Person),
+  date := <cal::local_date>'1887-08-16',
+  SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));  
+```
+
+Here is the output:
+
+```
+{
+  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1888-08-16? true'),
+  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+}
+```
+
+We could of course turn this into a function if we use it enough.
