@@ -1332,6 +1332,16 @@ And we see them all connected to Lucy now:
 }
 ```
 
+By the way, now we can use this to insert our five `Crewman` types inside one `INSERT` instead of five. We'll change it to this now:
+
+```
+FOR n IN {1, 2, 3, 4, 5}
+  UNION (
+  INSERT Crewman {
+  number := n
+});
+```
+
 Now it's time to update Lucy with three lovers. But `LINK lover` in the `Person` type isn't set as MULTI so we'll have to change that. With this change made, we  can update Lucy:
 
 ```
@@ -2406,3 +2416,4 @@ And here it is:
   },
 }
 ```
+
