@@ -2399,7 +2399,7 @@ And here it is:
     name: 'default::OtherPlace',
     annotations: {
       schema::Annotation {name: 'std::description', @value: 'A place with under 50 buildings - hamlets, small villages, etc.'},
-      schema::Annotation {name: 'default::warning', @value: 'Castles and castle towns count! Use the Castle type for that'},
+      schema::Annotation {name: 'default::warning', @value: 'Castles and castle towns do not count! Use the Castle type for that'},
     },
   },
 }
