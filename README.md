@@ -2494,3 +2494,33 @@ Here is the output:
 ```
 
 We could of course turn this into a function if we use it enough.
+
+# Chapter 15 - Time to start vampire hunting
+
+> Jonathan meets with Van Helsing who tells him than his experience with Dracula was real and not a crazy dream. Jonathan becomes strong and confident again and they begin to search for Dracula. It turns out that the house called Carfax which Dracula bought is located right across from the hospital where Renfield lives and Dr. Seward works. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them anymore, but there are still many left. If they don't find and destroy the boxes, Dracula will be able to run away and rest at night and continue to terrorize London.
+
+
+
+# Chapter 16 - Is Renfield telling the truth?
+
+> Van Helsing meets with Renfield, and is surprised: Renfield one day turns out to be very educated and well-spoken, and knows all about Van Helsing's research. The next day, Renfield just doesn't want to talk to him and calls him an idiot. Arthur Holmwood's father has died, and now Arthur becomes the head of the house and is called Lord Godalming. He helps the team with his money to find the houses where Dracula has hidden his boxes. One night, Renfield tells Van Helsing and Dr. Seward to please trust him and let him leave. They won't let him, and he finally says: “Remember, later on, that I did what I could to convince you tonight.”
+
+
+# Chapter 17 - Poor Renfield. Poor Mina.
+
+> It turns out that Renfield was right. Dracula found out about the boxes and decided to attack Mina that night. He succeeds, and Mina is now slowly turning into a vampire (though she is still human). The group finds Renfield in a pool of blood, and dying. Renfield tells them that he thought Dracula would help him become a vampire too, but when Dracula ignored him and asked him to help get into Mina's room, he attacked Dracula to try to stop him from hurting Mina. Dracula, of course, was much stronger and won. Van Helsing does not give up though. If Mina is now connected to Dracula, what happens if he uses hypnotism on her? Could that work?
+
+
+# Chapter 18 - Using Dracula's own weapon against him
+
+> Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive. All of a sudden Dracula runs into the house and attacks. Jonathan strikes with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window, saying "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+
+# Chapter 19 - Dracula flees back to Transylvania
+
+> Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mine) goes to Castle Dracula, while the other team goes to Varna to try to catch the ship when it arrives. Jonathan Harker does nothing but sharpen his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
+
+# Chapter 20 - The final battle
+
+> Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and tells her to wait outside, then goes inside and destroyes the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down, and Dracula opens his eyes with a look of triumph.
+
+This is almost the end of the book, but we won't spoil the final ending. If you want to read it now, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
