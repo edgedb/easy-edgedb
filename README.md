@@ -2495,6 +2495,47 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
+Finally, let's look at how to follow links in reverse direction. We know how to get Count Dracula's `slaves` by name with something like this:
+
+```
+SELECT Vampire {
+ name,
+ slaves: {name}
+};
+```
+
+That shows us the following:
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    slaves: {
+      default::MinorVampire {name: 'Woman 1'},
+      default::MinorVampire {name: 'Woman 2'},
+      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Lucy Westenra'},
+    },
+  },
+}
+```
+
+But what if we are doing the opposite and starting from `SELECT MinorVampire` and want to know about the `Vampire` type connected to it? Then we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`. All together, it looks like this:
+
+```
+SELECT MinorVampire.<slaves[IS Vampire] {
+  name, 
+  age
+  };
+```
+
+Because it goes in reverse order, it is selecting the `Vampire` type with `.slaves` that are of type `MinorVampire`. Here is the output:
+
+```
+{default::Vampire {name: 'Count Dracula', age: 800}}
+```
+
+
 # Chapter 15 - Time to start vampire hunting
 
 > Jonathan meets with Van Helsing who tells him than his experience with Dracula was real and not a crazy dream. Jonathan becomes strong and confident again and they begin to search for Dracula. It turns out that the house called Carfax which Dracula bought is located right across from the hospital where Renfield lives and Dr. Seward works. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them anymore, but there are still many left. If they don't find and destroy the boxes, Dracula will be able to run away and rest at night and continue to terrorize London.
