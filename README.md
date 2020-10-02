@@ -2540,7 +2540,71 @@ Because it goes in reverse order, it is selecting the `Vampire` type with `.slav
 
 > Jonathan meets with Van Helsing who tells him than his experience with Dracula was real and not a crazy dream. Jonathan becomes strong and confident again and they begin to search for Dracula. It turns out that the house called Carfax which Dracula bought is located right across from the hospital where Renfield lives and Dr. Seward works. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them anymore, but there are still many left. If they don't find and destroy the boxes, Dracula will be able to run away and rest at night and continue to terrorize London.
 
+This chapter we learned something interesting about vampires: they need coffins (boxes for dead people) with holy earth to rest in during the day. Dracula brought 50 of them over by ship so that he could always have a place to hide and rest in London so he could terrorize the people. This is important for the mechanics of our game so we should create a type for this:
 
+```
+abstract type HasCoffins {
+  property coffins -> int16 {
+    default := 0;
+  }
+}
+```
+
+Most places will not have a special vampire coffin, so the default is 0. `coffins` is just an `int16` because we want vampires to be close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because a horse-driven carriage can go about 25 kph, and a vampire can probably only go about 4 hours away from their coffins before they start to get nervous about getting home before the sun rises.
+
+We will want to have a lot of types `extending` this. First with `Place` we can extend it for all types including `City`, `OtherPlace`, etc.:
+
+```
+abstract type Place extending HasCoffins {
+  required property name -> str {
+    constraint exclusive;
+};
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
+And we had Dracula's coffins on the ship so we'll extend for `Ship` as well.
+
+```
+type Ship extending HasCoffins {
+  property name -> str;
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
+```
+
+If we want, we can now make a quick function to test whether a `Vampire` can enter a place:
+
+```
+function can_enter(name: str, place: HasCoffins) -> str
+  using EdgeQL $$
+    with vampire := (SELECT Vampire filter .name = name)
+    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+        $$;   
+```
+
+Then we'll give London some coffins, 50 for now. Some get destroyed in this chapter but anything over 1 is fine for a vampire so it doesn't matter.
+
+```
+UPDATE City filter .name = 'London'
+  SET {
+    coffins := 50
+ };
+```
+
+Then calling up our function:
+
+```
+SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
+``` 
+
+We get `{'Count Dracula can enter.'}`.
+
+Some other options for improvement later on are:
+
+- Move `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string, which the function would use to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
+- Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, the function would just remind us that `vampire.name` is dead already and won't be entering anywhere.
 
 # Chapter 16 - Is Renfield telling the truth?
 
