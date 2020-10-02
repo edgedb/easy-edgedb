@@ -1275,7 +1275,7 @@ INSERT NPC {
 };
 ```
 
-Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. Let's make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `OVERLOADED`. `OVERLOADED` is because we are changing what we inherited from `Person`, and need to specify that.
+Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. Let's make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. `overloaded` is because we are changing what we inherited from `Person`, and need to specify that.
 
 ```
 type NPC extending Person {
@@ -2574,12 +2574,12 @@ type Ship extending HasCoffins {
 }
 ```
 
-If we want, we can now make a quick function to test whether a `Vampire` can enter a place:
+If we want, we can now make a quick function to test whether a vampire can enter a place:
 
 ```
 function can_enter(name: str, place: HasCoffins) -> str
   using EdgeQL $$
-    with vampire := (SELECT Vampire filter .name = name)
+    with vampire := (SELECT Person filter .name = name)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
         $$;   
 ```
@@ -2605,6 +2605,24 @@ Some other options for improvement later on are:
 
 - Move `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string, which the function would use to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
 - Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, the function would just remind us that `vampire.name` is dead already and won't be entering anywhere.
+- Change the function `can_enter()` to take a vampire type instead of `Person`. Right now both `Vampire` and `MinorVampire` just extend `Person`, so our function needs to trust that the user is entering a string for a name of a vampire.
+
+## Constraints
+
+Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) we can use as well. There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That will be good for our `PC` type, which we created but have only used once because we are still just using the Dracula book to populate a database. But `max_len_value()` will definitely be needed for `PC`. We'll change it to look like this:
+
+```
+type PC extending Person {
+  required property transport -> Transport;
+  overloaded required property name -> str {
+    constraint max_len_value(30);
+  }
+}
+```
+
+And now when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
+
+One particularly flexible constraint is called `expression on`, which lets us add an expression.
 
 # Chapter 16 - Is Renfield telling the truth?
 
