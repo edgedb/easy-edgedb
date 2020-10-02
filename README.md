@@ -2544,7 +2544,7 @@ This chapter we learned something interesting about vampires: they need coffins 
 
 ```
 abstract type HasCoffins {
-  property coffins -> int16 {
+  required property coffins -> int16 {
     default := 0;
   }
 }
@@ -2577,9 +2577,9 @@ type Ship extending HasCoffins {
 If we want, we can now make a quick function to test whether a vampire can enter a place:
 
 ```
-function can_enter(name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> str
   using EdgeQL $$
-    with vampire := (SELECT Person filter .name = name)
+    with vampire := (SELECT Person filter .name = person_name LIMIT 1)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
         $$;   
 ```
@@ -2622,7 +2622,61 @@ type PC extending Person {
 
 And now when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
 
-One particularly flexible constraint is called `expression on`, which lets us add an expression.
+One particularly flexible constraint is called `expression on`, which lets us add any expression we want (in brackets). Let's say we need a type `Lord` for some reason later on. We can constrain the type to make sure that its `name` always contains the string `Lord`. We can write it like this:
+
+```
+type Lord extending Person {
+  constraint expression on (
+    contains(__subject__.name, 'Lord') = true
+    );
+}
+```
+
+`__subject__` there refers to the type itself.
+
+Now when we try to insert a `Lord` without it, it won't work:
+
+```
+INSERT Lord {
+  name := 'Billy'
+  # Other stuff..
+};
+```
+
+Now let's try it with the word `Lord` inside. Let's do a `SELECT` and `INSERT` at the same time for this so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy has visited every place in our database.
+
+```
+SELECT (
+ INSERT Lord {
+ name := 'Lord Billy',
+ places_visited := (SELECT Place),
+ }) {
+ name,
+ places_visited: {
+   name
+   }
+ };
+ ```
+ 
+Now that `.name` contains the substring `Lord`, it works like a charm:
+
+```
+{
+  default::Lord {
+    name: 'Lord Billy',
+    places_visited: {
+      default::Castle {name: 'Castle Dracula'},
+      default::City {name: 'Whitby'},
+      default::City {name: 'Munich'},
+      default::City {name: 'Buda-Pesth'},
+      default::City {name: 'Bistritz'},
+      default::City {name: 'London'},
+      default::Country {name: 'Romania'},
+      default::Country {name: 'Slovakia'},
+    },
+  },
+}
+```
 
 # Chapter 16 - Is Renfield telling the truth?
 
