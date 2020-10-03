@@ -2680,8 +2680,62 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 # Chapter 16 - Is Renfield telling the truth?
 
-> Van Helsing meets with Renfield, and is surprised: Renfield one day turns out to be very educated and well-spoken, and knows all about Van Helsing's research. The next day, Renfield just doesn't want to talk to him and calls him an idiot. Arthur Holmwood's father has died, and now Arthur becomes the head of the house and is called Lord Godalming. He helps the team with his money to find the houses where Dracula has hidden his boxes. One night, Renfield tells Van Helsing and Dr. Seward to please trust him and let him leave. They won't let him, and he finally says: “Remember, later on, that I did what I could to convince you tonight.”
+> Van Helsing meets with Renfield, and is surprised: Renfield one day turns out to be very educated and well-spoken, and knows all about Van Helsing's research. But the next day, Renfield doesn't want to talk to him and calls him an idiot. Arthur Holmwood's father has died, and now Arthur is the head of the house and is called Lord Godalming. He helps the team with his money to find the houses where Dracula has hidden his boxes. One night, Renfield tells Van Helsing and Dr. Seward to please trust him and let him leave. They won't let him, and he finally says: “Remember, later on, that I did what I could to convince you tonight.”
 
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Instead, we could make a type that holds a date and strings from the book for us to search through later. Let's call it `BookExcerpt` (= part of a book).
+
+```
+  type BookExcerpt {
+    required property date -> cal::local_datetime;
+    required property excerpt -> string;
+    index on (.excerpt);
+    required link author -> Person
+}
+```
+
+The `index on (.exerpt)` part is new, and means to create an index to make future queries faster. We could do this for certain other types too, and might for types like `Place` and `Person`. `index` is good in limited quantities, and you don't want to index everything: 
+
+- It makes the queries faster, but increases the database size.
+- This may make `insert`s and `update`s slower if you have too many.
+
+This is maybe not surprising: if `index` were good to have for every property and every link on every type, EdgeDB would just do it automatically for everything.
+
+Fortunately, the book Dracula is written from the point of view of everyone's letters so each one has a date and an author. The string in these entries are very long so we will only include the beginning and the end:
+
+```
+INSERT BookExcerpt {
+  date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
+  author := (SELECT Person FILTER .name = 'John Seward' LIMIT 1),
+  excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
+};
+```
+
+```
+INSERT BookExcerpt {
+  date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
+  author := (SELECT Person FILTER .name = 'Jonathan Harker' LIMIT 1),
+  excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
+};
+```
+
+Then later on we could do something like the following if we want all the entries in order and turned into JSON.
+
+```
+SELECT <json>(SELECT BookExcerpt {
+  date,
+  author: {name},
+  excerpt
+} ORDER BY .date);
+```
+
+Output with exerpts snipped:
+
+```
+{
+  "{\"date\": \"1887-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward\'s Diary.\\n 1 October, 4 a.m... -- Just as we were about to leave the house...\\\"\"}",
+  "{\"date\": \"1887-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search...\"}",
+}
+```
 
 # Chapter 17 - Poor Renfield. Poor Mina.
 
