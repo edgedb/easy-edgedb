@@ -2822,6 +2822,36 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 > It turns out that Renfield was right. Dracula found out about the boxes and decided to attack Mina that night. He succeeds, and Mina is now slowly turning into a vampire (though she is still human). The group finds Renfield in a pool of blood, and dying. Renfield tells them that he thought Dracula would help him become a vampire too, but when Dracula ignored him and asked him to help get into Mina's room, he attacked Dracula to try to stop him from hurting Mina. Dracula, of course, was much stronger and won. Van Helsing does not give up though. If Mina is now connected to Dracula, what happens if he uses hypnotism on her? Could that work?
 
+Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, Person)` as input. Let's give it Dracula and Renfield:
+
+```
+WITH 
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+  renfield := (SELECT Person FILTER .name = 'Renfield'),
+SELECT fight(dracula, renfield);
+```
+
+The output is of course `{'Count Dracula wins!'}`.
+
+One other way to do the same query is with a single tuple, which we then put into the function:
+
+```
+WITH fighters := (
+  (SELECT Person FILTER .name = 'Count Dracula'), (SELECT Person FILTER .name = 'Renfield')
+  ),
+  SELECT fight(fighters.0, fighters.1);
+```
+
+That's not bad, but if we wanted to, we could also give names to the items in the tuple instead of using `.0` and `.1`. It looks like this:
+
+```
+WITH fighters := (
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'), 
+  renfield := (SELECT Person FILTER .name = 'Renfield')),
+  SELECT fight(fighters.dracula, fighters.renfield);
+```
+
+
 
 # Chapter 18 - Using Dracula's own weapon against him
 
