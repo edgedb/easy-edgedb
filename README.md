@@ -1380,6 +1380,25 @@ And this does indeed print her out with her three lovers.
 }
 ```
 
+Also, now that we know the keyword `overloaded`, we can remove our `HumanAge` type. Right now it looks like this:
+
+```
+scalar type HumanAge extending int16 {
+      constraint max_value(120);
+}
+```
+
+You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can move `age` over to the `Person` type, and just use `overloaded` to add a constraint on it for the `NPC` type.
+
+That lets us delete it from `Vampire` too:
+
+```
+type Vampire extending Person {    
+  # property age -> int16; **Delete this one now**
+  MULTI LINK slaves -> MinorVampire;
+}
+```
+
 Okay, let's read the rest of the introduction about Lucy:
 
 >...She chooses to marry Arthur Holmwood, and says sorry to the other two. Fortunately, the three men become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a Renfield, a man who believes that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
