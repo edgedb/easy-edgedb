@@ -1526,7 +1526,7 @@ for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
 
 So it sends each tuple into the FOR loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
 
-Now that we have some numbers, we can do some math on them. Here we order them by population:
+Now that we have some numbers, we can do some math on them. Here we order them by population with `ORDER BY`:
 
 ```
 SELECT City {
@@ -2865,6 +2865,22 @@ The output is:
 ```
 {('Woman 1', 'Lucy Westenra'), ('Woman 2', 'Lucy Westenra'), ('Woman 3', 'Lucy Westenra')}
 ```
+
+Now we need to give Renfield a `last_appearance` with an update. Let's do a fancy one again where we can select the update we just made and display that information:
+
+```
+SELECT ( # Put the whole update inside
+  UPDATE NPC filter .name = 'Renfield'
+    SET {
+  last_appearance := <cal::local_date>'1887-10-03'
+}) # then use it to call up name and last_appearance
+  {
+  name, 
+  last_appearance
+  };
+```
+
+This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
 
 
 
