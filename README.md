@@ -2851,6 +2851,21 @@ WITH fighters := (
   SELECT fight(fighters.dracula, fighters.renfield);
 ```
 
+Here's one more example of a named tuple:
+
+```
+WITH minor_vampires := (
+  women := (SELECT MinorVampire FILTER .name LIKE '%Woman%'), 
+  lucy := (SELECT MinorVampire FILTER .name LIKE '%Lucy%')),
+SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
+```
+
+The output is:
+
+```
+{('Woman 1', 'Lucy Westenra'), ('Woman 2', 'Lucy Westenra'), ('Woman 3', 'Lucy Westenra')}
+```
+
 
 
 # Chapter 18 - Using Dracula's own weapon against him
