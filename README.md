@@ -2639,7 +2639,7 @@ type PC extending Person {
 }
 ```
 
-And now when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
+Then when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
 
 One particularly flexible constraint is called `expression on`, which lets us add any expression we want (in brackets). Let's say we need a type `Lord` for some reason later on. We can constrain the type to make sure that its `name` always contains the string `Lord`. We can write it like this:
 
