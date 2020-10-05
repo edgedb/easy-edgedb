@@ -1300,7 +1300,19 @@ type NPC extending Person {
 }
 ```
 
-So now we can enter all three of our new characters at the same time. To do this we can use a `FOR` loop, followed by the keyword `UNION`. After `FOR` we choose the variable name to use in the later part of the query.
+So now we can enter all three of our new characters at the same time. To do this we can use a `FOR` loop, followed by the keyword `UNION`. 
+
+`UNION` is because it is the keyword used to join sets together. For example, this query:
+
+```
+WITH city_names := (SELECT City.name),
+  castle_names := (SELECT Castle.name),
+  SELECT city_names UNION castle_names;
+```
+
+joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
+
+Back to the `FOR` loop: after `FOR` we choose the variable name to use in the later part of the query.
 
 ```
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
@@ -1516,7 +1528,9 @@ This prints from index 2 up to 2 indexes away from the end:
 }
 ```
 
-So that's how indexing and slicing works for every type except tuples, which use `()`. Tuples are different because they are more like individual object types with fields. This lets tuples hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything. So this is completely fine:
+So that's how indexing and slicing works for every type except tuples, which use `()`. Tuples are different because they are more like individual object types with fields. This lets tuples hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+
+So this is completely fine:
 
 ```
 SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
