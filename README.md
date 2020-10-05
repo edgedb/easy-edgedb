@@ -560,7 +560,7 @@ This gives us:
   Object {name: 'Jonathan Harker', lover: 'Mina Murray'},
 ```
 
-But we don't want to have to read every line ourselves - we just want `true` or `false`. Now we'll add the computable to the query:
+But we don't want to have to read every line ourselves - we just want `true` or `false`. Now we'll add the computable to the query, using `EXISTS`. Because there is no null in EdgeDB, `EXISTS` gives `{false}` if it returns an empty set and `{true}` otherwise:
 
 ```
 select Person {
