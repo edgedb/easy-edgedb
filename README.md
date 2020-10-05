@@ -2929,6 +2929,69 @@ SELECT ( # Put the whole update inside
 
 This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
 
+It would be cool right now to create a quick function to change the number of coffins in a place: we could write something like `change_coffins('London', -13)` to reduce it by 13, for example. But the problem right now is this: 
+
+- the `HasCoffins` type is an abstract type, with one property: `coffins`
+- places that can have coffins are `Place` and all the types from it, plus `Ship`,
+- the best way to filter is by `.name`, but `HasCoffins` doesn't have this property.
+
+So maybe we can turn this type into something else called `HasNameAndCoffins`. We can put the `name` and `coffins` properties inside there. This won't be a problem because in our game, every place needs a name and a number of coffins. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises.
+
+Here is the type with its new property. We'll give it two constraints: `exclusive` and `max_len_value` to keep names from being too long.
+
+```
+  abstract type HasNameAndCoffins {
+    required property coffins -> int16 {
+      default := 0;
+  }
+  required property name -> str {
+      constraint exclusive;
+      constraint max_len_value(30);
+  }
+}
+```
+
+So now we can change our `Ship` type (notice that we removed `name`)
+
+```
+    type Ship extending HasNameAndCoffins {
+        multi link sailors -> Sailor;
+        multi link crew -> Crewman;
+    }
+```
+
+And the `Place` type. It's much simpler now.
+
+```
+abstract type Place extending HasNameAndCoffins {
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
+Finally, we can change our `can_enter()` function. This one needed a `HasCoffins` type before: 
+
+```
+    function can_enter(person_name: str, place: HasCoffins) -> str
+      using EdgeQL $$
+        with vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
+        SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+            $$;   
+```
+
+But now that `HasNameAndCoffins` holds `name`, we can just have the user enter a string. We'll change it to this:
+
+```
+function can_enter(person_name: str, place: str) -> str
+  using EdgeQL $$
+  with 
+    vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
+    place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
+    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    $$;   
+```
+
+And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'` - Dracula didn't bring any coffins there.
 
 
 # Chapter 18 - Using Dracula's own weapon against him
