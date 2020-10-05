@@ -104,6 +104,20 @@ We'll change that in a moment by changing `array<str>` from a property to someth
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis are just fine: you could create a `City` called '🤠' if you wanted to.
 
+EdgeDB also has a byte literal type that lets you get the bytes of a string, but in this case it must be a character that is 1 byte long. You create it by adding a `b` in front of the string:
+
+```
+SELECT b'Bistritz';
+{b'Bistritz'}
+```
+
+But because the characters must be 1 byte long, only ASCII works for this type. So the name in `modern_name` will generate an error:
+
+```
+SELECT b'Bistrița';
+error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
+```
+
 Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the unique number for the item. It will look like this:
 
 ```
