@@ -2993,6 +2993,34 @@ function can_enter(person_name: str, place: str) -> str
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'` - Dracula didn't bring any coffins there.
 
+Finally, we can make our `change_coffins` function. It's easy:
+
+```
+    function change_coffins(place_name: str, number: int16) -> HasNameAndCoffins
+       using EdgeQL $$
+         UPDATE HasNameAndCoffins FILTER .name = place_name
+         SET {
+           coffins := .coffins + number
+         }
+      $$
+```
+
+Now let's give the ship `The Demeter` some coffins.
+
+```
+SELECT change_coffins('The Demeter', <int16>10);
+```
+
+Then we'll make sure that it got them:
+
+```
+ SELECT Ship {
+  name,
+  coffins,
+};
+```
+
+We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
 
 # Chapter 18 - Using Dracula's own weapon against him
 
