@@ -3102,6 +3102,53 @@ He has this many:
 
 `{default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}`
 
+We know that Arthur has pretty much unlimited money, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
+
+Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but the last one in these signatures:
+
+```
+std::round(value: int64) -> float64
+std::round(value: float64) -> float64
+std::round(value: bigint) -> bigint
+std::round(value: decimal) -> decimal
+std::round(value: decimal, d: int64) -> decimal
+```
+
+The `d: int64` part is the number of decimal places we want to give it.
+
+All together, it looks like this:
+
+```
+SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+  UNION (
+    INSERT Pound {
+      owner := (SELECT Person FILTER .name = character LIMIT 1),
+      major_amount := (SELECT(round(random() * 500))),
+      minor_amount := (SELECT(round(random() * 100))),
+      sub_minor_amount := (SELECT(round(random() * 500)))
+  })) {
+ owner: {
+   name
+  },
+ pounds := .major_amount,
+ shillings := .minor_amount,
+ pence := .sub_minor_amount,
+ total_pounds := (SELECT
+    (round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)))
+ };
+```
+
+And then it will give a result similar to this with our collections of money, each with an owner:
+
+```
+{
+  default::Pound {owner: default::NPC {name: 'Jonathan Harker'}, pounds: 54, shillings: 100, pence: 256, total_pounds: 60.07n},
+  default::Pound {owner: default::NPC {name: 'Mina Murray'}, pounds: 360, shillings: 77, pence: 397, total_pounds: 365.50n},
+  default::Pound {owner: default::NPC {name: 'The innkeeper'}, pounds: 87, shillings: 36, pence: 23, total_pounds: 88.90n},
+  default::Pound {owner: default::PC {name: 'Emil Sinclair'}, pounds: 427, shillings: 19, pence: 88, total_pounds: 428.32n},
+}
+```
+
 We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
 
 First, we have two inserts here where we could only have one.
