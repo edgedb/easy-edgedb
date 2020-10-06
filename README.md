@@ -3026,6 +3026,73 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 > Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive. All of a sudden Dracula runs into the house and attacks. Jonathan strikes with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window, saying "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
+This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. We should create an `abstract type Currency` that we can use for all of these types of money.
+
+Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was 20 shillings to one pound, and 12 pence to one shilling. To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` and its extension `Pound` will look like this:
+
+```
+    abstract type Currency {
+        required link owner -> Person;
+        required property major -> str;
+        required property major_amount -> float64 {
+            default := 0
+        }
+        required property minor -> str;
+        required property minor_amount -> float64 {
+            default := 0
+        }
+        required property minor_conversion -> int64;
+        
+        property sub_minor -> str;
+        property sub_minor_amount -> float64 {
+            default := 0
+        }
+        property sub_minor_conversion -> int64;
+    }
+
+    type Pound extending Currency {
+        overloaded required property major {
+            default := 'pound'
+        }
+        overloaded required property minor { 
+            default := 'shilling'
+        }
+        overloaded required property minor_conversion {
+            default := 20
+        }
+        overloaded property sub_minor { 
+            default := 'pence'
+        }
+        overloaded property sub_minor_conversion {
+            default := 240
+        }
+    }
+```
+
+Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money.
+
+```
+INSERT Pound {
+ owner := (SELECT Person filter .name = 'Count Dracula'),
+   major_amount := 2500,
+   minor_amount := 50,
+   sub_minor_amount := 200
+};
+```
+
+Then we can use the conversion rates to display the total amount he owns in pounds:
+
+```
+SELECT Currency {
+  owner: {name},
+  total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
+};
+```
+
+He has this many:
+
+`{default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}`
+
 We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
 
 First, we have two inserts here where we could only have one.
