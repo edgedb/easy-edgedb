@@ -3028,28 +3028,37 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. We should create an `abstract type Currency` that we can use for all of these types of money.
 
-Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was 20 shillings to one pound, and 12 pence to one shilling. To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` and its extension `Pound` will look like this:
+Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was 20 shillings to one pound, and 12 pence to one shilling. To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
 
 ```
     abstract type Currency {
         required link owner -> Person;
         required property major -> str;
         required property major_amount -> float64 {
-            default := 0
+            default := 0;
+            constraint min_value(0);
         }
         required property minor -> str;
         required property minor_amount -> float64 {
-            default := 0
+            default := 0;
+            constraint min_value(0);
         }
         required property minor_conversion -> int64;
         
         property sub_minor -> str;
         property sub_minor_amount -> float64 {
-            default := 0
+            default := 0;
+            constraint min_value(0);
         }
         property sub_minor_conversion -> int64;
     }
+```
 
+We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. We probably don't need to think about credit and other complicated things like that for the game.
+
+Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds.
+
+```
     type Pound extending Currency {
         overloaded required property major {
             default := 'pound'
