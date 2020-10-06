@@ -3078,7 +3078,82 @@ FOR city IN {
 });
 ```
 
-But we don't have that many cities to insert so we don't need to be so systematic yet.
+And the same would take place with all the `NPC` types with `first_appearance` and so on. But we don't have that many cities and characters to insert in this tutorial so we don't need to be so systematic yet.
+
+We can also turn the inserts for the `Ship` type into a single one. Right now it looks like this:
+
+```
+FOR n IN {1, 2, 3, 4, 5}
+  UNION (
+  INSERT Crewman {
+  number := n,
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16),
+});
+
+INSERT Sailor {
+  name := 'The Captain',
+  rank := 'Captain'
+};
+
+INSERT Sailor {
+  name := 'The First Mate',
+  rank := 'First mate'
+};
+
+INSERT Sailor {
+  name := 'The Second Mate',
+  rank := 'Second mate'
+};
+
+INSERT Sailor {
+  name := 'The Cook',
+  rank := 'Cook'
+};
+
+INSERT Ship {
+  name := 'The Demeter',
+  sailors := Sailor,
+  crew := Crewman
+};
+```
+
+Let's put that all together:
+
+```
+INSERT Ship {
+   name := 'The Demeter',
+   sailors := {
+    (INSERT Sailor {
+       name := 'The Captain',
+       rank := 'Captain'
+     }),
+    (INSERT Sailor {
+       name := 'The First Mate',
+       rank := 'First mate'
+     }),
+    (INSERT Sailor {
+       name := 'The Second Mate',
+       rank := 'Second mate'
+     }),
+    (INSERT Sailor {
+       name := 'The Cook',
+       rank := 'Cook'
+     })
+ },
+   crew := (
+ FOR n IN {1, 2, 3, 4, 5}
+   UNION (
+   INSERT Crewman {
+   number := n,
+   first_appearance := cal::to_local_date(1887, 7, 6),
+   last_appearance := cal::to_local_date(1887, 7, 16),
+   })
+ )
+};
+```
+
+Much better!
 
 # Chapter 19 - Dracula flees back to Transylvania
 
