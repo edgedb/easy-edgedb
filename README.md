@@ -3026,6 +3026,60 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 > Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive. All of a sudden Dracula runs into the house and attacks. Jonathan strikes with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window, saying "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
+We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
+
+First, we have two inserts here where we could only have one.
+
+```
+INSERT City {
+  name := 'Munich',
+};
+
+INSERT City {
+    name := 'London',
+};
+```
+
+We'll change that to an insert with a `UNION`:
+
+```
+ FOR city_name IN {'Munich', 'London'}
+   UNION (
+   INSERT City {
+     name := city_name
+    }
+  );
+```
+
+Then we'll do the same for the `Country` types with the names Romania and Slovakia. Now they are a single insert:
+
+```
+FOR country_name IN {'Romania', 'Slovakia'}
+  UNION (
+    INSERT Country {
+      name := country_name
+    }
+  );
+```
+
+The other `City` inserts are a bit different: some have `modern_name` and others have `population`. In a real game we would insert them all in this sort of form, all at once:
+
+```
+FOR city IN {
+  ('City 1', 'Modern City 1', 800),
+  ('City 2', 'Modern City 2', 900),
+  ('City 3', 'Modern City 3', 455),
+ }
+  UNION (
+    INSERT City {
+      name := city.0,
+      modern_name := city.1,
+      population := city.2
+});
+```
+
+But we don't have that many cities to insert so we don't need to be so systematic yet.
+
 # Chapter 19 - Dracula flees back to Transylvania
 
 > Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
