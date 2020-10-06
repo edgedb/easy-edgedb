@@ -447,7 +447,7 @@ type Country extending Place;
 
 Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert a `Country` objects with the name Hungary.
 
-We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes lots of things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead, inside `()`:
+We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead, inside `()`:
 
 ```
 insert Vampire {
@@ -722,7 +722,7 @@ The `T` inside there is just a separator, and the `Z` at the end means "zero tim
 
 One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are multiple ways to make a `datetime` with this function. The easiest is probably the third, which looks like this: `std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime`
 
-With this, our game could have a function that just generates integers for times that then get a proper time stamp from `to_datetime`. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
+With this, our game could have a function that generates integers for times that then use `to_datetime` to get get a proper time stamp. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
 
 `SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');`
 
@@ -732,7 +732,7 @@ And get the following output:
 
 The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
 
-With this we can see the duration between events, because there is a `duration` type that comes from subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
+With this we can see the duration between events, because there is a `duration` type that you can get by subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
 
 ```
 SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
@@ -776,7 +776,7 @@ This works because there is only one 'Count Dracula' (remember, `REQUIRED LINK` 
 
 Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can continue to extend other types, and it can be annoying to read each one to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on (such as quickly creating helpful functions without needing to do a migration). And if you understand SDL it will not be hard to pick up some tricks in DDL.
+- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL.
 - `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL.
 - `DESCRIBE TYPE MinorVampire AS TEXT` - this is what we want. It shows everything inside the type. When we enter that, it gives us everything:
 
@@ -3028,10 +3028,10 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 # Chapter 19 - Dracula flees back to Transylvania
 
-> Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mine) goes to Castle Dracula, while the other team goes to Varna to try to catch the ship when it arrives. Jonathan Harker does nothing but sharpen his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
+> Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
 
 # Chapter 20 - The final battle
 
-> Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and tells her to wait outside, then goes inside and destroyes the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down, and Dracula opens his eyes with a look of triumph.
+> Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down, and Dracula opens his eyes with a look of triumph.
 
 This is almost the end of the book, but we won't spoil the final ending. If you want to read it now, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
