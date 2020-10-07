@@ -3282,6 +3282,44 @@ Much better!
 
 > Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
 
+We have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
+
+```
+type Ship extending HasNameAndCoffins {
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
+```
+
+That's not bad, but it doesn't have any information about visits made by which ship to where. Let's make a quick type that contains all the information on ship visits. Each visit will have a link to a `Ship` and a `Place`, and a `cal::local_date`. It looks like this:
+
+```
+type Visit {
+  link ship -> Ship;
+  link place -> Place;
+  property date -> cal::local_date;
+}
+```
+
+This new ship that Dracula is on is called the `Czarina Catherine`. Let's use that to insert a few visits from the ships we know.
+
+```
+FOR visit in {
+    ('The Demeter', 'Varna', '1887-07-06'),
+    ('The Demeter', 'Bosphorus', '1887-07-11'),
+    ('The Demeter', 'Whitby', '1887-08-08'),
+    ('Czarina Catherine', 'London', '1887-10-05'),
+    ('Czarina Catherine', 'Galatz', '1887-10-28')}
+    UNION (
+ INSERT Visit {
+   ship := (SELECT Ship FILTER .name = visit.0),
+   place := (SELECT Place FILTER .name = visit.1),
+   date := <cal::local_date>visit.2
+   });
+```
+
+
+
 # Chapter 20 - The final battle
 
 > Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
