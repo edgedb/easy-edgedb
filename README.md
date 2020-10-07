@@ -3301,7 +3301,61 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine`. Let's use that to insert a few visits from the ships we know.
+This new ship that Dracula is on is called the `Czarina Catherine`. Let's use that to insert a few visits from the ships we know. But first we'll insert a new ship and two new places. We know the name of the ship and that there is one coffin in it - it's Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
+
+```
+INSERT Ship {
+  name := 'Czarina Catherine',
+  coffins := 1,
+};
+```
+
+After that we have two more places from the captain's book of `'The Demeter'` from back in July - August. We'll put in Varna and Galatz at the same time:
+
+```
+FOR city in {'Varna', 'Galatz'}
+ UNION (
+ INSERT City {
+   name := city
+});
+```
+
+The Demeter also passed through the Bosphorus. That's the small bit of ocean that divides Europe from Asia, so it's not a city. We can use the `OtherPlace' type. That's the one that we added some annotations to. Remember how to call them up? It looks like this:
+
+```
+SELECT (INTROSPECT OtherPlace) {
+  annotations: {
+     @value
+   }
+};  
+```
+
+Let's see what we wrote before to make sure that we should use it:
+
+```
+{
+  schema::ObjectType {
+    annotations: {
+      schema::Annotation {
+        @value: 'A place with under 50 buildings - hamlets, small villages, etc.',
+      },
+      schema::Annotation {
+        @value: 'Castles and castle towns count! Use the Castle type for that',
+      },
+    },
+  },
+}
+```
+
+Well, it's not a castle and it isn't actually a place with buildings, so it should work. Though later on we might want to create a `Region` type so that we can have a `Country` that has `Region` and `City` or `OtherPlace` inside that. But in the meantime we'll add it:
+
+```
+INSERT OtherPlace {
+  name := 'Bosphorus'
+};
+```
+
+That was easy. Now we can put the ship visits in.
 
 ```
 FOR visit in {
@@ -3318,7 +3372,31 @@ FOR visit in {
    });
 ```
 
+With that, in our game we can have each city have certain ships at certain dates. For example, if a character is in Galatz and the date is 28 October 1887, we can see if there are any ships in town:
 
+```
+SELECT Visit {
+  ship: {
+    name
+    },
+  place: {
+    name
+    },
+  date
+  } FILTER .place.name = 'Galatz' AND .date = <cal::local_date>'1887-10-28';
+```
+
+It looks like there is a ship in town! It's the Czarina Catherine.
+
+```
+{
+  Object {
+    ship: default::Ship {name: 'Czarina Catherine'},
+    place: default::City {name: 'Galatz'},
+    date: <cal::local_date>'1887-10-28',
+  },
+}
+```
 
 # Chapter 20 - The final battle
 
