@@ -751,13 +751,13 @@ WITH
 
 The output is `{5100s}`. As long as we know the timezone, EdgeDB does the work for us.
 
-## REQUIRED LINK
+## Required links
 
-Now we need to make a type for the three female vampires. We will call the type `MinorVampire`. These have a link to the `Vampire` type, it needs to be `REQUIRED` because they only live while Dracula lives.
+Now we need to make a type for the three female vampires. We will call the type `MinorVampire`. These have a link to the `Vampire` type, it needs to be `required` because they only live while Dracula lives.
 
 ```
 type MinorVampire extending Person {
-  REQUIRED LINK master -> Vampire;
+  required link master -> Vampire;
 }
 ```
 
@@ -770,7 +770,7 @@ INSERT MinorVampire {
 };
 ```
 
-This works because there is only one 'Count Dracula' (remember, `REQUIRED LINK` is short for `REQUIRED SINGLE LINK`). If there were more than one, we would have to add `LIMIT 1`.
+This works because there is only one 'Count Dracula' (remember, `required link` is short for `required single link`). If there were more than one, we would have to add `LIMIT 1`.
 
 ## DESCRIBE
 
