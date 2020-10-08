@@ -3413,7 +3413,7 @@ SELECT Ship.<ship[IS Visit] {
     name
     },
   date
-} FILTER .place.name = 'Varna';
+} FILTER .place.name = 'Galatz';
 ```
 
 `Ship.<ship[IS Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, we can now filter on `Visit`'s `.place.name` instead of filtering on the properties inside `Ship`.
@@ -3423,9 +3423,117 @@ Here is the output:
 ```
 {
   default::Visit {
-    place: default::City {name: 'Varna'},
-    ship: default::Ship {name: 'The Demeter'},
-    date: <cal::local_date>'1887-07-06',
+    place: default::City {name: 'Galatz'},
+    ship: default::Ship {name: 'Czarina Catherine'},
+    date: <cal::local_date>'1887-10-28',
+  },
+}
+```
+
+By the way, the heroes of our story found out about the Czarina Catherine thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
+
+```
+28 October.—Telegram. Rufus Smith, London, to Lord Godalming, care H. B. M. Vice Consul, Varna.
+
+“Czarina Catherine reported entering Galatz at one o’clock to-day.”
+```
+
+Remember our `Date` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
+
+```
+type Date {
+ required property date -> str;
+ property local_time := <cal::local_time>.date;
+ property hour := .date[0:2];
+ property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+}
+```
+
+Now that we know that the time was one o'clock, let's put that into the query too. Now it looks like this:
+
+```
+SELECT Ship.<ship[IS Visit] {
+   place: {
+     name
+     },
+   ship: {
+     name
+     },
+   date,
+   time := (SELECT(Insert Date {
+ date := '13:00:00'
+ }) {
+   date,
+   local_time,
+   hour,
+   awake}),
+ } FILTER .place.name = 'Galatz';
+ ```
+ 
+ Here's the output, including whether vampires are awake or asleep.
+ 
+ ```
+ {
+  default::Visit {
+    place: default::City {name: 'Galatz'},
+    ship: default::Ship {name: 'Czarina Catherine'},
+    date: <cal::local_date>'1887-10-28',
+    time: default::Date {date: '13:00:00', local_time: <cal::local_time>'13:00:00', hour: '13', awake: 'asleep'},
+  },
+}
+```
+
+It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. We now have a random `Date` type floating around that is not linked to anything. So let's just steal everything from `Date` to change the `Visit` type instead.
+
+```
+  type Visit {
+    link ship -> Ship;
+    link place -> Place;
+    property date -> cal::local_date;
+    property time -> str;
+    property local_time := <cal::local_time>.time;
+    property hour := .time[0:2];
+    property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+}
+```
+
+Then update the visit to Galatz:
+
+```
+UPDATE Visit FILTER .place.name = 'Galatz'
+  SET {
+    time := '13:00:00'
+};
+```
+
+Then we'll use the reverse query again:
+
+```
+SELECT Ship.<ship[IS Visit] {
+    place: {
+      name
+      },
+    ship: {
+      name
+      },
+    date,
+    time,
+ hour,
+ awake
+ } FILTER .place.name = 'Galatz';
+```
+
+And now we get all the output that the `Date` type gave us before.
+
+```
+{
+  default::Visit {
+    place: default::City {name: 'Galatz'},
+    ship: default::Ship {name: 'Czarina Catherine'},
+    date: <cal::local_date>'1887-10-28',
+    time: '13:00:00',
+    hour: '13',
+    awake: 'asleep',
   },
 }
 ```
