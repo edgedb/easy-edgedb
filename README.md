@@ -2576,7 +2576,11 @@ SELECT MinorVampire.<slaves[IS Vampire] {
   };
 ```
 
-Because it goes in reverse order, it is selecting the `Vampire` type with `.slaves` that are of type `MinorVampire`. Here is the output:
+Because it goes in reverse order, it is selecting the `Vampire` type with `.slaves` that are of type `MinorVampire`.
+
+You can think of `MinorVampire.<slaves[IS Vampire]` as "Select the Vampire type with slaves that are of type MinorVampire" - from right to left.
+
+Here is the output:
 
 ```
 {default::Vampire {name: 'Count Dracula', age: 800}}
@@ -3394,6 +3398,34 @@ It looks like there is a ship in town! It's the Czarina Catherine.
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
     date: <cal::local_date>'1887-10-28',
+  },
+}
+```
+
+Let's do a bit of practice with reverse lookup again.
+
+```
+SELECT Ship.<ship[IS Visit] {
+  place: {
+    name
+    },
+  ship: {
+    name
+    },
+  date
+} FILTER .place.name = 'Varna';
+```
+
+`Ship.<ship[IS Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, we can now filter on `Visit`'s `.place.name` instead of filtering on the properties inside `Ship`.
+
+Here is the output:
+
+```
+{
+  default::Visit {
+    place: default::City {name: 'Varna'},
+    ship: default::Ship {name: 'The Demeter'},
+    date: <cal::local_date>'1887-07-06',
   },
 }
 ```
