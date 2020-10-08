@@ -3506,7 +3506,7 @@ UPDATE Visit FILTER .place.name = 'Galatz'
 };
 ```
 
-Then we'll use the reverse query again:
+Then we'll use the reverse query again. Let's add a computable for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```
 SELECT Ship.<ship[IS Visit] {
@@ -3518,12 +3518,13 @@ SELECT Ship.<ship[IS Visit] {
       },
     date,
     time,
- hour,
- awake
+    hour,
+    awake,
+    when_arthur_got_the_telegram := (<cal::local_time>.time) + <duration>'2 hours, 5 minutes, 10 seconds'
  } FILTER .place.name = 'Galatz';
 ```
 
-And now we get all the output that the `Date` type gave us before.
+And now we get all the output that the `Date` type gave us before, plus our extra info about when Arthur got the telegram:
 
 ```
 {
@@ -3534,6 +3535,7 @@ And now we get all the output that the `Date` type gave us before.
     time: '13:00:00',
     hour: '13',
     awake: 'asleep',
+    when_arthur_got_the_telegram: <cal::local_time>'15:05:10',
   },
 }
 ```
