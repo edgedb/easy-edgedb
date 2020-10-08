@@ -3540,6 +3540,71 @@ And now we get all the output that the `Date` type gave us before, plus our extr
 }
 ```
 
+Since we are looking at place again, maybe we can finish up the chapter by filling out the map with the `Region` type we discussed. That's easy:
+
+```
+type Country extending Place {
+  multi link regions -> Region;
+}
+
+type Region extending Place {
+  multi link cities -> City
+  multi link other_places -> OtherPlace;
+  multi link castles -> Castle;
+}
+```
+
+That connects our types based on `Place` quite well.
+
+Now let's do a small entry. We'll choose Germany in 1887 because Jonathan went through there first. It will have:
+
+- One country: Germany,
+- Three regions: Prussia, Hesse, Saxony
+- Six cities, two for each region: Berlin and Königsberg, Darmstadt and Mainz, Dresden and Leipzig.
+
+Here is the insert:
+
+```
+INSERT Country {
+ name := 'Germany',
+ regions := {
+   (INSERT Region {
+     name := 'Prussia',
+     cities := {
+       (INSERT City {
+         name := 'Berlin'
+         }),
+       (INSERT City {
+         name := 'Königsberg'
+         }),
+    }
+ }),
+   (INSERT Region {
+     name := 'Hesse',
+     cities := {
+       (INSERT City {
+         name := 'Darmstadt'
+         }),
+       (INSERT City {
+         name := 'Mainz'
+         }),
+ }
+ }),
+   (INSERT Region {
+     name := 'Saxony',
+     cities := {
+       (INSERT City {
+          name := 'Dresden'
+          }),
+       (INSERT City {
+          name := 'Leipzig'
+          }),
+    }
+   })
+ }
+};
+```
+
 # Chapter 20 - The final battle
 
 > Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
