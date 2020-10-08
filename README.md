@@ -3605,6 +3605,42 @@ INSERT Country {
 };
 ```
 
+With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to:
+
+```
+SELECT Region {
+  name,
+  cities: {
+    name
+    },
+    country := .<regions[IS Country] {
+      name
+      }
+};
+```
+
+With the reverse lookup at the end we have another link between `Country` and its property `regions`, but now we get the `Country` as the output instead. Here's the output:
+
+```
+{
+  Object {
+    name: 'Prussia',
+    cities: {default::City {name: 'Berlin'}, default::City {name: 'Königsberg'}},
+    country: {default::Country {name: 'Germany'}},
+  },
+  Object {
+    name: 'Hesse',
+    cities: {default::City {name: 'Darmstadt'}, default::City {name: 'Mainz'}},
+    country: {default::Country {name: 'Germany'}},
+  },
+  Object {
+    name: 'Saxony',
+    cities: {default::City {name: 'Dresden'}, default::City {name: 'Leipzig'}},
+    country: {default::Country {name: 'Germany'}},
+  },
+}
+```
+
 # Chapter 20 - The final battle
 
 > Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
