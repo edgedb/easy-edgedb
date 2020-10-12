@@ -3646,3 +3646,40 @@ With the reverse lookup at the end we have another link between `Country` and it
 > Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
 
 This is almost the end of the book, but we won't spoil the final ending. If you want to read it now, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
+
+The last change we can make for now is to give the vampire women a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. Don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
+
+```
+UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
+  SET {
+    last_appearance := <cal::local_date>'1887-11-05'
+};
+```
+
+Depending on what happens in the last battle, we might have to do the same for Dracula or some of the heroes. But instead of spoiling the ending, let's take a look at our schema once more to review it step by step. It goes like this:
+
+- `START MIGRATION TO {};`: This is how a schema migration starts. Everything goes inside `{}` curly brackets and ends with a `;` semicolon.
+- `module default {}`: We only used one module (namespace) for our schema, but you can make for if you like. You can see the module when you use `DESCRIBE Type`. Let's look at `Person`, which starts like this:
+
+`abstract type default::Person`
+
+For a real game our schema would probably be a lot larger, and we might see types in different modules like `abstract type characters::Person` and `places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
+
+Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, we hand it off to types like `Place` because every place in our game 
+
+- 1) has a name, and 
+- 2) has a number of coffins because places without coffins are safer from vampires.
+
+```
+abstract type HasNameAndCoffins {
+  required property coffins -> int16 {
+    default := 0;
+}
+  required property name -> str {
+    constraint exclusive;
+    constraint max_len_value(30);
+  }
+}
+```
+
+We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/docs/datamodel/scalars/numeric#numerics) for the `coffins` property but we probably won't see that many coffins.
