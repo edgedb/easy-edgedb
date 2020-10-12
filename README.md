@@ -3683,3 +3683,39 @@ abstract type HasNameAndCoffins {
 ```
 
 We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/docs/datamodel/scalars/numeric#numerics) for the `coffins` property but we probably won't see that many coffins.
+
+Next is `abstract type Person`, which does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`:
+
+```
+abstract type Person {
+  property first -> str;
+  property last -> str;
+  property title -> str;
+  property degrees -> str;
+  required property name -> str {
+      constraint exclusive
+  }
+  property age -> int16;
+  property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
+  property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+  property strength -> int16;
+  multi link places_visited -> Place;
+  multi link lover -> Person;
+  property first_appearance -> cal::local_date;
+  property last_appearance -> cal::local_date;   
+
+}
+```
+
+`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), with which we can be sure that each character has a unique name. If our game gets too large there might be more than one "Jonathan Harker" or other name, and we could give `Person` an `id` property instead and make that exclusive.
+
+Properties like `conversational_name` are [computables](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but in our game we have too many characters with strange names: `Woman 2`, `The innkeeper`, etc. If this were a regular database for users, we would definitely only use `first` and `last` and probably use a field like `email` with `constraint exclusive` to make sure that all users are unique.
+
+Every property has a type like `str`, and computables have them too but we don't need to tell EdgeDB the type because the computable itself makes the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called [concatenation](https://www.edgedb.com/docs/edgeql/funcops/string#operator::STRPLUS).
+
+The two links are `multi link`s, without which a `link` can only be to one object. If you just write `link`, it will be a `single link` and you will have to add `LIMIT 1` when creating a link or it will give this error:
+
+```
+error: possibly more than one element returned by an expression for a computable link 'former_self' declared as 'single'
+```
+
