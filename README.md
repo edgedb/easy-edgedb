@@ -3729,8 +3729,9 @@ But for modern-day databases with users around the world, `datetime` is usually 
 
 
 ```
-SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST'); # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time).
-
+SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST')
+# October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
+;
 {<datetime>'2020-10-12T06:35:05.500000000Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
 
