@@ -2567,7 +2567,19 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite and starting from `SELECT MinorVampire` and want to know about the `Vampire` type connected to it? Then we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`. All together, it looks like this:
+But what if we are doing the opposite and starting from `SELECT MinorVampire` and want to know about the `Vampire` type connected to it? Because right now, we can only bring up properties inside `MinorVampire` and `Person` type. Consider the following:
+
+```
+SELECT MinorVampire {
+  name,
+  # master... how do we get this?
+  # There's no link to Vampire inside MinorVampire...
+}
+```
+
+This is where reverse links come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`. 
+
+First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
 
 ```
 SELECT MinorVampire.<slaves[IS Vampire] {
@@ -2586,6 +2598,39 @@ Here is the output:
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
+So far that's the same as just `SELECT Vampire`. But it is very useful in our query before where we want to access multiple types. Now we can select all the `MinorVampire` types and their master:
+
+```
+SELECT MinorVampire {
+  name,
+  master := .<slaves[IS Vampire] {name},
+};
+```
+
+You could read `.<slaves[IS Vampire]` as "the `Vampire` type that links back through `.slaves`".
+
+Here is the output:
+
+```
+{
+  default::MinorVampire {
+    name: 'Lucy Westenra',
+    master: {default::Vampire {name: 'Count Dracula'}},
+  },
+  default::MinorVampire {
+    name: 'Woman 1',
+    master: {default::Vampire {name: 'Count Dracula'}},
+  },
+  default::MinorVampire {
+    name: 'Woman 2',
+    master: {default::Vampire {name: 'Count Dracula'}},
+  },
+  default::MinorVampire {
+    name: 'Woman 3',
+    master: {default::Vampire {name: 'Count Dracula'}},
+  },
+}
+```
 
 # Chapter 15 - Time to start vampire hunting
 
@@ -3734,4 +3779,30 @@ SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST')
 ;
 {<datetime>'2020-10-12T06:35:05.500000000Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
+
+A similar abstract type to `HasNameAndCoffins` is this one:
+
+```
+abstract type HasNumber {
+  required property number -> int16;
+}
+```
+
+We only used this for the `Crewman` type, which only extends two abstract types and nothing else:
+
+```
+type Crewman extending HasNumber, Person {
+}
+```
+
+This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
+
+```
+UPDATE Crewman
+  SET {
+    name := 'Crewman ' ++ <str>.number
+};
+```
+
+For later types in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Drive 12', etc.
 
