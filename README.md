@@ -3344,9 +3344,9 @@ That's not bad, but it doesn't have any information about visits made by which s
 
 ```
 type Visit {
-  link ship -> Ship;
-  link place -> Place;
-  property date -> cal::local_date;
+  required link ship -> Ship;
+  required link place -> Place;
+  required property date -> cal::local_date;
 }
 ```
 
@@ -3534,7 +3534,7 @@ It is of course cool that we can do a quick insert in a query like this, but it'
   type Visit {
     link ship -> Ship;
     link place -> Place;
-    property date -> cal::local_date;
+    required property date -> cal::local_date;
     property time -> str;
     property local_time := <cal::local_time>.time;
     property hour := .time[0:2];
@@ -3804,5 +3804,61 @@ UPDATE Crewman
 };
 ```
 
-For later types in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Drive 12', etc.
+For later types in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
 
+Our vampire types extend `Person`, while `MinorVampire` also has an optional (single) link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
+
+```
+type Vampire extending Person {    
+  multi link slaves -> MinorVampire;
+}
+
+type MinorVampire extending Person {
+  link former_self -> Person;
+}
+```
+
+With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
+
+```
+SELECT Person {
+  name,
+  vampire_name := .<former_self[IS MinorVampire].name
+} FILTER EXISTS .vampire_name;
+```
+
+In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy Westenra'}}}` But if we wanted to, we could extend the scope of the game back to more historical times and give the vampire women an `NPC` type as well.
+
+Our two enums were used for the `PC` and `Sailor` types:
+
+```
+scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+type Sailor extending Person {
+  property rank -> Rank;
+}
+
+scalar type Transport extending enum<Feet, HorseDrawnCarriage, Train>;
+type PC extending Person {
+  required property transport -> Transport;
+}
+```
+
+The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself where choosing `Feet` gives the character a certain speed, `HorseDrawnCarriage` increases speed but decreases money, `Train` increases speed the most but decreases money and can only follow railway lines, etc.
+
+`Visit` is probably our "hackiest" (but most fun) type. We stole most of it from the `Date` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used:
+
+- by casting it into a <cal::local_time> to make the `local_time` property,
+- by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
+- by another computable called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
+
+```
+type Visit {
+  required link ship -> Ship;
+  required link place -> Place;
+  required property date -> cal::local_date;
+  property time -> str;
+  property local_time := <cal::local_time>.time;
+  property hour := .time[0:2];
+  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+}
+```
