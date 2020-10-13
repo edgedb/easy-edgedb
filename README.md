@@ -3829,7 +3829,7 @@ SELECT Person {
 
 In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy Westenra'}}}` But if we wanted to, we could extend the scope of the game back to more historical times and give the vampire women an `NPC` type as well.
 
-Our two enums were used for the `PC` and `Sailor` types:
+Our three enums were used for the `PC` and `Sailor` types:
 
 ```
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
@@ -3894,4 +3894,10 @@ type OtherPlace extending Place {
 }
 ```
 
-We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that everyone knows how to use each type in the right way.
+We also had to use `abstract annotation` to add a new annotation:
+
+```
+abstract annotation warning;
+```
+
+because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that everyone knows how to use each type in the right way.
