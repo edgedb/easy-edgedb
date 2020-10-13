@@ -3862,3 +3862,36 @@ type Visit {
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```
+
+The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. In this case, we wanted to constraint `age` to 120 years, and wanted to use the `places_visited` link in a different way than in `Person` by giving it a default.
+
+```
+type NPC extending Person {
+  overloaded property age {
+    constraint max_value(120)
+  }
+  overloaded multi link places_visited -> Place {
+    default := (SELECT City FILTER .name = 'London');
+  }
+}
+```
+
+Our `Place` type shows that you can extend as many times as you want. It's an `abstract type` that extends another `abstract type`, and then gets extended for other types like `City`.
+
+```
+abstract type Place extending HasNameAndCoffins {
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
+The `important_places` property never got used, and right now is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our OtherPlace type is not quite the right type for this, as the [annotation](https://www.edgedb.com/docs/edgeql/sdl/annotations#annotations) shows:
+
+```
+type OtherPlace extending Place {
+  annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
+  annotation warning := 'Castles and castle towns count! Use the Castle type for that';
+}
+```
+
+We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that everyone knows how to use each type in the right way.
