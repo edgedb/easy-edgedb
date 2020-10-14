@@ -1689,24 +1689,23 @@ This gives us:
 
 We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. Since we are making a game, we want to know which characters were in which place, and when. So let's try putting together an `Event` type.
 
-This `Event` type is a bit long, but it needs to be the main type for our events in the game so it needs to be detailed. We can put it together like this:
+This `Event` type is a bit long, but it would be the main type for our events in the game so it needs to be detailed. We can put it together like this:
 
 ```
-scalar type EastWest extending enum<'E', 'W'>;
-
 type Event {
   required property description -> str;
   required property start_time -> cal::local_datetime;
   required property end_time -> cal::local_datetime;
   required multi link place -> Place;
   required multi link people -> Person;
+  multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
-  property east_west -> EastWest;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ <str>.east_west;
+  property east -> bool;
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
 }
 ```    
 
-You can see that most of the properties now are `required`, because an `Event` type is not useful to us for our game if it doesn't have the information we need. It will always need a description, a time, place, and people participating. The interesting part of this type is the `url` property which gives us an exact url for the location if we want. The events in the book take place in the north part of the planet, but sometimes they are east of Greenwich and sometimes west. We will always need to know if it is east or west so we create an enum with 'E' and 'W' and then use the computable `url` property to generate a link.
+You can see that most of the properties now are `required`, because an `Event` type is not useful to us for our game if it doesn't have the information we need. It will always need a description, a time, place, and people participating. The interesting part of this type is the `url` property which gives us an exact url for the location if we want. The events in the book take place in the north part of the planet, but sometimes they are east of Greenwich and sometimes west. We will always need to know if it is east or west so we create use a simple `bool`. Then in thu `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
 Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy.
 
@@ -3966,3 +3965,35 @@ Here is the error:
 operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std::int64'
 ```
 
+Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would require a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `exerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
+
+```
+type BookExcerpt {
+    required property date -> cal::local_datetime;
+    required link author -> Person;
+    required property excerpt -> str;
+    index on (.excerpt);
+}
+```
+
+Next is our other fun and hacky type, `Event`.
+
+```
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required multi link place -> Place;
+  required multi link people -> Person;
+  multi link excerpt -> BookExcerpt;
+  property exact_location -> tuple<float64, float64>;
+  property east -> bool;
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+}
+```
+
+This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property is for users of the database with descriptions like `'The Demeter arrives at Whitby, crashing on the beach'` that are used to find events when we need to.
+
+The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
+
+At the very end of our schema are the functions.
