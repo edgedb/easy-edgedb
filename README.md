@@ -3901,3 +3901,68 @@ abstract annotation warning;
 ```
 
 because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that everyone knows how to use each type in the right way.
+
+Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
+
+```
+type Lord extending Person {
+  constraint expression on (contains(__subject__.name, 'Lord') = true);
+}
+```
+
+This one uses the function [`contains`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. [Here are some more examples](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression) from the documentation of using `constraint expression on`.
+
+Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
+
+```
+type Lord extending Person {
+  constraint expression on (__subject__.title = 'Lord');
+}
+```
+
+This will depend on if we want to create `Lord` types with names just as a single string under `.name`, or by using `.first`, `.last`, `.title` etc. with a computable to form the full name.
+
+Our next types extending `Place` including `Country` and `Region` were looked at just last chapter, so we won't review them here. But `Castle` is a bit unique:
+
+```
+type Castle extending Place {
+  property doors -> array<int16>;
+}
+```
+
+Back in Chapter 7, we used this in a query to see if Jonathan could break any of the doors and escape the castle. The idea was simple: Jonathan would try to open every door, and if he had more strength then any one of them then he could escape the castle.
+
+```
+WITH 
+  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
+  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT jonathan_strength > min(array_unpack(doors));
+```
+
+However, later on we learned the `any()` function, which is another way to do this.
+
+```
+WITH
+  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
+  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT any(array_unpack(doors) < jonathan_strength);
+```
+
+And of course, we could also create a function to do the same now that we know how to write them. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and conduct the same query.
+
+Don't forget, we needed `array_unpack()` because the function [`any()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::any) works on sets:
+
+```
+std::any(values: SET OF bool) -> bool
+```
+
+So this (a set) will work: `SELECT any({5, 6, 7} = 7);`
+
+But this (an array) will not: `SELECT any([5, 6, 7] = 7);`
+
+Here is the error:
+
+```
+operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std::int64'
+```
+
