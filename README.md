@@ -176,21 +176,11 @@ This gives the output:
 
 ```
 {
-  Object{
-    name: 'Vienna',
-    modern_name: {}
-  },
-  Object{
-    name: 'Bistritz',
-    modern_name: 'Bistrița'
-  },
-  Object{
-    name: 'Buda-Pesth',
-    modern_name: 'Budapest'
-  }
+  Object {name: 'Vienna', modern_name: {}},
+  Object {name: 'Bistritz', modern_name: 'Bistrița'},
+  Object {name: 'Buda-Pesth', modern_name: 'Budapest'}
 }
 ```
-
 
 If you just want to return the names without the object structure, you can write `SELECT City.modern_name`. That will give this output:
 
@@ -198,7 +188,7 @@ If you just want to return the names without the object structure, you can write
 {'Budapest', 'Bistrița'}
 ```
 
-You can also change names like `modern_name` to something else if you want by using `:=` after the name you want. For example:
+You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. For example:
 
 ```
 SELECT City {
@@ -217,9 +207,33 @@ This prints:
 }
 ```
 
+This will not change the name of the property itself - it's just a quick name to use in a query.
+
+So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
+
+```
+SELECT City {
+  name_in_dracula := .name,
+  name_today := .modern_name,
+  oh_and_by_the_way := 'This is a city in the book Dracula'
+};
+```
+
+And here is the output:
+
+```
+{
+  Object {name_in_dracula: 'Munich', name_today: {}, oh_and_by_the_way: 'This is a city in the book Dracula'},
+  Object {name_in_dracula: 'Buda-Pesth', name_today: 'Budapest', oh_and_by_the_way: 'This is a city in the book Dracula'},
+  Object {name_in_dracula: 'Bistritz', name_today: 'Bistrița', oh_and_by_the_way: 'This is a city in the book Dracula'},
+}
+```
+
+Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. The introduction mentions that EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. On the other hand, it can use "type inference" to guess the type like here where it knows that we are creating a `str`. We will look at changing types and working with different types soon.
+
 ## Links
 
-So now the last thing left to do is change the properties for `Person`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. We'll change `Person` to this:
+So now the last thing left to do is to change a `property` in `Person` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it so we should link to `City` instead of rewriting the names inside `Person`. We'll change `Person` to this:
 
 ```
 type Person {
@@ -228,9 +242,9 @@ type Person {
 }
 ```
 
-We wrote `MULTI` in front of `LINK` because one `Person` should be able to link to more than one `City`. The opposite of `MULTI` is `SINGLE`, but if you just write `LINK` then EdgeDB will treat it as `SINGLE`.
+We wrote `multi` in front of `link` because one `Person` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
 
-Now when we `INSERT` Jonathan Harker, he will be connected to the type `City`. Technically, we can now just enter this to create him now:
+Now when we insert Jonathan Harker, he will be connected to the type `City`. Since `places_visited` is not `required`, we can still just enter this to create him now:
 
 ```
 INSERT Person {
@@ -249,7 +263,16 @@ SELECT Person {
 
 Here is the output: `{Object {name: 'Jonathan Harker', places_visited: {}}}`
 
-That's not good enough. We'll change `places_visited` when we `INSERT` to `places_visited := City`. Now it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
+That's not good enough. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
+
+```
+INSERT Person {
+  name := 'Jonathan Harker',
+  places_visited := City,
+};
+```
+
+Now it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
 
 ```
 select Person {
@@ -271,7 +294,7 @@ Here is the output:
   },
 ```
 
-Close! Now we just need to let EdgeDB know that we want to display the `name` property of the `City` type. To do that, we add a colon and then put `name` inside curly brackets - same as with any other `SELECT`.
+Close! Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, we add a colon and then put `name` inside curly brackets.
 
 ```
 select Person {
@@ -291,7 +314,7 @@ Success! Now we get the output we wanted:
   },
 ```
 
-Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and we will have to use `FILTER`. We will learn that in the next chapter.
+Of course, right now Jonathan Harker is being connected to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and so we will have to use `FILTER`. We will learn that in the next chapter.
 
 [Here is all our code so far up to Chapter 1.](chapter_1_code.md)
 
