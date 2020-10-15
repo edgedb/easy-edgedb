@@ -499,9 +499,9 @@ And if you have any `City` types with a name of `''`, even a search for index 0 
 
 In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
 
->Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan doesn't know that he's a vampire yet.
+>Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan still doesn't know that he's a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds every morning? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
 
-This is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good for `Vampire` too. But vampires are different from humans because they can live forever. Let's add `age` to `Person` so that all the other types can use it too. Now `Person' looks like this:
+Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good for `Vampire` too. But vampires are different from humans because they can live forever. Let's add `age` to `Person` so that all the other types can use it too. Now `Person' looks like this:
 
 ```
 abstract type Person {
@@ -511,7 +511,7 @@ abstract type Person {
 }
 ```
 
-`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it a `required property`, because we won't know everybody's age.
+`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it a `required property`, because we don't care about everybody's age.
 
 First we'll make `Vampire` a type that extends `Person`, and adds age:
 
@@ -535,17 +535,28 @@ type City extending Place;
 type Country extending Place;
 ```
 
-Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert a `Country` objects with the name Hungary.
-
-We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead, inside `()`:
+Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert a `Country` objects for Hungary and Romania:
 
 ```
-insert Vampire {
+INSERT Country {
+  name := 'Hungary'
+};
+INSERT Country {
+  name := 'Romania'
+};
+```
+
+We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead. When doing this, we put the `SELECT` inside `()` brackets. The brackets are necessary to capture the result of the `SELECT`.
+
+```
+INSERT Vampire {
   name := 'Count Dracula',
   places_visited := (SELECT Place FILTER .name = 'Romania'),
+  # In other words, .places_visited is the result of this SELECT query.
 };
-{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}
 ```
+
+The result is `{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}`.
 
 The `uuid` there is the reply from the server showing that we were successful.
 
@@ -561,7 +572,15 @@ SELECT Vampire {
 
 This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}` Perfect.
 
-Now let's think about `age`. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to the `PC` and `NPC` types too. But we don't want them to live up to 32767 years, because they aren't the type `Vampire`. For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can use. We will use `max_value()`. Now it looks like this:
+Now let's think about `age`. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to the `PC` and `NPC` types too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can take. We will use `max_value()`. 
+
+Here's the signature for `max_value()`:
+
+`std::max_value(max: anytype)`
+
+The `anytype` part is interesting, because it means it can work on types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C'.
+
+Now let's go back to our constraint for `HumanAge`, which is 120. It looks like this:
 
 ```
 scalar type HumanAge extending int16 {
