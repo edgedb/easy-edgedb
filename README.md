@@ -322,9 +322,9 @@ Of course, right now Jonathan Harker is being connected to every city in the dat
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
->Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen.
+>Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. He doesn't know how much it will help him later.
 
-Right away we see that we could add another property to `City`, and will write this: `property important_places -> array<str>;` It will now look like this:
+Now we are starting to see some detail about the city. Right away we see that we could add another property to `City`, and we will call it `important_places`. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
 ```
 type City {
@@ -334,19 +334,31 @@ type City {
 }
 ```
 
-## Scalar types, extending
-
-We now have two types of transport in the book: train, and horse-drawn carriage. This book is based in the late 1800s and our game will let the characters use different types of transport too. Here an `enum` is probably the best choice, because an `enum` is about making one choice between options. Here we see the word `scalar` for the first time: this will be a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they hold any number of values at the same time.
-
-The other keyword we will see for the first time is `extending`. This gives you all the power of the type that you are extending. We will write our `Tranport` type like this:
+Now our original insert for Bistritz will look like this:
 
 ```
-scalar type Transport extending enum<'feet', 'train', 'horse-drawn carriage'>;
+INSERT City {
+  name := 'Bistritz',
+  modern_name := 'Bistrița',
+  important_places := ['Golden Krone Hotel'],
+};
+```
+
+## Scalar types, extending
+
+We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use different types of transport too. Here an `enum` is probably the best choice, because an `enum` is about making one choice between options. The variants of the enum should be written in UpperCamelCase.
+
+Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
+
+The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This gives you all the power of the type that you are extending, and add some more options. We will write our `Transport` type like this:
+
+```
+scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 ```
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-This `Transport` type, however, is going to be useful for the characters in our game - not the characters in the book. Only characters in our game will be choosing between one type of transport or another. So maybe it's a good time to turn our `Person` type into something else. What we can do is make `Person` an `abstract type` instead. An `abstract type` is a sort of base type that you can use to build other types. Then we can have two other types called `PC` and `NPC` that draw from it with the keyword `extending`.
+This `Transport` type is going to be for player characters in our game, not the characters in the book (their stories and choices are already finished). That means that we want to make a `PC` type and an `NPC` type, but our `Person` type should stay too, and work as a base type. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` again for the other `PC` and `NPC` types.
 
 So now this part of the schema looks like this:
 
@@ -362,7 +374,7 @@ type NPC extending Person {
 }
 ```
 
-Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. Because `Person` is now an abstract type, we can't use it directly anymore. It will give us this error if we try:
+Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't use it directly anymore. It will give us this error if we try to do something like `INSERT Person {name := 'Mr. HasAName'};`:
 
 ```
 error: cannot insert into abstract object type 'default::Person'
@@ -380,11 +392,11 @@ Let's also experiment with a player character. We'll make one called Emil Sincla
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>'horse-drawn carriage',
+  transport := <Transport>HorseDrawnCarriage,
 };
 ```
 
-Note that we didn't just write `'horse-drawn carriage'`, because transport is an `enum<str>`, not a `str`. The `<>` angle brackets do casting, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
+Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do casting, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
 
 ```
 SELECT 'feet' IS Transport;
@@ -427,9 +439,19 @@ The output is this:
 {Object {name: 'Emil Sinclair', places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}}}}
 ```
 
-Let's filter the cities now. You can use `LIKE` or `ILIKE` to match on parts of a string. `LIKE` is case-sensitive ("Bistritz" matches "Bistritz" but "bistritz" does not), while `ILIKE` is not. You can also add `%` on the left and/or right which means match anything. So `ILIKE '%IsTRiT%'` would match Bistritz.
+Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string. 
 
-Let's `FILTER` to get all the cities that start with a capital B. We'll use `LIKE` because it's case-sensitive:
+- `LIKE` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not. 
+- `ILIKE` is not case-sensitive, so "Bistritz" matches "BiStRitz", "bisTRITz", etc.
+
+You can also add `%` on the left and/or right which means match anything. Here are some examples with the matched part **in bold**:
+
+- `LIKE Bistr%` matches "**Bistr**itz" (but not "bistritz"),
+- `ILIKE '%IsTRiT%'` matches "B**istri**tz",
+- `LIKE %athan Harker` matches "Jon**athan Harker**",
+- `ILIKE %n h%` matches "Jonatha**n H**arker".
+
+Let's `FILTER` to get all the cities that start with a capital B. That means we'll need `LIKE` because it's case-sensitive:
 
 ```
 SELECT City {
@@ -445,7 +467,16 @@ Here is the result:
   Object {name: 'Bistritz', modern_name: 'Bistrița'},
 ```
 
-You can also index a string so one other way to do it is like this:
+You can also index a string with `[]` square brackets, starting at 0. For example, the string 'Jonathan' looks like this:
+
+```
+Jonathan
+01234567
+```
+
+So `'Jonathan'[0]` is 'J' and `'Jonathan'[4]` is 't'.
+
+Let's try it:
 
 ```
 SELECT City {
@@ -460,7 +491,7 @@ That gives the same result. Careful though: if you set the number too high then 
 ERROR: InvalidValueError: string index 18 is out of bounds
 ```
 
-And if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use LIKE or ILIKE with an empty parameter, it will just give an empty set: `{}` instead of an error.
+And if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error.
 
 [Here is all our code so far up to Chapter 2.](chapter_2_code.md)
 
