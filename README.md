@@ -588,7 +588,7 @@ scalar type HumanAge extending int16 {
 }
 ```
 
-Then add it to the `NPC` type:
+Then add it to the `NPC` type. 
 
 ```
 type NPC extending Person {
@@ -596,7 +596,7 @@ type NPC extending Person {
 }
 ```
 
-Now it won't be able to be more than 120. So if we write this:
+It's our own type, but underneath it's an `int16` that won't be able to be more than 120. So if we write this, it won't work:
 
 ```
 insert NPC {
@@ -605,7 +605,7 @@ insert NPC {
 };
 ```
 
-It won't work. Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for HumanAge is 120.` Perfect.
+Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for HumanAge is 120.` Perfect.
 
 Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
 
@@ -613,19 +613,19 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 # Chapter 4 - "What a strange man this Count Dracula is."
 
->Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Then he quickly leaves when he sees that it is almost morning. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
+>Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Jonathan notices that it's almost morning, and that they talked through the whole night. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
 
-First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema:
+First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema called `lover`:
 
 ```
 abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
-  LINK lover -> Person;
+  link lover -> Person;
 }
 ```
 
-We will assume that a person can only have one `lover`, so this is a `SINGLE LINK` but we can just write `LINK`.
+With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link` but we can just write `link`.
 
 Mina is in London, and we don't know if she has been anywhere else. So for the meantime, we are just going to create the city of London. It couldn't be easier:
 
@@ -635,7 +635,9 @@ INSERT City {
 };
 ```
 
-To give her the city of London, we will just do a quick `SELECT City FILTER .name = 'London'`. For `lover` it is the same process but a bit mork complicated:
+To give her the city of London, we will just do a quick `SELECT City FILTER .name = 'London'`. This gives her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
+
+For `lover` it is the same process but a bit more complicated:
 
 ```
 INSERT NPC {
@@ -647,8 +649,8 @@ INSERT NPC {
 
 You'll notice two things here:
 
-- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type. We need to add `DETACHED` to tell EdgeDB that we are talking about a different `NPC`, not self.
-- `LIMIT 1`. This is because the link is a `SINGLE LINK`. The search for 'Jonathan Harker' might give us more than one person with this name, so we need to make sure we only get one.
+- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to tell EdgeDB that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
+- `LIMIT 1`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `LIMIT 1`. And of course `LIMIT 2` will work just fine if we want to link to up to 2 objects.
 
 We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", something that lets us create a new variable that we define with `:=`. First here is a normal query:
 
