@@ -731,7 +731,7 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game has a clock that gives the time as a `str`. We'll make a quick `Date` type that can help. It looks like this:
+We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Date` type that can help. It looks like this:
 
 ```
 type Date {
@@ -741,7 +741,7 @@ type Date {
 }
 ```
 
-`.date[0:2]` is an example of "slicing". [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 instead of 9).
+`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 instead of 9).
 
 So this won't work:
 
@@ -755,7 +755,9 @@ It gives this error:
 ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
 ```
 
-So with this `Date` type, we can get the hour by doing this:
+So we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
+
+Now with this `Date` type, we can get the hour by doing this:
 
 ```
 INSERT Date {
@@ -763,7 +765,7 @@ INSERT Date {
 };
 ```
 
-And then we can `SELECT` our `Date` types:
+And then we can `SELECT` our `Date` types and everything inside:
 
 ```
 SELECT Date {
@@ -773,7 +775,9 @@ SELECT Date {
 };
 ```
 
-That gives us a nice output that shows everything, including the hour: `{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
+That gives us a nice output that shows everything, including the hour: 
+
+```{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}```.
 
 Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
@@ -788,11 +792,14 @@ type Date {
 
 So `awake` is calculated like this:
 
-- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it can't compare on a `str`, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
+- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` to cast instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
-Now if we `SELECT` this with all the properties, it will give us this: `  Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}`
+Now if we `SELECT` this with all the properties, it will give us this: 
 
+```Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}```
+
+## SELECT while you INSERT
 One good trick to know is that you can `SELECT` the item you just `INSERT`ed, same as with anything else. Because when we insert a new `Date`, all we get is a `uuid`:
 
 ```
@@ -801,24 +808,24 @@ INSERT Date {
 };
 ```
 
-The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2fbb84b361f8}}` But what if we want to display its properties too? 
+The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2fbb84b361f8}}` But what if we want to display its properties too?
 
-That's not hard: just wrap the whole entry in `SELECT ()`. Now that we've selected it, we can choose the properties to display, same as always:
+That's not hard: just wrap the whole entry in `SELECT ()`. Because it's enclosed in brackets, we are taking the whole item that we just inserted, select it, and can do a normal query. That means that we can choose the properties to display, same as always. We can even add a computable while we are at it.
 
 ```
 SELECT ( # Start a selection
   INSERT Date { # Put the insert inside it
     date := '22.44.10'
-} 
-) # The bracket finishes the selection
-{ # Now just choose the properties we want
-  date,
-  hour,
-  awake
-};
+}) # The bracket finishes the selection
+  { # Now just choose the properties we want
+    date,
+    hour,
+    awake,
+    double_hour := <int16>.hour * 2
+  };
 ```
 
-Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake'}}` We know the date, the hour, and can see that the vampire is awake.
+Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake', double_hour: 44}}` We know the date and the hour, we can see that the vampire is awake, and even make a computable from the object we just entered.
 
 [Here is all our code so far up to Chapter 4.](chapter_4_code.md)
 
