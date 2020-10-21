@@ -652,7 +652,7 @@ You'll notice two things here:
 - `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to tell EdgeDB that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
 - `LIMIT 1`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `LIMIT 1`. And of course `LIMIT 2` will work just fine if we want to link to up to 2 objects.
 
-We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", something that lets us create a new variable that we define with `:=`. First here is a normal query:
+We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", where we can create a new variable that we define with `:=`. First here is a normal query:
 
 ```
 select Person {
@@ -671,7 +671,7 @@ This gives us:
   Object {name: 'Jonathan Harker', lover: 'Mina Murray'},
 ```
 
-But we don't want to have to read every line ourselves - we just want `true` or `false`. Now we'll add the computable to the query, using `EXISTS`. Because there is no null in EdgeDB, `EXISTS` gives `{false}` if it returns an empty set and `{true}` otherwise:
+But what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computable to the query, using `EXISTS`. `EXISTS` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
 
 ```
 select Person {
@@ -690,7 +690,7 @@ Now this prints:
 
 This also shows why abstract types are useful. Here we did a quick search on `Person` for data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
 
-We can also put a computable in the type itself.
+We can also put a computable in the type itself. Here's the same computable except now it's inside the `Person` type:
 
 ```
 abstract type Person {
@@ -703,14 +703,21 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
-We will now learn about time, because it might be important for our game: vampires can only go outside at night.
+We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
 
-The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. To keep it simple, we will use that to decide if it's day or night.
+The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple, we will just use 7 am and 7 pm to decide if it's day or night.
 
-EdgeDB uses two types for time: 
+EdgeDB uses two major types for time.
 
 -`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
--`cal::local_time`, which doesn't worry about the timezone. We will use this first.
+-`cal::local_datetime`, which doesn't worry about the timezone.
+
+There are two others that are almost the same as `cal::local_datetime`:
+
+-`cal::local_time`, when you only need to know the time of day, and
+-`cal::local_date`, when you only need to know the month and the day.
+
+We'll start with `cal::local_time` first.
 
 `cal::local_time` is easy to create, because you can just cast to it from a `str`:
 
