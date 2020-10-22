@@ -868,7 +868,7 @@ And get the following output:
 
 The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
 
-With this we can see the duration between events, because there is a `duration` type that you can get by subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
+We can also use this to see the duration between events, using a `duration` type that you can get by subtracting a datetime from another one. Let's see the exact number of seconds between one date in Central Europe and another in Korea:
 
 ```
 SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
@@ -876,7 +876,15 @@ SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 1
 
 This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 2000 6:10 in Korean Standard Time. The result is: `{631180800s}`.
 
-Now let's try something similar. Imagine Jonathan in Castle Dracula on May 12 at 10:35 am, trying to escape. On the same day, Mina is in London at 6:10 am, drinking her morning tea. They are in different time zones, so how many seconds passed in between the two events? We can use `WITH` to declare some variables to make it easier to read. In this sample, `jonathan_wants_to_escape` and `mina_has_tea` are both of type `std::datetime`, so we can subtract one from the other:
+Now let's try something similar. Imagine Jonathan in Castle Dracula on May 12 at 10:35 am, trying to escape. On the same day, Mina is in London at 6:10 am, drinking her morning tea. They are in different time zones, so how many seconds passed in between the two events? That's easy:
+
+```
+SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST') - to_datetime(2020, 5, 12, 6, 10, 0, 'UTC');
+```
+
+The answer is 5100 seconds: `{5100s}`.
+
+To make the query easier for us to read, we can also use the `WITH` keyword to create variables. We can then use the variables in `SELECT` below. We'll make one called `jonathan_wants_to_escape` and another called `mina_has_tea`, and subtract one from another to get a `duration`. Now it's a bit easier to read:
 
 ```
 WITH 
@@ -885,11 +893,11 @@ WITH
   SELECT jonathan_wants_to_escape - mina_has_tea;
 ```
 
-The output is `{5100s}`. As long as we know the timezone, EdgeDB does the work for us.
+The output is `{5100s}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
 
 ## Required links
 
-Now we need to make a type for the three female vampires. We will call the type `MinorVampire`. These have a link to the `Vampire` type, it needs to be `required` because they only live while Dracula lives.
+Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required` because Dracula controls them and they are only `MinorVampire`s because of him.
 
 ```
 type MinorVampire extending Person {
@@ -897,7 +905,7 @@ type MinorVampire extending Person {
 }
 ```
 
-Now that it's required, we can't just give it a name. It will give us this error: `ERROR: MissingRequiredError: missing value for required link default::MinorVampire.master`.
+Now that it's required, we can't insert a `MinorVampire` with just a name. It will give us this error: `ERROR: MissingRequiredError: missing value for required link default::MinorVampire.master`.
 
 ```
 INSERT MinorVampire {
@@ -910,11 +918,33 @@ This works because there is only one 'Count Dracula' (remember, `required link` 
 
 ## DESCRIBE
 
-Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types can continue to extend other types, and it can be annoying to read each one to try to put them together in our mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, plus they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL.
+- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL. Here is what our Person type looks like in DDL:
+
+```
+{
+  'CREATE TYPE default::MinorVampire EXTENDING default::Person {
+    CREATE REQUIRED SINGLE LINK master -> default::Vampire;
+};',
+}
+```
+
+The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. Also, because it only shows the DDL commands to create it, we can't see everything inside. So we don't want that. The next method is:
+
 - `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL.
-- `DESCRIBE TYPE MinorVampire AS TEXT` - this is what we want. It shows everything inside the type. When we enter that, it gives us everything:
+
+The output is almost the same too, just the SDL version of the above. It's also not enough information for what we want now:
+
+```
+{
+  'type default::MinorVampire extending default::Person {
+    required single link master -> default::Vampire;
+};',
+}
+```
+
+The third method is `DESCRIBE TYPE MinorVampire AS TEXT`, and is what we want - it shows everything inside the type. Here's the output:
 
 ```
 {
@@ -934,7 +964,7 @@ Our `MinorVampire` type extends `Vampire`, and `Vampire` extends `Person`. Types
 }
 ```
 
-The parts that say `readonly := true` we don't need to worry about, as they are automatically generated. For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
+The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
 And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
 
