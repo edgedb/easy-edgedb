@@ -831,23 +831,34 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 # Chapter 5 - Jonathan tries to leave the castle
 
-Here's what happens in this chapter:
+Jonathan is not having much luck. Here's what happens to him in this chapter:
 
->During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake, and now he is very afraid. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. He opens his eyes and sees three vampire women next to him. He can't move.
+>During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake, and now he is very afraid. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to and afraid of them at the same time. He can't move...
 
 ## std::datetime
 
 Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
 
-`'2020-12-06T22:12:10Z'`
+```YYYY-MM-DDTHH:MM:SSZ```
 
-YYYY-MM-DDTHH:MM:SSZ
+And an actual date looks like this.
+
+`'2020-12-06T22:12:10Z'`
 
 The `T` inside there is just a separator, and the `Z` at the end means "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it *is* UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are multiple ways to make a `datetime` with this function. The easiest is probably the third, which looks like this: `std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime`
+One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are six ways to make a `datetime` with this function depending on how you want to make it:
 
-With this, our game could have a function that generates integers for times that then use `to_datetime` to get get a proper time stamp. Let's imagine that it's 10:35 am in Castle Dracula and Jonathan is trying to escape on May 12 to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
+```
+std::to_datetime(s: str, fmt: OPTIONAL str = {}) -> datetime
+std::to_datetime(local: cal::local_datetime, zone: str) -> datetime
+std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime
+std::to_datetime(epochseconds: decimal) -> datetime
+std::to_datetime(epochseconds: float64) -> datetime
+std::to_datetime(epochseconds: int64) -> datetime
+```
+
+The easiest is probably the third if you find ISO 8601 formatting unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get get a proper time stamp. Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
 
 `SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');`
 
