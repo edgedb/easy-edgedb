@@ -972,7 +972,7 @@ And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS S
 
 # Chapter 6 - Still no escape
 
->Jonathan can't move and the women vampires are next to him. Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds them, and burns them in front of Jonathan. Jonathan is still stuck in the castle.
+>Jonathan can't move and the women vampires are next to him. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and burns them in front of Jonathan. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
 
 There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
 
@@ -983,11 +983,32 @@ INSERT NPC {
 };
 ```
 
-This was fine when we only had cities, but now we have the `Place` and `Country` type. First we'll insert a `Country` type with `name := 'Romania'`. Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;`
+This was fine when we only had cities, but now we have the `Place` and `Country` type. First we'll insert two `Country` types so we don't just have cities:
 
-Then we'll insert an `OtherPlace` with `name := 'Castle Dracula'`. Now we don't just have cities. Finally we will insert a `Country` with `name := 'Slovakia'`, just in case.
+```
+INSERT Country {
+  name := 'Romania'
+};
+INSERT Country {
+  name := 'Slovakia'
+};
+```
 
-We can insert Jonathan with `Place`, but then he'll get every `Place` in the database, including Slovakia. Let's make sure that Jonathan doesn't always get every `Place` in the database when we insert him. We can do a quick `SELECT` on all `Place` types matching the name:
+(In Chapter 9 we'll learn how to do this with just one `INSERT`!)
+
+Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;` and it's done.
+
+Then we'll insert our first `OtherPlace`:
+
+```
+INSERT OtherPlace {
+  name := 'Castle Dracula'
+};
+```
+
+That gives us a good number of types from `Place` that aren't of the `City` type.
+
+So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia, so we can't just insert him with `places_visited := SELECT Place`. Instead, we can filter on `Place` types that match the name of the places he has visited. It looks like this:
 
 ```
 INSERT NPC {
@@ -998,7 +1019,7 @@ INSERT NPC {
 
 You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it.
 
-Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'`. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` starts the update, and `SET` is for the parts we want to change.
+Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
 
 ```
 UPDATE NPC
@@ -1011,9 +1032,20 @@ UPDATE NPC
 
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
-One other operator is `++`, which does concatenation (joining things together) instead of adding.
+Here's one more example of a very simple update which doesn't filter at all. This update would give every `Person` type every single `Place` in the database under `places_visited`.
 
-You can do simple operations like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
+```
+UPDATE Person
+  SET {
+    places_visited := Place
+    };
+```
+
+## Concatenation with ++
+
+One other operator is `++`, which does concatenation (joining together) instead of adding.
+
+You can do simple operations with it like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
 ```
 SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
@@ -1042,7 +1074,7 @@ type Vampire extending Person {
 
 Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the link from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
 
-- When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `REQUIRED LINK`) will not be there.
+- When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required link`) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
 ```
@@ -1078,6 +1110,8 @@ INSERT Vampire {
 };
 ```
 
+With this we don't have to insert the `MinorVampire` types first and then filter: we can just put them in together with Dracula.
+
 Then when we `select Vampire` like this:
 
 ```
@@ -1096,10 +1130,13 @@ Object {
   },
 ```
 
-What do we do if we want the same output in json? That's easy: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
+## json
+
+What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
 ```
-SELECT <json>Vampire {
+SELECT <json>Vampire { 
+      # <json> is the only difference from the SELECT above
   name,
   slaves: {name}
 };
