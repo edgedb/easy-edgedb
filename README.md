@@ -1140,7 +1140,7 @@ Object {
   },
 ```
 
-## Just type <json> to generate json
+## Just type \<json> to generate json
 
 What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
