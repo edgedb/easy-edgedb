@@ -1877,7 +1877,7 @@ In the above example we could easily just cast the last string into an integer a
 To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```
-for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
   UNION (
     UPDATE City FILTER .name = data.0
     SET {
@@ -1885,7 +1885,9 @@ for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
 });
 ```
 
-So it sends each tuple into the FOR loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+So it sends each tuple into the `FOR` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+
+## Ordering results and using math
 
 Now that we have some numbers, we can do some math on them. Here we order them by population with `ORDER BY`:
 
@@ -1908,7 +1910,7 @@ This returns:
 }
 ```
 
-What's DESC? It means descending, so largest first. If you don't write DESC then it will assume that you meant ascending. If you want to specify that, you can also write ASC.
+What's `DESC`? It means descending, so largest first and then going down. If you don't write `DESC` then it will assume that you meant ascending. You can also write `ASC` to make it clear to somebody else reading the code, but you don't need to.
 
 For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as `math` [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
@@ -1925,7 +1927,7 @@ WITH cities := City.population
 );
 ```
 
-The result is:
+This used quite a few functions: `count()`, `all()`, `sum()`, `max()`, `min()`, `math::mean()`, `any()`, and `math::stddev()`. But the output makes it clear how they work:
 
 ```
 {
@@ -1942,6 +1944,8 @@ The result is:
 ```
 
 `any()`, `all()` and `count()` are particularly useful in operations to give you an idea of your data.
+
+## Some more computables for names
 
 In the letter from Dr. Van Helsing to Dr. Seward, he starts it as follows:
 
