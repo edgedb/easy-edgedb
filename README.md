@@ -1498,13 +1498,17 @@ Choosing the five objects from before from the output, it now looks like this:
 
 # Chapter 9 - Strange events in England
 
-Introduction part 1:
+We'll only read part of the introduction to start this chapter. Here it is:
 
-> We still don't know where Jonathan is, and the ship is on its way to England. Meanwhile, Mina Harker is writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood) who want to marry her....
+> We still don't know where Jonathan is, and the ship is on its way to England. Meanwhile, Mina Harker is writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood), and they all want to marry her....
 
-It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because will be a part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). This is a good time to add a `first_appearance` and `last_appearance` property to the `Person` type. We will choose `last_appearance` instead of `death`, because for the game it doesn't matter: we just want to have the right characters in the game at the right times.
+## Working with dates some more
 
-For these two properties we will use `cal::local_date` because we can use the year 1887 for it. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (There is also a `cal::local_time` type with just the time of day)
+It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they will still be a part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). 
+
+This is a good time to add a `first_appearance` and `last_appearance` property to the `Person` type. We will choose `last_appearance` instead of `death`, because for the game it doesn't matter: we just want to know when characters are present.
+
+For these two properties we will use `cal::local_date` because we can use the year 1887 for it. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we use in our `Date` type.)
 
 We won't insert all the `first_appearance` and `last_appearance` values here, but the format looks like this:
 
@@ -1518,6 +1522,26 @@ INSERT Crewman {
 
 And the easiest way to set them all is to use the `UPDATE` and `SET` syntax if we know the same date for all of them.
 
+Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to insert would be just casting from a string:
+
+```
+SELECT <cal::local_date>'1887-07-08';
+```
+
+But we imagined before that we had a function that gave us separate numbers to put into a function, so we can use something similar.
+
+Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter [`cal::to_local_date`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function. It just takes three integers.
+
+Here are its signatures (we're using the third):
+
+```
+cal::to_local_date(s: str, fmt: OPTIONAL str = {}) -> local_date
+cal::to_local_date(dt: datetime, zone: str) -> local_date
+cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
+```
+
+Now we update the `Crewman` types and give them all the same date to keep things simple:
+
 ```
 UPDATE Crewman
   SET {
@@ -1526,9 +1550,9 @@ UPDATE Crewman
 };      
 ```
 
-This will of course depend on our game. Can a `PC` actually visit the ship during the trip to England? If not, then we can just choose a rough date as above.
+This will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? If so, then we will need more precise dates. But we're fine for now.
 
-The [cal::to_local_date](https://edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function is the easiest way, as it allows you to simply insert three numbers to get a date. You can also cast from a string using `<cal::local_date>`, but the string must be in ISO8601 format.
+## Adding defaults to a type, and the overloaded keyword
 
 Now let's get back to inserting the new characters. First we'll insert Lucy:
 
@@ -1539,7 +1563,9 @@ INSERT NPC {
 };
 ```
 
-Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. Let's make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. `overloaded` is because we are changing what we inherited from `Person`, and need to specify that.
+Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. To save ourselves some work, we can make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. `overloaded` is to indicate that we are using `placed_visited` in a different manner than the `Person` type that we got it from.
+
+With `default` and `overloaded` added, it now looks like this:
 
 ```
 type NPC extending Person {
@@ -1550,7 +1576,17 @@ type NPC extending Person {
 }
 ```
 
-So now we can enter all three of our new characters at the same time. To do this we can use a `FOR` loop, followed by the keyword `UNION`. 
+## Using FOR and UNION
+
+We're almost ready to insert our three characters, and now we don't need to add `(SELECT City FILTER .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
+
+To do this, we can use a `FOR` loop, followed by the keyword `UNION`. First, here's the `FOR` part:
+
+```
+FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+```
+
+In other words: take this set of three strings and do something to each one, which we will call `character_name` every time.
 
 `UNION` is because it is the keyword used to join sets together. For example, this query:
 
@@ -1562,7 +1598,7 @@ WITH city_names := (SELECT City.name),
 
 joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
 
-Back to the `FOR` loop: after `FOR` we choose the variable name to use in the later part of the query.
+Back to the `FOR` loop with the variable name `character_name`, which looks like this:
 
 ```
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
@@ -1572,6 +1608,8 @@ FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
     lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
 });
 ```
+
+We get three `uuid`s as a response to show that they were entered.
 
 Then we can check to make sure that it worked:
 
@@ -1587,7 +1625,7 @@ SELECT NPC {
 } FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
 ```
 
-And we see them all connected to Lucy now:
+And as we hoped, they are all connected to Lucy now.
 
 ```
   Object {
@@ -1608,7 +1646,7 @@ And we see them all connected to Lucy now:
 }
 ```
 
-By the way, now we can use this to insert our five `Crewman` types inside one `INSERT` instead of five. We'll change it to this now:
+By the way, now we can use this to insert our five `Crewman` types inside one `INSERT` instead of five. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them:
 
 ```
 FOR n IN {1, 2, 3, 4, 5}
@@ -1618,7 +1656,7 @@ FOR n IN {1, 2, 3, 4, 5}
 });
 ```
 
-Now it's time to update Lucy with three lovers. But `LINK lover` in the `Person` type isn't set as MULTI so we'll have to change that. With this change made, we  can update Lucy:
+Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
 
 ```
 UPDATE NPC FILTER .name = 'Lucy Westenra'
@@ -1629,8 +1667,7 @@ SET {
 };
 ```
 
-
-Now we'll select her to make sure it worked. We'll use `LIKE` this time:
+Now we'll select her to make sure it worked. Let's use `LIKE` this time for fun when doing the filter:
 
 ```
 SELECT NPC {
@@ -1656,7 +1693,9 @@ And this does indeed print her out with her three lovers.
 }
 ```
 
-Also, now that we know the keyword `overloaded`, we can remove our `HumanAge` type. Right now it looks like this:
+## Overloading instead of making a new type
+
+So now that we know the keyword `overloaded`, we don't need the `HumanAge` type for `NPC` anymore. Right now it looks like this:
 
 ```
 scalar type HumanAge extending int16 {
@@ -1664,22 +1703,33 @@ scalar type HumanAge extending int16 {
 }
 ```
 
-You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can move `age` over to the `Person` type, and just use `overloaded` to add a constraint on it for the `NPC` type.
+You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there. Now `NPC` uses `overloaded` twice:
 
-That lets us delete it from `Vampire` too:
+```
+type NPC extending Person {
+  overloaded property age {
+    constraint max_value(120)
+  }
+  overloaded multi link places_visited -> Place {
+    default := (SELECT City filter .name = 'London');
+  }
+}
+```
+
+This is convenient because we can delete it from `Vampire` too:
 
 ```
 type Vampire extending Person {    
   # property age -> int16; **Delete this one now**
-  MULTI LINK slaves -> MinorVampire;
+  multi link slaves -> MinorVampire;
 }
 ```
 
-Okay, let's read the rest of the introduction about Lucy:
+Okay, let's read the rest of the introduction for this chapter. Let's see what Lucy is up to:
 
->...She chooses to marry Arthur Holmwood, and says sorry to the other two. Fortunately, the three men become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a Renfield, a man who believes that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
+>...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately they become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a strange man named Renfield. Renfield is sometimes calm, sometimes completely crazy, and seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
-Oops! Looks like she doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
+Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
 
 ```
 UPDATE NPC FILTER .name = 'Lucy Westenra'
@@ -1688,7 +1738,7 @@ UPDATE NPC FILTER .name = 'Lucy Westenra'
 };
 ```
 
-And then remove her from the other two:
+And then remove her from the other two. We'll just give them an empty set.
 
 ```
 UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
@@ -1707,7 +1757,7 @@ INSERT NPC {
 };
 ```
 
-But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later. We will have to think about his relationship with Dracula later.
+But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later, so we gave him 10. We will have to think about his relationship with Dracula later.
 
 # Chapter 10 - Terrible events in Whitby
 
