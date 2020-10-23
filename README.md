@@ -1303,7 +1303,7 @@ We are finally away from Castle Dracula. Here is what happens in this chapter:
 
 ## Multiple inheritance
 
-Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create this abstract type only for the types that need it:
+Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for the types that need a number:
 
 ```
 abstract type HasNumber {
@@ -1320,7 +1320,7 @@ type Crewman extending HasNumber, Person {
 }
 ```
 
-Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this each time:
+Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
 
 ```
 INSERT Crewman {
@@ -1328,7 +1328,7 @@ INSERT Crewman {
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So we do this five times and `SELECT Crewman{number};`. It gives us:
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `SELECT Crewman {number};` to see the result. It gives us:
 
 ```
 {
@@ -1343,10 +1343,10 @@ So if there are no `Crewman` types, he will get the number 1. The next will get 
 Next is the `Sailor` type. The sailors have ranks, so first we will make an enum for that:
 
 ```
-scalar type Rank extending enum<'Captain', 'First mate', 'Second mate', 'Cook'>;
+scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 ```
 
-And then a `Sailor` type that uses `Person` and this enum:
+And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
 
 ```
 type Sailor extending Person {
@@ -1354,11 +1354,11 @@ type Sailor extending Person {
 }
 ```
 
-Then finally a `Ship` type to hold them all.
+Then finally a we make `Ship` type to hold them all.
 
 ```
 type Ship {
-  name -> str;
+  required property name -> str;
   multi link sailors -> Sailor;
   multi link crew -> Crewman;
 }
@@ -1374,6 +1374,8 @@ INSERT Sailor {
 ```
 
 We do that for the Captain, First Mate, Second Mate, and Cook.
+
+Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `FILTER` anywhere.
 
 ```
 INSERT Ship {
@@ -1421,7 +1423,11 @@ The result is:
 }
 ```
 
-So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. But because `Person` doesn't have all of these, this query won't work:
+## Using IS to query multiple types
+
+So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. 
+
+But this gives us a problem if we want to query them all at the same time. They all extend `Person`, but `Person` doesn't have all of their links and properties. So this query won't work:
 
 ```
 SELECT Person {
@@ -1431,7 +1437,15 @@ SELECT Person {
 };
 ```
 
-The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. Luckily there is an easy fix for this using `IS` inside square brackets:
+The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. 
+
+Luckily there is an easy fix for this: we can use `IS` inside square brackets to specify the type. Here's how it works:
+
+- `.name`: this stays the same, because `Person` has this property
+- `.age`: this belongs to the `NPC` type, so change it to `[IS NPC].age`
+- `.number`: this belongs to the `Crewman` type, so change it to `[IS Crewman].number`
+
+Now it will work:
 
 ```
 SELECT Person {
@@ -1441,7 +1455,7 @@ SELECT Person {
 };
 ```
 
-Now it will only look for `age` for the `NPC` type and `number` for the `Crewman` type. The output is now quite large, but here is part of it:
+The output is now quite large, so here's just a part of it. You'll notice that types that don't have a property or a link will return an empty set: `{}`.
 
 ```
 {
@@ -1450,6 +1464,7 @@ Now it will only look for `age` for the `NPC` type and `number` for the `Crewman
   Object {name: 'Mina Murray', age: {}, number: {}},
   Object {name: {}, age: {}, number: 1},
   Object {name: {}, age: {}, number: 2},
+   # /snip
 }
 ```
 
@@ -1478,7 +1493,6 @@ Choosing the five objects from before from the output, it now looks like this:
 }
 ```
 
-Once again we also see that there is no `NULL`: even properties that aren't part of a type return `{}`.
 
 [Here is all our code so far up to Chapter 8.](chapter_8_code.md)
 
