@@ -1949,15 +1949,23 @@ This used quite a few functions: `count()`, `all()`, `sum()`, `max()`, `min()`, 
 
 In the letter from Dr. Van Helsing to Dr. Seward, he starts it as follows:
 
-`Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.`
+```
+Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
 
-This might be a good time to change our `Person` type. We have people with a lot of different types of names, in this order:
+“2 September.
+
+“My good Friend,—
+“When I have received your letter I am already coming to you.```
+
+This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a simple string, but we have people with a lot of different types of names, in this order:
 
 Title | First name | Last name | Degree
 
-So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on. But we also have characters that don't quite have a first and last name ('Woman 1', 'The Innkeeper') so it might not be a good idea to change the `name` property. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
 
-We will add these properties to `Person`:
+But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build it from parts of names. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+
+Let's try to imitate that by adding these properties to `Person`:
 
 ```
 property title -> str;
@@ -1988,6 +1996,8 @@ WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
  'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.');
 ```
 
+By the way, the `\n` inside the string creates a new line, while `\t` moves it one tab to the right.
+
 This gives us:
 
 ```
@@ -2000,6 +2010,57 @@ This gives us:
   ),
 }
 ```
+
+## UNLESS CONFLICT ON + ELSE + UPDATE
+
+We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. Our idea for this is that someone might see a character in the book and insert it, and then someone else would try to do the same. So thanks to that, this character named Johnny will work:
+
+```
+INSERT NPC {
+  name := 'Johnny'
+};
+```
+
+But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
+
+But sometimes we might want to do something else instead of just generating an error. Here we can use `UNLESS CONFLICT ON`, and follow up with an `ELSE` to tell it what to do. It's probably easier to explain with the answer first, so here is what we can do to insert an unlimited number of characters named Johnny:
+
+```
+WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
+ INSERT NPC {
+ name := 'Johnny'
+ } UNLESS CONFLICT ON .name
+ ELSE (
+ UPDATE NPC
+ SET {
+ name := 'Johnny' ++ <str>(count(johnnies))
+ });
+```
+ 
+Let's look at it step by step:
+ 
+`WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),` Here we select all the `NPC` types that have Johnny in their name.
+ 
+Then a normal insert:
+ 
+```
+INSERT NPC {
+ name := 'Johnny'
+ }
+```
+
+But it might not work so we add `UNLESS CONFLICT ON .name`. Then follow it with an `ELSE` to give instructions on what to do.
+
+But here's the important part: we don't write `ELSE INSERT`, because we are already in the middle of an `INSERT`. What we write instead is `UPDATE` for the type we are inserting, so `UPDATE NPC`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
+
+```
+UPDATE NPC
+ SET {
+ name := 'Johnny' ++ ' ' ++ <str>(count(johnnies))
+ }
+```
+
+With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
 
 # Chapter 11 - What's wrong with Lucy?
 
