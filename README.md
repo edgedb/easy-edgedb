@@ -1164,9 +1164,11 @@ The output is:
 
 # Chapter 7 - Jonathan finally "leaves" the castle
 
-> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. Count Dracula says that he will leave tomorrow, and Jonathan asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside. Jonathan knows that Dracula called the wolves, and asks him to close the door. Jonathan hears Dracula tell the women that they can have him tomorrow after he leaves. The next day Dracula's friends take him away (he is inside a coffin), and Jonathan is alone. Soon it will be night, and the doors are locked. He decides to escape out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" and begins to climb the wall.
+> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside. Jonathan knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door - he knows that Jonathan is trapped. Later, Jonathan hears Dracula tell the women that they can have him tomorrow after he leaves. Dracula's friends take him away (he is inside a coffin), and Jonathan is alone... and soon it will be night. All the doors are locked. He decides to escape out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" and begins to climb the wall.
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive`. With that, no two objects of the same type can have the same name. You can put a `constraint` in a block after the type, like this:
+## More constraints
+
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type, to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which will prevent two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
 
 ```
 abstract type Person {
@@ -1178,9 +1180,26 @@ abstract type Person {
 }
 ```
 
-Now we know that there will only be one `Jonathan Harker`, `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and so on. In our database we'll also add `constraint exclusive` to `Place` because those are also all unique.
+Now we know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
 
-Let's also think about our game mechanics a bit. The book says that Dracula is extremely strong, but Jonathan can't open the doors. We can think of doors as having a strength, and people having strength as well. If the person has greater strength than the door, then he or she can open it. So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
+```
+abstract type Place {
+  required property name -> str {
+      constraint exclusive;
+  };
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
+## Using functions in queries
+
+Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too difficult for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but for our case we can just do this:
+
+- Doors have a strength, and people have strength as well. 
+- If the person has greater strength than the door, then he or she can open it. 
+
+So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
 ```
 type Castle extending Place {
@@ -1188,7 +1207,7 @@ type Castle extending Place {
 }
 ```
 
-Then we'll say there are three main doors to enter and leave Castle Dracula, so we `INSERT` it as follows:
+Then we'll say there are three main doors to enter and leave Castle Dracula, so we `INSERT` them as follows:
 
 ```
 INSERT Castle {
@@ -1197,7 +1216,7 @@ INSERT Castle {
 };
 ```
 
-Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though maybe later on we will if we want to make every character in the book into a character for the game.
+Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
 
 Now we'll give Jonathan a strength of 5. We'll use `UPDATE` and `SET` like before:
 
@@ -1208,15 +1227,15 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 };
 ```
 
-Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Of course, we know that he can't do it but we want to make a query that can give the answer.
+Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Or in other words, he needs a greater strength than the weakest door. (Of course, we know that he can't do it but we want to make a query that can give the answer.)
 
 There is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This almost works, but not quite:
 
 ```
 WITH 
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  weakest_door := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT jonathan_strength > min(weakest_door);
+  castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+    SELECT jonathan_strength > min(castle_doors);
 ```
 
 Here's the error:
@@ -1233,9 +1252,9 @@ std::min(values: SET OF anytype) -> OPTIONAL anytype
 
 So it needs a set, so something in curly brackets. We can't just put curly brackets around the array, because then it becomes a set of one item (one array). So `SELECT min({[5, 6]});` just returns `{[5, 6]}` because that is the minimum value of the one array.
 
-That also means that `SELECT min({[5, 6], [2, 4]});` will work by giving us `{[2, 4]}`. But that's not what we want.
+That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[2, 4]}` (instead of 2). That's not what we want.
 
-Instead, what we want to use is [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
+Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
 
 ```
 WITH 
@@ -1244,9 +1263,9 @@ WITH
     SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
-That gives us `{false}`. Perfect! Now we know that Jonathan will have to climb out the window to escape.
+That gives us `{false}`. Perfect! Now we know that Jonathan can't open any doors. He will have to climb out the window to escape.
 
-Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here are two examples with these functions:
+Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC`  types:
 
 ```
 SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
@@ -1262,7 +1281,7 @@ Don't forget that we need cast with `<str>` because `len()` returns an integer, 
 }
 ```
 
-The other example is with `count()`, and also has a cast to a `<str>`:
+The other example is with `count()`, which also has a cast to a `<str>`:
 
 ```
 SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more places than castles';
@@ -1270,7 +1289,7 @@ SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more plac
 
 It prints: `{'There are 6 more places than castles'}`.
 
-In a few chapters we will learn how to use `CREATE FUNCTION` to make queries shorter.
+In a few chapters we will learn how to create our own functions to make queries shorter.
 
 [Here is all our code so far up to Chapter 7.](chapter_7_code.md)
 
