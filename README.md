@@ -1955,7 +1955,8 @@ Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
 “2 September.
 
 “My good Friend,—
-“When I have received your letter I am already coming to you.```
+“When I have received your letter I am already coming to you.
+```
 
 This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a simple string, but we have people with a lot of different types of names, in this order:
 
