@@ -1297,9 +1297,13 @@ In a few chapters we will learn how to create our own functions to make queries 
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
-> A boat leaves from the city of Varna. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They are afraid but don't know what to do. One of them sees Dracula but the others don't believe him. On the last day the ship gets close to England and the captain is alone. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the ship hits the beach, all the men are dead and Dracula turns into a wolf and runs onto the shore. People find the captain's notebook in his hand and start to read the story.
+> A boat leaves from the city of Varna. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They are afraid but don't know what to do. One of them sees Dracula but the others don't believe him. On the last day the ship gets close to the city of Whitby in England and all the men are dead except the captain. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the ship hits the beach, all the men are dead, and Dracula turns into a wolf and runs onto the shore. People find the captain's notebook in his hand and start to read the story.
 
-Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create this:
+> Meanwhile, Mina and Lucy are in Whitby on vacation...
+
+## Multiple inheritance
+
+Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create this abstract type only for the types that need it:
 
 ```
 abstract type HasNumber {
