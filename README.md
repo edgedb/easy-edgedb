@@ -344,7 +344,7 @@ INSERT City {
 };
 ```
 
-## Scalar types, extending
+## Enums, scalar types, and extending
 
 We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use different types of transport too. Here an `enum` is probably the best choice, because an `enum` is about making one choice between options. The variants of the enum should be written in UpperCamelCase.
 
@@ -546,6 +546,8 @@ INSERT Country {
 };
 ```
 
+## Capturing a SELECT expression
+
 We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead. When doing this, we put the `SELECT` inside `()` brackets. The brackets are necessary to capture the result of the `SELECT`.
 
 ```
@@ -571,6 +573,8 @@ SELECT Vampire {
 ```
 
 This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}` Perfect.
+
+## Adding constraints
 
 Now let's think about `age`. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to the `PC` and `NPC` types too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can take. We will use `max_value()`. 
 
@@ -636,6 +640,8 @@ INSERT City {
 ```
 
 To give her the city of London, we will just do a quick `SELECT City FILTER .name = 'London'`. This gives her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
+
+## DETACHED, LIMIT, and EXISTS
 
 For `lover` it is the same process but a bit more complicated:
 
@@ -707,6 +713,8 @@ We will now learn about time, because it might be important for our game. Rememb
 
 The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple, we will just use 7 am and 7 pm to decide if it's day or night.
 
+## Ways to tell time
+
 EdgeDB uses two major types for time.
 
 -`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
@@ -755,7 +763,7 @@ It gives this error:
 ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
 ```
 
-So we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
+Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
 
 Now with this `Date` type, we can get the hour by doing this:
 
@@ -974,6 +982,8 @@ And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS S
 
 >Jonathan can't move and the women vampires are next to him. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and burns them in front of Jonathan. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
 
+## Filtering on sets when doing an insert
+
 There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
 
 ```
@@ -1130,7 +1140,7 @@ Object {
   },
 ```
 
-## json
+## Just type <json> to generate json
 
 What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
