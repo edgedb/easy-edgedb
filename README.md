@@ -1761,17 +1761,23 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina Murray travels from London to Whitby to see Lucy. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. One night she watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who arrives from the Netherlands to help her. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
+> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside. One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
 
-We finally have a new city: Whitby, up in the northeast. Right now our `City` type just extends `Place`. This could be a good time to give it a `property population` which can help us estimate the city size in our game. It will be an `int64` to give us the size we need.
+The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
-Here's the approximate population for our three cities at the time of the book:
+```
+type City extending Place {
+    property population -> int64;
+}
+```
 
-- Buda-Pesth: 402706
+By the way, here's the approximate population for our three cities at the time of the book. They are much smaller back in 1887:
+
+- Buda-Pesth (Budapest): 402706
 - London: 3500000
 - Munich: 230023
 - Whitby: 14400
-- Bistritz: 9100
+- Bistritz (Bistrița): 9100
 
 Inserting Whitby is easy enough:
 
@@ -1782,13 +1788,21 @@ INSERT City {
 };
 ```
 
-But for the rest of them it would be nice to update everything at the same time. If we have all the data together we can do it with a `FOR` loop again. The data in this case is a set of `tuple<str, int64>`, so this format:
+But for the rest of them it would be nice to update everything at the same time. 
+
+## Working with tuples and arrays
+
+If we have all the city data together, we can do a single insert with a `FOR` and `UNION` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. For one, a tuple can hold different types, so this is okay:
 
 `('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
 
-You'll remember that to access part of an array, string etc. we use square brackets. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (index number 1).
+In this case, the type is called a `tuple<str, int64>`.
 
-You can also slice strings with the same square brackets by using a colon to indicate the starting and ending index. For example:
+Before we start using these tuples, let's make sure that we understand how to slice arrays so we can understand the difference between the two.
+
+You'll remember that to access part of an array, string etc. we use square brackets. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+
+You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
 ```
 SELECT NPC.name[0:10];
@@ -1808,13 +1822,13 @@ This prints the first ten letters of every NPC's name:
 }
 ```
 
-And the same can be done with a negative number to indicate how many characters from the end you want to slice. For example:
+But the same can be done with a negative number if you want to start from the index at the end. For example:
 
 ```
 SELECT NPC.name[2:-2];
 ```
 
-This prints from index 2 up to 2 indexes away from the end:
+This prints from index 2 up to 2 indexes away from the end (it'll cut off the first two letters on each side). Here's the output:
 
 ```
 {
@@ -1828,7 +1842,7 @@ This prints from index 2 up to 2 indexes away from the end:
 }
 ```
 
-So that's how indexing and slicing works for every type except tuples, which use `()`. Tuples are different because they are more like individual object types with fields. This lets tuples hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+Now, tuples are different because they are more like individual object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
 
 So this is completely fine:
 
@@ -1845,7 +1859,7 @@ The output is:
 }
 ```
 
-But now that the type is set (this one is of type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
+But now that the type is set (this one is type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
 
 ```
 SELECT {(1, 2, 3), (4, 5, '6')};
@@ -1860,7 +1874,7 @@ ERROR: QueryError: operator 'UNION' cannot be applied to operands of type 'tuple
 
 In the above example we could easily just cast the last string into an integer and EdgeDB will be happy again: `SELECT {(1, 2, 3), (4, 5, <int64>'6')};`.
 
-To access the fields of a tuple you still start from the number 0, but after a `.` instead of inside `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
+To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```
 for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
