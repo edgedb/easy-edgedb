@@ -2258,7 +2258,7 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 There is no good news for our heroes this chapter:
 
-> Dracula continues to break into Lucy's room every time people don't follow Van Helsing's instructions. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again.
+> Dracula continues to break into Lucy's room every time people don't follow Van Helsing's instructions. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again...
 
 But there is good news for us, because we are going to keep learning about function overloading and Cartesian products.
 
@@ -2524,16 +2524,20 @@ This gives us the result:
 
 # Chapter 13 
 
-> This time it was too late, and Lucy lies dying. Suddenly she opens her eyes and tells Arthur to kiss her. He tries, but Van Helsing grabs him and says "Don't you dare approach her!" It was not Lucy, but the vampire inside her that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one), but the nurse steals it when nobody is looking. Vampire Lucy starts walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur can't believe him and becomes angry that he would insult Lucy by saying such things about her.
+> This time it was too late, and Lucy is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!” He tries, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one). Unfortunately, the nurse steals it to sell when nobody is looking. Now Vampire Lucy is walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife.
 
-Looks like Lucy has become a `MinorVampire`. Right now `MinorVampire` is nothing special, just a type that extends `Person`:
+Looks like Lucy has become a `MinorVampire`. How should we show this in the database? Let's look at the types again first.
+
+Right now `MinorVampire` is nothing special, just a type that extends `Person`:
 
 ```
 type MinorVampire extending Person {
     }
 ```
 
-Fortunately, she is effectively a new type as a `MinorVampire`, and the book says this too: it's not really Lucy anymore. So we can just give `MinorVampire` an optional link to `Person`:
+Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` named Count Dracula.
+
+So instead of trying to change the `NPC` type, we can just give `MinorVampire` an optional link to `Person`:
 
 ```
 type MinorVampire extending Person {
@@ -2541,7 +2545,9 @@ type MinorVampire extending Person {
 }
 ```
 
-One other thing we can remember to do is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date. First we will update Lucy with her `last_appearance`:
+It's optional because we don't know anything about the three vampire women before they were made into vampires, so we can't make an `NPC` type for them.
+
+Another way to (informally) link them together is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date. First we will update Lucy with her `last_appearance`:
 
 ```
 UPDATE Person filter .name = 'Lucy Westenra'
@@ -2550,7 +2556,9 @@ UPDATE Person filter .name = 'Lucy Westenra'
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her, a much better method than manually inserting all the information. It also includes her strength which is her human strength plus 5.
+Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her, which is much more efficient than manually inserting all the information. It also includes her strength - we add 5 to that, because vampires are stronger.
+
+Here's the insert:
 
 ```
 WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
@@ -2577,7 +2585,7 @@ INSERT Vampire {
 };
 ```
 
-With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects in the database:
+With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects in the database. We'll use two filters to make sure:
 
 ```
 SELECT MinorVampire {
@@ -2603,9 +2611,11 @@ We could have just gone with `FILTER.name IN Person.name` but two filters is bet
 
 Without too much new to add, let's look at some tips for making queries.
 
+## Using DISTINCT, __type__
+
 - `DISTINCT`
 
-Use this after `SELECT` to get only results that are not duplicates. Right now if we look at all the strength values for our `Person` objects with `SELECT Person.strength;` we get something like this:
+Change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
 
 ```
 {5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 7, 5}
@@ -2663,6 +2673,8 @@ Here's the output:
 ```
 {default::NPC {name: 'Lucy Westenra'}, default::MinorVampire {name: 'Lucy Westenra'}}
 ```
+
+## Being introspective
 
 - INTROSPECT
 
