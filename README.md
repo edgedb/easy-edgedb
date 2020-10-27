@@ -2258,11 +2258,13 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 There is no good news for our heroes this chapter:
 
-> Van Helsing gives strict instructions on how to protect Lucy, but sometimes people don't follow all of them. When this happens Dracula manages to slip in as a cloud, drink her blood and sneak away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again.
+> Dracula continues to break into Lucy's room every time people don't follow Van Helsing's instructions. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again.
 
 But there is good news for us, because we are going to keep learning about function overloading and Cartesian products.
 
-First we should give a value for `.strength` for our characters. Jonathan Harker is actually quite strong (for a human), and has a strength of 5. We'll treat that as the maximum strength for a human. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
+Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property - that's why the Innkeeper defeated Dracula, which is certainly not what would really happen.
+
+Jonathan Harker is actually quite strong (for a human), and has a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
  
 ```
   SELECT <int16>round((random() * 5)); 
