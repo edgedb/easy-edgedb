@@ -2065,9 +2065,9 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 # Chapter 11 - What's wrong with Lucy?
 
-> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because he knows they won't believe him, but tells them to close the windows and put garlic everywhere, and it works. But one day Lucy's mother thinks the room needs fresh air and opens the windows, and Lucy wakes up pale and sick again. Similar events happen many times, and every time the men give Lucy their blood to help her recover. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. And one day he simply did not talk to Dr. Seward, saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
+> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and put garlic everywhere. It works, and Lucy gets better. But one day Lucy's mother thinks the room needs fresh air and opens the windows, and Lucy wakes up pale and sick again. Dracula gets in her room every time someone makes a mistake, and every time the men give Lucy their blood to help her get better. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. And one day he didn't want to talk, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
 
-We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. Since we are making a game, we want to know which characters were in which place, and when. So let's try putting together an `Event` type.
+We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. In our game, we could use a sort of `Event` type to group everything together: the people, the time, the place, and so on. 
 
 This `Event` type is a bit long, but it would be the main type for our events in the game so it needs to be detailed. We can put it together like this:
 
@@ -2085,9 +2085,15 @@ type Event {
 }
 ```    
 
-You can see that most of the properties now are `required`, because an `Event` type is not useful to us for our game if it doesn't have the information we need. It will always need a description, a time, place, and people participating. The interesting part of this type is the `url` property which gives us an exact url for the location if we want. The events in the book take place in the north part of the planet, but sometimes they are east of Greenwich and sometimes west. We will always need to know if it is east or west so we create use a simple `bool`. Then in thu `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
+You can see that most of the properties now are `required`, because an `Event` type is not useful for our game if it doesn't have the information we need. It will always need a description, a time, place, and people participating. The interesting part of this type is the `url` property: it's a computable that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
 
-Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy.
+The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example:
+
+```https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E```
+
+Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. We will always need to know if it is east or west so we create use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
+
+Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to explain the event to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```
 INSERT Event {
@@ -2101,7 +2107,7 @@ INSERT Event {
 };
 ```
 
-With all this information we can now find events by description, character, location, etc. The `description` property we can make as long as we want to make it easy to search, and we could even just paste in parts of the book if we wanted.
+With all this information we can now find events by description, character, location, etc.
 
 Now let's do a query for this event:
 
@@ -2144,9 +2150,11 @@ It generates a nice output that shows us everything about the event:
 }
 ```
 
-The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W You can see that it takes you directly to the city of Whitby.
+The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W It takes you directly to the city of Whitby.
 
-We saw that Renfield is quite strong.
+## Writing our own functions
+
+We saw that Renfield is quite strong: he has a strength of 10, compared to Jonathan's 5.
 
 We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate the type going in and the type going out in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
 
@@ -2158,17 +2166,17 @@ The `->` skinny arrow is used to show the return value.
 
 For the body of the function we do the following:
 
-- Writing `using EdgeQL` (this is the only way to create functions at the moment)
-- Write the function between `$$` to start and `$$` again to end
+- Write `using` and then follow it up with `()` brackets,
+- Write the function inside it,
 - Finish with a semicolon.
 
 So let's write a function where we have two characters fight. We will make it very simple: the character with more strength wins.
 
 ```
 function fight(one: Person, two: Person) -> str
-  using EdgeQL $$
+  using (
     SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
-$$;
+);
 ```
 
 So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other:
@@ -2184,7 +2192,7 @@ WITH
 
 It prints what we wanted to see: `{'Renfield wins!'}`
 
-It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one. For example, say we forgot that there were three women in the castle and wrote this:
+It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one. For example, let's imagine that we forgot that there were three women in the castle and wrote this:
 
 ```
 WITH
@@ -2201,7 +2209,9 @@ It would give us this result:
 {'Jonathan Harker wins!', 'Jonathan Harker wins!', 'Jonathan Harker wins!'}
 ```
 
-In the book this is actually incorrect because Jonathan is weaker than each of the vampire women. But we haven't given them `strength` yet so even his `5` strength counts as more.
+By the way, in the book this is actually incorrect because Jonathan is weaker than all of the vampire women. But right now their `strength` property just returns an `{}` empty set, so even Jonathan's strength of 5 is greater than this.
+
+## Cartesian multiplication
 
 This is a good time to talk about Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
@@ -2209,18 +2219,22 @@ This is a good time to talk about Cartesian multiplication. When you multiply se
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
 
-This means that if we do a `SELECT` on `Person` for our `fight()` function, it will run the function as many times as the results for one multiplied by the other.
+This means that if we do a `SELECT` on `Person` for our `fight()` function, it will run the function following this formula:
+
+- `{the number of items in the first set}` * `{the number of items in the second set}`
+
+So if there are two in the first set, and three in the second, it will run the function six times.
 
 To demonstrate, let's put three objects in for each side of our function. We'll also make the output a little more clear:
 
 ```
 WITH
-  one := (SELECT Person FILTER .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  two := (SELECT Person FILTER .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
-  SELECT(one.name ++ ' fights against ' ++ two.name ++ '. ' ++ fight(one, two));
+  first_group := (SELECT Person FILTER .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (SELECT Person FILTER .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+  SELECT(first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group));
 ```
 
-Here is the output. Everyone fights once against everyone else:
+Here is the output. It's a total of nine fights, where each person in Set 1 fights once against each person in Set 2.
 
 ```
 {
@@ -2236,7 +2250,9 @@ Here is the output. Everyone fights once against everyone else:
 }
 ```
 
-And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results.
+And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
+
+```  ... (further results hidden `\set limit 100`)```
 
 # Chapter 12 - From bad to worse
 
