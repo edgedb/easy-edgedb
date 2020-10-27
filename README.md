@@ -2262,6 +2262,8 @@ There is no good news for our heroes this chapter:
 
 But there is good news for us, because we are going to keep learning about function overloading and Cartesian products.
 
+## Overloading functions
+
 Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property - that's why the Innkeeper defeated Dracula, which is certainly not what would really happen.
 
 Jonathan Harker is actually quite strong (for a human), and has a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
@@ -2305,12 +2307,21 @@ So now let's overload the `fight()` function so that more than one character can
 
 ```
     function fight(names: str, one: int16, two: Person) -> str
-  using EdgeQL $$
+  using (
     SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
-$$;
+);
 ```
 
-So it's the same function name, except that we enter the names of the people (or team name) together, followed by their strength together, and then the `Person` they are fighting against.
+Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
+
+```
+fight(one: Person, two: Person) -> str
+fight(names: str, one: int16, two: Person) -> str
+```
+
+If we tried to overload it with an input of `(Person, Person)` and output of `str`, it wouldn't work because it's the same. That's because EdgeDB uses the input we give it to know which form of the function to use.
+
+So now it's the same function name, except that we enter the names of the people (or team name) together, followed by their strength together, and then the `Person` they are fighting against.
 
 Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
 
@@ -2348,16 +2359,20 @@ Much better:
 {'The four people win!'}
 ```
 
-So that's how function overloading works - you can create functions with the same name as long as the signature is different. Overloading is used a lot for existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum of the same type. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
+So that's how function overloading works - you can create functions with the same name as long as the signature is different. 
 
-`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. Let's make a function that we might actually use. Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
+Overloading is used a lot for existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum of the same type. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
+
+`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the easiest and most useful function for us now is one that makes queries shorter. 
+
+Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
 
 ```
 function visited(person: str, city: str) -> bool
-      using EdgeQL $$
+      using (
         WITH _person := (SELECT Person FILTER .name = person LIMIT 1),
         SELECT city IN _person.places_visited.name
-      $$;
+      );
 ```
 
 Now our queries are much faster:
@@ -2369,7 +2384,7 @@ edgedb> SELECT visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
-And even more complicated queries are still quite readable:
+Thanks to the function, even more complicated queries are still quite readable:
 
 ```
 SELECT(
@@ -2382,6 +2397,8 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two.
 
+## More about Cartesian products
+
 Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
 
 ```
@@ -2390,13 +2407,13 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
   SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
-The output is:
+The output is....maybe not what we expected.
 
 ```
 {}
 ```
 
-!! But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's try manually concatenating just to make sure:
+!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's try manually concatenating just to make sure:
 
 ```
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -2412,7 +2429,7 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-!!! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. Okay, one more time:
+Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```
 edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
