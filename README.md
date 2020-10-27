@@ -2397,7 +2397,7 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two.
 
-## More about Cartesian products
+## More about Cartesian products - the coalesting operator
 
 Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
 
@@ -2413,7 +2413,7 @@ The output is....maybe not what we expected.
 {}
 ```
 
-!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's try manually concatenating just to make sure:
+!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Could it be that the `{}` is doing it? Let's try manually concatenating just to make sure:
 
 ```
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -2429,7 +2429,7 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
+Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```
 edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
@@ -2439,16 +2439,20 @@ edgedb>
 
 Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
 
-- Concatenate the two strings if they exist,
+- Concatenate the two strings if they exist, and
 - Return what we have if one is an empty set?
 
-To do that we can use the so-called coalescing operator, which is written `??`. Here is a quick example:
+In other words, how to add `{'Buda-Peth', 'Bistritz'}' to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
+
+To do that we can use the so-called [coalescing operator](https://www.edgedb.com/docs/edgeql/funcops/set#operator::COALESCE), which is written `??`. Here is a quick example:
 
 ```
 edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
-{'Count Dracula is now in Whitby'}
-edgedb>  
 ```
+
+Because we used `??`, the result is `{'Count Dracula is now in Whitby'}` and not `{}`.
+
+So let's get back to our original query, this time with the coalescing operator:
 
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
@@ -2467,7 +2471,7 @@ This returns:
 
 That's better.
 
-But remember, when we add or concatenate sets we are working with every item in each set separately. So if we change the query to search for places that start with b and m:
+But now back to Cartesian products. Remember, when we add or concatenate sets we are working with *every item in each set* separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
 
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
@@ -2478,16 +2482,18 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
        b_places.name ?? m_places.name;
 ```
 
-Then we'll get this:
+Then we'll get this result:
 
 ```
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
-instead of something like 'Buda-Peth, Bistritz, Munich'. To get that output, we have to do two more things:
+instead of something like 'Buda-Peth, Bistritz, Munich'. 
 
-- [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg) to turn a set into an array, then
-- [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
+To get that output, we can use two more functions:
+
+- First [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), which turns the set into an array.
+- Next, [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
 
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
