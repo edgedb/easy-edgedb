@@ -2611,7 +2611,7 @@ We could have just gone with `FILTER.name IN Person.name` but two filters is bet
 
 Without too much new to add, let's look at some tips for making queries.
 
-## Using DISTINCT, __type__
+## Using DISTINCT, \__type__
 
 - `DISTINCT`
 
@@ -2625,7 +2625,15 @@ Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 
 
 - Getting `__type__` all the time
 
-You will remember that we can use `__type__` to get the types of objects in a query, and that `__type__` always has `.name` that we can access to get the actual name (otherwise we will only get the uuid). We can use this to look at the type names inside `Person`:
+You will remember that we can use `__type__` to get the types of objects in a query, and that `__type__` always has `.name` that we can access to get the actual name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `SELECT Person.name`, we can get all the type names like this:
+
+```
+SELECT Person.__type__ {
+  name
+  };
+```
+
+It shows us all the types attached to `Person` so far:
 
 ```
 {
@@ -2642,12 +2650,12 @@ You will remember that we can use `__type__` to get the types of objects in a qu
 Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy Westenra`:
 
 ```
-Select Person {
+SELECT Person {
   __type__: {
   name
   },
 name
-} filter .name = 'Lucy Westenra';
+} FILTER .name = 'Lucy Westenra';
 ```
 
 This shows us the objects that match, and of course they are `NPC` and `MinorVampire`.
@@ -2659,7 +2667,9 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 }
 ```
 
-But if you want to always get the type when you make a query, you can also just use `\set introspect-types on` to do it. Once you type that, you'll always see the type instead of `Object`. Now even a simple search like this will give us the type:
+## How to always select .\__type__
+
+But if you want to always see the type when you make a query, you can change the settings to do it: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
 
 ```
 SELECT Person 
@@ -2673,6 +2683,8 @@ Here's the output:
 ```
 {default::NPC {name: 'Lucy Westenra'}, default::MinorVampire {name: 'Lucy Westenra'}}
 ```
+
+Because it's so convenient, from now on this book will show results as given with `\set introspect-types on`.
 
 ## Being introspective
 
