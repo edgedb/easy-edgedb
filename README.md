@@ -2923,7 +2923,7 @@ And here it is:
 
 ## Working with dates some more
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called `enumerate()` that gives tuples of the index and the property that we choose. For example, if we use `SELECT enumerate(Person.name);` then we get this:
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the property that we choose. For example, if we use `SELECT enumerate(Person.name);` then we get this:
 
 ```
 {
