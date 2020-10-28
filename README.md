@@ -2690,7 +2690,7 @@ Because it's so convenient, from now on this book will show results as given wit
 
 - INTROSPECT
 
-The word `introspect` we just used to get the type for every query is also its own keyword. Every type has `name`, `properties`, `links` and `target` that you can access. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is quite simple but has all four. The type is:
+The word `introspect` we just used to change the settings to get the type for every query is also its own keyword. Every type has the following fields that we can access: `name`, `properties`, `links` and `target`. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is quite simple but has all four. Here are the properties and links of `Ship` again so we don't forget:
 
 ```
 type Ship {
@@ -2700,9 +2700,13 @@ type Ship {
 }
 ```
 
-The simplest `INTROSPECT` query is not useful but shows how it works: `SELECT (INTROSPECT Ship.name);` which gives us `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets.
+First, here is the simplest `INTROSPECT` query: 
 
-Now let's put `name`, `properties` and `links` inside:
+```SELECT (INTROSPECT Ship.name);``` 
+
+This query isn't very useful to us but it does show how it works: it returns `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
+
+Now let's put `name`, `properties` and `links` inside the introspection:
 
 ```
 SELECT (INTROSPECT Ship) {
@@ -2780,7 +2784,7 @@ With all that together, we get something readable and useful. The output looks l
 
 This type of query seems complex (even in our simple schema it already goes four levels deep) but it really is just built up on top of adding extra details like `{name}` every time you get an output that only a machine can understand.
 
-Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way:
+Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way, which looks much simpler now:
 
 ```
 SELECT (INTROSPECT Ship) {
