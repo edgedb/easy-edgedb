@@ -2925,7 +2925,22 @@ And here it is:
 
 ## Working with dates some more
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the property that we choose. For example, if we use `SELECT enumerate(Person.name);` then we get this:
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the set that we give it.
+
+First a simple example:
+
+```
+WITH three_things := {'first', 'second', 'third'},
+ SELECT enumerate(three_things);
+```
+
+The output is:
+
+```
+{(0, 'first'), (1, 'second'), (2, 'third')}
+```
+
+So now let's use it with `SELECT enumerate(Person.name);` to make sure that we have 23 results. The last index should be 22:
 
 ```
 {
@@ -2949,7 +2964,7 @@ WITH
   SELECT (a, b);
 ```
 
-(`array_agg()` is to avoid multiplying sets by sets)
+(`array_agg()` is to avoid multiplying sets by sets, as we saw in Chapter 12)
 
 But the result is less than satisfying:
 
@@ -2971,7 +2986,7 @@ But the result is less than satisfying:
 }
 ```
 
-Especially the `Crewman` types who are now just numbers. Better to give them names based on the numbers. This will be easy:
+Especially the `Crewman` types who are now just numbers. Maybe we'll just update them with names based on the numbers instead. This will be easy:
 
 ```
 UPDATE Crewman
@@ -2980,7 +2995,7 @@ UPDATE Crewman
 };
 ```
 
-So now we can see if they are dead or not. We'll compare a `cal::local_date` we input to `last_appearance` and if it's greater, then they are dead.
+So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we choose a `cal::local_date` to input, and if it's greater than the date for `last_appearance` that character is dead.
 
 ```
 WITH p := (SELECT Person),
@@ -3003,7 +3018,11 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
-Finally, let's look at how to follow links in reverse direction. We know how to get Count Dracula's `slaves` by name with something like this:
+## Reverse links
+
+Finally, let's look at how to follow links in reverse direction. This is extremely convenient and useful once you know how to do it. 
+
+We know how to get Count Dracula's `slaves` by name with something like this:
 
 ```
 SELECT Vampire {
@@ -3028,7 +3047,7 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite and starting from `SELECT MinorVampire` and want to know about the `Vampire` type connected to it? Because right now, we can only bring up properties inside `MinorVampire` and `Person` type. Consider the following:
+But what if we are doing the opposite and starting from `SELECT MinorVampire` but want to know about the `Vampire` type connected to it? Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
 
 ```
 SELECT MinorVampire {
@@ -3037,6 +3056,8 @@ SELECT MinorVampire {
   # There's no link to Vampire inside MinorVampire...
 }
 ```
+
+Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
 
 This is where reverse links come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`. 
 
@@ -3059,7 +3080,7 @@ Here is the output:
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
-So far that's the same as just `SELECT Vampire`. But it is very useful in our query before where we want to access multiple types. Now we can select all the `MinorVampire` types and their master:
+So far that's the same as just `SELECT Vampire: {name, age}`. But it becomes very useful in our query before where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
 
 ```
 SELECT MinorVampire {
