@@ -3133,6 +3133,8 @@ abstract type HasCoffins {
 }
 ```
 
+## More abstract types
+
 Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
 - Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
@@ -3147,13 +3149,13 @@ With our abstract type done, we will want to have a lot of types `extending` thi
 abstract type Place extending HasCoffins {
   required property name -> str {
     constraint exclusive;
-};
+  };
   property modern_name -> str;
   property important_places -> array<str>;
 }
 ```
 
-And we had Dracula's coffins on the ship so we'll extend for `Ship` as well.
+Ships are also big enough to have coffins (the Demeter had 50 of them, after all) so we'll extend for `Ship` as well:
 
 ```
 type Ship extending HasCoffins {
@@ -3167,13 +3169,24 @@ If we want, we can now make a quick function to test whether a vampire can enter
 
 ```
 function can_enter(person_name: str, place: HasCoffins) -> str
-  using EdgeQL $$
+  using (
     with vampire := (SELECT Person filter .name = person_name LIMIT 1)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-        $$;   
+        );   
 ```
 
-Then we'll give London some coffins, 50 for now. Some get destroyed in this chapter but anything over 1 is fine for a vampire so it doesn't matter.
+You'll notice that `person_name` in this function actually just takes a string to select a `Person`, so technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+
+- Overload the function to have two signatures:
+
+```
+function can_enter(vampire: Vampire, place: HasCoffins) -> str
+function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
+```
+
+- Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> str`
+
+Then we'll give London some coffins, 50 for now. Some coffins were destroyed in this chapter but anything over 1 is enough for a vampire so the number isn't too important.
 
 ```
 UPDATE City filter .name = 'London'
@@ -3182,7 +3195,7 @@ UPDATE City filter .name = 'London'
  };
 ```
 
-Then calling up our function:
+Now we can finally call up our function and see if it works:
 
 ```
 SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
@@ -3190,13 +3203,12 @@ SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
 
 We get `{'Count Dracula can enter.'}`.
 
-Some other options for improvement later on are:
+Some other possible ideas for improvement later on for `can_enter()` are:
 
-- Move `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string, which the function would use to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
-- Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, the function would just remind us that `vampire.name` is dead already and won't be entering anywhere.
-- Change the function `can_enter()` to take a vampire type instead of `Person`. Right now both `Vampire` and `MinorVampire` just extend `Person`, so our function needs to trust that the user is entering a string for a name of a vampire.
+- Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
+- Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like `vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`.
 
-## Constraints
+## More constraints
 
 Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) we can use as well. There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That will be good for our `PC` type, which we created but have only used once because we are still just using the Dracula book to populate a database. But `max_len_value()` will definitely be needed for `PC`. We'll change it to look like this:
 
