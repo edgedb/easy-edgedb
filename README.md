@@ -3210,7 +3210,9 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 ## More constraints
 
-Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) we can use as well. There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That will be good for our `PC` type, which we created but have only used once because we are still just using the Dracula book to populate a database. But `max_len_value()` will definitely be needed for `PC`. We'll change it to look like this:
+Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) that we can use as well. 
+
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players and are still just using the book to populate the database with `NPC`s. Those won't need them because `NPC` names are already decided, but `max_len_value()` is good for the `PC` type to make sure that players don't go crazy with their names. We'll change it to look like this:
 
 ```
 type PC extending Person {
@@ -3223,7 +3225,11 @@ type PC extending Person {
 
 Then when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
 
-One particularly flexible constraint is called `expression on`, which lets us add any expression we want (in brackets). Let's say we need a type `Lord` for some reason later on. We can constrain the type to make sure that its `name` always contains the string `Lord`. We can write it like this:
+### expression on: the most flexible constraint
+
+One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type *as long as* (insert expression here)".
+
+Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. We can write it like this:
 
 ```
 type Lord extending Person {
@@ -3244,7 +3250,9 @@ INSERT Lord {
 };
 ```
 
-Now let's try it with the word `Lord` inside. Let's do a `SELECT` and `INSERT` at the same time for this so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy has visited every place in our database.
+But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
+
+While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy has visited every place in our database.
 
 ```
 SELECT (
