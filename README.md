@@ -3649,59 +3649,69 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 > Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan attacks with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. We should create an `abstract type Currency` that we can use for all of these types of money.
+This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. An abstract type seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
-Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was 20 shillings to one pound, and 12 pence to one shilling. To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
+Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was: 
+
+- 12 pence (the smallest coin) made one shilling,
+- 20 shillings made one pound, thus
+- 240 pence per pound.
+
+To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
 
 ```
-    abstract type Currency {
-        required link owner -> Person;
-        required property major -> str;
-        required property major_amount -> float64 {
-            default := 0;
-            constraint min_value(0);
-        }
-        required property minor -> str;
-        required property minor_amount -> float64 {
-            default := 0;
-            constraint min_value(0);
-        }
-        required property minor_conversion -> int64;
-        
-        property sub_minor -> str;
-        property sub_minor_amount -> float64 {
-            default := 0;
-            constraint min_value(0);
-        }
-        property sub_minor_conversion -> int64;
+abstract type Currency {
+    required link owner -> Person;
+
+    required property major -> str;
+    required property major_amount -> float64 {
+        default := 0;
+        constraint min_value(0);
     }
-```
 
-We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. We probably don't need to think about credit and other complicated things like that for the game.
-
-Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds.
-
-```
-    type Pound extending Currency {
-        overloaded required property major {
-            default := 'pound'
-        }
-        overloaded required property minor { 
-            default := 'shilling'
-        }
-        overloaded required property minor_conversion {
-            default := 20
-        }
-        overloaded property sub_minor { 
-            default := 'pence'
-        }
-        overloaded property sub_minor_conversion {
-            default := 240
-        }
+    property minor -> str;
+    property minor_amount -> float64 {
+        default := 0;
+        constraint min_value(0);
     }
+    property minor_conversion -> int64;
+
+    property sub_minor -> str;
+    property sub_minor_amount -> float64 {
+        default := 0;
+        constraint min_value(0);
+    }
+    property sub_minor_conversion -> int64;
+}
 ```
 
-Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money.
+You'll notice that only `major` properties are required, because some currencies don't have minor currencies (in modern times that includes Japanese yen, Korean won, etc. that are just a single money unit and a number).
+
+We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. We probably don't need to think about credit and other complicated things like negative money for the game.
+
+Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds. Here's the `Pound` type:
+
+```
+type Pound extending Currency {
+    overloaded required property major {
+        default := 'pound'
+    }
+    overloaded required property minor { 
+        default := 'shilling'
+    }
+    overloaded required property minor_conversion {
+        default := 20
+    }
+    overloaded property sub_minor { 
+        default := 'pence'
+    }
+    overloaded property sub_minor_conversion {
+        default := 240
+    }
+}
+```
+
+Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1887.
 
 ```
 INSERT Pound {
@@ -3725,7 +3735,7 @@ He has this many:
 
 `{default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}`
 
-We know that Arthur has pretty much unlimited money, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
+We know that Arthur has almost unlimited money, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
 
 Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but the last one in these signatures:
 
@@ -3771,6 +3781,43 @@ And then it will give a result similar to this with our collections of money, ea
   default::Pound {owner: default::PC {name: 'Emil Sinclair'}, pounds: 427, shillings: 19, pence: 88, total_pounds: 428.32n},
 }
 ```
+
+You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we went the other way around, we would have one `Person` type linked to every type of currency, most of which would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them.
+
+But if we only had a single type of money, it would be simpler to just put it inside the `Person` type. If the game were only inside the United States (Canada, etc.) it would be easier to just do this without an abstract `Currency` type:
+
+```
+type Dollar {
+  required property dollars -> int64;
+  required property cents -> int64;
+  property total_money := .dollars + (.cents / 100)
+}
+```
+
+The `total_money` type, by the way, will become a `float64` because of the `/ 100` part. We can confirm this with a quick query:
+
+```
+SELECT (100 + (55 / 100)) is float64;
+```
+
+The output: `{true}`.
+
+We can see the same when we make an insert and use `SELECT` to check the `total_money` property:
+
+```
+SELECT(INSERT Dollar {
+ dollars := 100,
+ cents := 55
+ }) {
+ total_money
+};
+```
+
+Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect! 
+
+Not that we need this `Dollar` type in our game. In our game, it would be `type Dollar extending Currency`.
+
+## Cleaning up the schema
 
 We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
 
@@ -3903,7 +3950,7 @@ Much better!
 
 # Chapter 19 - Dracula escapes
 
-> Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions: 
+> Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions:
 
 > “Where are you now?”
 
