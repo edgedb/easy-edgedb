@@ -3484,7 +3484,9 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 > It turns out that Renfield was telling the truth! Dracula found out about the coffins and decided to attack Mina that night. Dracula succeeds, and Mina is now slowly turning into a vampire (though she is still human). The group finds Renfield in a pool of blood, and dying. Renfield tells them that he is sorry: he thought that Dracula would help him become a vampire too, but after he let him inside, Dracula ignored him and headed for Mina's room. Renfield liked Mina and attacked Dracula to try to stop him from hurting her. Dracula, of course, was much stronger and won. 
 
-> Van Helsing does not give up though. If Mina is now connected to Dracula, what happens if he uses hypnotism on her? Could that work?
+> Van Helsing does not give up though. If Mina is now connected to Dracula, what happens if he puts her to sleep and uses hypnotism on her? Could that work?
+
+
 
 ## Named tuples
 
@@ -3645,7 +3647,7 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 # Chapter 18 - Using Dracula's own weapon against him
 
-> Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive. All of a sudden Dracula runs into the house and attacks. Jonathan strikes with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window, saying "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan attacks with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
 This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. We should create an `abstract type Currency` that we can use for all of these types of money.
 
@@ -3899,9 +3901,27 @@ INSERT Ship {
 
 Much better!
 
-# Chapter 19 - Dracula flees back to Transylvania
+# Chapter 19 - Dracula escapes
 
-> Thanks to Mina, they know that Dracula has fled on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks very scary now - he wants to kill Dracula as soon as possible and save his wife. But where is the ship? Every day they wait, and wait...and then one day, they get a telegram that says that the ship arrived at Galatz, not Varna. Is it too late? They rush off up the river to try to find Dracula.
+> Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions: 
+
+> “Where are you now?”
+
+> “I do not know. It is all strange to me!”
+
+> “What do you see?”
+
+> “I can see nothing; it is all dark.”
+
+> “What do you hear?”
+
+> “The water... and little waves.”
+
+> “Then you are on a ship?”
+
+> “Oh, yes!”
+
+> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
 
 We have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
 
