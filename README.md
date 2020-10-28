@@ -2800,7 +2800,8 @@ SELECT (INTROSPECT Ship) {
 
 So we have a new city called Exeter, and adding it is of course easy: 
 
-```INSERT City {
+```
+INSERT City {
   name := 'Exeter', 
   population := 40000
 };``` 
