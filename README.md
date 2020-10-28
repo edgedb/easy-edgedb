@@ -3116,9 +3116,14 @@ Here is the output:
 
 # Chapter 15 - Time to start vampire hunting
 
-> Jonathan meets with Van Helsing who tells him than his experience with Dracula was real and not a crazy dream. Jonathan becomes strong and confident again and they begin to search for Dracula. It turns out that the house called Carfax which Dracula bought is located right across from the hospital where Renfield lives and Dr. Seward works. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them anymore, but there are still many left. If they don't find and destroy the boxes, Dracula will be able to run away and rest at night and continue to terrorize London.
+> Jonathan has been suffering from extreme stress, because he doesn't know if the experience with Dracula was real or just a crazy dream. But then he meets Van Helsing who tells him that it was true, and Jonathan becomes strong and confident again. Now they begin to search for Dracula. A strange coincidence: the mansion called Carfax that Dracula bought is very close to the hospital where Renfield and Dr. Seward are. That's why Renfield was so strongly affected. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them, but there are still many left. If they don't destroy the other boxes, Dracula will be able to run away, sleep during the day and terrorize London every night when the sun goes down.
 
-This chapter we learned something interesting about vampires: they need coffins (boxes for dead people) with holy earth to rest in during the day. Dracula brought 50 of them over by ship so that he could always have a place to hide and rest in London so he could terrorize the people. This is important for the mechanics of our game so we should create a type for this:
+This chapter we learned something interesting about vampires: they need coffins (boxes for dead people) with holy earth to rest in during the day. Dracula brought 50 of them over by ship so that he could always have a place to hide and rest in London so he could terrorize the people. This is important for the mechanics of our game so we should create a type for this. And if we think about it: 
+
+- each place in the world either has coffins doesn't have them,
+- if a place has coffins, we should know how many of them there are.
+
+This sounds like a good case for an abstract type. Here it is:
 
 ```
 abstract type HasCoffins {
@@ -3128,9 +3133,15 @@ abstract type HasCoffins {
 }
 ```
 
-Most places will not have a special vampire coffin, so the default is 0. `coffins` is just an `int16` because we want vampires to be close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because a horse-driven carriage can go about 25 kph, and a vampire can probably only go about 4 hours away from their coffins before they start to get nervous about getting home before the sun rises.
+Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
-We will want to have a lot of types `extending` this. First with `Place` we can extend it for all types including `City`, `OtherPlace`, etc.:
+- Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
+- Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
+- Around 1 or 2 pm, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
+
+So the part between 8 pm and 1 am is the part where the vampire is free to move away, and at a maximum of 25 kph we get a maximum activity radius of 100 km around a coffin. And at that distance even the bravest vampire will start running back towards home by 2 am.
+
+With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, which gives it to all the other location types such as `City`, `OtherPlace`, etc.:
 
 ```
 abstract type Place extending HasCoffins {
