@@ -2796,11 +2796,20 @@ SELECT (INTROSPECT Ship) {
 
 # Chapter 14 - Jonathan Harker returns
 
-> Finally there is some good news. Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina thinks that Lucy is still alive and sends her a letter that is never opened. Meanwhile, the men find vampire Lucy in a graveyard. Arthur finally believes Van Helsing and the rest also now believe that vampires are real. They manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
+> Finally there is some good news. After escaping the castle, Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina sends Lucy a letter from Exeter about the good news...but Lucy never opens it because she's not human anymore. Meanwhile, the men find vampire Lucy in a graveyard. Arthur sees her and finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
 
-So we have a new city called Exeter, and adding it is of course easy: `INSERT City {name := 'Exeter', population := 40000};`. It doesn't have a `modern_name` that is different from the one in the book either.
+So we have a new city called Exeter, and adding it is of course easy: 
 
-Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can be called `title` or `description`. Let's use `description`:
+```INSERT City {
+  name := 'Exeter', 
+  population := 40000
+};``` 
+
+That's the population of Exeter at the time, and it doesn't have a `modern_name` that is different from the one in the book.
+
+## Adding annotations to types and using @
+
+Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can use the titles `title` or `description`. Let's use `description`:
 
 ```
 type City extending Place {
@@ -2880,7 +2889,7 @@ What if we want an annotation with a different name besides `title` and `descrip
 abstract annotation warning;
 ```
 
-We'll imagine that it is important to know not to use `OtherPlace` for `Castle` types. Now `OtherPlace` has the following two annotations:
+We'll imagine that it is important to know that `Castle` types should be used instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` has the following two annotations:
 
 ```
 type OtherPlace extending Place {
@@ -2912,6 +2921,8 @@ And here it is:
 }
 ```
 
+## Working with dates some more
+
 A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called `enumerate()` that gives tuples of the index and the property that we choose. For example, if we use `SELECT enumerate(Person.name);` then we get this:
 
 ```
@@ -2927,7 +2938,7 @@ A lot of characters are starting to die now, so let's think about that. We could
 }
 ```
 
-18! Oh, that's right: the `Crewman` objects don't have a name. We could of course try something fancy like this:
+There are only 18? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. We could of course try something fancy like this:
 
 ```
 WITH 
