@@ -2103,7 +2103,7 @@ INSERT Event {
   place := (SELECT Place FILTER .name = 'Whitby'),
   people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
-  east_west := 'W'
+  east := 'W'
 };
 ```
 
@@ -3289,9 +3289,27 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 # Chapter 16 - Is Renfield telling the truth?
 
-> Van Helsing meets with Renfield, and is surprised: Renfield one day turns out to be very educated and well-spoken, and knows all about Van Helsing's research. But the next day, Renfield doesn't want to talk to him and calls him an idiot. Arthur Holmwood's father has died, and now Arthur is the head of the house and is called Lord Godalming. He helps the team with his money to find the houses where Dracula has hidden his boxes. One night, Renfield tells Van Helsing and Dr. Seward to please trust him and let him leave. They won't let him, and he finally says: “Remember, later on, that I did what I could to convince you tonight.”
+> Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming. With his money he helps the team to find the houses where Dracula has hidden his boxes. 
 
-We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Instead, we could make a type that holds a date and strings from the book for us to search through later. Let's call it `BookExcerpt` (= part of a book).
+> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But the next day, Renfield doesn't want to talk and just calls him an idiot. Very confusing. But one night, Renfield is very serious and asks them to let him leave: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
+
+## `index on` for quicker lookups
+
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original book Dracula is all organized into letters, diaries, etc. that all have a date. They all start out in this form:
+
+```
+Dr. Seward’s Diary.
+1 October, 4 a. m.—Just as we were about to leave the house...
+
+Letter, Van Helsing to Mrs. Harker.
+“24 September.
+“Dear Madam...
+
+Mina Murray’s Journal.
+8 August. — Lucy was very restless all night, and I, too, could not sleep...
+```
+
+This is very convenient for us. With this we can make a type that holds a date and strings from the book for us to search through later. Let's call it `BookExcerpt` (excerpt = part of a book).
 
 ```
   type BookExcerpt {
@@ -3302,14 +3320,14 @@ We're getting closer to the end of the book and there is a lot of data that we h
 }
 ```
 
-The `index on (.exerpt)` part is new, and means to create an index to make future queries faster. We could do this for certain other types too, and might for types like `Place` and `Person`. `index` is good in limited quantities, and you don't want to index everything: 
+The [`index on (.exerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. We could do this for certain other types too - it might be good for types like `Place` and `Person`. Note: `index` is good in limited quantities, so you don't want to index everything:
 
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
 
-This is maybe not surprising: if `index` were good to have for every property and every link on every type, EdgeDB would just do it automatically for everything.
+This is probably not surprising: if `index` were good to have for every property and link on every type, EdgeDB would just index everything automatically.
 
-Fortunately, the book Dracula is written from the point of view of everyone's letters so each one has a date and an author. The string in these entries are very long so we will only include the beginning and the end:
+So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only include the beginning and the end:
 
 ```
 INSERT BookExcerpt {
@@ -3327,7 +3345,7 @@ INSERT BookExcerpt {
 };
 ```
 
-Then later on we could do something like the following if we want all the entries in order and turned into JSON.
+Then later on we could do this sort of query to get all the entries in order and turned into JSON.
 
 ```
 SELECT <json>(SELECT BookExcerpt {
@@ -3337,7 +3355,7 @@ SELECT <json>(SELECT BookExcerpt {
 } ORDER BY .date);
 ```
 
-Output with exerpts snipped:
+Here's the JSON output with exerpts snipped:
 
 ```
 {
@@ -3346,7 +3364,7 @@ Output with exerpts snipped:
 }
 ```
 
-After this, we can add a link to our `Event` type, which now looks like this:
+After this, we can add a link to our `Event` type to join it to our new `BookExcerpt` type. `Event` now looks like this:
 
 ```
 type Event {
@@ -3357,14 +3375,23 @@ type Event {
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
-  property east_west -> EastWest;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ <str>.east_west;
+  property east_west -> bool;
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
 }
 ```
 
 Now `description` contains a short description that we write, while `excerpt` links to these longer pieces of text that come directly from the book.
 
-When doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`), the [functions for strings](https://www.edgedb.com/docs/edgeql/funcops/string) can be particularly useful. Here is one:
+## More functions for strings
+
+When doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`), the [functions for strings](https://www.edgedb.com/docs/edgeql/funcops/string) can be particularly useful. One called [`str_lower()`](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_lower) makes strings lowercase:
+
+```
+SELECT str_lower('RENFIELD WAS HERE');
+{'renfield was here'}
+```
+
+Here it is in a longer query:
 
 ```
 select BookExcerpt {
@@ -3390,9 +3417,34 @@ Some other functions for strings are:
 
 - `find()` This gives the index of the first match it finds, or -1 if it can't find anything:
 
-`SELECT find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}` - the first `BookExcerpt.excerpt` doesn't have it, while the second has it at index 151.
+`SELECT find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
 
-- `split()` lets you make an array of the string split however you like. Most common is to split by `' '` to split by spaces. But this works too:
+- `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
+
+```
+SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+
+{
+  [
+    'Oh,',
+    'hear',
+    'me!',
+    'hear',
+    'me!',
+    'Let',
+    'me',
+    'go!',
+    'let',
+    'me',
+    'go!',
+    'let',
+    'me',
+    'go!',
+  ],
+}
+```
+
+But this works too:
 
 ```
 SELECT MinorVampire {
@@ -3411,14 +3463,15 @@ Now the `n`s are all gone:
 }
 ```
 
-- `re_match()` for the first match and `re_match_all()` for all matches if you know how to use regular expressions and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes:
+- `re_match()` for the first match and `re_match_all()` for all matches if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written `to-night` in Dracula. We can use these functions to take care of that:
 
 ```
 SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-`[Tt]o-?night` means words that: 
+The function signature is `std::re_match(pattern: str, string: str) -> array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that: 
+
 - start with a `T` or a `t`, 
 - then `o`, 
 - maybe have an `-` in between, 
