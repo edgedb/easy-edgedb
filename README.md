@@ -2804,7 +2804,8 @@ So we have a new city called Exeter, and adding it is of course easy:
 INSERT City {
   name := 'Exeter', 
   population := 40000
-};``` 
+};
+``` 
 
 That's the population of Exeter at the time, and it doesn't have a `modern_name` that is different from the one in the book.
 
