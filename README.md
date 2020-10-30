@@ -890,7 +890,43 @@ And an actual date looks like this.
 
 The `T` inside there is just a separator, and the `Z` at the end means "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it *is* UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are six ways to make a `datetime` with this function depending on how you want to make it:
+One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. 
+
+By the way, you'll notice one unfamiliar type inside called a [`decimal`](https://www.edgedb.com/docs/datamodel/scalars/numeric#type::std::decimal) type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=-3c8G0JMM5Q) thanks to rounding errors. This example shows it:
+
+```
+edgedb> SELECT 6.777777777777777; # Good so far
+{6.777777777777777}
+edgedb> SELECT 6.7777777777777777; # Add one more digit...
+{6.777777777777778}
+```
+
+If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
+
+```
+edgedb> SELECT 6.7777777777777777n;
+{6.7777777777777777n}
+edgedb> SELECT 6.7777777777777777777777777777777777777777777777777n;
+{6.7777777777777777777777777777777777777777777777777n}
+```
+
+Meanwhile, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
+
+```
+edgedb> SELECT 9223372036854775807; # Good so far...
+{9223372036854775807}
+edgedb> SELECT 9223372036854775808; # But add 1 and it will fail
+ERROR: NumericOutOfRangeError: std::int64 out of range
+```
+
+So here you can just add an `n` and it will create a `bigint` that can accommodate any size.
+
+```
+edgedb> SELECT 9223372036854775808n;
+{9223372036854775808n}
+```
+
+Now that we know all the numeric types, let's get back to the six signatures for the `std::to_datetime` function:
 
 ```
 std::to_datetime(s: str, fmt: OPTIONAL str = {}) -> datetime
