@@ -4043,6 +4043,8 @@ Much better!
 
 > Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go together to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
 
+## Adding some new types
+
 We have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
 
 ```
@@ -4135,7 +4137,7 @@ FOR visit in {
    });
 ```
 
-With that, in our game we can have each city have certain ships at certain dates. For example, if a character is in Galatz and the date is 28 October 1887, we can see if there are any ships in town:
+With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1887, we can see if there are any ships in town:
 
 ```
 SELECT Visit {
@@ -4149,7 +4151,7 @@ SELECT Visit {
   } FILTER .place.name = 'Galatz' AND .date = <cal::local_date>'1887-10-28';
 ```
 
-It looks like there is a ship in town! It's the Czarina Catherine.
+And it looks like there is a ship in town! It's the Czarina Catherine.
 
 ```
 {
@@ -4161,7 +4163,7 @@ It looks like there is a ship in town! It's the Czarina Catherine.
 }
 ```
 
-Let's do a bit of practice with reverse lookup again.
+While we're at it, let's practice reverse lookup again on our visits. Here's one:
 
 ```
 SELECT Ship.<ship[IS Visit] {
@@ -4175,7 +4177,7 @@ SELECT Ship.<ship[IS Visit] {
 } FILTER .place.name = 'Galatz';
 ```
 
-`Ship.<ship[IS Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, we can now filter on `Visit`'s `.place.name` instead of filtering on the properties inside `Ship`.
+`Ship.<ship[IS Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, our filter is now on `Visit`'s `.place.name` instead of the properties inside `Ship`.
 
 Here is the output:
 
@@ -4208,7 +4210,7 @@ type Date {
 }
 ```
 
-Now that we know that the time was one o'clock, let's put that into the query too. Now it looks like this:
+Now that we know that the time was one o'clock, let's put that into the query too - including the `awake` property. Now it looks like this:
 
 ```
 SELECT Ship.<ship[IS Visit] {
@@ -4225,7 +4227,8 @@ SELECT Ship.<ship[IS Visit] {
    date,
    local_time,
    hour,
-   awake}),
+   awake
+   }),
  } FILTER .place.name = 'Galatz';
  ```
  
@@ -4242,7 +4245,9 @@ SELECT Ship.<ship[IS Visit] {
 }
 ```
 
-It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. We now have a random `Date` type floating around that is not linked to anything. So let's just steal everything from `Date` to change the `Visit` type instead.
+## More cleaning up the schema
+
+It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Date` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Date` to improve the `Visit` type instead.
 
 ```
   type Visit {
@@ -4256,7 +4261,7 @@ It is of course cool that we can do a quick insert in a query like this, but it'
 }
 ```
 
-Then update the visit to Galatz:
+Then update the visit to Galatz to give it a `time`:
 
 ```
 UPDATE Visit FILTER .place.name = 'Galatz'
@@ -4299,7 +4304,7 @@ And now we get all the output that the `Date` type gave us before, plus our extr
 }
 ```
 
-Since we are looking at place again, maybe we can finish up the chapter by filling out the map with the `Region` type we discussed. That's easy:
+Since we are looking at `Place` again, now we can finish up the chapter by filling out the map with the `Region` type that we discussed. That's easy:
 
 ```
 type Country extending Place {
@@ -4315,11 +4320,11 @@ type Region extending Place {
 
 That connects our types based on `Place` quite well.
 
-Now let's do a small entry. We'll choose Germany in 1887 because Jonathan went through there first. It will have:
+Now let's do a medium-sized entry that has `Country`, `Region`, and `City` all at the same time. We'll choose Germany in 1887 because Jonathan went through there first. It will have:
 
 - One country: Germany,
 - Three regions: Prussia, Hesse, Saxony
-- Six cities, two for each region: Berlin and Königsberg, Darmstadt and Mainz, Dresden and Leipzig.
+- Two cities for each region, for six in total: Berlin and Königsberg, Darmstadt and Mainz, Dresden and Leipzig.
 
 Here is the insert:
 
@@ -4364,7 +4369,7 @@ INSERT Country {
 };
 ```
 
-With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to:
+With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. To get `Country` from `Region` we need a reverse lookup:
 
 ```
 SELECT Region {
