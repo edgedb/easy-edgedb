@@ -4572,9 +4572,13 @@ type PC extending Person {
 }
 ```
 
-The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself where choosing `Feet` gives the character a certain speed, `HorseDrawnCarriage` increases speed but decreases money, `Train` increases speed the most but decreases money and can only follow railway lines, etc.
+The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
 
-`Visit` is probably our "hackiest" (but most fun) type. We stole most of it from the `Date` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used:
+- choosing `Feet` gives the character a certain speed and costs nothing, 
+- `HorseDrawnCarriage` increases speed but decreases money, 
+- `Train` increases speed the most but decreases money and can only follow railway lines, etc.
+
+`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Date` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
 
 - by casting it into a <cal::local_time> to make the `local_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
@@ -4592,7 +4596,7 @@ type Visit {
 }
 ```
 
-The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. In this case, we wanted to constraint `age` to 120 years, and wanted to use the `places_visited` link in a different way than in `Person` by giving it a default.
+The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. In this case, we wanted to constrain `age` to 120 years, and wanted to use the `places_visited` link in a different way than in `Person` by giving it a default: the city of London.
 
 ```
 type NPC extending Person {
@@ -4614,7 +4618,17 @@ abstract type Place extending HasNameAndCoffins {
 }
 ```
 
-The `important_places` property never got used, and right now is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our OtherPlace type is not quite the right type for this, as the [annotation](https://www.edgedb.com/docs/edgeql/sdl/annotations#annotations) shows:
+The `important_places` property only got used once in this insert: 
+
+```
+INSERT City {
+  name := 'Bistritz',
+  modern_name := 'Bistrița',
+  important_places := ['Golden Krone Hotel'],
+};
+```
+
+and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the [annotation](https://www.edgedb.com/docs/edgeql/sdl/annotations#annotations) shows:
 
 ```
 type OtherPlace extending Place {
@@ -4623,13 +4637,15 @@ type OtherPlace extending Place {
 }
 ```
 
-We also had to use `abstract annotation` to add a new annotation:
+So in a real game we would create some other smaller location types and make them a link from the `property important_places` inside `City`. We might also move `important_places` to `Place` so that types like `Region` could link from it too.
+
+Annotations: we used `abstract annotation` to add a new annotation:
 
 ```
 abstract annotation warning;
 ```
 
-because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that everyone knows how to use each type in the right way.
+because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that users know how to use each type in the right way.
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
@@ -4639,7 +4655,9 @@ type Lord extending Person {
 }
 ```
 
-This one uses the function [`contains`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. [Here are some more examples](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression) from the documentation of using `constraint expression on`.
+(This one might end up removed in a real game, or maybe it would become `type Lord extending PC` so player characters could choose to be a lord, thief, detective, etc. etc.)
+
+The `Lord` type uses the function [`contains`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. [Here are some more examples](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression) from the documentation of using `constraint expression on`.
 
 Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
 
@@ -4668,16 +4686,16 @@ WITH
     SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
-However, later on we learned the `any()` function, which is another way to do this.
+However, later on we learned the `any()` function. With `any()`, we could change the query to this:
 
 ```
 WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT any(array_unpack(doors) < jonathan_strength);
+    SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
-And of course, we could also create a function to do the same now that we know how to write them. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and conduct the same query.
+And of course, we could also create a function to do the same now that we know how to write them. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
 
 Don't forget, we needed `array_unpack()` because the function [`any()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::any) works on sets:
 
@@ -4695,7 +4713,7 @@ Here is the error:
 operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std::int64'
 ```
 
-Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would require a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `exerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
+Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
 ```
 type BookExcerpt {
