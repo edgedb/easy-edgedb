@@ -3932,9 +3932,9 @@ The other `City` inserts are a bit different: some have `modern_name` and others
 
 ```
 FOR city IN {
-  ('City 1', 'Modern City 1', 800),
-  ('City 2', 'Modern City 2', 900),
-  ('City 3', 'Modern City 3', 455),
+  ('City 1's name', 'City 1's modern name', 800),
+  ('City 2's name', 'City 2's modern name', 900),
+  ('City 3's name', 'City 3's modern name', 455),
  }
   UNION (
     INSERT City {
@@ -3944,7 +3944,7 @@ FOR city IN {
 });
 ```
 
-And the same would take place with all the `NPC` types with `first_appearance` and so on. But we don't have that many cities and characters to insert in this tutorial so we don't need to be so systematic yet.
+And we would do the same with all the `NPC` types, their `first_appearance` data, and so on. But we don't have that many cities and characters to insert in this tutorial so we don't need to be so systematic yet.
 
 We can also turn the inserts for the `Ship` type into a single one. Right now it looks like this:
 
@@ -4041,7 +4041,7 @@ Much better!
 
 > “Oh, yes!”
 
-> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. One team (Van Helsing and Mina) goes to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
+> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go together to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
 
 We have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
 
@@ -4052,7 +4052,7 @@ type Ship extending HasNameAndCoffins {
 }
 ```
 
-That's not bad, but it doesn't have any information about visits made by which ship to where. Let's make a quick type that contains all the information on ship visits. Each visit will have a link to a `Ship` and a `Place`, and a `cal::local_date`. It looks like this:
+That's not bad, but we can build on it a bit more in this chapter. Right now, it doesn't have any information about visits made by which ship to where. Let's make a quick type that contains all the information on ship visits. Each visit will have a link to a `Ship` and a `Place`, and a `cal::local_date`. It looks like this:
 
 ```
 type Visit {
@@ -4062,7 +4062,9 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine`. Let's use that to insert a few visits from the ships we know. But first we'll insert a new ship and two new places. We know the name of the ship and that there is one coffin in it - it's Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna to London. 
+
+But first we'll insert a new `Ship` and two new places (`City`s) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
 ```
 INSERT Ship {
@@ -4071,7 +4073,7 @@ INSERT Ship {
 };
 ```
 
-After that we have two more places from the captain's book of `'The Demeter'` from back in July - August. We'll put in Varna and Galatz at the same time:
+After that we have the two cities of Varna and Galatz. We'll put them in at the same time:
 
 ```
 FOR city in {'Varna', 'Galatz'}
@@ -4081,7 +4083,7 @@ FOR city in {'Varna', 'Galatz'}
 });
 ```
 
-The Demeter also passed through the Bosphorus. That's the small bit of ocean that divides Europe from Asia, so it's not a city. We can use the `OtherPlace' type. That's the one that we added some annotations to. Remember how to call them up? It looks like this:
+The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That area is the small bit of ocean that divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to call them up? It looks like this:
 
 ```
 SELECT (INTROSPECT OtherPlace) {
@@ -4108,7 +4110,7 @@ Let's see what we wrote before to make sure that we should use it:
 }
 ```
 
-Well, it's not a castle and it isn't actually a place with buildings, so it should work. Though later on we might want to create a `Region` type so that we can have a `Country` that has `Region` and `City` or `OtherPlace` inside that. But in the meantime we'll add it:
+Well, it's not a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
 
 ```
 INSERT OtherPlace {
