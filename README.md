@@ -4407,9 +4407,11 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 # Chapter 20 - The final battle
 
+You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
+
 > Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
 
-This is almost the end of the book, but we won't spoil the final ending. If you want to read it now, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
+If you're curious about the ending to this scene, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
 
 The last change we can make for now is to give the vampire women a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. Don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
@@ -4420,19 +4422,27 @@ UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
 };
 ```
 
-Depending on what happens in the last battle, we might have to do the same for Dracula or some of the heroes. But instead of spoiling the ending, let's take a look at our schema once more to review it step by step. It goes like this:
+Depending on what happens in the last battle, we might have to do the same for Dracula or some of the heroes...
+
+## Reviewing the schema
+
+Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom.
+
+The first part to a schema is always the command to start the migration:
 
 - `START MIGRATION TO {};`: This is how a schema migration starts. Everything goes inside `{}` curly brackets and ends with a `;` semicolon.
-- `module default {}`: We only used one module (namespace) for our schema, but you can make for if you like. You can see the module when you use `DESCRIBE Type`. Let's look at `Person`, which starts like this:
+- `module default {}`: We only used one module (namespace) for our schema, but you can make for if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`):
+
+Let's look at `Person`, which starts like this and shows us the module it's located in:
 
 `abstract type default::Person`
 
-For a real game our schema would probably be a lot larger, and we might see types in different modules like `abstract type characters::Person` and `places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
+For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
 
 Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, we hand it off to types like `Place` because every place in our game 
 
 - 1) has a name, and 
-- 2) has a number of coffins because places without coffins are safer from vampires.
+- 2) has a number of coffins (important because places without coffins are safer from vampires).
 
 ```
 abstract type HasNameAndCoffins {
@@ -4446,9 +4456,9 @@ abstract type HasNameAndCoffins {
 }
 ```
 
-We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/docs/datamodel/scalars/numeric#numerics) for the `coffins` property but we probably won't see that many coffins.
+We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/docs/datamodel/scalars/numeric#numerics) for the `coffins` property but we probably won't see that many coffins so `int16` is fine.
 
-Next is `abstract type Person`, which does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`:
+Next is `abstract type Person`. This type is by far the largest, and does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`, so they can extend from it too.
 
 ```
 abstract type Person {
@@ -4483,13 +4493,13 @@ The two links are `multi link`s, without which a `link` can only be to one objec
 error: possibly more than one element returned by an expression for a computable link 'former_self' declared as 'single'
 ```
 
-For `first_appearance` and `last_appearance` we use `cal::local_date` because our game is only based in one part of Europe inside a certain period. For a user database we would probably prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant. One other reason why we use `cal::local_date` is because if you try to create a `datetime` before 1970 (when [Unix time](https://en.wikipedia.org/wiki/Unix_time) began), it will return an error. So don't write this - it will not be happy.
+For `first_appearance` and `last_appearance` we use `cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would probably prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant. One other reason why we use `cal::local_date` is because if you try to create a `datetime` before 1970 (when [Unix time](https://en.wikipedia.org/wiki/Unix_time) began), it will return an error. So don't write this - it will not be happy.
 
 ```
 SELECT <datetime>'1887-09-09';
 ```
 
-But for modern-day databases with users around the world, `datetime` is usually the best choice. Then you can use a function like [`std::to_datetime`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
+But for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like [`std::to_datetime`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 
 ```
@@ -4523,7 +4533,7 @@ UPDATE Crewman
 };
 ```
 
-For later types in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
+So even though it was rarely used, it could become useful later on. For later types in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
 
 Our vampire types extend `Person`, while `MinorVampire` also has an optional (single) link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
 
@@ -4546,9 +4556,9 @@ SELECT Person {
 } FILTER EXISTS .vampire_name;
 ```
 
-In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy Westenra'}}}` But if we wanted to, we could extend the scope of the game back to more historical times and give the vampire women an `NPC` type as well.
+In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy Westenra'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
 
-Our three enums were used for the `PC` and `Sailor` types:
+Our two enums were used for the `PC` and `Sailor` types:
 
 ```
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
