@@ -3808,7 +3808,7 @@ He has this many:
 
 We know that Arthur has almost unlimited money, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
 
-Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but the last one in these signatures:
+Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but using the last signature:
 
 ```
 std::round(value: int64) -> float64
@@ -3818,7 +3818,7 @@ std::round(value: decimal) -> decimal
 std::round(value: decimal, d: int64) -> decimal
 ```
 
-The `d: int64` part is the number of decimal places we want to give it.
+That signature has an extra `d: int64` part for the number of decimal places we want to give it.
 
 All together, it looks like this:
 
@@ -3852,6 +3852,8 @@ And then it will give a result similar to this with our collections of money, ea
   default::Pound {owner: default::PC {name: 'Emil Sinclair'}, pounds: 427, shillings: 19, pence: 88, total_pounds: 428.32n},
 }
 ```
+
+(If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float54>`.)
 
 You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we went the other way around, we would have one `Person` type linked to every type of currency, most of which would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them.
 
