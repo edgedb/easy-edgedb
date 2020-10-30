@@ -70,11 +70,46 @@ Lastly, we we need to do a migration. This will give the database the structure 
 - Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
 
+## Selecting
+
+Here are three operators in EdgeDB that have the `=` sign: 
+
+-`:=` is used to declare, 
+-`=` is used for equality (not `==`),
+-`!=` is the opposite of `=`.
+
+Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
+
+First we'll just select a string:
+
+```
+SELECT 'Jonathan Harker';
+```
+
+This returns `{'Jonathan Harker'}`, no surprise there.
+
+Next we'll use `:=` to assign a variable:
+
+```
+SELECT jonathans_name := 'Jonathan Harker';
+```
+
+This returns the same output: `{'Jonathan Harker'}`. But this time it's a string that we assigned called `jonathans_name` that is being returned.
+
+Finally, we can do a `SELECT` by first assigning to `jonathans_name` and then comparing it to `'Count Dracula'`:
+
+```
+SELECT jonathans_name := 'Jonathan Harker' = 'Count Dracula';
+SELECT jonathans_name := 'Jonathan Harker' != 'Count Dracula';
+```
+
+The output is `{false}`, then `{true}`. Of course, you can just write `SELECT 'Jonathan Harker' = 'Count Dracula'` and `SELECT 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
+
 ## Inserting objects
 
-Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. By the way, keywords in EdgeDB are case insensitive, so `INSERT`, `insert` and `InSeRT` are all the same. But using capital letters is the normal practice for databases so it's best to use that.
+Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. 
 
-We use the `:=` operator to declare, while `=` is used for equality (not `==`). Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
+Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
 
 ```
 INSERT Person {
@@ -128,7 +163,7 @@ Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the uniq
 {Object {id: d2af670c-f1d6-11ea-a30f-8b40bc5413e0}}
 ```
 
-It is also what shows up when you use `SELECT` to select a type. `SELECT` is the main query command in EdgeDB to get results based on the input that comes after `SELECT`. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
+It is also what shows up when you use `SELECT` to select a type. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
 
 ```
 SELECT City;
