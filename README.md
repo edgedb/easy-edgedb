@@ -353,6 +353,12 @@ Of course, right now Jonathan Harker is being connected to every city in the dat
 
 [Here is all our code so far up to Chapter 1.](chapter_1_code.md)
 
+## Time to practice
+
+1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
+2. Try inserting a `City` called Constantinople, but now known as İstanbul.
+3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
+
 # Chapter 2 - At the Hotel in Bistritz
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
