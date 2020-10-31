@@ -683,6 +683,35 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 [Here is all our code so far up to Chapter 3.](chapter_3_code.md)
 
+## Time to practice
+
+1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
+
+```
+SELECT NPC {
+  name,
+  cities := SELECT City.name
+};
+```
+
+2. If the `City` type needed a required property called `population`, what would it look like? What type would 'population' be?
+3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
+
+```
+SELECT Person {
+  name,
+  name
+};
+```
+
+(Hint: the problem is that the name `name` is being used twice)
+
+4. People keep trying to make characters with negative ages. Can you think of a constraint that can stop this?
+
+Hint: the current constraint is `max_value(120);`
+
+5. Can you insert a HumanAge type?
+
 # Chapter 4 - "What a strange man this Count Dracula is."
 
 >Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Jonathan notices that it's almost morning, and that they talked through the whole night. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
