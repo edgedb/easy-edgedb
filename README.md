@@ -361,15 +361,7 @@ Of course, right now Jonathan Harker is being connected to every city in the dat
 4. Try selecting all the `City` types along with their `name` and `modern_name` properties, but change `.name` to say `old_name` and change `modern_name` to say `name_now`.
 5. Will typing `SelecT City;` produce an error?
 
-Answers (select text to see):
-
-<span style="color:white">
-
-SELECT City {
-  old_name := .name,
-  name_now := .modern_name
-};
-</span>
+[Here are the answers to the five questions.](answers_chapter_1.md)
 
 # Chapter 2 - At the Hotel in Bistritz
 
