@@ -1,3 +1,5 @@
+# Chapter 3 Questions and Answers
+
 #### 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 
 All it needs is brackets around the `SELECT` - remember, putting it in brackets "captures" the output so it can be used.
