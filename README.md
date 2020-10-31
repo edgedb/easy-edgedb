@@ -74,9 +74,9 @@ Lastly, we we need to do a migration. This will give the database the structure 
 
 Here are three operators in EdgeDB that have the `=` sign: 
 
--`:=` is used to declare, 
--`=` is used for equality (not `==`),
--`!=` is the opposite of `=`.
+- `:=` is used to declare, 
+- `=` is used for equality (not `==`),
+- `!=` is the opposite of `=`.
 
 Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
 
@@ -137,7 +137,7 @@ Note that a comma at the end is optional - you can put it in or leave it out. He
 Hmm. We can see already that our schema needs some improvement though.
 
 - We have a `Person` type, and a `City` type,
-- - The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
+- The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
 We'll fix this soon by changing `array<str>` from a `property` to something called `multi link` to the `City` type. This will actually join them together. But first let's look a bit closer at what happens when we use `INSERT`.
 
@@ -357,7 +357,19 @@ Of course, right now Jonathan Harker is being connected to every city in the dat
 
 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
-3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it) >!ontehoe
+3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
+4. Try selecting all the `City` types along with their `name` and `modern_name` properties, but change `.name` to say `old_name` and change `modern_name` to say `name_now`.
+5. Will typing `SelecT City;` produce an error?
+
+Answers (select text to see):
+
+<span style="color:white">
+
+SELECT City {
+  old_name := .name,
+  name_now := .modern_name
+};
+</span>
 
 # Chapter 2 - At the Hotel in Bistritz
 
