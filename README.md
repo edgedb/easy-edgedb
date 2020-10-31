@@ -357,7 +357,7 @@ Of course, right now Jonathan Harker is being connected to every city in the dat
 
 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
-3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
+3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it) >!ontehoe
 
 # Chapter 2 - At the Hotel in Bistritz
 
@@ -4031,20 +4031,20 @@ Much better!
 
 > Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions:
 
-> “Where are you now?”
-
-> “I do not know. It is all strange to me!”
-
-> “What do you see?”
-
-> “I can see nothing; it is all dark.”
-
-> “What do you hear?”
-
-> “The water... and little waves.”
-
-> “Then you are on a ship?”
-
+> “Where are you now?”  
+>
+> “I do not know. It is all strange to me!”  
+>
+> “What do you see?”  
+>
+> “I can see nothing; it is all dark.”  
+>
+> “What do you hear?”  
+>
+> “The water... and little waves.”  
+>
+> “Then you are on a ship?”  
+>
 > “Oh, yes!”
 
 > Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go together to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
