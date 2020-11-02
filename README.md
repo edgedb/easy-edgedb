@@ -1151,6 +1151,22 @@ And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS S
 
 [Here is all our code so far up to Chapter 5.](chapter_5_code.md)
 
+Time to practice
+
+1. What do you think `SELECT to_datetime(3600);` will return, and why?
+
+Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
+
+2.
+
+3.
+
+4.
+
+5.
+
+
+
 # Chapter 6 - Still no escape
 
 >Jonathan can't move and the women vampires are next to him. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and burns them in front of Jonathan. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
