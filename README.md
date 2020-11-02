@@ -949,6 +949,8 @@ The error is: `invalid reference to default::NPC: self-referencing INSERTs are n
 
 Bonus: there is another method we could use too to make it work without the keyword. Can you think of another way?
 
+2. How would you display up to 2 `Person` types (and their `name` property) whose names include the letter `a`?
+
 # Chapter 5 - Jonathan tries to leave the castle
 
 Jonathan is not having much luck. Here's what happens to him in this chapter:
