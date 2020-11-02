@@ -1151,20 +1151,19 @@ And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS S
 
 [Here is all our code so far up to Chapter 5.](chapter_5_code.md)
 
-Time to practice
+## Time to practice
 
 1. What do you think `SELECT to_datetime(3600);` will return, and why?
 
 Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
 
-2. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
+2. Will `SELECT <int16>9 + 1.06n IS decimal;` work? And if it does, will it return `{true}`?
 
-3.
+3. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
 
-4.
+4. How would you write the same query using `WITH` for each of the two times?
 
-5.
-
+5. What's the best way to describe a type if you only want to see how you wrote it?
 
 
 # Chapter 6 - Still no escape
