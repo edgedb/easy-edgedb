@@ -1157,7 +1157,7 @@ Time to practice
 
 Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
 
-2.
+2. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
 
 3.
 
