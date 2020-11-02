@@ -951,6 +951,14 @@ Bonus: there is another method we could use too to make it work without the keyw
 
 2. How would you display up to 2 `Person` types (and their `name` property) whose names include the letter `a`?
 
+3. Imagine that you have the following `cal::local_time` type:
+
+```
+SELECT has_nine_in_it := <cal::local_time>'09:09:09';
+```
+
+This displays `{<cal::local_time>'09:09:09'}` but instead you want to display {true} if it has a 9 and {false} otherwise. How could you do that?
+
 # Chapter 5 - Jonathan tries to leave the castle
 
 Jonathan is not having much luck. Here's what happens to him in this chapter:
