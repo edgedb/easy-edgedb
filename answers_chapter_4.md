@@ -1,6 +1,6 @@
 # Chapter 4 Questions and Answers
 
-1. This insert is not working.
+#### 1. This insert is not working.
 
 The keyword to make it work is `DETACHED`, so that we can pull from the `NPC` type in general instead of the `NPC` type we are inserting:
 
@@ -21,3 +21,14 @@ INSERT NPC {
 ```
 
 We changed `SELECT NPC` to `SELECT Person`. Even though `NPC` extends from `Person`, `Person` is a different type so we can draw from it without needing to write `DETACHED`.
+
+### 2. How would you display up to 2 `Person` types (and their `name` property) whose names include the letter `a`?
+
+Like this, using `LIKE` and `LIMIT`:
+
+```
+SELECT Person {
+  name
+} FILTER .name LIKE '%a%' LIMIT 2;
+```
+
