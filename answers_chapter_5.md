@@ -14,7 +14,11 @@ And since it gives the number of seconds after the Unix Epoch (1970), it will re
 
 So one hour (3600 seconds) after the epoch began.
 
-#### 2. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
+#### 2. Will `SELECT <int16>9 + 1.06n IS decimal;` work? And if it does, will it return `{true}`?
+
+Yes, and yes. EdgeDB will choose `decimal` as the more precise of the two types. You can also see the type just with `SELECT <int16>9 + 1.06n;` because the return shows the n: `{10.06n}`
+
+#### 3. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
 
 This one is easy with the `to_datetime()` function:
 
@@ -24,8 +28,29 @@ SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT') - to_datetime(2003, 12, 25, 5,
 
 The answer is 568,000 seconds: `{568800s}`
 
-3.
+#### 4. How would you write the same query using `WITH` for each of the two times?
 
-4.
+It would look something like this (depending on the name you give the variable and the order you prefer):
 
-5.
+```
+WITH
+  uzbek_time := (SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT')),
+  turkmen_time := (SELECT to_datetime(2003, 12, 25, 5, 0, 0, 'TMT')),
+ SELECT uzbek_time - turkmen_time;
+```
+
+The output is exactly the same: `{568800s}`
+
+#### 5. What's the best way to describe a type if you only want to see how you wrote it?
+
+The best way is `DESCRIBE TYPE AS SDL`, which doesn't have all the extra info that `AS TEXT` gives you. Here's `MinorVampire` for example:
+
+```
+{
+  'type default::MinorVampire extending default::Person {
+    required single link master -> default::Vampire;
+};',
+}
+```
+
+It doesn't show any of the information from the `Person` type that it extends.
