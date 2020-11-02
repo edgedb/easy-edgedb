@@ -934,6 +934,21 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 [Here is all our code so far up to Chapter 4.](chapter_4_code.md)
 
+## Time to practice
+
+1. This insert is not working.
+
+```
+INSERT NPC {
+  name := 'I Love Mina',
+  lover := (SELECT Person FILTER .name LIKE '%Mina%' LIMIT 1)
+};
+```
+
+The error is: `invalid reference to default::NPC: self-referencing INSERTs are not allowed`. What keyword can we use to make this insert work?
+
+Bonus: there is another method we could use too to make it work without the keyword. Can you think of another way?
+
 # Chapter 5 - Jonathan tries to leave the castle
 
 Jonathan is not having much luck. Here's what happens to him in this chapter:
