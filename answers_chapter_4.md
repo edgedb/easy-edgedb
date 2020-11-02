@@ -32,7 +32,15 @@ SELECT Person {
 } FILTER .name LIKE '%a%' LIMIT 2;
 ```
 
-#### 3. How to display `{true}` if cal::local_time has a 9 and `{false}` otherwise?
+#### 3. How would you display all the `Person` types (and their names) that have never visited anywhere?
+
+Just use `NOT EXISTS`:
+
+```
+SELECT NPC {name} FILTER NOT EXISTS .places_visited;
+```
+
+#### 4. How to display `{true}` if cal::local_time has a 9 and `{false}` otherwise?
 
 Take the original query:
 
@@ -45,3 +53,37 @@ and use <str> to cast the `cal::local_time` to a string, then add `LIKE '%9%' at
 ```
 SELECT has_nine_in_it := <str><cal::local_time>'09:09:09' LIKE '%9%';
 ```
+
+#### 5. Selecting while inserting and adding a property called `age_ten_years_later`
+
+First take the original insert:
+```
+INSERT NPC {
+  name := "The Innkeeper's Son",
+  age := 10
+};
+```
+
+then wrap it in parentheses, add a SELECT and remove the `;`
+
+```
+SELECT(INSERT NPC {
+  name := "The Innkeeper's Son",
+  age := 10
+});
+```
+
+Now just add the fields like in any other `SELECT`, then add `age_ten_years_later`:
+
+```
+SELECT(INSERT NPC {
+    name := "The Innkeeper's Son",
+    age := 10
+ }) {
+  name,
+  age,
+  age_ten_years_later := .age + 10
+};
+```
+
+This gives us: `{Object {name: 'The Innkeeper\'s Son', age: 10, age_ten_years_later: 20}}`
