@@ -33,7 +33,11 @@ SELECT City {
 };
 ```
 
-You can probably guess why: items inside `length_difference` could be an `int64` sometimes, and `str` at other times, which is unacceptable.
+You can probably guess why: items inside `length_difference` could be an `int64` sometimes, and `str` at other times, which is unacceptable. Here's the error:
+
+```
+error: operator 'std::IF' cannot be applied to operands of type 'std::int64', 'std::bool', 'std::str'
+```
 
 Fortunately, we can just cast the results to a string:
 
