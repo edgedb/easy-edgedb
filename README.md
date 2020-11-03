@@ -1731,6 +1731,7 @@ Choosing the five objects from before from the output, it now looks like this:
 
 4. How would you display all the `Person` types that don't have `lover`s, with their names and their type names?
 
+
 # Chapter 9 - Strange events in England
 
 We'll only read part of the introduction to start this chapter. Here it is:
