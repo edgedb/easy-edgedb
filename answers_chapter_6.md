@@ -83,4 +83,24 @@ WITH letters := {'W', 'J', 'C'}
 
 So you're selecting the casted-to-JSON version of the result of `SELECT Person`.
 
-#### 5.
+#### 5. How would you add ' the Great' to every Person type?
+
+Easy, just update without `FILTER`:
+
+```
+UPDATE Person
+  SET {
+    name := .name ++ ' the Great'
+};
+```
+
+Now their names are 'Woman 1 the Great', 'Mina Murray the Great', and so on.
+
+**Bonus question**: to undo this, just set `name` to the same string minus the last 10 characters using `[0:-10]`:
+
+```
+UPDATE Person
+  SET {
+    name := .name[0:-10]
+};
+```
