@@ -1513,6 +1513,10 @@ In a few chapters we will learn how to create our own functions to make queries 
 
 3. What if you wanted to write 'Modern name does not exist' instead of 0?
 
+4. How would you insert an NPC with the name 'NPC number 8' if for example there are already seven other NPCs?
+
+5. How would you select only the `Person` types that have the shortest names?
+
 
 # Chapter 8 - Dracula takes the boat to England
 
