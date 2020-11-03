@@ -1505,6 +1505,15 @@ In a few chapters we will learn how to create our own functions to make queries 
 
 [Here is all our code so far up to Chapter 7.](chapter_7_code.md)
 
+## Time to practice
+
+1. How would you select each City and the length of its name?
+
+2. How would you select each City and the length of `name` minus the length of `modern_name` if `modern_name` exists, and 0 if `modern_name` does not exist?
+
+3. What if you wanted to write 'Modern name does not exist' instead of 0?
+
+
 # Chapter 8 - Dracula takes the boat to England
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
