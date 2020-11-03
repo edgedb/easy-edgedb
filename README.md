@@ -1721,6 +1721,16 @@ Choosing the five objects from before from the output, it now looks like this:
 
 [Here is all our code so far up to Chapter 8.](chapter_8_code.md)
 
+## Time to practice
+
+1. How would you select all the `Place` types and their names, plus the `door` property if it's a `Castle`?
+
+2. How would you select `Place` types with `city_name` for `name` if it's a `City` and `country_name` for `name` if it's a `Country`?
+
+3. How would you do the same but only showing the results of `City` and `Country` types?
+
+4. How would you display all the `Person` types that don't have `lover`s, with their names and their type names?
+
 # Chapter 9 - Strange events in England
 
 We'll only read part of the introduction to start this chapter. Here it is:
