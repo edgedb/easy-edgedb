@@ -62,3 +62,7 @@ SELECT Person {
 ```
 
 Don't forget `name` after type! It won't make an error but the type name will be something like this and not very helpful: `__type__: Object {id: 20ef52ae-1d97-11eb-8cb6-0de731b01cc9}`
+
+
+#### 5. 
+
