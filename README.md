@@ -1363,6 +1363,12 @@ SELECT NPC {
 
 2. How would you update Mina's `places_visited` to include Romania if she went to Castle Dracula for a visit?
 
+3. With the set `{'W', 'J', 'C'}`, how would you display all the `Person` types with a name that contains any of these capital letters?
+
+Hint: it involves `WITH` and a bit of concatenation.
+
+4. How would you display this same query as JSON?
+
   
 # Chapter 7 - Jonathan finally "leaves" the castle
 
