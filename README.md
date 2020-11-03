@@ -1369,6 +1369,10 @@ Hint: it involves `WITH` and a bit of concatenation.
 
 4. How would you display this same query as JSON?
 
+5. How would you add ' the Great' to every Person type?
+
+Bonus question: what's a quick way to undo this using string indexing?
+
   
 # Chapter 7 - Jonathan finally "leaves" the castle
 
