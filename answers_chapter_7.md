@@ -58,3 +58,46 @@ It should give this result:
   Object {name: 'London', length_difference: 'Modern name does not exist'},
 }
 ```
+
+#### 4. How would you insert an NPC with the name 'NPC number 8' if for example there are already seven other NPCs?
+
+It looks like this:
+
+```
+INSERT NPC {
+  name := 'NPC number ' ++ <str>(count(DETACHED NPC) + 1)
+};
+```
+
+`SELECT count(NPC)` on its own gives the number, but we are inserting an `NPC` at the same time so we need `DETACHED` to select the `NPC` type in general.
+
+#### 5. How would you select only the `Person` types that have the shortest names?
+
+First, here's how **not** to do it:
+
+```
+SELECT Person {
+  name,
+} FILTER len(.name) = min(len(Person.name));
+```
+
+This seems like it might work, but `min(len(Person.name))` is the minimum length of `Person` that we are selecting - in other words, one `Person`. The result: every Person type and their names show up.
+
+Adding `DETACHED` solves it:
+
+```
+SELECT Person {
+  name,
+} FILTER len(.name) = min(len(Person.name));
+```
+
+We could do the same with `WITH` as well, which is maybe a bit easier to read:
+
+```
+WITH minimum_length := min(len(DETACHED Person.name))
+  SELECT Person {
+    name,
+} FILTER len(.name) = minimum_length;
+```
+
+
