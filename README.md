@@ -1350,6 +1350,20 @@ The output is:
 
 [Here is all our code so far up to Chapter 6.](chapter_6_code.md)
 
+## Time to practice
+
+1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
+
+```
+SELECT NPC {
+  name,
+  greeting := ## Put the rest here
+};
+```
+
+2. How would you update Mina's `places_visited` to include Romania if she went to Castle Dracula for a visit?
+
+  
 # Chapter 7 - Jonathan finally "leaves" the castle
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside. Jonathan knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door - he knows that Jonathan is trapped. Later, Jonathan hears Dracula tell the women that they can have him tomorrow after he leaves. Dracula's friends take him away (he is inside a coffin), and Jonathan is alone... and soon it will be night. All the doors are locked. He decides to escape out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" and begins to climb the wall.
