@@ -2005,6 +2005,23 @@ INSERT NPC {
 
 But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later, so we gave him 10. We will have to think about his relationship with Dracula later.
 
+Time to practice
+
+1. Why doesn't this insert work and how can it be fixed?
+
+```
+FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
+  UNION(
+    INSERT Castle {
+      name := castle
+});
+```
+
+2. How would you do the same insert while displaying the castle's name at the same time?
+3. How would you change the `Vampire` type if all vampires needed a minimum strength of 10?
+4. 
+5. 
+
 # Chapter 10 - Terrible events in Whitby
 
 > Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside. One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. He doesn't know what the problem is and calls his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy. Then he turns to the others and says, "Listen. I have something to tell you that you might not believe..."
