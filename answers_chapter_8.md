@@ -64,7 +64,7 @@ SELECT Person {
 Don't forget `name` after type! It won't make an error but the type name will be something like this and not very helpful: `__type__: Object {id: 20ef52ae-1d97-11eb-8cb6-0de731b01cc9}`
 
 
-#### 5. What's needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
+#### 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
 The two parts that need to be fixed are: 1) a `,` after `name` and a `.` after `[IS Castle]`:
 
