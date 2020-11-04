@@ -1731,6 +1731,16 @@ Choosing the five objects from before from the output, it now looks like this:
 
 4. How would you display all the `Person` types that don't have `lover`s, with their names and their type names?
 
+5. What's needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
+
+```
+SELECT Place {
+  __type__,
+  name
+  [IS Castle]doors
+};
+```
+
 
 # Chapter 9 - Strange events in England
 
