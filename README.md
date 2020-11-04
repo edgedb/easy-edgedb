@@ -1902,6 +1902,18 @@ FOR n IN {1, 2, 3, 4, 5}
 });
 ```
 
+It's a good idea to familiarize yourself with [the order to follow](https://www.edgedb.com/docs/edgeql/statements/for#for) when you use `FOR`:
+
+```
+[ WITH with-item [, ...] ]
+
+FOR variable IN "{" iterator-set [, ...]  "}"
+
+UNION output-expr ;
+```
+
+The important part is the `{` and `}`, because `FOR` is used on a set. If you try with an array or other type it will generate an error.
+
 Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
 
 ```
@@ -2005,7 +2017,7 @@ INSERT NPC {
 
 But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later, so we gave him 10. We will have to think about his relationship with Dracula later.
 
-Time to practice
+## Time to practice
 
 1. Why doesn't this insert work and how can it be fixed?
 
@@ -2019,8 +2031,27 @@ FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
 
 2. How would you do the same insert while displaying the castle's name at the same time?
 3. How would you change the `Vampire` type if all vampires needed a minimum strength of 10?
-4. 
-5. 
+4. How would you update all the `Person` types to show that they died on September 11, 1887?
+
+Hint: here's the type again:
+
+```
+  abstract type Person {
+    required property name -> str {
+        constraint exclusive;
+    }
+    property age -> int16;
+    property strength -> int16;
+    multi link places_visited -> Place;
+    multi link lover -> Person;
+    property first_appearance -> cal::local_date;
+    property last_appearance -> cal::local_date;
+  }
+```
+
+5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?
+
+Hint: "bringing back to life" means that `last_appearance` should return `{}`.
 
 # Chapter 10 - Terrible events in Whitby
 
