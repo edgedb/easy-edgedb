@@ -37,3 +37,37 @@ type Vampire extending Person {
   }
 }
 ```
+
+#### 4. How would you update all the `Person` types to show that they died on September 11, 1887?
+
+You would give them each a `last_appearance` like this:
+
+```
+UPDATE Person
+  SET {
+    last_appearance := <cal::local_date>'1887-09-11'
+ };
+```
+
+#### 5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?
+
+You can just `UPDATE` by using `LIKE` on a set instead of a single letter:
+
+```
+UPDATE Person FILTER .name LIKE {'%a%', '%e%'}
+ SET {
+ last_appearance := {}
+ });
+````
+
+And if you wanted to display the results at the same time to make sure, it would look like this:
+
+```
+SELECT(UPDATE Person FILTER .name ILIKE {'%a%', '%e%'}
+  SET {
+    last_appearance := {}
+ }) {
+ name,
+ last_appearance
+ };
+```
