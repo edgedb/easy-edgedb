@@ -2357,6 +2357,16 @@ UPDATE NPC
 
 With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
 
+## Time to practice
+
+1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
+
+{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09') 
+
+2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
+
+{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {}) 
+
 # Chapter 11 - What's wrong with Lucy?
 
 > Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and put garlic everywhere. It works, and Lucy gets better. But one day Lucy's mother thinks the room needs fresh air and opens the windows, and Lucy wakes up pale and sick again. Dracula gets in her room every time someone makes a mistake, and every time the men give Lucy their blood to help her get better. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. And one day he didn't want to talk, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
