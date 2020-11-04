@@ -34,3 +34,37 @@ FOR person IN {('Draula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old l
   last_appearance := <cal::local_date>person.2 IF len(person.2) = 10 ELSE <cal::local_date>{}
  });
 ```
+
+#### 3. How would you order the `Person` types by last letter of their names?
+
+Just order by doing a slice of the final letter:
+
+```
+SELECT Person {
+  name
+} ORDER BY .name[-1];   
+```
+
+#### 4. Try inserting an `NPC` with the name `''`. Now how would you do the same query in question 3?
+
+If we try to do the same query as above, we get the following error:
+
+```
+ERROR: InvalidValueError: string index -1 is out of bounds
+```
+
+No problem though. One way is to filter out anything with a length under 1:
+
+```
+SELECT Person {
+  name
+} FILTER len(.name) > 1 ORDER BY .name[-1];
+```
+
+Or if you don't want to filter it out, you could just add a dummy character for anything without a length of at least 1:
+
+```
+SELECT Person {
+  name := ' ' ++ .name IF len(.name) = 0 ELSE .name
+} ORDER BY .name[-1];
+```
