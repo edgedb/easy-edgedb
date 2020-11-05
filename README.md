@@ -2870,7 +2870,7 @@ function gives_number(input: int64) -> int64
 Second function:
 
 ```
-overloaded function gives_number(input: int64) -> int32
+function gives_number(input: int64) -> int32
  using(<int32>input);
 ```
 
@@ -2886,7 +2886,7 @@ function make64(input: int16) -> int64
 Second function:
 
 ```
-create function make64(input: int32) -> int64
+function make64(input: int32) -> int64
   using(input);
 ```
 
