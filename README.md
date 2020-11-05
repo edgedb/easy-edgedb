@@ -2371,6 +2371,16 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 4. Try inserting an `NPC` with the name `''`. Now how would you do the same query in question 3?
 
+Hint: the length of `''` is 0, which may be a problem.
+
+5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
+
+6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
+
+Hint: `LIKE` can help. 
+
+Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
+
 # Chapter 11 - What's wrong with Lucy?
 
 > Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and put garlic everywhere. It works, and Lucy gets better. But one day Lucy's mother thinks the room needs fresh air and opens the windows, and Lucy wakes up pale and sick again. Dracula gets in her room every time someone makes a mistake, and every time the men give Lucy their blood to help her get better. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. And one day he didn't want to talk, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
