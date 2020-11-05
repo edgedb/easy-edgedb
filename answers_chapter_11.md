@@ -112,3 +112,39 @@ edgedb> SELECT two_cities('Munich', 'London');
 ```
 
 `city_one` and `city_two` could of course be a `City` type, but then it would take a lot more effort to use.
+
+#### 5. Will `SELECT (City.population + City.population)` and `SELECT ((SELECT City.population) + (SELECT City.population))` produce different results?
+
+Yes. The first one is a `SELECT` on a single set that adds each item to itself, giving this: `{28800, 460046, 805412, 18200, 7000000}`
+
+Meanwhile, the second is two sets where each item is added to each other one in every possible combination. That gives 25 results in total:
+
+```
+{
+  28800,
+  244423,
+  417106,
+  23500,
+  3514400,
+  244423,
+  460046,
+  632729,
+  239123,
+  3730023,
+  417106,
+  632729,
+  805412,
+  411806,
+  3902706,
+  23500,
+  239123,
+  411806,
+  18200,
+  3509100,
+  3514400,
+  3730023,
+  3902706,
+  3509100,
+  7000000,
+}
+```
