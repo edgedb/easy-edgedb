@@ -2580,6 +2580,12 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 Hint: try using `SET OF Person` as the return type.
 
+3. What will the output of this be?
+
+SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+
+4. How would you make a function that tells you how many times larger one city is than another?
+
 # Chapter 12 - From bad to worse
 
 There is no good news for our heroes this chapter:
