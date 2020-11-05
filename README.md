@@ -2856,6 +2856,42 @@ This gives us the result:
 {'Slovakia, Buda-Pesth, Castle Dracula'}
 ```
 
+## Time to practice
+
+1. Consider these two functions. Will EdgeDB accept the second one?
+
+First function:
+
+```
+function gives_number(input: int64) -> int64
+ using(input);
+```
+
+Second function:
+
+```
+overloaded function gives_number(input: int64) -> int32
+ using(<int32>input);
+```
+
+2. How about these two functions? Will EdgeDB accept the second one?
+
+First function:
+
+```
+function make64(input: int16) -> int64
+  using(input);
+```  
+
+Second function:
+
+```
+create function make64(input: int32) -> int64
+  using(input);
+```
+
+
+
 # Chapter 13 
 
 > This time it was too late, and Lucy is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!” He tries, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one). Unfortunately, the nurse steals it to sell when nobody is looking. Now Vampire Lucy is walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife.
