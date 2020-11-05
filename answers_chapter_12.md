@@ -8,7 +8,7 @@ No, because the input signature for both of them is the same:
 function gives_number(input: int64) -> int64
  using(input);
  
-overloaded function gives_number(input: int64) -> int32
+function gives_number(input: int64) -> int32
  using(<int32>input);
 ```
 
