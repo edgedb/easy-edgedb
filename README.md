@@ -2900,6 +2900,8 @@ function make64(input: int32) -> int64
 
 4. Will `SELECT <int64>{} ?? <int64>{} ?? {1, 2}` work?
 
+5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
+
 
 # Chapter 13 
 
