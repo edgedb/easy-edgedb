@@ -2778,7 +2778,13 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 
 In other words, how to add `{'Buda-Peth', 'Bistritz'}' to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
 
-To do that we can use the so-called [coalescing operator](https://www.edgedb.com/docs/edgeql/funcops/set#operator::COALESCE), which is written `??`. Here is a quick example:
+To do that we can use the so-called [coalescing operator](https://www.edgedb.com/docs/edgeql/funcops/set#operator::COALESCE), which is written `??`. The explanation for the operator is nice and simple:
+
+`Evaluate to A for non-empty A, otherwise evaluate to B.`
+
+So if the item on the left is not empty it will return that, and otherwise it will return the one on the right.
+
+Here is a quick example:
 
 ```
 edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
@@ -2890,6 +2896,9 @@ function make64(input: int32) -> int64
   using(input);
 ```
 
+3. Will `SELECT {} ?? {3, 4} ?? {5, 6};` work?
+
+4. Will `SELECT <int64>{} ?? <int64>{} ?? {1, 2}` work?
 
 
 # Chapter 13 
