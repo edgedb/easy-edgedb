@@ -2572,6 +2572,10 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 ```  ... (further results hidden `\set limit 100`)```
 
+## Time to practice
+
+1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
+
 # Chapter 12 - From bad to worse
 
 There is no good news for our heroes this chapter:
