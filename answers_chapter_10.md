@@ -68,3 +68,53 @@ SELECT Person {
   name := ' ' ++ .name IF len(.name) = 0 ELSE .name
 } ORDER BY .name[-1];
 ```
+
+#### 5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
+
+You can do it with `UNLESS CONFLICT ON` and `ELSE`:
+
+```
+INSERT Country {
+ name := 'Slovakia'
+ } UNLESS CONFLICT ON .name
+ ELSE(
+ UPDATE Country
+ SET {
+ name := 'Slovak Republic'
+ });
+```
+
+#### 6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
+
+Here is one way to do it:
+
+```
+WITH npc_name := 'Jonathan Harker',users_with_name := (SELECT NPC FILTER .name LIKE npc_name ++ '%')
+ INSERT NPC {
+ name := npc_name
+ } UNLESS CONFLICT ON .name
+ ELSE(
+ UPDATE NPC
+ SET {
+ name := npc_name ++ ' ' ++ <str>(count(users_with_name) + 1)
+ });
+```
+
+Matching with `LIKE` on `users_with_name` is important because 'Jonathan Harker 2' won't match 'Jonathan Harker' exactly.
+
+Here's the same using the function `contains()`:
+
+```
+WITH npc_name := 'Jonathan Harker',
+users_with_name := (SELECT NPC FILTER contains(.name, npc_name))
+  INSERT NPC {
+  name := npc_name
+  } UNLESS CONFLICT ON .name
+  ELSE(
+  UPDATE NPC
+  SET {
+  name := npc_name ++ ' ' ++ <str>(count(users_with_name) + 1)
+  });
+```
+
+It's a bit cleaner but is case sensitive.
