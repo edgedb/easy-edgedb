@@ -54,3 +54,17 @@ SELECT <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
 ```
 
 The output is `{1}`, the first not empty set that it sees.
+
+#### 5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
+
+The error message gives a hint:
+
+`error: could not find a function variant array_join`
+
+That means that the input that it received doesn't match any of its function signatures. And if you check [the function itself](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join), you can see why: it needs a second string:
+
+```
+std::array_join(array: array<str>, delimiter: str) -> str
+```
+
+So we can just change it to `SELECT array_join(array_agg(Person.name), ' ');` or `SELECT array_join(array_agg(Person.name), ' is awesome ');` or anything else with a second string and it works.
