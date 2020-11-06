@@ -3175,6 +3175,18 @@ SELECT (INTROSPECT Ship) {
 };             
 ```
 
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
 # Chapter 14 - Jonathan Harker returns
 
 > Finally there is some good news. After escaping the castle, Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina sends Lucy a letter from Exeter about the good news...but Lucy never opens it because she's not human anymore. Meanwhile, the men find vampire Lucy in a graveyard. Arthur sees her and finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
@@ -3495,6 +3507,18 @@ Here is the output:
 }
 ```
 
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
 # Chapter 15 - Time to start vampire hunting
 
 > Jonathan has been suffering from extreme stress, because he doesn't know if the experience with Dracula was real or just a crazy dream. But then he meets Van Helsing who tells him that it was true, and Jonathan becomes strong and confident again. Now they begin to search for Dracula. A strange coincidence: the mansion called Carfax that Dracula bought is very close to the hospital where Renfield and Dr. Seward are. That's why Renfield was so strongly affected. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them, but there are still many left. If they don't destroy the other boxes, Dracula will be able to run away, sleep during the day and terrorize London every night when the sun goes down.
@@ -3667,6 +3691,18 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
   },
 }
 ```
+
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
 
 # Chapter 16 - Is Renfield telling the truth?
 
@@ -3860,6 +3896,18 @@ The function signature is `std::re_match(pattern: str, string: str) -> array<str
 
 so it gives: `{['tonight'], ['to-night']}`.
 
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
 
 # Chapter 17 - Poor Renfield. Poor Mina.
 
@@ -4025,6 +4073,18 @@ Then we'll make sure that it got them:
 ```
 
 We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
+
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
 
 # Chapter 18 - Using Dracula's own weapon against him
 
@@ -4330,6 +4390,18 @@ INSERT Ship {
 ```
 
 Much better!
+
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
 
 # Chapter 19 - Dracula escapes
 
@@ -4715,6 +4787,18 @@ With the reverse lookup at the end we have another link between `Country` and it
 }
 ```
 
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
 # Chapter 20 - The final battle
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
@@ -5055,3 +5139,15 @@ This one is probably closest to an actual usable type for a real game. With `sta
 The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
 
 At the very end of our schema are the functions.
+
+## Time to practice
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
