@@ -2903,7 +2903,7 @@ function make64(input: int32) -> int64
 5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
 
 
-# Chapter 13 
+# Chapter 13 - Farewell, Lucy. Meet the new Lucy
 
 > This time it was too late, and Lucy is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!” He tries, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one). Unfortunately, the nurse steals it to sell when nobody is looking. Now Vampire Lucy is walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife.
 
@@ -3177,7 +3177,7 @@ SELECT (INTROSPECT Ship) {
 
 ## Time to practice
 
-1.
+1. How would you insert an `NPC` named 'Mr. Swales' who has visited the `City` called 'York', the `Country` called 'England', and the `OtherPlace` called 'Whitby Abbey'? Try it in a single insert.
 
 2.
 
