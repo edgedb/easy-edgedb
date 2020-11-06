@@ -3179,9 +3179,17 @@ SELECT (INTROSPECT Ship) {
 
 1. How would you insert an `NPC` named 'Mr. Swales' who has visited the `City` called 'York', the `Country` called 'England', and the `OtherPlace` called 'Whitby Abbey'? Try it in a single insert.
 
-2.
+2. How readable is this introspect query?
 
-3.
+```
+SELECT (INTROSPECT Ship) {
+  name,
+  properties,
+  links
+};
+```
+
+3. 
 
 4.
 
