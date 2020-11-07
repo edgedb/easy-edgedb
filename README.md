@@ -3189,11 +3189,13 @@ SELECT (INTROSPECT Ship) {
 };
 ```
 
-3. 
+3. What would be the shortest way to see what links from the `Vampire` type?
 
-4.
+4. What do you think the output of `SELECT DISTINCT {1, 2} + {1, 2};` will be?
 
-5.
+Hint: don't forget the Cartesian multiplication.
+
+5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
 
 # Chapter 14 - Jonathan Harker returns
 
