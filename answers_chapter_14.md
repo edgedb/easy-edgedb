@@ -81,7 +81,50 @@ Now we can see who visited:
 
 A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := .<places_visited[IS Person].name` to it to get the number of visitors too.
 
-3.
+#### 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
+
+We can do it with a computable again, which we'll call `later_vampire`. Then we use reverse lookup to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
+
+```
+SELECT Person {
+  name,
+  later_vampire := .<former_self[IS MinorVampire].name
+  } FILTER exists .later_vampire;
+```
+
+That just gives us Lucy:
+
+`{default::NPC {name: 'Lucy Westenra', later_vampire: {'Lucy Westenra'}}}`
+
+This is not bad, but we can probably do better - `later_vampire` here isn't telling us anything about the type. Let's add some type info:
+
+```
+SELECT Person {
+   name,
+   later_vampire := .<former_self[IS MinorVampire] {
+     name,
+     __type__: {
+       name
+       }
+     }
+   } FILTER exists .later_vampire;
+```
+
+Now we can see that `later_vampire` is of type `MinorVampire` instead of just displaying a string:
+
+```
+{
+  default::NPC {
+    name: 'Lucy Westenra',
+    later_vampire: {
+      default::MinorVampire {
+        name: 'Lucy Westenra',
+        __type__: schema::ObjectType {name: 'default::MinorVampire'},
+      },
+    },
+  },
+}
+```
 
 4.
 
