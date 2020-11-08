@@ -27,7 +27,59 @@ WITH numbers := enumerate(Person).0,
 
 Don't forget to write `number in {numbers}` so that `numbers` becomes a set.
 
-2.
+#### 2. Using a reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
+
+This is not too hard if you start it in steps, first with a filter to get all the `Place` types:
+
+```
+SELECT Place {
+  name
+  } FILTER .name LIKE '%o%';
+```
+
+And here they are:
+
+```
+{
+  default::Country {name: 'Romania'},
+  default::Country {name: 'Slovakia'},
+  default::City {name: 'London'},
+}
+```
+
+Now we'll add the reverse lookup to the same query, and call the computable `visitors`:
+
+```
+SELECT Place {
+ name,
+ visitors := .<places_visited[IS Person].name
+ } FILTER .name LIKE '%o%';
+```
+
+Now we can see who visited:
+
+```
+{
+  default::Country {name: 'Romania', visitors: {}},
+  default::Country {name: 'Slovakia', visitors: {}},
+  default::City {
+    name: 'London',
+    visitors: {
+      'Lucy Westenra',
+      'The innkeeper',
+      'Mina Murray',
+      'John Seward',
+      'Quincey Morris',
+      'Arthur Holmwood',
+      'Renfield',
+      'Abraham Van Helsing',
+      'Emil Sinclair',
+    },
+  },
+}
+```
+
+A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := .<places_visited[IS Person].name` to it to get the number of visitors too.
 
 3.
 
