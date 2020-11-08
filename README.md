@@ -3521,9 +3521,11 @@ Here is the output:
 
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
-2. Using a reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
+2. Using reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
-3.
+3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
+
+Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
 4.
 
