@@ -3519,7 +3519,7 @@ Here is the output:
 
 ## Time to practice
 
-1.
+1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
 2.
 
