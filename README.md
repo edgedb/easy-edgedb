@@ -3527,9 +3527,9 @@ Here is the output:
 
 Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
-4.
+4. How would you give the `MinorVampire` type an annotation called `note` that says `'first_appearance for MinorVampire should always match last_appearance for its matching NPC type'`?
 
-5.
+5. How would you see this `note` annotation for `MinorVampire` in a query?
 
 # Chapter 15 - Time to start vampire hunting
 
