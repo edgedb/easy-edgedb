@@ -126,6 +126,51 @@ Now we can see that `later_vampire` is of type `MinorVampire` instead of just di
 }
 ```
 
-4.
+#### 4. How would you give the `MinorVampire` type an annotation called `note` that says `'first_appearance for MinorVampire should always match last_appearance for its matching NPC type'`?
 
-5.
+First you would create the annotation itself, since it's not available yet:
+
+```
+abstract annotation note;
+```
+
+After that you would just put it into the `MinorVampire` type and it's done!
+
+```
+type MinorVampire extending Person {
+    link former_self -> Person;
+    annotation note := 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type';
+}
+```
+
+#### 5. How would you see this `note` annotation for `MinorVampire` in a query?
+
+It would look like this:
+
+```
+SELECT (INTROSPECT MinorVampire) {
+  name,
+  annotations: {
+    name,
+    @value
+  }
+};
+```
+
+Here's the output:
+
+```
+{
+  schema::ObjectType {
+    name: 'default::MinorVampire',
+    annotations: {
+      schema::Annotation {
+        name: 'std::description',
+        @value: 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type',
+      },
+    },
+  },
+}
+```
+
+Of course, `@value` by itself will show you the strings for all the annotations, but we just have one here.
