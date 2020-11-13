@@ -3706,7 +3706,7 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Time to practice
 
-1.
+1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 
 2.
 
