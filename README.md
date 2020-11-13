@@ -3708,7 +3708,7 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 
-2.
+2. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
 3.
 
