@@ -42,6 +42,8 @@ type NPC extending Person {
 }
 ```
 
+Another option is just to use the `max_len_value()` and `min_len_value()` functions that we learned in this chapter.
+
 3.
 
 4.
