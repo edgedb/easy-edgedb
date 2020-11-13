@@ -3710,7 +3710,9 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 2. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
-3.
+Try it first with `expression on`.
+
+3. How would you make a function that shows all the places that a `Vampire` can enter and how many coffins they have?
 
 4.
 
