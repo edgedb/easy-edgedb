@@ -11,7 +11,36 @@ type Horse {
 };
 ```
 
-2.
+#### 2. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+
+First of all, here is the type right now:
+
+```
+type NPC extending Person {
+  overloaded property age {
+    constraint max_value(120)
+  }
+  overloaded multi link places_visited -> Place {
+    default := (SELECT City FILTER .name = 'London');
+  }
+}
+```
+
+Since `name` comes from Person, we can overload it with this constraint. With `expression on` and `len` we can make sure that it's always greater than 4 and less than 31:
+
+```
+type NPC extending Person {
+  overloaded property name {
+    constraint expression on (len(__subject__) > 4 AND len(__subject__) < 31)
+    }
+  overloaded property age {
+    constraint max_value(120)
+  }
+  overloaded multi link places_visited -> Place {
+    default := (SELECT City FILTER .name = 'London');
+  }
+}
+```
 
 3.
 
