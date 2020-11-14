@@ -3949,6 +3949,18 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 And to match anything, you can use the wildcard character: `.`
 
+### One more note on index on
+
+By the way, `index on` can also be used on expressions that you make. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+
+```
+type City extending Place {
+    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    property population -> int64;
+    index on (.name ++ ': ' ++ <str>.population);
+}
+```
+
 ## Time to practice
 
 1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
