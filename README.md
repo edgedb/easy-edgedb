@@ -3969,9 +3969,13 @@ type City extending Place {
 
 Hint: this uses the function `find()`.
 
-3.
+3. How would you index on the `pen_name` property for type Person?
 
-4.
+Hint: try using `describe type Person as SDL` to take a look at it the `pen_name` property again.
+
+4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
+
+Hint: the `[str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat)` function could help (though there is more than one way to do it)
 
 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 
