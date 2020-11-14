@@ -3737,10 +3737,6 @@ Now the error becomes:
 
 `ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
 
-### Just a touch of DDL
-
-We've seen a little bit of DDL in this course but have stayed away from it because SDL is 
-
 ## Time to practice
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
@@ -4149,11 +4145,11 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 ## Time to practice
 
-1. How would you display every NPC's name, strength, population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
+1. How would you display every NPC's name, strength, name and population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
-3.
+3. 
 
 4.
 
@@ -4466,9 +4462,11 @@ Much better!
 
 ## Time to practice
 
-1.
+1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
 
-2.
+2. Try adding two annotations to this type. One should be called `description` and mention that `One mark = 100 Pfennig`. The other should be called `note` and mention the types of coins there are.
+
+[Here are the types of coins](https://en.wikipedia.org/w/index.php?title=German_gold_mark&oldid=972733514#Base_metal_coins): 1, 2, 5, 10, 20, 25 Pfennig coins.
 
 3.
 
