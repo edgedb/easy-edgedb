@@ -2729,7 +2729,28 @@ SELECT(
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two.
+The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that if you want to create a function without touching the schema you can just add the word `CREATE`. For example, here's a function that just says hi:
+
+```
+function say_hi() -> str
+  using('hi');
+```
+
+If you want to create it right now, just do this:
+
+```
+CREATE FUNCTION say_hi() -> str
+  USING ('hi');
+```
+
+(or with lowercase letters, it doesn't matter)
+
+You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi`:
+
+```
+{'CREATE FUNCTION default::say_hi() ->  std::str USING (\'hi\');'}
+```
+
 
 ## More about Cartesian products - the coalesting operator
 
@@ -3716,6 +3737,10 @@ Now the error becomes:
 
 `ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
 
+### Just a touch of DDL
+
+We've seen a little bit of DDL in this course but have stayed away from it because SDL is 
+
 ## Time to practice
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
@@ -3728,7 +3753,7 @@ Try it first with `expression on`.
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
-5.
+5. How would you make it without touching the schema?
 
 # Chapter 16 - Is Renfield telling the truth?
 
