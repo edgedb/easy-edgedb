@@ -3947,17 +3947,23 @@ The function signature is `std::re_match(pattern: str, string: str) -> array<str
 
 so it gives: `{['tonight'], ['to-night']}`.
 
+And to match anything, you can use the wildcard character: `.`
+
 ## Time to practice
 
-1.
+1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
 
-2.
+2. How would you display all the `Person` names and where the string 'ma' is in their name?
+
+Hint: this uses the function `find()`.
 
 3.
 
 4.
 
-5.
+5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
+
+Hint: [Here are some basic concepts](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=988356211#Basic_concepts) if you want a quick read on regular expressions.
 
 
 # Chapter 17 - Poor Renfield. Poor Mina.
