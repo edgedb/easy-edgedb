@@ -3788,7 +3788,7 @@ This is very convenient for us. With this we can make a type that holds a date a
 }
 ```
 
-The [`index on (.exerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. We could do this for certain other types too - it might be good for types like `Place` and `Person`. Note: `index` is good in limited quantities, so you don't want to index everything:
+The [`index on (.excerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. We could do this for certain other types too - it might be good for types like `Place` and `Person`. Note: `index` is good in limited quantities, so you don't want to index everything:
 
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
@@ -3823,7 +3823,7 @@ SELECT <json>(SELECT BookExcerpt {
 } ORDER BY .date);
 ```
 
-Here's the JSON output with exerpts snipped:
+Here's the JSON output with excerpts snipped:
 
 ```
 {
@@ -3975,7 +3975,7 @@ Hint: try using `describe type Person as SDL` to take a look at it the `pen_name
 
 4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
 
-Hint: the `[str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat)` function could help (though there is more than one way to do it)
+Hint: the [str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat) function could help (though there is more than one way to do it)
 
 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 
