@@ -11,7 +11,19 @@ type Horse {
 };
 ```
 
-#### 2. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+#### 2. How would you let the user know that it needs to be called 'Horse'?
+
+Just put it inside the `constraint` like this:
+
+```
+type Horse {
+  required property name -> str;
+  constraint expression on (__subject__.name = 'Horse') {
+    errmessage := 'All Horses must be named \'Horse\''
+};
+```
+
+#### 3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
 First of all, here is the type right now:
 
@@ -44,7 +56,7 @@ type NPC extending Person {
 
 Another option is just to use the `max_len_value()` and `min_len_value()` functions that we learned in this chapter.
 
-#### 3. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
+#### 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
 Here's one way to do it:
 
@@ -63,7 +75,5 @@ SELECT display_coffins() {
   [IS City].population,
 };
 ```
-
-4.
 
 5.
