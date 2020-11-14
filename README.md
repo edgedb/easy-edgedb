@@ -3712,7 +3712,7 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 Try it first with `expression on`.
 
-3. How would you make a function that shows all the places that a `Vampire` can enter and how many coffins they have?
+3. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
 4.
 
