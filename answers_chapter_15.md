@@ -44,7 +44,25 @@ type NPC extending Person {
 
 Another option is just to use the `max_len_value()` and `min_len_value()` functions that we learned in this chapter.
 
-3.
+#### 3. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
+
+Here's one way to do it:
+
+```
+function display_coffins() -> SET OF HasCoffins
+  using(
+    SELECT HasCoffins FILTER .coffins > 0
+);
+```
+
+Note though that `HasCoffins` doesn't have properties like `name` so queries using it would look something like this:
+
+```
+SELECT display_coffins() {
+  [IS City].name,
+  [IS City].population,
+};
+```
 
 4.
 
