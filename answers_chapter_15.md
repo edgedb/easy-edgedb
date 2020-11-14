@@ -76,4 +76,6 @@ SELECT display_coffins() {
 };
 ```
 
-5.
+#### 5. How would you make it without touching the schema?
+
+Easy, just put `CREATE` in front of it!
