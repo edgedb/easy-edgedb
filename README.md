@@ -4149,9 +4149,9 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 ## Time to practice
 
-1.
+1. How would you display every NPC's name, strength, population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
-2.
+2. The query in 1. showed a lot of numbers without any context. What should we do?
 
 3.
 
