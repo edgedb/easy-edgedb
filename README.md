@@ -3704,17 +3704,29 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 }
 ```
 
+### Setting your own error messages
+
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. The user might not know about this, however. The automatically generated error message we have right now is also not helping the user at all:
+
+`ERROR: ConstraintViolationError: invalid Lord`
+
+There's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := 'All lords need 'Lord' in their name.`
+
+Now the error becomes:
+
+`ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
+
 ## Time to practice
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 
-2. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+2. How would you let the user know that it needs to be called 'Horse'?
+
+3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
 Try it first with `expression on`.
 
-3. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
-
-4.
+4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
 5.
 
