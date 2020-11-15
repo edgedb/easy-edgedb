@@ -4865,11 +4865,6 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 2. How about the `City` names plus the names of the `Region` and the name of the `Country` they are in?
 
-3.
-
-4.
-
-5.
 
 # Chapter 20 - The final battle
 
@@ -5210,16 +5205,99 @@ This one is probably closest to an actual usable type for a real game. With `sta
 
 The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
 
-At the very end of our schema are the functions.
 
-## Time to practice
+## Navigating EdgeDB documentation
 
-1.
+### Syntax
 
-2.
+This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create a type, property etc. and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
 
-3.
+For a simple example, [here is the syntax on creating a module](https://www.edgedb.com/docs/edgeql/sdl/modules):
 
-4.
+```
+module ModuleName "{"
+  [ schema-declarations ]
+  ...
+"}"
+```
 
-5.
+So a module is just a module name, `{}`, and everything inside. Easy enough.
+
+How about object types? [They look like this](https://www.edgedb.com/docs/edgeql/sdl/objects):
+
+```
+[abstract] type TypeName [extending supertype [, ...] ]
+[ "{"
+    [ annotation-declarations ]
+    [ property-declarations ]
+    [ link-declarations ]
+    [ constraint-declarations ]
+    [ index-declarations ]
+    ...
+  "}" ]
+```
+
+This should be familiar to you: you need `type TypeName` to start. You can add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
+
+Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/sdl/props) and include three types: concrete, computable, and abstract. We're most familiar with concrete so let's take a look at that:
+
+```
+[ overloaded ] [{required | optional}] [{single | multi}]
+  property name
+  [ extending base [, ...] ] -> type
+  [ "{"
+      [ default := expression ; ]
+      [ readonly := {true | false} ; ]
+      [ annotation-declarations ]
+      [ constraint-declarations ]
+      ...
+    "}" ]
+```
+
+You can think of the syntax as a helpful guide to keep your declarations in the right order.
+
+## Dipping into DDL
+
+Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need. 
+
+SDL: `function says_hi() -> str using('hi');`
+
+DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
+
+And even the capitalization doesn't matter.
+
+But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. This could still be worth it if you want to make small changes or quick types though. For example, here is a Cat type that just has a name:
+
+```
+type Cat {
+  property name -> str;
+  property sound := 'meow';
+};
+```
+
+When you enter `DESCRIBE TYPE Cat as SDL`, it will show something similar:
+
+```
+type default::Cat {
+  optional single property cat_name -> std::str;
+};
+```
+
+It's the same declaration but includes some information we didn't need to specify:
+
+- That it's in the module default
+- That it's optional, as opposed to required,
+- That it's a single property, as opposed to multi
+
+So what does it look like as DDL? `DESCRIBE TYPE Cat` will show us:
+
+```
+CREATE TYPE default::Cat {
+    CREATE OPTIONAL SINGLE PROPERTY name -> std::str;
+};
+```
+
+Not as bad as you might have thought! The two general rules for experimenting a bit with DDL are:
+
+- You can get a lot done just by adding `CREATE` to every line, `ALTER` to change things and `DROP` to delete them,
+- Using `DESCRIBE TYPE` and `DESCRIBE TYPE AS SDL` are very useful to compare the two. If you do this with a type you created and are familiar with, you'll be able to use it as a stepping stone if you are curious about DDL.
