@@ -43,8 +43,34 @@ After that, we add the annotations to Goldmark and it's done:
 };
 ```
 
-3.
+#### 3. A vampire named Godbrand has just attacked a village and turned three villagers into `MinorVampire`s. How would you insert all four of them at once?
 
-4.
+Here it is, a fairly long insert:
 
-5.
+```
+WITH new_vampires := {
+  ('Fritz Frosch', '1850-01-15', '1887-09-11'), 
+  ('Levanta Sinyeva', '1862-02-24', '1887-09-11'), 
+  ('김훈', '1860-09-09', '1887-09-11')
+  }
+INSERT Vampire {
+  name := 'Godbrand',
+  slaves := (
+   FOR new_vampire IN {new_vampires} # Don't forget this to turn it into a set
+   UNION (
+     INSERT MinorVampire {
+       name := new_vampire.0,
+       first_appearance := <cal::local_date>new_vampire.2,
+       former_self := (
+         INSERT NPC {
+           name := new_vampire.0,
+           first_appearance := <cal::local_date>new_vampire.1,
+           last_appearance := <cal::local_date>new_vampire.2
+         }
+       )
+     }
+    )
+  )
+};
+```
+
