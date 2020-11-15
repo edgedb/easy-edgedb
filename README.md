@@ -4149,7 +4149,7 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
-3. 
+3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) ->  Person` that lets you just write the character name and date to do it.
 
 4.
 
