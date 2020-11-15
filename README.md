@@ -4465,11 +4465,15 @@ Much better!
 
 [Here are the types of coins](https://en.wikipedia.org/w/index.php?title=German_gold_mark&oldid=972733514#Base_metal_coins): 1, 2, 5, 10, 20, 25 Pfennig coins.
 
-3.
+3. A vampire named Godbrand has just attacked a village and turned three villagers into `MinorVampire`s. How would you insert all four of them at once?
 
-4.
+Here is their data (name, date of birth (`first_appearance`, date turned into a MinorVampire (`last_appearance`):
 
-5.
+('Fritz Frosch', '1850-01-15', '1887-09-11'),
+('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
+('김훈', '1860-09-09', '1887-09-11'),
+
+
 
 # Chapter 19 - Dracula escapes
 
