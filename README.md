@@ -4861,9 +4861,9 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 ## Time to practice
 
-1.
+1. How would you display all the `City` names and the names of the `Region` they are in?
 
-2.
+2. How about the `City` names plus the names of the `Region` and the name of the `Country` they are in?
 
 3.
 
