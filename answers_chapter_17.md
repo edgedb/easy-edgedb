@@ -65,6 +65,4 @@ function make_dead(person_name: str, date: str) ->  Person {
   });
 ```
 
-4.
 
-5.
