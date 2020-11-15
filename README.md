@@ -4151,9 +4151,6 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) ->  Person` that lets you just write the character name and date to do it.
 
-4.
-
-5.
 
 # Chapter 18 - Using Dracula's own weapon against him
 
