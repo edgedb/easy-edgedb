@@ -1095,7 +1095,11 @@ INSERT MinorVampire {
 };
 ```
 
-This works because there is only one 'Count Dracula' (remember, `required link` is short for `required single link`). If there were more than one, we would have to add `LIMIT 1`.
+This works because there is only one 'Count Dracula' (remember, `required link` is short for `required single link`). If there were more than one, we would have to add `LIMIT 1`. Without it, we would get the following error:
+
+```
+error: possibly more than one element returned by an expression for a computable link 'master' declared as 'single'
+```
 
 ## DESCRIBE
 
