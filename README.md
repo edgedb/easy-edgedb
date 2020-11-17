@@ -681,6 +681,48 @@ Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for H
 
 Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
 
+## Deleting objects
+
+Deleting in EdgeDB is very easy: just use the `DELETE` keyword. It's similar to `SELECT` in that you write `DELETE` and then the type, which will by default delete them all. And in the same way as `SELECT`, if you `FILTER` then it will only delete the ones that match the filter.
+
+This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them, and `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why a confirmation message pops up if you delete without a filter to make sure that it's really what you want to do. If you use `FILTER` though it will delete them right away, because it deletes fewer things and also assumes that you have given some thought to what you want to delete.
+
+So let's give it a try. Remember our two `Country` objects for Hungary and Romania? Let's delete them:
+
+```
+DELETE Country;
+```
+
+Just like an insert, it gives us the id numbers of the objects that are now deleted:
+
+```
+{Object {id: bc9c4766-2898-11eb-b5e8-0bfd25af166c}, Object {id: bd0a6b1a-2898-11eb-b5e8-ef85694d442f}}
+```
+
+Okay, insert them again. Now let's delete with a filter:
+
+```
+DELETE Country FILTER .name ILIKE '%States%';
+```
+
+Nothing matches, so the output is `{}`. Let's try again:
+
+```
+DELETE Country FILTER .name ILIKE '%ania%';
+```
+
+We got a `{Object {id: eaa9b03a-2898-11eb-b5e8-27121e63218a}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `DELETE` inside brackets and `SELECT` it. Let's delete all the `Country` objects again but this time we'll select it:
+
+```
+SELECT (DELETE Country) {
+  name
+};
+```
+
+The output is `{Object {name: 'Hungary'}}`. And if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
+
+Finally, to finish the chapter let's insert Hungary and Romania again. We'll leave them alone now.
+
 [Here is all our code so far up to Chapter 3.](chapter_3_code.md)
 
 ## Time to practice
