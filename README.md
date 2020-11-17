@@ -1571,6 +1571,79 @@ It prints: `{'There are 6 more places than castles'}`.
 
 In a few chapters we will learn how to create our own functions to make queries shorter.
 
+## Using $ to set parameters
+
+Imagine we need to look up `City` types all the time, with this sort of query:
+
+```
+SELECT City {
+  name,
+  population
+  } FILTER .name ILIKE '%a%' AND len(.name) > 5 AND .population > 6000;
+```
+
+This works fine, returning one city: `{Object {name: 'Buda-Pesth', population: 402706}}`.
+
+But this last part with all the filters can be a little annoying to change: there's a lot of moving about to make small changes before we can hit enter again.
+
+This is a good case for adding parameters to a query, by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
+
+```
+SELECT City {
+  name
+  } FILTER .name = 'London';
+```
+
+Now let's change 'London' to `$name`. Note: this won't work yet. Try to guess why!
+
+```
+SELECT City {
+  name
+  } FILTER .name = <str>$name;
+```
+
+The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: missing a type cast before the parameter`. So because it's a string, we'll cast with `<str>`:
+
+```
+SELECT City {
+  name
+  } FILTER .name = <str>$name;
+```
+
+When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{Object {name: 'London'}}`
+
+Now a much more complicated (and useful) query, using three parameters. We'll call them `$name`, `$population`, and `$length`. Don't forget to cast them all:
+
+```
+SELECT City {
+  name,
+  population,
+  } FILTER
+  .name ILIKE '%' ++ <str>$name ++ '%' 
+  AND 
+  .population > <int64>$population
+  AND 
+  <int64>len(.name) > <int64>$length;
+```
+
+Since there are three of them, EdgeDB will ask us to input three values. Here's one example of what it looks like:
+
+```
+Parameter <str>$name: u
+Parameter <int64>$population: 2000
+Parameter <int64>$length: 5
+```
+
+So that will give all `City` types with u in the name, population of more than 2000, and a name longer than 5 characters. The result:
+
+```
+{
+  Object {name: 'Buda-Pesth', population: 402706},
+  Object {name: 'Munich', population: 230023},
+}
+```
+
+
 [Here is all our code so far up to Chapter 7.](chapter_7_code.md)
 
 ## Time to practice
