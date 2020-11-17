@@ -1118,6 +1118,26 @@ WITH
 
 The output is `{5100s}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
 
+## datetime_current()
+
+One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
+
+```
+SELECT datetime_current();
+{<datetime>'2020-11-17T06:13:24.418765000Z'}
+```
+
+This can be useful if you want a post date when you insert an object: with this you can sort by date, delete the most recent item if you have a duplicate, and so on. If we were to put it into the `Place` type for example it would look like this:
+
+```
+abstract type Place {
+  required property name -> str;
+  property modern_name -> str;
+  property important_places -> array<str>;
+  property post_date := datetime_current();
+}
+```
+
 ## Required links
 
 Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required` because Dracula controls them and they are only `MinorVampire`s because of him.
