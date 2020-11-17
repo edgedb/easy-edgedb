@@ -1336,7 +1336,7 @@ type Vampire extending Person {
 }
 ```
 
-Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the link from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
+Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
 
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required link`) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
@@ -1393,6 +1393,8 @@ Object {
   slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}},
   },
 ```
+
+This might make you wonder: what if we do want two-way links? There's actually a very convenient way to do it (it's called a **backward link**), but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
 
 ## Just type \<json> to generate json
 
