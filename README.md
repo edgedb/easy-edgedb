@@ -3731,7 +3731,7 @@ type PC extending Person {
 
 Then when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
 
-### expression on: the most flexible constraint
+## expression on: the most flexible constraint
 
 One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type *as long as* (insert expression here)".
 
@@ -3793,7 +3793,7 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 }
 ```
 
-### Setting your own error messages
+## Setting your own error messages
 
 Since `expression on` is so flexible, you can use it in almost any way you can imagine. The user might not know about this, however. The automatically generated error message we have right now is also not helping the user at all:
 
@@ -3804,6 +3804,79 @@ There's no way to tell that the problem is that `name` needs `'Lord'` inside it.
 Now the error becomes:
 
 `ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
+
+## Links in two directions
+
+You might remember that back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `link slaves` that links to the `MinorVampire` type. One reason was that it might be too complex, but also because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
+
+(Note: we won't actually change the `MinorVampire` type here because `master` isn't strictly necessary, but this is how to do it)
+
+First, here is the `MinorVampire` type at present:
+
+```
+type MinorVampire extending Person {
+    link former_self -> Person;
+}
+```
+
+To add the `master` link again, the best way is to start with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
+
+```
+type MinorVampire extending Person {
+  link former_self -> Person;
+  link master := (SELECT .<slaves[IS Vampire] FILTER .name = MinorVampire.master_name LIMIT 1;
+  required single property master_name -> str;
+};
+```
+
+Now let's test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
+
+```
+INSERT Vampire {
+ name := 'Kain',
+ slaves := {
+   (INSERT MinorVampire {
+     name := 'Billy',
+     master_name := 'Kain'
+   }),
+   (INSERT MinorVampire {
+     name := 'Bob',
+     master_name := 'Kain'
+   })
+  }
+};
+```
+
+Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to do a reverse lookup. Let's check:
+
+```
+SELECT MinorVampire {
+   name,
+   master_name,
+   master: {
+     name
+   }
+} FILTER .name IN {'Billy', 'Bob'};
+```
+
+And the result:
+
+```
+{
+  default::MinorVampire {
+    name: 'Billy',
+    master_name: 'Kain',
+    master: default::Vampire {name: 'Kain'},
+  },
+  default::MinorVampire {
+    name: 'Bob',
+    master_name: 'Kain',
+    master: default::Vampire {name: 'Kain'},
+  },
+}
+```
+
+Beautiful! All the information is right there.
 
 ## Time to practice
 
@@ -4013,7 +4086,7 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 And to match anything, you can use the wildcard character: `.`
 
-### One more note on index on
+## One more note on index on
 
 By the way, `index on` can also be used on expressions that you make. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
@@ -5324,7 +5397,7 @@ Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/
 
 You can think of the syntax as a helpful guide to keep your declarations in the right order.
 
-## Dipping into DDL
+### Dipping into DDL
 
 Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need. 
 
