@@ -590,9 +590,9 @@ SELECT Person {
 
 In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
 
->Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived, and he meets and talks with Count Dracula. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Jonathan still doesn't know that he's a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds every morning? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
+>Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived. He meets with Count Dracula, goes inside, and they talk all night. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Days go by, and Jonathan still doesn't know that he's a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds on the table? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
 
-Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type only has `name` and `places_visited`, which are good for `Vampire` too. But vampires are different from humans because they can live forever. Let's add `age` to `Person` so that all the other types can use it too. Now `Person' looks like this:
+Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type  has `name` and `places_visited`, which are good for `Vampire` too. But vampires are different from humans because they can live forever. One possibility is adding `age` to `Person` so that all the other types can use it too. Then `Person' would look like this:
 
 ```
 abstract type Person {
@@ -602,17 +602,15 @@ abstract type Person {
 }
 ```
 
-`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it a `required property`, because we don't care about everybody's age.
+`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required property`, because we don't care about everybody's age.
 
-First we'll make `Vampire` a type that extends `Person`, and adds age:
+But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's give `age` only to `Vampire` now and think about the other types later. We'll make `Vampire` a type that extends `Person`, and adds age:
 
 ```
 type Vampire extending Person {            
   property age -> int16;
 }
 ```
-
-We will also take `age` out of `Person`, because `Vampire` specifies it. 
 
 Now we can create Count Dracula. We know that he lives in Romania, but that isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
 
@@ -622,11 +620,13 @@ abstract type Place {
   property modern_name -> str;
   property important_places -> array<str>;
 }
+
 type City extending Place;
+
 type Country extending Place;
 ```
 
-Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert a `Country` objects for Hungary and Romania:
+Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert `Country` objects for Hungary and Romania:
 
 ```
 INSERT Country {
@@ -639,19 +639,19 @@ INSERT Country {
 
 ## Capturing a SELECT expression
 
-We are now ready to make Dracula. Now, `places_visited` is still defined as a `Place`, and that includes many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` instead. When doing this, we put the `SELECT` inside `()` brackets. The brackets are necessary to capture the result of the `SELECT`.
+With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets are necessary to capture the result of the `SELECT`. In other words, EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
 
 ```
 INSERT Vampire {
   name := 'Count Dracula',
   places_visited := (SELECT Place FILTER .name = 'Romania'),
-  # In other words, .places_visited is the result of this SELECT query.
+  # .places_visited is the result of this SELECT query.
 };
 ```
 
 The result is `{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}`.
 
-The `uuid` there is the reply from the server showing that we were successful.
+The `uuid` there is the reply from the server showing that we were successful (otherwise it would show `{}`).
 
 Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `SELECT` it:
 
@@ -663,17 +663,19 @@ SELECT Vampire {
 };
 ```
 
-This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}` Perfect.
+This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}` 
+
+Perfect.
 
 ## Adding constraints
 
-Now let's think about `age`. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to the `PC` and `NPC` types too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint". Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can take. We will use `max_value()`. 
+Now let's think about `age` again. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can take. We will use `max_value()`. 
 
 Here's the signature for `max_value()`:
 
 `std::max_value(max: anytype)`
 
-The `anytype` part is interesting, because it means it can work on types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C'.
+The `anytype` part is interesting, because that means it can work on types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C', 'D', etc.
 
 Now let's go back to our constraint for `HumanAge`, which is 120. It looks like this:
 
@@ -683,7 +685,7 @@ scalar type HumanAge extending int16 {
 }
 ```
 
-Then add it to the `NPC` type. 
+Remember, it's a scalar type because it can only have one value. Then we'll add it to the `NPC` type. 
 
 ```
 type NPC extending Person {
@@ -691,7 +693,7 @@ type NPC extending Person {
 }
 ```
 
-It's our own type, but underneath it's an `int16` that won't be able to be more than 120. So if we write this, it won't work:
+It's our own type with its own name, but underneath it's an `int16` that can't be greater than 120. So if we write this, it won't work:
 
 ```
 insert NPC {
@@ -708,7 +710,7 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 Deleting in EdgeDB is very easy: just use the `DELETE` keyword. It's similar to `SELECT` in that you write `DELETE` and then the type, which will by default delete them all. And in the same way as `SELECT`, if you `FILTER` then it will only delete the ones that match the filter.
 
-This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them, and `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why a confirmation message pops up if you delete without a filter to make sure that it's really what you want to do. If you use `FILTER` though it will delete them right away, because it deletes fewer things and also assumes that you have given some thought to what you want to delete.
+This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them. `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why a confirmation message pops up if you delete without `FILTER` to make sure that you really want to delete everything. But it won't confirm if you use `FILTER`, because it deletes fewer things and assumes that you know exactly what you want to delete.
 
 So let's give it a try. Remember our two `Country` objects for Hungary and Romania? Let's delete them:
 
@@ -728,7 +730,7 @@ Okay, insert them again. Now let's delete with a filter:
 DELETE Country FILTER .name ILIKE '%States%';
 ```
 
-Nothing matches, so the output is `{}`. Let's try again:
+Nothing matches, so the output is `{}` - we deleted nothing. Let's try again:
 
 ```
 DELETE Country FILTER .name ILIKE '%ania%';
@@ -742,9 +744,9 @@ SELECT (DELETE Country) {
 };
 ```
 
-The output is `{Object {name: 'Hungary'}}`. And if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
+The output is `{Object {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
 
-Finally, to finish the chapter let's insert Hungary and Romania again. We'll leave them alone now.
+Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
 
 [Here is all our code so far up to Chapter 3.](chapter_3_code.md)
 
