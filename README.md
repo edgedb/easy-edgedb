@@ -1271,7 +1271,7 @@ Hint: check the function signatures above and see which one EdgeDB will pick whe
 
 # Chapter 6 - Still no escape
 
->Jonathan can't move and the women vampires are next to him. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and burns them in front of Jonathan. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
+>The women vampires are next to Jonathan and he can't move. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and is angry. He burns them in front of Jonathan and tells him not to do that again. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
 
 ## Filtering on sets when doing an insert
 
@@ -1284,11 +1284,11 @@ INSERT NPC {
 };
 ```
 
-This was fine when we only had cities, but now we have the `Place` and `Country` type. First we'll insert two `Country` types so we don't just have cities:
+This was fine when we only had cities, but now we have the `Place` and `Country` types. First we'll insert two more `Country` types to have some more variety:
 
 ```
 INSERT Country {
-  name := 'Romania'
+  name := 'France'
 };
 INSERT Country {
   name := 'Slovakia'
@@ -1309,7 +1309,7 @@ INSERT OtherPlace {
 
 That gives us a good number of types from `Place` that aren't of the `City` type.
 
-So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia, so we can't just insert him with `places_visited := SELECT Place`. Instead, we can filter on `Place` types that match the name of the places he has visited. It looks like this:
+So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := SELECT Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. It looks like this:
 
 ```
 INSERT NPC {
@@ -1320,7 +1320,7 @@ INSERT NPC {
 
 You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it.
 
-Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But how about a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
+Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
 
 ```
 UPDATE NPC
@@ -1333,7 +1333,25 @@ UPDATE NPC
 
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
-Here's one more example of a very simple update which doesn't filter at all. This update would give every `Person` type every single `Place` in the database under `places_visited`.
+Remember this?
+
+```
+SELECT Person {
+  name,
+  lover
+} FILTER .name = 'Jonathan Harker';
+```
+
+Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her because we inserted him first. We can change that now:
+
+UPDATE Person FILTER .name = 'Jonathan Harker'
+  SET {
+    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+};
+
+Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
+
+Of course, if you use `UPDATE` without `FILTER` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
 ```
 UPDATE Person
