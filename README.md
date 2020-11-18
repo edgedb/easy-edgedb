@@ -1720,9 +1720,9 @@ So that will give all `City` types with u in the name, population of more than 2
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
-> A boat leaves from the city of Varna. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They are afraid but don't know what to do. One of them sees Dracula but the others don't believe him. On the last day the ship gets close to the city of Whitby in England and all the men are dead except the captain. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the ship hits the beach, all the men are dead, and Dracula turns into a wolf and runs onto the shore. People find the captain's notebook in his hand and start to read the story.
+> A boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him. Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
 
-> Meanwhile, Mina and Lucy are in Whitby on vacation...
+> Meanwhile, Mina and her friend Lucy are in Whitby on vacation...
 
 ## Multiple inheritance
 
