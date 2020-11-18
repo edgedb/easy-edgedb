@@ -1429,7 +1429,9 @@ INSERT Vampire {
 };
 ```
 
-With this we don't have to insert the `MinorVampire` types first and then filter: we can just put them in together with Dracula.
+Note two things: we used `{}` after `slaves` to put everything into a set, and each `INSERT` is inside `()` brackets to capture the insert.
+
+Now we don't have to insert the `MinorVampire` types first and then filter: we can just put them in together with Dracula.
 
 Then when we `select Vampire` like this:
 
