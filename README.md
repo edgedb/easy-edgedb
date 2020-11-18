@@ -1726,7 +1726,7 @@ We are finally away from Castle Dracula. Here is what happens in this chapter:
 
 ## Multiple inheritance
 
-Let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for the types that need a number:
+While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for types that need a number:
 
 ```
 abstract type HasNumber {
@@ -1736,7 +1736,7 @@ abstract type HasNumber {
 
 We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
 
-Now we can use multiple inheritance for the `Crewman` type. It looks like this:
+Now we can use multiple inheritance for the `Crewman` type. It's very simple: just add a comma between every type you want to extend.
 
 ```
 type Crewman extending HasNumber, Person {
@@ -1777,7 +1777,7 @@ type Sailor extending Person {
 }
 ```
 
-Then finally a we make `Ship` type to hold them all.
+Then we will make a `Ship` type to hold them all.
 
 ```
 type Ship {
@@ -1794,9 +1794,22 @@ INSERT Sailor {
   name := 'The Captain',
   rank := 'Captain'
 };
-```
 
-We do that for the Captain, First Mate, Second Mate, and Cook.
+INSERT Sailor {
+  name := 'Petrofsky',
+  rank := 'FirstMate'
+};
+
+INSERT Sailor {
+  name := 'The First Mate',
+  rank := 'SecondMate'
+};
+
+INSERT Sailor {
+  name := 'The Cook',
+  rank := 'Cook'
+};
+```
 
 Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `FILTER` anywhere.
 
@@ -1830,8 +1843,8 @@ The result is:
   Object {
     name: 'The Demeter',
     sailors: {
-      Object {name: 'Petrofsky', rank: First mate},
-      Object {name: 'The Second Mate', rank: Second mate},
+      Object {name: 'Petrofsky', rank: FirstMate},
+      Object {name: 'The Second Mate', rank: SecondMate},
       Object {name: 'The Cook', rank: Cook},
       Object {name: 'The Captain', rank: Captain},
     },
