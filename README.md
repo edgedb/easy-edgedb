@@ -1505,7 +1505,7 @@ Bonus question: what's a quick way to undo this using string indexing?
 
 ## More constraints
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which will prevent two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
 
 ```
 abstract type Person {
@@ -1531,10 +1531,10 @@ abstract type Place {
 
 ## Using functions in queries
 
-Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too difficult for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but for our case we can just do this:
+Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
 
 - Doors have a strength, and people have strength as well. 
-- If the person has greater strength than the door, then he or she can open it. 
+- If a person has greater strength than the door, then he or she can open it. 
 
 So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
@@ -1544,7 +1544,7 @@ type Castle extending Place {
 }
 ```
 
-Then we'll say there are three main doors to enter and leave Castle Dracula, so we `INSERT` them as follows:
+Then we'll imagine that there are three main doors to enter and leave Castle Dracula, so we `INSERT` them as follows:
 
 ```
 INSERT Castle {
@@ -1555,7 +1555,7 @@ INSERT Castle {
 
 Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
 
-Now we'll give Jonathan a strength of 5. We'll use `UPDATE` and `SET` like before:
+Now we'll give Jonathan a strength of 5. That's easy with `UPDATE` and `SET` like before:
 
 ```
 UPDATE Person FILTER .name = 'Jonathan Harker'
@@ -1564,9 +1564,9 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 };
 ```
 
-Great. Now we can see if Jonathan can break out of the castle. To do that, he needs to have a strength greater than that of a door. Or in other words, he needs a greater strength than the weakest door. (Of course, we know that he can't do it but we want to make a query that can give the answer.)
+Great. We know that Jonathan can't break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of a door. Or in other words, he needs a greater strength than the weakest door.
 
-There is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This almost works, but not quite:
+Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
 ```
 WITH 
@@ -1587,7 +1587,7 @@ We can [look at the function signature](https://edgedb.com/docs/edgeql/funcops/s
 std::min(values: SET OF anytype) -> OPTIONAL anytype
 ```
 
-So it needs a set, so something in curly brackets. We can't just put curly brackets around the array, because then it becomes a set of one item (one array). So `SELECT min({[5, 6]});` just returns `{[5, 6]}` because that is the minimum value of the one array.
+The important part is `SET OF`: it needs a set, so something in curly brackets. We can't just put curly brackets around the array, because then it becomes a set of one item (one array). So `SELECT min({[5, 6]});` just returns `{[5, 6]}`, not `{5}`, because `{[5, 6]}` is the minimum value of the arrays we gave it...because we only gave it one array to look at.
 
 That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[2, 4]}` (instead of 2). That's not what we want.
 
