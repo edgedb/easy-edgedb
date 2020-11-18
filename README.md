@@ -1,33 +1,36 @@
 # Welcome!
 
-Welcome to the tutorial to learn EdgeDB in plain English. "Plain English" means using simple phrases and short sentences so you can quickly get the information you need. This lets you learn EdgeDB with a minimum of distractions, and is helpful if English is your second (or third, fourth...) language.
+Welcome to the tutorial to learn EdgeDB in plain English. "Plain English" means using simple phrases and short sentences so you can quickly get the information you need. This lets you learn EdgeDB with a minimum of distractions, and can be helpful if English is your second language (or third, or fourth...).
 
-Nevertheless, simple English doesn't mean boring. We will imagine that we are creating the database for a game that is based on the book Bram Stoker's Dracula. Because it will use the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more.
+Nevertheless, simple English doesn't mean boring, and we will learn EdgeDB through a story. We will imagine that we are creating the database for a game that is based on the book Bram Stoker's Dracula. This book was published in 1897 and shows the 
+
+Because it will use the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more. We will start with a simple schema (structure) and build up from there, changing it as we go. Meanwhile, we will learn how to use queries that are more and more complex. At the end of each chapter you will be able to experiment with the schema and total inserted data. There will be some questions as well per chapter to give you some challenges to solve.
+
 
 
 # Chapter 1 - Jonathan Harker travels to Transylvania
 
 ![thththt](Sample_image.png)
 
-In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. Here is how the book begins, with parts that are good for a database in **bold**:
+In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database in **bold**:
 
 >**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
 ## Schema, object types
 
-This is already a lot of information, and it helps us start to think about our database schema (structure). EdgeQL uses [SDL (schema definition language)](https://edgedb.com/docs/edgeql/sdl/index#ref-eql-sdl) that makes migration easy. So far our schema needs the following:
+This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is [SDL (schema definition language)](https://edgedb.com/docs/edgeql/sdl/index#ref-eql-sdl) that makes migration easy, and which we will learn in this book. So far our schema needs the following:
 
-- Some kind of City or Location type. Cities should have a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
+- Some kind of City or Location type. These types that we can create are called [object types](https://www.edgedb.com/docs/datamodel/objects#object-types), made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
 - Some kind of Person type. We need it to have a name, and also a way to track the places that the person visited.
  
-To make a type in EdgeQL, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
+To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
 
 ```
 type Person {
 }
 ```
 
-That's all you need to create a type, but there's nothing inside there yet. Inside it we add the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional. 
+That's all you need to create a type, but there's nothing inside there yet. Inside the brackets we add the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional.
 
 ```
 type Person {
@@ -36,9 +39,15 @@ type Person {
 }
 ```
 
-With `required property name` we are guaranteed to always have `Person` objects with a name - you can't make a `Person` object without it.
+With `required property name` our `Person` objects are always guaranteed to have a name - you can't make a `Person` object without it. Here's the error message if you try:
 
-A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Vienna", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
+```
+MissingRequiredError: missing value for required property default::Person.name
+```
+
+A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote  makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
+
+An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Vienna", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
 
 `places_visited` is not a `required` property because we might later add minor characters that don't go anywhere. Maybe one person will be the "innkeeper_in_bistritz" or something, and we won't know or care about `places_visited` for him.
 
@@ -51,7 +60,7 @@ type City {
 }
 ```
 
-This is similar, just properties with strings. The book Dracula was published in 1897 when spelling for cities was sometimes different. All cities have a name in the book, but some won't need a different modern name. Vienna is still Vienna, for example. We are imagining that our game will link the city names to their modern names so we can easily place them on a map.
+This is similar, just properties with strings. The book Dracula was published in 1897 when spelling for cities was sometimes different. All cities have a name in the book (that's why it's `required`), but some won't need a different modern name. Vienna is still Vienna, for example. We are imagining that our game will link the city names to their modern names so we can easily place them on a map.
 
 ## Migration
 
