@@ -75,7 +75,7 @@ Then we type ```\c dracula``` to connect to it.
 Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB:
 
 - First you start them with `START MIGRATION TO {}`
-- Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. If you wrote `module default` for example and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` in the standard library (std).
+- Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. You go up and down a level inside a module with `::`. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
 - Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
 
@@ -84,18 +84,20 @@ Lastly, we we need to do a migration. This will give the database the structure 
 Here are three operators in EdgeDB that have the `=` sign: 
 
 - `:=` is used to declare, 
-- `=` is used for equality (not `==`),
+- `=` is used to check equality (not `==`),
 - `!=` is the opposite of `=`.
 
-Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
+Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. 
+
+By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
 
 First we'll just select a string:
 
 ```
-SELECT 'Jonathan Harker';
+SELECT 'Jonathan Harker\'s journey begins.';
 ```
 
-This returns `{'Jonathan Harker'}`, no surprise there.
+This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there.
 
 Next we'll use `:=` to assign a variable:
 
@@ -103,9 +105,9 @@ Next we'll use `:=` to assign a variable:
 SELECT jonathans_name := 'Jonathan Harker';
 ```
 
-This returns the same output: `{'Jonathan Harker'}`. But this time it's a string that we assigned called `jonathans_name` that is being returned.
+This just returns what we gave it: `{'Jonathan Harker'}`. But this time it's a string that we assigned called `jonathans_name` that is being returned.
 
-Finally, we can do a `SELECT` by first assigning to `jonathans_name` and then comparing it to `'Count Dracula'`:
+Now let's do something with this variable. We can do a `SELECT` by first assigning to `jonathans_name` and then comparing it to `'Count Dracula'`:
 
 ```
 SELECT jonathans_name := 'Jonathan Harker' = 'Count Dracula';
@@ -121,11 +123,6 @@ Let's get back to the schema. Later on we can think about adding time zones and 
 Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
 
 ```
-INSERT Person {
-  name := 'Jonathan Harker',
-  places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
-};
-
 INSERT City {
   name := 'Munich',
 };
@@ -143,23 +140,34 @@ INSERT City {
 
 Note that a comma at the end is optional - you can put it in or leave it out. Here we put a comma at the end sometimes and left it out at other times to show this.
 
-Hmm. We can see already that our schema needs some improvement though.
+Finally, the `Person` insert would look like this:
 
-- We have a `Person` type, and a `City` type,
+```
+INSERT Person {
+  name := 'Jonathan Harker',
+  places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
+};
+```
+
+But hold on a second. That insert won't link it to any of the `City` inserts that we already did. Here's where our schema needs some improvement:
+
+- We have a `Person` type and a `City` type,
 - The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
-We'll fix this soon by changing `array<str>` from a `property` to something called `multi link` to the `City` type. This will actually join them together. But first let's look a bit closer at what happens when we use `INSERT`.
+So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to something called `multi link` to the `City` type. This will actually join them together.
 
-As you can see, `str`s are fine with unicode letters like ț. Even emojis and special characters are just fine: you could create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
+But first let's look a bit closer at what happens when we use `INSERT`.
 
-EdgeDB also has a byte literal type that gives you the bytes of a string, but in this case it must be a character that is 1 byte long. You create it by adding a `b` in front of the string:
+As you can see, `str`s are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
+
+EdgeDB also has a byte literal type that gives you the bytes of a string, but they must be characters that are 1 byte long. You create it by adding a `b` in front of the string:
 
 ```
 SELECT b'Bistritz';
 {b'Bistritz'}
 ```
 
-And because the characters must be 1 byte long, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error:
+And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
 ```
 SELECT b'Bistrița';
@@ -188,7 +196,7 @@ This gives us three items:
 }
 ```
 
-This only tells us that there are three objects of type `City`. To see inside them, we can add property names to the query. We'll select all `City` types and display their `modern_name` with this query:
+This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. We'll select all `City` types and display their `modern_name` with this query:
 
 ```
 SELECT City {
@@ -226,13 +234,13 @@ This gives the output:
 }
 ```
 
-If you just want to return the names without the object structure, you can write `SELECT City.modern_name`. That will give this output:
+If you just want to return a single part of a type without the object structure, you can use `.` after the type name. For example, `SELECT City.modern_name` will give this output:
 
 ```
 {'Budapest', 'Bistrița'}
 ```
 
-You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. For example:
+You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. Those names you choose become the variable names that are displayed. For example:
 
 ```
 SELECT City {
@@ -251,7 +259,7 @@ This prints:
 }
 ```
 
-This will not change the name of the property itself - it's just a quick name to use in a query.
+This will not change anything inside the schema - it's just a quick variable name to use in a query.
 
 So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
 
@@ -273,7 +281,9 @@ And here is the output:
 }
 ```
 
-Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. The introduction mentions that EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. On the other hand, it can use "type inference" to guess the type like here where it knows that we are creating a `str`. We will look at changing types and working with different types soon.
+Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `SELECT 'Jonathan Harker' + 8;` it will simply refuse with an error: `QueryError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'`.
+
+On the other hand, it can use "type inference" to guess the type, and that is what it does here: it knows that we are creating a `str`. We will look at changing types and working with different types soon.
 
 ## Links
 
