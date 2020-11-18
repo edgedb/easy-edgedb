@@ -884,12 +884,12 @@ We won't keep `is_single` in the type definition though, because it's not useful
 
 We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
 
-The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple, we will just use 7 am and 7 pm to decide if it's day or night.
+The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple we will just use 7 am and 7 pm to decide if it's day or night.
 
 EdgeDB uses two major types for time.
 
 -`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
--`cal::local_datetime`, which doesn't worry about the timezone.
+-`cal::local_datetime`, which doesn't worry about timezone.
 
 There are two others that are almost the same as `cal::local_datetime`:
 
@@ -898,7 +898,7 @@ There are two others that are almost the same as `cal::local_datetime`:
 
 We'll start with `cal::local_time` first.
 
-`cal::local_time` is easy to create, because you can just cast to it from a `str`:
+`cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
 ```
 SELECT <cal::local_time>('15:44:56');
@@ -920,7 +920,7 @@ type Date {
 }
 ```
 
-`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 instead of 9).
+`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
@@ -971,7 +971,7 @@ type Date {
 
 So `awake` is calculated like this:
 
-- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` to cast instead of `.hour` so it can compare a number to a number.
+- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
 Now if we `SELECT` this with all the properties, it will give us this: 
@@ -979,7 +979,8 @@ Now if we `SELECT` this with all the properties, it will give us this:
 ```Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}```
 
 ## SELECT while you INSERT
-One good trick to know is that you can `SELECT` the item you just `INSERT`ed, same as with anything else. Because when we insert a new `Date`, all we get is a `uuid`:
+
+Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Date`, all we get is a `uuid`:
 
 ```
 INSERT Date {
@@ -987,9 +988,9 @@ INSERT Date {
 };
 ```
 
-The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2fbb84b361f8}}` But what if we want to display its properties too?
+The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2fbb84b361f8}}`
 
-That's not hard: just wrap the whole entry in `SELECT ()`. Because it's enclosed in brackets, we are taking the whole item that we just inserted, select it, and can do a normal query. That means that we can choose the properties to display, same as always. We can even add a computable while we are at it.
+So let's wrap the whole entry in `SELECT ()` so we can display its properties as we insert it. Because it's enclosed in brackets, EdgeDB will do that operation first, and then give it for us to select and do a normal query. Besides the properties to display, we can also add a computable while we are at it. Let's give it a try:
 
 ```
 SELECT ( # Start a selection
@@ -1004,7 +1005,7 @@ SELECT ( # Start a selection
   };
 ```
 
-Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake', double_hour: 44}}` We know the date and the hour, we can see that the vampire is awake, and even make a computable from the object we just entered.
+Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake', double_hour: 44}}` We know the date and the hour, we can see that vampires are awake, and even make a computable from the object we just entered.
 
 [Here is all our code so far up to Chapter 4.](chapter_4_code.md)
 
