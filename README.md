@@ -1600,7 +1600,7 @@ WITH
     SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
-That gives us `{false}`. Perfect! Now we know that Jonathan can't open any doors. He will have to climb out the window to escape.
+That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
 
 Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC`  types:
 
@@ -1608,7 +1608,7 @@ Along with `min()` there is of course `max()`. `len()` and `count()` are also us
 SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
 ```
 
-Don't forget that we need cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. This prints:
+Don't forget that we need to cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. This prints:
 
 ```
 {
@@ -1641,9 +1641,9 @@ SELECT City {
 
 This works fine, returning one city: `{Object {name: 'Buda-Pesth', population: 402706}}`.
 
-But this last part with all the filters can be a little annoying to change: there's a lot of moving about to make small changes before we can hit enter again.
+But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again.
 
-This is a good case for adding parameters to a query, by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
+This could be a good time to add parameters to a query by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
 
 ```
 SELECT City {
@@ -1656,7 +1656,7 @@ Now let's change 'London' to `$name`. Note: this won't work yet. Try to guess wh
 ```
 SELECT City {
   name
-  } FILTER .name = <str>$name;
+  } FILTER .name = $name;
 ```
 
 The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: missing a type cast before the parameter`. So because it's a string, we'll cast with `<str>`:
@@ -1669,7 +1669,7 @@ SELECT City {
 
 When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{Object {name: 'London'}}`
 
-Now a much more complicated (and useful) query, using three parameters. We'll call them `$name`, `$population`, and `$length`. Don't forget to cast them all:
+Now let's take that to make a much more complicated (and useful) query, using three parameters. We'll call them `$name`, `$population`, and `$length`. Don't forget to cast them all:
 
 ```
 SELECT City {
