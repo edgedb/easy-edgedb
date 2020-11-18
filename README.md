@@ -287,7 +287,7 @@ On the other hand, it can use "type inference" to guess the type, and that is wh
 
 ## Links
 
-So now the last thing left to do is to change a `property` in `Person` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it so we should link to `City` instead of rewriting the names inside `Person`. We'll change `Person` to this:
+So now the last thing left to do is to change our `property` in `Person` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `Person`. We'll change `Person` to look like this:
 
 ```
 type Person {
@@ -298,7 +298,7 @@ type Person {
 
 We wrote `multi` in front of `link` because one `Person` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
 
-Now when we insert Jonathan Harker, he will be connected to the type `City`. Since `places_visited` is not `required`, we can still just enter this to create him now:
+Now when we insert Jonathan Harker, he will be connected to the type `City`. Don't forget that `places_visited` is not `required`, so we can still insert with just his name to create him:
 
 ```
 INSERT Person {
@@ -306,7 +306,7 @@ INSERT Person {
 };
 ```
 
-But this will only create a `Person` type connected to the `City` type with nothing in it. Let's see what's inside:
+But this would only create a `Person` type connected to the `City` type but with nothing in it. Let's see what's inside:
 
 ```
 SELECT Person {
@@ -317,7 +317,7 @@ SELECT Person {
 
 Here is the output: `{Object {name: 'Jonathan Harker', places_visited: {}}}`
 
-That's not good enough. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
+But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
 
 ```
 INSERT Person {
@@ -326,7 +326,7 @@ INSERT Person {
 };
 ```
 
-Now it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
+We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
 
 ```
 select Person {
@@ -348,7 +348,7 @@ Here is the output:
   },
 ```
 
-Close! Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, we add a colon and then put `name` inside curly brackets.
+Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
 
 ```
 select Person {
@@ -368,7 +368,7 @@ Success! Now we get the output we wanted:
   },
 ```
 
-Of course, right now Jonathan Harker is being connected to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and so we will have to use `FILTER`. We will learn that in the next chapter.
+Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `FILTER`, which we will learn to use in the next chapter.
 
 [Here is all our code so far up to Chapter 1.](chapter_1_code.md)
 
