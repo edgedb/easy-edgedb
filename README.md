@@ -386,9 +386,9 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
->Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. He doesn't know how much it will help him later.
+>Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
-Now we are starting to see some detail about the city. Right away we see that we could add another property to `City`, and we will call it `important_places`. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
+Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
 ```
 type City {
@@ -410,11 +410,11 @@ INSERT City {
 
 ## Enums, scalar types, and extending
 
-We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use different types of transport too. Here an `enum` is probably the best choice, because an `enum` is about making one choice between options. The variants of the enum should be written in UpperCamelCase.
+We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about making one choice between options. The variants of the enum should be written in UpperCamelCase.
 
 Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
 
-The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This gives you all the power of the type that you are extending, and add some more options. We will write our `Transport` type like this:
+The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This gives you all the power of the type that you are extending, and adds some more options. We will write our `Transport` type like this:
 
 ```
 scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
@@ -422,7 +422,7 @@ scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-This `Transport` type is going to be for player characters in our game, not the characters in the book (their stories and choices are already finished). That means that we want to make a `PC` type and an `NPC` type, but our `Person` type should stay too, and work as a base type. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` again for the other `PC` and `NPC` types.
+This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need a `PC` type and an `NPC` type, but our `Person` type should stay too - we can use it a base type for both. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` for the other `PC` and `NPC` types.
 
 So now this part of the schema looks like this:
 
@@ -431,14 +431,16 @@ abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
 }
+
 type PC extending Person {
   required property transport -> Transport;
 }
+
 type NPC extending Person {
 }
 ```
 
-Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't use it directly anymore. It will give us this error if we try to do something like `INSERT Person {name := 'Mr. HasAName'};`:
+Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't insert it directly anymore. It will give us this error if we try to do something like `INSERT Person {name := 'Mr. HasAName'};`:
 
 ```
 error: cannot insert into abstract object type 'default::Person'
@@ -450,6 +452,8 @@ error: cannot insert into abstract object type 'default::Person'
 
 No problem - just change `Person` to `NPC` and it will work.
 
+Also, `SELECT` on an abstract type is just fine - it will select all the types that extend from it.
+
 Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
 
 ```
@@ -460,7 +464,7 @@ INSERT PC {
 };
 ```
 
-Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do casting, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
+Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do *casting*, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
 
 ```
 SELECT 'feet' IS Transport;
@@ -474,7 +478,7 @@ SELECT <Transport>'feet' IS Transport;
 
 Then we get `{true}`.
 
-You can cast more than once at a time if you need to. This example isn't something you will ever do but shows how you can cast over and over again if you want:
+You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
 
 ```
 SELECT <str><int64><str><int32>50 is str; 
@@ -489,7 +493,7 @@ Casting works from right to left, with the final cast on the far left. So `<str>
 Finally, let's learn how to `FILTER` before we're done Chapter 2. You can use `FILTER` after the curly brackets in `SELECT` to only show certain results. Let's `FILTER` to only show `Person` types that have the name 'Emil Sinclair':
 
 ```
-select Person {
+SELECT Person {
   name,
   places_visited: {name},
 } FILTER .name = 'Emil Sinclair';
@@ -506,12 +510,12 @@ The output is this:
 Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string. 
 
 - `LIKE` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not. 
-- `ILIKE` is not case-sensitive, so "Bistritz" matches "BiStRitz", "bisTRITz", etc.
+- `ILIKE` is not case-sensitive (the I in ILIKE means **insensitive**), so "Bistritz" matches "BiStRitz", "bisTRITz", etc.
 
-You can also add `%` on the left and/or right which means match anything. Here are some examples with the matched part **in bold**:
+You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
 
 - `LIKE Bistr%` matches "**Bistr**itz" (but not "bistritz"),
-- `ILIKE '%IsTRiT%'` matches "B**istri**tz",
+- `ILIKE '%IsTRiT%'` matches "B**istrit**z",
 - `LIKE %athan Harker` matches "Jon**athan Harker**",
 - `ILIKE %n h%` matches "Jonatha**n H**arker".
 
@@ -531,7 +535,7 @@ Here is the result:
   Object {name: 'Bistritz', modern_name: 'Bistrița'},
 ```
 
-You can also index a string with `[]` square brackets, starting at 0. For example, the string 'Jonathan' looks like this:
+You can also index a string with `[]` square brackets, starting at 0. For example, the indexes in the string 'Jonathan' look like this:
 
 ```
 Jonathan
@@ -549,13 +553,13 @@ SELECT City {
 } FILTER .name[0]; = 'B'; # First character must be 'B'
 ```
 
-That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18, we'll get this:
+That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`FILTER .name[18]; = 'B';`), we'll get this:
 
 ```
 ERROR: InvalidValueError: string index 18 is out of bounds
 ```
 
-And if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error.
+Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having no data in a property.
 
 [Here is all our code so far up to Chapter 2.](chapter_2_code.md)
 
