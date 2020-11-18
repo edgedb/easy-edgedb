@@ -1198,11 +1198,13 @@ This works because there is only one 'Count Dracula' (remember, `required link` 
 error: possibly more than one element returned by an expression for a computable link 'master' declared as 'single'
 ```
 
-## DESCRIBE
+## DESCRIBE to look inside types
 
-Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, plus they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. Here you can use `DESCRIBE` to show exactly what our type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `DESCRIBE` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is more explicit and less convenient, but can be useful for quick changes. We won't look at DDL in this course but later on you might find it useful sometimes later on. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL. Here is what our Person type looks like in DDL:
+- `DESCRIBE TYPE MinorVampire` - this will give the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL. 
+
+Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Person` type looks like:
 
 ```
 {
@@ -1212,7 +1214,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 }
 ```
 
-The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. Also, because it only shows the DDL commands to create it, we can't see everything inside. So we don't want that. The next method is:
+The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
 
 - `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL.
 
@@ -1226,7 +1228,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 }
 ```
 
-The third method is `DESCRIBE TYPE MinorVampire AS TEXT`, and is what we want - it shows everything inside the type. Here's the output:
+The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including from the types that it extends. Here's the output:
 
 ```
 {
