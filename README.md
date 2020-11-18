@@ -781,7 +781,7 @@ Hint: the current constraint is `max_value(120);`
 
 # Chapter 4 - "What a strange man this Count Dracula is."
 
->Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice. Dracula tells him not to go into any of the locked rooms, because it could be dangerous. Jonathan notices that it's almost morning, and that they talked through the whole night. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Where are the other people?
+>Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to an asylum for crazy people, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning - they talked through the whole night again. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
 
 First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema called `lover`:
 
@@ -795,7 +795,7 @@ abstract type Person {
 
 With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link` but we can just write `link`.
 
-Mina is in London, and we don't know if she has been anywhere else. So for the meantime, we are just going to create the city of London. It couldn't be easier:
+Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
 ```
 INSERT City {
@@ -803,7 +803,7 @@ INSERT City {
 };
 ```
 
-To give her the city of London, we will just do a quick `SELECT City FILTER .name = 'London'`. This gives her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
+To give her the city of London, we can just do a quick `SELECT City FILTER .name = 'London'`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
 
 ## DETACHED, LIMIT, and EXISTS
 
@@ -819,10 +819,10 @@ INSERT NPC {
 
 You'll notice two things here:
 
-- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to tell EdgeDB that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
-- `LIMIT 1`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `LIMIT 1`. And of course `LIMIT 2` will work just fine if we want to link to up to 2 objects.
+- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
+- `LIMIT 1`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `LIMIT 1`. And of course `LIMIT 2`, `LIMIT 3` etc. will work just fine if we want to link to a certain maximum number of objects.
 
-We will also add Mina to Jonathan Harker as well in the same way. Now we want to make a query to see who is single and who is not. This is easy by using a "computable", where we can create a new variable that we define with `:=`. First here is a normal query:
+Now we want to make a query to see who is single and who is not. This is easy by using a "computable", where we can create a new variable that we define with `:=`. First here is a normal query:
 
 ```
 select Person {
@@ -836,12 +836,17 @@ select Person {
 This gives us:
 
 ```
+{
+  Object {name: 'Jonathan Harker', lover: {}},
+  Object {name: 'The innkeeper', lover: {}},
+  Object {name: 'Mina Murray', lover: Object {name: 'Jonathan Harker'}},
   Object {name: 'Count Dracula', lover: {}},
-  Object {name: 'Mina Murray', lover: 'Jonathan Harker'},
-  Object {name: 'Jonathan Harker', lover: 'Mina Murray'},
+}
 ```
 
-But what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computable to the query, using `EXISTS`. `EXISTS` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
+Okay, so Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
+
+Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computable to the query, using `EXISTS`. `EXISTS` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
 
 ```
 select Person {
@@ -854,13 +859,15 @@ Now this prints:
 
 ```
   Object {name: 'Count Dracula', is_single: true},
+  Object {name: 'The innkeeper', is_single: true},
   Object {name: 'Mina Murray', is_single: false},
-  Object {name: 'Jonathan Harker', is_single: false},
+  Object {name: 'Jonathan Harker', is_single: true},
+  Object {name: 'Emil Sinclair', is_single: true},
 ```
 
-This also shows why abstract types are useful. Here we did a quick search on `Person` for data from both `Vampire` and `NPC`, because they both come from `abstract type Person`.
+This also shows why abstract types are useful. Here we did a quick search on `Person` for data from `Vampire`, `PC` and `NPC`, because they all come from `abstract type Person`.
 
-We can also put a computable in the type itself. Here's the same computable except now it's inside the `Person` type:
+We can also put the computable in the type itself. Here's the same computable except now it's inside the `Person` type:
 
 ```
 abstract type Person {
@@ -873,11 +880,11 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
+## Ways to tell time
+
 We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
 
 The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple, we will just use 7 am and 7 pm to decide if it's day or night.
-
-## Ways to tell time
 
 EdgeDB uses two major types for time.
 
