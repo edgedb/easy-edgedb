@@ -2827,18 +2827,18 @@ Hint: try using `SET OF Person` as the return type.
 
 There is no good news for our heroes this chapter:
 
-> Dracula continues to break into Lucy's room every time people don't follow Van Helsing's instructions. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees the blood he stops attacking and tries to drink it. Dr. Seward's men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again...
+> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees Dr. Seward's blood he stops and tries to drink it. The asylum security men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again...
 
-But there is good news for us, because we are going to keep learning about function overloading and Cartesian products.
+But there is good news for us, because we are going to keep learning about Cartesian products, plus how to overload a function.
 
 ## Overloading functions
 
-Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property - that's why the Innkeeper defeated Dracula, which is certainly not what would really happen.
+Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen.
 
-Jonathan Harker is actually quite strong (for a human), and has a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
+Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an '<int16>'. Our input looks like this:
  
 ```
-  SELECT <int16>round((random() * 5)); 
+SELECT <int16>round((random() * 5)); 
 ```
 
 So now we'll use this to update our Person types and give them all a random strength.
@@ -2872,7 +2872,7 @@ Now let's `SELECT Person.strength;` and see if it works:
 
 Looks like it worked.
 
-So now let's overload the `fight()` function so that more than one character can join together to fight another one. There are a lot of ways to do it, but we'll choose a simple one:
+So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight. There are a lot of ways to do it, but we'll choose a simple one:
 
 ```
     function fight(names: str, one: int16, two: Person) -> str
@@ -2888,9 +2888,9 @@ fight(one: Person, two: Person) -> str
 fight(names: str, one: int16, two: Person) -> str
 ```
 
-If we tried to overload it with an input of `(Person, Person)` and output of `str`, it wouldn't work because it's the same. That's because EdgeDB uses the input we give it to know which form of the function to use.
+If we tried to overload it with an input of `(Person, Person)`, it wouldn't work because it's the same. That's because EdgeDB uses the input we give it to know which form of the function to use.
 
-So now it's the same function name, except that we enter the names of the people (or team name) together, followed by their strength together, and then the `Person` they are fighting against.
+So now it's the same function name, but we enter the names of the people together, their strength together, and then the `Person` they are fighting.
 
 Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
 
@@ -2928,19 +2928,19 @@ Much better:
 {'The four people win!'}
 ```
 
-So that's how function overloading works - you can create functions with the same name as long as the signature is different. 
+So that's how function overloading works - you can create functions with the same name as long as the signature is different.
 
-Overloading is used a lot for existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum of the same type. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
+You see overloading in a lot of existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
-`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the easiest and most useful function for us now is one that makes queries shorter. 
+`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter. 
 
 Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
 
 ```
 function visited(person: str, city: str) -> bool
       using (
-        WITH _person := (SELECT Person FILTER .name = person LIMIT 1),
-        SELECT city IN _person.places_visited.name
+        WITH person := (SELECT Person FILTER .name = person LIMIT 1),
+        SELECT city IN person.places_visited.name
       );
 ```
 
@@ -2964,7 +2964,7 @@ SELECT(
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that if you want to create a function without touching the schema you can just add the word `CREATE`. For example, here's a function that just says hi:
+The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without touching the schema. For example, here's a function that just says hi:
 
 ```
 function say_hi() -> str
@@ -2987,7 +2987,7 @@ You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi
 ```
 
 
-## More about Cartesian products - the coalesting operator
+## More about Cartesian products - the coalescing operator
 
 Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
 
