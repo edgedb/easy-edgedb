@@ -2299,15 +2299,15 @@ But for the rest of them it would be nice to update everything at the same time.
 
 ## Working with tuples and arrays
 
-If we have all the city data together, we can do a single insert with a `FOR` and `UNION` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. For one, a tuple can hold different types, so this is okay:
+If we have all the city data together, we can do a single insert with a `FOR` and `UNION` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. One big difference is that a tuple can hold different types, so this is okay:
 
 `('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
 
 In this case, the type is called a `tuple<str, int64>`.
 
-Before we start using these tuples, let's make sure that we understand how to slice arrays so we can understand the difference between the two.
+Before we start using these tuples, let's make sure that we understand the difference between the two. To start, let's look at slicing arrays and strings in a bit more detail.
 
-You'll remember that to access part of an array, string etc. we use square brackets. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+You'll remember that we use square brackets to access part of an array or a string. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
 
 You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
@@ -2349,7 +2349,7 @@ This prints from index 2 up to 2 indexes away from the end (it'll cut off the fi
 }
 ```
 
-Now, tuples are different because they are more like individual object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+Tuples are quite different: they behave more like object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
 
 So this is completely fine:
 
