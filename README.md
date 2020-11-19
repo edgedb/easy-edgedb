@@ -3453,7 +3453,7 @@ Hint: don't forget the Cartesian multiplication.
 
 # Chapter 14 - Jonathan Harker returns
 
-> Finally there is some good news. After escaping the castle, Jonathan Harker found his way to Budapest in August and then to a hospital, which sent Mina a letter. Jonathan recovered there and they took a train back to England, to the city of Exeter where they got married. Mina sends Lucy a letter from Exeter about the good news...but Lucy never opens it because she's not human anymore. Meanwhile, the men find vampire Lucy in a graveyard. Arthur sees her and finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy vampire Lucy. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can die in peace.
+> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, he found his way to Budapest in August and then to a hospital, which sent Mina a letter. Mina took a train to the hospital where Jonathan was recovering, and they took a train back to England to the city of Exeter where they got married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it. Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
 So we have a new city called Exeter, and adding it is of course easy: 
 
@@ -3468,7 +3468,9 @@ That's the population of Exeter at the time, and it doesn't have a `modern_name`
 
 ## Adding annotations to types and using @
 
-Now that we know how to do introspection queries though, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. Let's imagine that in our game a `City` needs at least 50 buildings. By default, annotations can use the titles `title` or `description`. Let's use `description`:
+Now that we know how to do introspection queries, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
+
+Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `description` for this:
 
 ```
 type City extending Place {
@@ -3505,7 +3507,7 @@ Uh oh, not quite:
 }
 ```
 
-Ah, of course: the `annotations: {name}` part returns the name of the type, which is `std::description`. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+Ah, of course: the `annotations: {name}` part returns the name of the *type*, which is `std::description`. This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
 
 ```
 SELECT (INTROSPECT City) {
@@ -3542,13 +3544,13 @@ Now we see the actual annotation:
 ```
 
 
-What if we want an annotation with a different name besides `title` and `description`? That's easy, just use `abstract annotation` and give it a name. We want to add a warning so that's what we'll call it:
+What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning so that's what we'll call it:
 
 ```
 abstract annotation warning;
 ```
 
-We'll imagine that it is important to know that `Castle` types should be used instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` has the following two annotations:
+We'll imagine that it is important to use `Castle` instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` gives that information along with the other annotation:
 
 ```
 type OtherPlace extending Place {
