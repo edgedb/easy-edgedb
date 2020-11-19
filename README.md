@@ -3252,7 +3252,7 @@ Without too much new to add, let's look at some tips for making queries.
 
 - `DISTINCT`
 
-Change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
+`DISTINCT` is easy: just change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
 
 ```
 {5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 7, 5}
@@ -3260,9 +3260,11 @@ Change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that
 
 Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 4, 5, 7, 10}`.
 
-- Getting `__type__` all the time
+`DISTINCT` works by item and doesn't unpack, so `SELECT DISTINCT {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
 
-You will remember that we can use `__type__` to get the types of objects in a query, and that `__type__` always has `.name` that we can access to get the actual name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `SELECT Person.name`, we can get all the type names like this:
+## Getting `__type__` all the time
+
+We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `SELECT Person.name`, we can get all the type names like this:
 
 ```
 SELECT Person.__type__ {
@@ -3304,9 +3306,7 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 }
 ```
 
-## How to always select .\__type__
-
-But if you want to always see the type when you make a query, you can change the settings to do it: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
+But there is a settingy you can use to always see the type when you make a query: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
 
 ```
 SELECT Person 
