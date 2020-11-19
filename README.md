@@ -3161,9 +3161,9 @@ function make64(input: int32) -> int64
 
 # Chapter 13 - Farewell, Lucy. Meet the new Lucy
 
-> This time it was too late, and Lucy is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!” He tries, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (vampires can't move underneath one). Unfortunately, the nurse steals it to sell when nobody is looking. Now Vampire Lucy is walking around the town and biting children. Van Helsing tells the other people the truth, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife.
+> This time it was too late to save Lucy, and she is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!” He tries to kiss her, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside that was talking. She dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (crucifixes have that power over vampires). Unfortunately, the nurse steals it to sell when nobody is looking. A few days later there is news about a lady who is stealing a biting children - it's Vampire Lucy. Van Helsing tells the other people the truth, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife. Van Helsing says, "Fine, you don't believe me. Let's go to the graveyard together tonight and see what happens. Maybe then you will."
 
-Looks like Lucy has become a `MinorVampire`. How should we show this in the database? Let's look at the types again first.
+Looks like Lucy, an `NPC`, has become a `MinorVampire`. How should we show this in the database? Let's look at the types again first.
 
 Right now `MinorVampire` is nothing special, just a type that extends `Person`:
 
@@ -3178,22 +3178,22 @@ So instead of trying to change the `NPC` type, we can just give `MinorVampire` a
 
 ```
 type MinorVampire extending Person {
-        link former_self -> Person;
+  link former_self -> Person;
 }
 ```
 
-It's optional because we don't know anything about the three vampire women before they were made into vampires, so we can't make an `NPC` type for them.
+It's optional because we don't always know anything people before they were made into vampires. For example, we don't know anything about the three vampire women before Dracula found them so we can't make an `NPC` type for them.
 
-Another way to (informally) link them together is to give `last_appearance` for Lucy and `first_appearance` for Lucy as a `MinorVampire` the same date. First we will update Lucy with her `last_appearance`:
+Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 
 ```
 UPDATE Person filter .name = 'Lucy Westenra'
   SET {
-  last_appearance := cal::to_local_date(1887,9,20)
+  last_appearance := cal::to_local_date(1887, 9, 20)
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data for the `MinorVampire` based on her, which is much more efficient than manually inserting all the information. It also includes her strength - we add 5 to that, because vampires are stronger.
+Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
 Here's the insert:
 
@@ -3222,7 +3222,7 @@ INSERT Vampire {
 };
 ```
 
-With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects in the database. We'll use two filters to make sure:
+With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects. We'll use two filters to make sure:
 
 ```
 SELECT MinorVampire {
@@ -3244,7 +3244,7 @@ This gives us:
 }
 ```
 
-We could have just gone with `FILTER.name IN Person.name` but two filters is better if we have more and more characters later on. And if necessary we could switch to `cal::local_datetime` instead of `cal::local_date` to make sure that we have the exact time down to the minute. But for our book, we won't need to get that precise.
+We could have just used `FILTER.name IN Person.name` but two filters is better if we have a lot of characters later on. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
 Without too much new to add, let's look at some tips for making queries.
 
