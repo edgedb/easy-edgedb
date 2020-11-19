@@ -2396,7 +2396,7 @@ So it sends each tuple into the `FOR` loop, filters by the string (which is `dat
 
 ## Ordering results and using math
 
-Now that we have some numbers, we can do some math on them. Here we order them by population with `ORDER BY`:
+Now that we have some numbers, we can start playing around with ordering and math. Ordering is quite simple: type `ORDER BY` and then indicate the property/link you want to order by. Here we order them by population:
 
 ```
 SELECT City {
@@ -2417,9 +2417,9 @@ This returns:
 }
 ```
 
-What's `DESC`? It means descending, so largest first and then going down. If you don't write `DESC` then it will assume that you meant ascending. You can also write `ASC` to make it clear to somebody else reading the code, but you don't need to.
+What's `DESC`? It means descending, so largest first and then going down. If we didn't write `DESC` then it would have assumed that we wanted to sort ascending. You can also write `ASC` (to make it clear to somebody reading the code for example), but you don't need to.
 
-For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as `math` [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
+For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as the `math` module [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
 ```
 WITH cities := City.population
@@ -2434,7 +2434,18 @@ WITH cities := City.population
 );
 ```
 
-This used quite a few functions: `count()`, `all()`, `sum()`, `max()`, `min()`, `math::mean()`, `any()`, and `math::stddev()`. But the output makes it clear how they work:
+This used quite a few functions: 
+
+- `count()` to count the number of items,
+- `all()` to return `{true}` if all items match and `{false}` otherwise, 
+- `sum()` to add them all together, 
+- `max()` to give the highest value, 
+- `min()` to give the lowest one, 
+- `math::mean()` to give the average, 
+- `any()` to return `{true}` if any item matches and `{false}` otherwise, and
+- `math::stddev()` for the standard deviation.
+
+The output also makes it clear how they work:
 
 ```
 {
