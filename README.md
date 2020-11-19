@@ -2700,7 +2700,7 @@ The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?
 
 We saw that Renfield is quite strong: he has a strength of 10, compared to Jonathan's 5.
 
-We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate the type going in and the type going out in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
+We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate both the input type and the return type in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
 
 ```
 function does_something(input: int16) -> float64
@@ -2714,7 +2714,16 @@ For the body of the function we do the following:
 - Write the function inside it,
 - Finish with a semicolon.
 
-So let's write a function where we have two characters fight. We will make it very simple: the character with more strength wins.
+Here's a very simple function that takes a number and returns a string from it:
+
+```
+function make_string(input: int64) -> str
+  using (<str>input);
+```
+
+That's all there is to it!
+
+Now let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
 
 ```
 function fight(one: Person, two: Person) -> str
@@ -2753,11 +2762,11 @@ It would give us this result:
 {'Jonathan Harker wins!', 'Jonathan Harker wins!', 'Jonathan Harker wins!'}
 ```
 
-By the way, in the book this is actually incorrect because Jonathan is weaker than all of the vampire women. But right now their `strength` property just returns an `{}` empty set, so even Jonathan's strength of 5 is greater than this.
+By the way, this result is unbelievable because Jonathan is weaker than all of the vampire women (vampires are very strong, both male and female). But right now their `strength` property just returns `{}`, so even Jonathan's strength of 5 is greater than this.
 
 ## Cartesian multiplication
 
-This is a good time to talk about Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+This brings us to the subject of Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![](Cartesian_product.png)
 
