@@ -3793,12 +3793,15 @@ Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
 # Chapter 15 - Time to start vampire hunting
 
-> Jonathan has been suffering from extreme stress, because he doesn't know if the experience with Dracula was real or just a crazy dream. But then he meets Van Helsing who tells him that it was true, and Jonathan becomes strong and confident again. Now they begin to search for Dracula. A strange coincidence: the mansion called Carfax that Dracula bought is very close to the hospital where Renfield and Dr. Seward are. That's why Renfield was so strongly affected. They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy some of them so that Dracula can't use them, but there are still many left. If they don't destroy the other boxes, Dracula will be able to run away, sleep during the day and terrorize London every night when the sun goes down.
+> It's good that Jonathan is back, but he is still in shock. He doesn't know if the experience with Dracula was real or not, and thinks he might be crazy. But then he meets Van Helsing who tells him that it was all true. Jonathan hears this and becomes strong and confident again. Now they begin to search for Dracula. The others learn that the Carfax mansion across from Dr. Seward's asylum is the one that Dracula bought. So that's why Renfield was so strongly affected... They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy them all in Carfax, but there are still many left in London. If they don't destroy the other boxes, Dracula will be able to rest in them during the day and terrorize London every night when the sun goes down.
 
-This chapter we learned something interesting about vampires: they need coffins (boxes for dead people) with holy earth to rest in during the day. Dracula brought 50 of them over by ship so that he could always have a place to hide and rest in London so he could terrorize the people. This is important for the mechanics of our game so we should create a type for this. And if we think about it: 
+## More abstract types
 
-- each place in the world either has coffins doesn't have them,
-- if a place has coffins, we should know how many of them there are.
+This chapter they learned something about vampires: they need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
+
+- Each place in the world either has coffins doesn't have them,
+- Has coffins = vampires can enter and terrorize the people,
+- If a place has coffins, we should know how many of them there are. 
 
 This sounds like a good case for an abstract type. Here it is:
 
@@ -3810,17 +3813,17 @@ abstract type HasCoffins {
 }
 ```
 
-## More abstract types
-
 Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
 - Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
 - Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
 - Around 1 or 2 pm, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
-So the part between 8 pm and 1 am is the part where the vampire is free to move away, and at a maximum of 25 kph we get a maximum activity radius of 100 km around a coffin. And at that distance even the bravest vampire will start running back towards home by 2 am.
+So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
-With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, which gives it to all the other location types such as `City`, `OtherPlace`, etc.:
+With a more complex game we could imagine that vampire terrorism is worse in the winter (activity radius = about 150 km), but we won't get into those details.
+
+With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City`, `OtherPlace`, etc.:
 
 ```
 abstract type Place extending HasCoffins {
@@ -3852,9 +3855,9 @@ function can_enter(person_name: str, place: HasCoffins) -> str
         );   
 ```
 
-You'll notice that `person_name` in this function actually just takes a string to select a `Person`, so technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
 
-- Overload the function to have two signatures:
+- Overload the function to have two signatures, one for each type of Vampire:
 
 ```
 function can_enter(vampire: Vampire, place: HasCoffins) -> str
@@ -3863,12 +3866,14 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 - Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> str`
 
-Then we'll give London some coffins, 50 for now. Some coffins were destroyed in this chapter but anything over 1 is enough for a vampire so the number isn't too important.
+Overloading the function is probably the easier option, because we wouldn't need to touch the schema.
+
+Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
 ```
 UPDATE City filter .name = 'London'
   SET {
-    coffins := 50
+    coffins := 21
  };
 ```
 
@@ -3889,7 +3894,7 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) that we can use as well. 
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players and are still just using the book to populate the database with `NPC`s. Those won't need them because `NPC` names are already decided, but `max_len_value()` is good for the `PC` type to make sure that players don't go crazy with their names. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
 
 ```
 type PC extending Person {
@@ -3906,7 +3911,15 @@ Then when we try to insert a `PC` with a name that is too long, it will refuse w
 
 One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type *as long as* (insert expression here)".
 
-Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. We can write it like this:
+Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called [contains()](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) that looks like this:
+
+```
+std::contains(haystack: str, needle: str) -> bool
+```
+
+It returns `{true}` if the `haystack` (a string) contains the `needle` (usually a shorter string).
+
+We can write the constraint with `expression on` and `contains()` like this:
 
 ```
 type Lord extending Person {
@@ -3929,7 +3942,7 @@ INSERT Lord {
 
 But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
 
-While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy has visited every place in our database.
+While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
 
 ```
 SELECT (
@@ -3966,19 +3979,29 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Setting your own error messages
 
-Since `expression on` is so flexible, you can use it in almost any way you can imagine. The user might not know about this, however. The automatically generated error message we have right now is also not helping the user at all:
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. But it's not certain that the user will know about this constraint - there's no message informing the user of this. Meanwhile, the automatically generated error message we have right now is not helping the user at all:
 
 `ERROR: ConstraintViolationError: invalid Lord`
 
-There's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := 'All lords need 'Lord' in their name.`
+So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := 'All lords need 'Lord' in their name.`
 
 Now the error becomes:
 
 `ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
 
+Here's the `Lord` type now:
+
+```
+type Lord extending Person {
+    constraint expression on ((contains(__subject__.name, 'Lord') = true)) {
+        errmessage := "All lords need \'Lord\' in their name";
+    };
+};
+```
+
 ## Links in two directions
 
-You might remember that back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `link slaves` that links to the `MinorVampire` type. One reason was that it might be too complex, but also because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
+You might remember that back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `link slaves` to the `MinorVampire` type. One reason was that it might be too complex, but also because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
 
 (Note: we won't actually change the `MinorVampire` type here because `master` isn't strictly necessary, but this is how to do it)
 
