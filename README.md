@@ -3582,11 +3582,13 @@ And here it is:
 }
 ```
 
-## Working with dates some more
+## Even more working with dates
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `count()`, which gives `{23}`. There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the set that we give it.
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{23}`. 
 
-First a simple example:
+There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
+
+First a simple example of how to use `enumerate()`:
 
 ```
 WITH three_things := {'first', 'second', 'third'},
@@ -3614,7 +3616,7 @@ So now let's use it with `SELECT enumerate(Person.name);` to make sure that we h
 }
 ```
 
-There are only 18? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. We could of course try something fancy like this:
+There are only 18? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
 
 ```
 WITH 
@@ -3645,7 +3647,7 @@ But the result is less than satisfying:
 }
 ```
 
-Especially the `Crewman` types who are now just numbers. Maybe we'll just update them with names based on the numbers instead. This will be easy:
+The `Crewman` types are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
 
 ```
 UPDATE Crewman
@@ -3654,7 +3656,7 @@ UPDATE Crewman
 };
 ```
 
-So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we choose a `cal::local_date` to input, and if it's greater than the date for `last_appearance` that character is dead.
+So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
 
 ```
 WITH p := (SELECT Person),
@@ -3679,7 +3681,7 @@ We could of course turn this into a function if we use it enough.
 
 ## Reverse links
 
-Finally, let's look at how to follow links in reverse direction. This is extremely convenient and useful once you know how to do it. 
+Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use it can take a bit of effort, but it's well worth it.
 
 We know how to get Count Dracula's `slaves` by name with something like this:
 
