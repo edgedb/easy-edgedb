@@ -3325,9 +3325,7 @@ Because it's so convenient, from now on this book will show results as given wit
 
 ## Being introspective
 
-- INTROSPECT
-
-The word `introspect` we just used to change the settings to get the type for every query is also its own keyword. Every type has the following fields that we can access: `name`, `properties`, `links` and `target`. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is quite simple but has all four. Here are the properties and links of `Ship` again so we don't forget:
+The word `introspect` we just used in `\set introspect-types on` is also its own keyword: `INTROSPECT`. Every type has the following fields that we can access: `name`, `properties`, `links` and `target`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all four. Here are the properties and links of `Ship` again so we don't forget:
 
 ```
 type Ship {
@@ -3374,7 +3372,7 @@ This gives us:
 
 Just like using `SELECT` on a type, if the output contains another type, property etc. we will just get an id. We will have to specify what we want there as well.
 
-Eventually we end up using this sort of query to get the information we want:
+So let's add some more to the query to get the information we want:
 
 ```
 SELECT (INTROSPECT Ship) {
@@ -3397,7 +3395,7 @@ SELECT (INTROSPECT Ship) {
 So what this will give is: 
 
 1) The type name for `Ship`, 
-2) The properties, and their names. But we also use `target`: a `target` is what a property actually is. For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
+2) The properties, and their names. But we also use `target`, which is what a property points to (the part after the `->`). For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
 3) The links and their names, and the targets to the links...and the names of *their* targets too.
 
 With all that together, we get something readable and useful. The output looks like this:
@@ -3419,7 +3417,7 @@ With all that together, we get something readable and useful. The output looks l
 }
 ```
 
-This type of query seems complex (even in our simple schema it already goes four levels deep) but it really is just built up on top of adding extra details like `{name}` every time you get an output that only a machine can understand.
+This type of query seems complex but it is just built on top of adding things like {name} every time you get output that only a machine can understand.
 
 Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way, which looks much simpler now:
 
