@@ -2989,7 +2989,7 @@ You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi
 
 ## More about Cartesian products - the coalescing operator
 
-Now let's learn more about Cartesian products in EdgeDB. Because the Cartesian product is used with sets, you might be surprised to see that when you put a `{}` empty set into an equation it will only return `{}`. For example, let's try to add the names of places that start with b and those that start with f.
+Now let's learn more about Cartesian products in EdgeDB. You might be surprised to see that even a single `{}` input always results in an output of `{}`, but this is the way that Cartesian products work. Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
 
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
@@ -2997,19 +2997,19 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
   SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
-The output is....maybe not what we expected.
+The output is....maybe unexpected if you didn't read the previous paragraph.
 
 ```
 {}
 ```
 
-!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Could it be that the `{}` is doing it? Let's try manually concatenating just to make sure:
+!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
 
 ```
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
 ```
 
-The output is...
+So that should give a `{}`. The output is...
 
 ```
 error: operator '++' cannot be applied to operands of type 'std::str' and 'anytype'
@@ -3032,7 +3032,7 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 - Concatenate the two strings if they exist, and
 - Return what we have if one is an empty set?
 
-In other words, how to add `{'Buda-Peth', 'Bistritz'}' to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
+In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
 
 To do that we can use the so-called [coalescing operator](https://www.edgedb.com/docs/edgeql/funcops/set#operator::COALESCE), which is written `??`. The explanation for the operator is nice and simple:
 
@@ -3046,7 +3046,7 @@ Here is a quick example:
 edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
 ```
 
-Because we used `??`, the result is `{'Count Dracula is now in Whitby'}` and not `{}`.
+Because we used `??` instead of `++`, the result is `{'Count Dracula is now in Whitby'}` and not `{}`.
 
 So let's get back to our original query, this time with the coalescing operator:
 
@@ -3086,7 +3086,7 @@ Then we'll get this result:
 
 instead of something like 'Buda-Peth, Bistritz, Munich'. 
 
-To get that output, we can use two more functions:
+To get the output that we want, we can use two more functions:
 
 - First [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), which turns the set into an array.
 - Next, [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
