@@ -3688,7 +3688,9 @@ We know how to get Count Dracula's `slaves` by name with something like this:
 ```
 SELECT Vampire {
  name,
- slaves: {name}
+ slaves: {
+   name
+   }
 };
 ```
 
@@ -3708,7 +3710,7 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite and starting from `SELECT MinorVampire` but want to know about the `Vampire` type connected to it? Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
+But what if we are doing the opposite? Namely, starting from `SELECT MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
 
 ```
 SELECT MinorVampire {
@@ -3731,9 +3733,9 @@ SELECT MinorVampire.<slaves[IS Vampire] {
   };
 ```
 
-Because it goes in reverse order, it is selecting the `Vampire` type with `.slaves` that are of type `MinorVampire`.
+Because it goes in reverse order, it is selecting `Vampire` that has `.slaves` that are of type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[IS Vampire]` as "Select the Vampire type with slaves that are of type MinorVampire" - from right to left.
+You can think of `MinorVampire.<slaves[IS Vampire] {name, age}` as "Select the name and age of the Vampire type with slaves that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -3741,7 +3743,7 @@ Here is the output:
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
-So far that's the same as just `SELECT Vampire: {name, age}`. But it becomes very useful in our query before where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
+So far that's the same as just `SELECT Vampire: {name, age}`. But it becomes very useful in our query before, where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
 
 ```
 SELECT MinorVampire {
@@ -3750,7 +3752,7 @@ SELECT MinorVampire {
 };
 ```
 
-You could read `.<slaves[IS Vampire]` as "the `Vampire` type that links back through `.slaves`".
+You could read `.<slaves[IS Vampire] {name}` as "the name of the `Vampire` type that links back to `MinorVampire` through `.slaves`".
 
 Here is the output:
 
