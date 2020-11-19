@@ -2534,7 +2534,7 @@ In a standard database with users it's much simpler: get users to enter their fi
 
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 
-We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. Our idea for this is that someone might see a character in the book and insert it, and then someone else would try to do the same. So thanks to that, this character named Johnny will work:
+We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
 
 ```
 INSERT NPC {
@@ -2544,7 +2544,7 @@ INSERT NPC {
 
 But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
 
-But sometimes we might want to do something else instead of just generating an error. Here we can use `UNLESS CONFLICT ON`, and follow up with an `ELSE` to tell it what to do. It's probably easier to explain with the answer first, so here is what we can do to insert an unlimited number of characters named Johnny:
+But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `UNLESS CONFLICT ON` comes in, followed by an `ELSE` to explain what to do. `UNLESS CONFLICT ON` is probably easier to explain through an example. Here's one that shows what we can do to insert an unlimited number of characters named Johnny:
 
 ```
 WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
