@@ -1955,19 +1955,19 @@ SELECT Place {
 
 # Chapter 9 - Strange events in England
 
-We'll only read part of the introduction to start this chapter. Here it is:
+For this chapter we've gone back in time a few weeks to when the ship left Varna and Mina and Lucy haven't left for Whitby yet. The introduction is also split into two parts. Here's the first:
 
-> We still don't know where Jonathan is, and the ship is on its way to England. Meanwhile, Mina Harker is writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood), and they all want to marry her....
+> We still don't know where Jonathan is, and the ship The Demeter is on its way to England with Dracula inside. Meanwhile, Mina Harker is in London writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood), and they all want to marry her....
 
 ## Working with dates some more
 
-It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they will still be a part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). 
+It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887). 
 
-This is a good time to add a `first_appearance` and `last_appearance` property to the `Person` type. We will choose `last_appearance` instead of `death`, because for the game it doesn't matter: we just want to know when characters are present.
+This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
-For these two properties we will use `cal::local_date` because we can use the year 1887 for it. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we use in our `Date` type.)
+For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
-We won't insert all the `first_appearance` and `last_appearance` values here, but the format looks like this:
+Doing an insert for the `Crewman` types with the properties `first_appearance` and `last_appearance` looks something like this:
 
 ```
 INSERT Crewman {
@@ -1977,15 +1977,15 @@ INSERT Crewman {
 };
 ```
 
-And the easiest way to set them all is to use the `UPDATE` and `SET` syntax if we know the same date for all of them.
+And since we have a lot of `Crewman` types already inserted, we can easily use the `UPDATE` and `SET` syntax on all of them if we assume they all died at the same time (or if being super precise doesn't matter).
 
-Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to insert would be just casting from a string:
+Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
 
 ```
 SELECT <cal::local_date>'1887-07-08';
 ```
 
-But we imagined before that we had a function that gave us separate numbers to put into a function, so we can use something similar.
+But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
 
 Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter [`cal::to_local_date`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function. It just takes three integers.
 
@@ -2007,7 +2007,7 @@ UPDATE Crewman
 };      
 ```
 
-This will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? If so, then we will need more precise dates. But we're fine for now.
+This will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we will need more precise dates. But we're fine with these approximate dates for now.
 
 ## Adding defaults to a type, and the overloaded keyword
 
@@ -2020,7 +2020,7 @@ INSERT NPC {
 };
 ```
 
-Hmm, it looks like we're doing a lot of work to insert 'London' every time. We have three characters left and they will all be from London too. To save ourselves some work, we can make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. `overloaded` is to indicate that we are using `placed_visited` in a different manner than the `Person` type that we got it from.
+Hmm, it looks like we're doing a lot of work to insert 'London' every time we add a character. We have three characters left and they will all be from London too. To save ourselves some work, we can make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. The word `overloaded` indicates that we are using `placed_visited` in a different way than the `Person` type that we got it from.
 
 With `default` and `overloaded` added, it now looks like this:
 
