@@ -2465,7 +2465,7 @@ The output also makes it clear how they work:
 
 ## Some more computables for names
 
-In the letter from Dr. Van Helsing to Dr. Seward, he starts it as follows:
+We saw in this chapter that Dr. Seward asked his old teacher Dr. Van Helsing to come and help Lucy. Here is how Dr. Van Helsing began his letter to say that he was coming:
 
 ```
 Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
@@ -2476,15 +2476,15 @@ Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
 “When I have received your letter I am already coming to you.
 ```
 
-This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a simple string, but we have people with a lot of different types of names, in this order:
+The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interesting. This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a single string, but we have people with different types of names, in this order:
 
 Title | First name | Last name | Degree
 
 So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
 
-But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build it from parts of names. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+That would lead us to think that we should have titles like `first_name`, `last_name`, `title` etc. and then join them together using a computable. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
 
-Let's try to imitate that by adding these properties to `Person`:
+We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
 
 ```
 property title -> str;
@@ -2529,6 +2529,8 @@ This gives us:
   ),
 }
 ```
+
+In a standard database with users it's much simpler: get users to enter their first names, last names etc. and make each one a property.
 
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 
