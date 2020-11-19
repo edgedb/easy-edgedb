@@ -2035,7 +2035,7 @@ type NPC extending Person {
 
 ## Using FOR and UNION
 
-We're almost ready to insert our three characters, and now we don't need to add `(SELECT City FILTER .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
+We're almost ready to insert our three new characters, and now we don't need to add `(SELECT City FILTER .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
 
 To do this, we can use a `FOR` loop, followed by the keyword `UNION`. First, here's the `FOR` part:
 
@@ -2043,9 +2043,9 @@ To do this, we can use a `FOR` loop, followed by the keyword `UNION`. First, her
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 ```
 
-In other words: take this set of three strings and do something to each one, which we will call `character_name` every time.
+In other words: take this set of three strings and do something to each one. `character_name` is the variable name we chose to call each string in this set.
 
-`UNION` is because it is the keyword used to join sets together. For example, this query:
+`UNION` comes next, because it is the keyword used to join sets together. For example, this query:
 
 ```
 WITH city_names := (SELECT City.name),
@@ -2055,7 +2055,7 @@ WITH city_names := (SELECT City.name),
 
 joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
 
-Back to the `FOR` loop with the variable name `character_name`, which looks like this:
+Now let's return to the `FOR` loop with the variable name `character_name`, which looks like this:
 
 ```
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
@@ -2103,7 +2103,7 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we can use this to insert our five `Crewman` types inside one `INSERT` instead of five. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them:
+By the way, now we can use this method to insert our five `Crewman` types inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them:
 
 ```
 FOR n IN {1, 2, 3, 4, 5}
@@ -2185,7 +2185,7 @@ type NPC extending Person {
 }
 ```
 
-This is convenient because we can delete it from `Vampire` too:
+This is convenient because we can delete `age` from `Vampire` too:
 
 ```
 type Vampire extending Person {    
@@ -2194,9 +2194,11 @@ type Vampire extending Person {
 }
 ```
 
-Okay, let's read the rest of the introduction for this chapter. Let's see what Lucy is up to:
+You can see that a good usage of abstract types and the `overloaded` keyword lets you simplify your schema if you do it right.
 
->...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately they become friends with each other. Dr. Seward is sad and tries to concentrate on his work. He is a psychiatrist who is studying a strange man named Renfield. Renfield is sometimes calm, sometimes completely crazy, and seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
+Okay, let's read the rest of the introduction for this chapter. It continues to explain what Lucy is up to:
+
+>...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately the three men become friends with each other. Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
 Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
 
@@ -2207,7 +2209,7 @@ UPDATE NPC FILTER .name = 'Lucy Westenra'
 };
 ```
 
-And then remove her from the other two. We'll just give them an empty set.
+And then remove her from the other two. We'll just give them a sad empty set.
 
 ```
 UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
@@ -2226,7 +2228,7 @@ INSERT NPC {
 };
 ```
 
-But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong, as we will see later, so we gave him 10. We will have to think about his relationship with Dracula later.
+But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong (as we will see later), so we gave him a `strength` of 10. Later on we'll learn more and more about him and his relationship with Dracula.
 
 ## Time to practice
 
