@@ -4510,11 +4510,11 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 # Chapter 18 - Using Dracula's own weapon against him
 
-> Van Helsing was correct: Mina is connected to Dracula. He uses hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. They find Dracula's other house in London with all his money. They know he will come to get it, and wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan attacks with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Van Helsing was correct: Mina is connected to Dracula. He continues to use hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula. They find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good time to think about money in our game. The characters have been active in various countries like England, Romania and Germany, and each of those have their own money. An abstract type seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
+This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
-Now, there is one difficulty here: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was: 
+Now, there is one difficulty: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was as follows:
 
 - 12 pence (the smallest coin) made one shilling,
 - 20 shillings made one pound, thus
@@ -4548,9 +4548,9 @@ abstract type Currency {
 }
 ```
 
-You'll notice that only `major` properties are required, because some currencies don't have minor currencies (in modern times that includes Japanese yen, Korean won, etc. that are just a single money unit and a number).
+You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. In modern times that includes Japanese yen, Korean won, etc. that are just a single money unit and a number.
 
-We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. We probably don't need to think about credit and other complicated things like negative money for the game.
+We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. And complicated things like credit and negative money we can probably just ignore for now.
 
 Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds. Here's the `Pound` type:
 
@@ -4598,7 +4598,7 @@ He has this many:
 
 `{default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}`
 
-We know that Arthur has almost unlimited money, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
+We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
 
 Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but using the last signature:
 
@@ -4645,11 +4645,11 @@ And then it will give a result similar to this with our collections of money, ea
 }
 ```
 
-(If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float54>`.)
+(If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float64>`.)
 
-You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we went the other way around, we would have one `Person` type linked to every type of currency, most of which would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them.
+You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them.
 
-But if we only had a single type of money, it would be simpler to just put it inside the `Person` type. If the game were only inside the United States (Canada, etc.) it would be easier to just do this without an abstract `Currency` type:
+Of course, if we only had one type of money then it would be simpler to just put it inside the `Person` type. We won't do this in our schema, but let's imagine how to do it. If the game were only inside the United States, it would be easier to just do this without an abstract `Currency` type:
 
 ```
 type Dollar {
@@ -4680,7 +4680,7 @@ SELECT(INSERT Dollar {
 
 Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect! 
 
-Not that we need this `Dollar` type in our game. In our game, it would be `type Dollar extending Currency`.
+Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
 
 ## Cleaning up the schema
 
