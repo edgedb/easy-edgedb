@@ -4300,9 +4300,9 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 And to match anything, you can use the wildcard character: `.`
 
-## One more note on index on
+## One more note on `index on`
 
-By the way, `index on` can also be used on expressions that you make. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+By the way, `index on` can also be used on expressions that you make yourself. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
 ```
 type City extending Place {
@@ -4335,10 +4335,11 @@ Hint: [Here are some basic concepts](https://en.wikipedia.org/w/index.php?title=
 
 # Chapter 17 - Poor Renfield. Poor Mina.
 
-> It turns out that Renfield was telling the truth! Dracula found out about the coffins and decided to attack Mina that night. Dracula succeeds, and Mina is now slowly turning into a vampire (though she is still human). The group finds Renfield in a pool of blood, and dying. Renfield tells them that he is sorry: he thought that Dracula would help him become a vampire too, but after he let him inside, Dracula ignored him and headed for Mina's room. Renfield liked Mina and attacked Dracula to try to stop him from hurting her. Dracula, of course, was much stronger and won. 
+> Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that they were destroying his coffins and decided to attack Mina. He succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now. 
 
-> Van Helsing does not give up though. If Mina is now connected to Dracula, what happens if he puts her to sleep and uses hypnotism on her? Could that work?
+> The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. He was in communication with Dracula and thought that he would help him become a vampire too, so he let him in the house. But once inside Dracula ignored him, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting her, but Dracula was much stronger and won.
 
+> Van Helsing does not give up though, and has a good idea. If Mina is now connected to Dracula, what happens if he uses hypnotism on her? Could that work? He takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
 
 
 ## Named tuples
@@ -4387,7 +4388,7 @@ The output is:
 {('Woman 1', 'Lucy Westenra'), ('Woman 2', 'Lucy Westenra'), ('Woman 3', 'Lucy Westenra')}
 ```
 
-Renfield is no longer alive, so we need to use `UPDATE` to give him a `last_appearance`. Let's do a fancy one again where we can select the update we just made and display that information:
+Renfield is no longer alive, so we need to use `UPDATE` to give him a `last_appearance`. Let's do a fancy one again where we `SELECT` the update we just made and display that information:
 
 ```
 SELECT ( # Put the whole update inside
@@ -4411,7 +4412,7 @@ Wherever there are vampires, there are vampire hunters. Sometimes they will dest
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
 - the best way to filter is by `.name`, but `HasCoffins` doesn't have this property.
 
-So maybe we can turn this type into something else called `HasNameAndCoffins`. We can put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises.
+So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises.
 
 Here is the type with its new property. We'll give it two constraints: `exclusive` and `max_len_value` to keep names from being too long.
 
@@ -4455,7 +4456,7 @@ Finally, we can change our `can_enter()` function. This one needed a `HasCoffins
             );   
 ```
 
-But now that `HasNameAndCoffins` holds `name`, we can just have the user enter a string. We'll change it to this:
+But now that `HasNameAndCoffins` holds `name`, the user can now just enter a string. We'll change it to this:
 
 ```
 function can_enter(person_name: str, place: str) -> str
