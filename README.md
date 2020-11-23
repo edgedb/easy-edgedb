@@ -4851,7 +4851,7 @@ Here is their data (name, date of birth (`first_appearance`, date turned into a 
 >
 > “Oh, yes!”
 
-> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go together to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna. Are they too late? They rush off up the river to try to find Dracula.
+> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
@@ -4874,7 +4874,7 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna to London. 
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna towards London. 
 
 But first we'll insert a new `Ship` and two new places (`City`s) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
@@ -4895,7 +4895,7 @@ FOR city in {'Varna', 'Galatz'}
 });
 ```
 
-The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That area is the small bit of ocean that divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to call them up? It looks like this:
+The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That area is the small bit of ocean in Turkey that divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to call them up? It looks like this:
 
 ```
 SELECT (INTROSPECT OtherPlace) {
@@ -4905,7 +4905,7 @@ SELECT (INTROSPECT OtherPlace) {
 };  
 ```
 
-Let's see what we wrote before to make sure that we should use it:
+Let's look at the output to see what we wrote before to make sure that we should use it:
 
 ```
 {
@@ -4973,7 +4973,7 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
 }
 ```
 
-While we're at it, let's practice reverse lookup again on our visits. Here's one:
+While we're doing this, let's practice reverse lookup again on our visits. Here's one:
 
 ```
 SELECT Ship.<ship[IS Visit] {
@@ -5001,7 +5001,7 @@ Here is the output:
 }
 ```
 
-By the way, the heroes of our story found out about the Czarina Catherine thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
+By the way, the heroes of the story found out about the Czarina Catherine thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
 
 ```
 28 October.—Telegram. Rufus Smith, London, to Lord Godalming, care H. B. M. Vice Consul, Varna.
@@ -5226,11 +5226,11 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
 
-> Mina is almost a vampire now, and says she can feel Dracula all the time. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women. Meanwhile, the other men approach from the south and are also close to Castle Dracula. They find a group of friends of Dracula who have him inside his box, carrying him on a wagon. The sun is almost down, it is snowing, and they need to hurry. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula opens his eyes with a look of triumph, and...
+> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and the need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) and search for "the look of hate in them turned to triumph".
 
-The last change we can make for now is to give the vampire women a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. Don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
+We are sure that the vampire women have been destroyed, however, so we can do one final change by giving them a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. But don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
 ```
 UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
@@ -5243,23 +5243,23 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 ## Reviewing the schema
 
-Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom.
+Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom to be sure that we fully understand it.
 
 The first part to a schema is always the command to start the migration:
 
 - `START MIGRATION TO {};`: This is how a schema migration starts. Everything goes inside `{}` curly brackets and ends with a `;` semicolon.
-- `module default {}`: We only used one module (namespace) for our schema, but you can make for if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`):
+- `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`).
 
-Let's look at `Person`, which starts like this and shows us the module it's located in:
+Here's an example with `Person`, which starts like this and shows us the module it's located in:
 
 `abstract type default::Person`
 
 For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
 
-Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, we hand it off to types like `Place` because every place in our game 
+Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game 
 
 - 1) has a name, and 
-- 2) has a number of coffins (important because places without coffins are safer from vampires).
+- 2) has a number of coffins (which is important because places without coffins are safer from vampires).
 
 ```
 abstract type HasNameAndCoffins {
@@ -5298,9 +5298,9 @@ abstract type Person {
 }
 ```
 
-`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), with which we can be sure that each character has a unique name. If our game gets too large there might be more than one "Jonathan Harker" or other name, and we could give `Person` an `id` property instead and make that exclusive.
+`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could give `Person` an `id` property and make that exclusive instead.
 
-Properties like `conversational_name` are [computables](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but in our game we have too many characters with strange names: `Woman 2`, `The innkeeper`, etc. If this were a regular database for users, we would definitely only use `first` and `last` and probably use a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are [computables](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. If this were a standard user database, we would definitely only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
 Every property has a type like `str`, and computables have them too but we don't need to tell EdgeDB the type because the computable itself makes the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called [concatenation](https://www.edgedb.com/docs/edgeql/funcops/string#operator::STRPLUS).
 
