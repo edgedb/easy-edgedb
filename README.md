@@ -5243,7 +5243,7 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 ## Reviewing the schema
 
-Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom to be sure that we fully understand it.
+Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
 
 The first part to a schema is always the command to start the migration:
 
@@ -5413,7 +5413,7 @@ type Visit {
 }
 ```
 
-The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. In this case, we wanted to constrain `age` to 120 years, and wanted to use the `places_visited` link in a different way than in `Person` by giving it a default: the city of London.
+The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
 
 ```
 type NPC extending Person {
@@ -5462,7 +5462,7 @@ Annotations: we used `abstract annotation` to add a new annotation:
 abstract annotation warning;
 ```
 
-because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we were to grow it into a real database for a game with multiple people working on it, we would want to put annotations everywhere to make sure that users know how to use each type in the right way.
+because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
@@ -5472,7 +5472,7 @@ type Lord extending Person {
 }
 ```
 
-(This one might end up removed in a real game, or maybe it would become `type Lord extending PC` so player characters could choose to be a lord, thief, detective, etc. etc.)
+(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc. etc.)
 
 The `Lord` type uses the function [`contains`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. [Here are some more examples](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression) from the documentation of using `constraint expression on`.
 
@@ -5484,7 +5484,7 @@ type Lord extending Person {
 }
 ```
 
-This will depend on if we want to create `Lord` types with names just as a single string under `.name`, or by using `.first`, `.last`, `.title` etc. with a computable to form the full name.
+This will depend on if we want to create `Lord` types with names just as a single string in `.name`, or by using `.first`, `.last`, `.title` etc. with a computable to form the full name.
 
 Our next types extending `Place` including `Country` and `Region` were looked at just last chapter, so we won't review them here. But `Castle` is a bit unique:
 
@@ -5503,7 +5503,7 @@ WITH
     SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
-However, later on we learned the `any()` function. With `any()`, we could change the query to this:
+However, later on we learned the `any()` function so let's see how we could use it here. With `any()`, we could change the query to this:
 
 ```
 WITH
@@ -5512,7 +5512,7 @@ WITH
     SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
-And of course, we could also create a function to do the same now that we know how to write them. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
+And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
 
 Don't forget, we needed `array_unpack()` because the function [`any()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::any) works on sets:
 
@@ -5564,6 +5564,8 @@ The last two types in our schema, `Currency` and `Pound`, were created two chapt
 
 ## Navigating EdgeDB documentation
 
+Now that you have reached the end of the book, you will certainly start looking at the EdgeDB documentation. We'll close the book out with some tips to do so, so that it feels familiar and easy to look through.
+
 ### Syntax
 
 This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create a type, property etc. and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
@@ -5577,7 +5579,7 @@ module ModuleName "{"
 "}"
 ```
 
-So a module is just a module name, `{}`, and everything inside. Easy enough.
+Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). Easy enough.
 
 How about object types? [They look like this](https://www.edgedb.com/docs/edgeql/sdl/objects):
 
@@ -5614,7 +5616,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need. 
+DDL is something you'll see frequently in the documentation. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need. 
 
 SDL: `function says_hi() -> str using('hi');`
 
