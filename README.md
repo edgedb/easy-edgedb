@@ -119,11 +119,12 @@ Lastly, we we need to do a migration. This will give the database the structure 
 - Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
 
-There are a lot of other commands beyond this, though we won't need them for this book. You could bookmark these three pages for later use, however:
+There are naturally a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
 
 - [Admin commands](https://www.edgedb.com/docs/cheatsheet/admin): Creating user roles, setting passwords, configuring ports, etc.
 - [CLI commands](https://www.edgedb.com/docs/cheatsheet/cli): Creating databases, roles, setting passwords for roles, connecting to databases, etc.
 - [REPL commands](https://www.edgedb.com/docs/cheatsheet/repl): Mostly shortcuts for a lot of the commands we'll be using in this book.
+- [Various commands](https://www.edgedb.com/docs/edgeql/statements/tx_rollback#rollback) about rolling back transactions, declaring savepoints, and so on.
 
 ## Selecting
 
