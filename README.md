@@ -5699,3 +5699,22 @@ Not as bad as you might have thought! The two general rules for experimenting a 
 
 - You can get a lot done just by adding `CREATE` to every line, `ALTER` to change things and `DROP` to delete them,
 - Using `DESCRIBE TYPE` and `DESCRIBE TYPE AS SDL` are very useful to compare the two. If you do this with a type you created and are familiar with, you'll be able to use it as a stepping stone if you are curious about DDL.
+
+## Getting help
+
+Help is always just a message away. The best way to get help is to start a discussion on [our discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on this very page.
+
+## And now it's time to say goodbye
+
+We hope you enjoyed learning EdgeDB through a story, and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on the forums! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
+
+>The Road goes ever on and on  
+>Down from the door where it began.  
+>Now far ahead the Road has gone,  
+>And I must follow, if I can,  
+>Pursuing it with eager feet,  
+>Until it joins some larger way  
+>Where many paths and errands meet.  
+>And whither then? I cannot say.  
+
+See you, or not see you, however things turn out! Thanks again for reading.
