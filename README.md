@@ -427,7 +427,7 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 4. Try selecting all the `City` types along with their `name` and `modern_name` properties, but change `.name` to say `old_name` and change `modern_name` to say `name_now`.
 5. Will typing `SelecT City;` produce an error?
 
-[Here are the answers to the five questions.](answers.md)
+[See the answers here.](answers.md)
 
 Up next in Chapter 2: [Jonathan Harker arrives in Romania.](../chapter2/index.md)
 
@@ -635,6 +635,8 @@ SELECT Person {
 };
 ```
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 3: [Jonathan gets into the carriage and travels into the cold mountains...](../chapter3/index.md)
 
 # Chapter 3 - Jonathan goes to Castle Dracula
@@ -829,6 +831,8 @@ SELECT Person {
 Hint: the current constraint is `max_value(120);`
 
 5. Can you insert a HumanAge type?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 4: [Jonathan: "This Count Dracula knows so much about history! I'm glad I came."](../chapter4/index.md)
 
@@ -1102,6 +1106,8 @@ INSERT NPC {
 
 How would you `SELECT` this insert at the same time to display the `name`, `age`, and `age_ten_years_later` that is made from `age` plus 10?
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 5: [Jonathan decides to explore the castle a bit. Just to be safe...](../chapter5/index.md)
 
 # Chapter 5 - Jonathan tries to leave the castle
@@ -1322,6 +1328,8 @@ Hint: check the function signatures above and see which one EdgeDB will pick whe
 4. How would you write the same query using `WITH` for each of the two times?
 
 5. What's the best way to describe a type if you only want to see how you wrote it?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 6: [One of the women vampires to her sisters: "He is young and strong; there are kisses for us all."](../chapter6/index.md)
 
@@ -1554,6 +1562,8 @@ Hint: it involves `WITH` and a bit of concatenation.
 
 Bonus question: what's a quick way to undo this using string indexing?
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 7: [Jonathan climbs the castle wall to try to get into Count Dracula's room.](../chapter7/index.md)
   
 # Chapter 7 - Jonathan finally "leaves" the castle
@@ -1771,6 +1781,8 @@ So that will give all `City` types with u in the name, population of more than 2
 4. How would you insert an NPC with the name 'NPC number 8' if for example there are already seven other NPCs?
 
 5. How would you select only the `Person` types that have the shortest names?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 8: [Workers in the city of Varna load fifty boxes into a ship. Dracula is inside one of them.](../chapter8/index.md)
 
@@ -2009,6 +2021,8 @@ SELECT Place {
   [IS Castle]doors
 };
 ```
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 9: [Time to meet Dr. Seward, Arthur Holmwood, Quincey Morris, and the strange Renfield.](../chapter9/index.md)
 
@@ -2324,6 +2338,8 @@ Hint: here's the type again:
 5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?
 
 Hint: "bringing back to life" means that `last_appearance` should return `{}`.
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 10: [Thick fog and a storm hit the city of Whitby.](../chapter10/index.md)
 
@@ -2668,6 +2684,8 @@ Hint: `LIKE` can help.
 
 Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)
 
 # Chapter 11 - What's wrong with Lucy?
@@ -2885,6 +2903,8 @@ Hint: try using `SET OF Person` as the return type.
 4. How would you make a function that tells you how many times larger one city is than another?
 
 5. Will `SELECT (City.population + City.population)` and `SELECT ((SELECT City.population) + (SELECT City.population))` produce different results?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 12: [Lucy one night: "Funny, what's that flapping against the window? Sounds like a bat or something..."](../chapter12/index.md)
 
@@ -3223,6 +3243,8 @@ function make64(input: int32) -> int64
 
 5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 13: [One of the men gives Lucy his blood again to try to save her. Will it be enough?](../chapter13/index.md)
 
 # Chapter 13 - Farewell, Lucy. Meet the new Lucy
@@ -3516,6 +3538,8 @@ SELECT (INTROSPECT Ship) {
 Hint: don't forget the Cartesian multiplication.
 
 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 14: [An old friend returns.](../chapter14/index.md)
 
@@ -3859,6 +3883,8 @@ Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
 5. How would you see this `note` annotation for `MinorVampire` in a query?
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 15: [Time to get revenge.](../chapter15/index.md)
 
 # Chapter 15 - Time to start vampire hunting
@@ -4156,6 +4182,8 @@ Try it first with `expression on`.
 
 5. How would you make it without touching the schema?
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 16: [Could Renfield be of help?](../chapter16/index.md)
 
 # Chapter 16 - Is Renfield telling the truth?
@@ -4404,6 +4432,8 @@ Hint: the [str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#funct
 
 Hint: [Here are some basic concepts](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=988356211#Basic_concepts) if you want a quick read on regular expressions.
 
+[See the answers here.](answers.md)
+
 Up next in Chapter 17: [The truth about Renfield.](../chapter17/index.md)
 
 # Chapter 17 - Poor Renfield. Poor Mina.
@@ -4579,6 +4609,8 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
 3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) ->  Person` that lets you just write the character name and date to do it.
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 18: [Jonathan the detective.](../chapter18/index.md)
 
@@ -4902,6 +4934,8 @@ Here is their data (name, date of birth (`first_appearance`, date turned into a 
 ('Fritz Frosch', '1850-01-15', '1887-09-11'),
 ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
 ('김훈', '1860-09-09', '1887-09-11'),
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 19: [Only Mina can tell them where Dracula has gone.](../chapter19/index.md)
 
@@ -5294,6 +5328,8 @@ With the reverse lookup at the end we have another link between `Country` and it
 1. How would you display all the `City` names and the names of the `Region` they are in?
 
 2. How about the `City` names plus the names of the `Region` and the name of the `Country` they are in?
+
+[See the answers here.](answers.md)
 
 Up next in Chapter 20: [The race against time.](../chapter20/index.md)
 
