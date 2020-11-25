@@ -1,1 +1,346 @@
+# Chapter 10 - Terrible events in Whitby
 
+> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside. One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy, who is pale and weak but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
+
+The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
+
+```
+type City extending Place {
+    property population -> int64;
+}
+```
+
+By the way, here's the approximate population for our three cities at the time of the book. They are much smaller back in 1887:
+
+- Buda-Pesth (Budapest): 402706
+- London: 3500000
+- Munich: 230023
+- Whitby: 14400
+- Bistritz (Bistrița): 9100
+
+Inserting Whitby is easy enough:
+
+```
+INSERT City {
+  name := 'Whitby',
+  population := 14400
+};
+```
+
+But for the rest of them it would be nice to update everything at the same time. 
+
+## Working with tuples and arrays
+
+If we have all the city data together, we can do a single insert with a `FOR` and `UNION` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. One big difference is that a tuple can hold different types, so this is okay:
+
+`('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
+
+In this case, the type is called a `tuple<str, int64>`.
+
+Before we start using these tuples, let's make sure that we understand the difference between the two. To start, let's look at slicing arrays and strings in a bit more detail.
+
+You'll remember that we use square brackets to access part of an array or a string. So `SELECT ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+
+You'll also remember that we can separate the starting and ending index with a colon, like in this example:
+
+```
+SELECT NPC.name[0:10];
+```
+
+This prints the first ten letters of every NPC's name:
+
+```
+{
+  'Jonathan H',
+  'The innkee',
+  'Mina Murra',
+  'John Sewar',
+  'Quincey Mo',
+  'Lucy Weste',
+  'Arthur Hol',
+}
+```
+
+But the same can be done with a negative number if you want to start from the index at the end. For example:
+
+```
+SELECT NPC.name[2:-2];
+```
+
+This prints from index 2 up to 2 indexes away from the end (it'll cut off the first two letters on each side). Here's the output:
+
+```
+{
+  'nathan Hark',
+  'e innkeep',
+  'na Murr',
+  'hn Sewa',
+  'incey Morr',
+  'cy Westen',
+  'thur Holmwo',
+}
+```
+
+Tuples are quite different: they behave more like object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+
+So this is completely fine:
+
+```
+SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
+```
+
+The output is:
+
+```
+{
+  ('Bistritz', 9100, <cal::local_date>'1887-05-06'),
+  ('Munich', 230023, <cal::local_date>'1887-05-08'),
+}
+```
+
+But now that the type is set (this one is type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
+
+```
+SELECT {(1, 2, 3), (4, 5, '6')};
+```
+
+EdgeDB will give an error because it won't try to work with tuples that are of different types. It complains:
+
+```
+ERROR: QueryError: operator 'UNION' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+  Hint: Consider using an explicit type cast or a conversion function.
+```
+
+In the above example we could easily just cast the last string into an integer and EdgeDB will be happy again: `SELECT {(1, 2, 3), (4, 5, <int64>'6')};`.
+
+To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
+
+```
+FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+  UNION (
+    UPDATE City FILTER .name = data.0
+    SET {
+    population := data.1
+});
+```
+
+So it sends each tuple into the `FOR` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+
+## Ordering results and using math
+
+Now that we have some numbers, we can start playing around with ordering and math. Ordering is quite simple: type `ORDER BY` and then indicate the property/link you want to order by. Here we order them by population:
+
+```
+SELECT City {
+  name,
+  population
+} ORDER BY .population DESC;
+```
+
+This returns:
+
+```
+{
+  Object {name: 'London', population: 3500000},
+  Object {name: 'Buda-Pesth', population: 402706},
+  Object {name: 'Munich', population: 230023},
+  Object {name: 'Whitby', population: 14400},
+  Object {name: 'Bistritz', population: 9100},
+}
+```
+
+What's `DESC`? It means descending, so largest first and then going down. If we didn't write `DESC` then it would have assumed that we wanted to sort ascending. You can also write `ASC` (to make it clear to somebody reading the code for example), but you don't need to.
+
+For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as the `math` module [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
+
+```
+WITH cities := City.population
+  SELECT (
+   'Number of cities: ' ++ <str>count(cities),
+   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
+   'Total population: ' ++ <str>sum(cities),
+   'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+   'Average population: ' ++ <str>math::mean(cities),
+   'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+   'Standard deviation: ' ++ <str>math::stddev(cities)
+);
+```
+
+This used quite a few functions: 
+
+- `count()` to count the number of items,
+- `all()` to return `{true}` if all items match and `{false}` otherwise, 
+- `sum()` to add them all together, 
+- `max()` to give the highest value, 
+- `min()` to give the lowest one, 
+- `math::mean()` to give the average, 
+- `any()` to return `{true}` if any item matches and `{false}` otherwise, and
+- `math::stddev()` for the standard deviation.
+
+The output also makes it clear how they work:
+
+```
+{
+  (
+    'Number of cities: 5',
+    'All cities have more than 50,000 people: false',
+    'Total population: 4156229',
+    'Smallest and largest population: 9100, 3500000',
+    'Average population: 831245.8',
+    'At least one city has more than 5 million people: false',
+    'Standard deviation: 1500876.8248',
+  ),
+}
+```
+
+`any()`, `all()` and `count()` are particularly useful in operations to give you an idea of your data.
+
+## Some more computables for names
+
+We saw in this chapter that Dr. Seward asked his old teacher Dr. Van Helsing to come and help Lucy. Here is how Dr. Van Helsing began his letter to say that he was coming:
+
+```
+Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
+
+“2 September.
+
+“My good Friend,—
+“When I have received your letter I am already coming to you.
+```
+
+The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interesting. This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a single string, but we have people with different types of names, in this order:
+
+Title | First name | Last name | Degree
+
+So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
+
+That would lead us to think that we should have titles like `first_name`, `last_name`, `title` etc. and then join them together using a computable. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+
+We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
+
+```
+property title -> str;
+property degrees -> str;
+property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
+property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+```
+
+We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
+
+Now it's time to insert Van Helsing:
+
+```
+INSERT NPC {
+  name := 'Abraham Van Helsing',
+  title := 'Dr.',
+  degrees := 'M.D., Ph. D. Lit., etc.'
+};
+```
+
+Now we can make use of these properties to liven up our conversation engine in the game. For example:
+
+```
+WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
+  SELECT(
+ 'There goes ' ++ helsing.name ++ '.',
+ 'I say! Are you ' ++ helsing.conversational_name ++ '?',
+ 'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.');
+```
+
+By the way, the `\n` inside the string creates a new line, while `\t` moves it one tab to the right.
+
+This gives us:
+
+```
+{
+  (
+    'There goes Abraham Van Helsing.',
+    'I say! Are you Dr. Abraham Van Helsing?',
+    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.,
+        I am sorry to say that I bring bad news about Lucy.',
+  ),
+}
+```
+
+In a standard database with users it's much simpler: get users to enter their first names, last names etc. and make each one a property.
+
+## UNLESS CONFLICT ON + ELSE + UPDATE
+
+We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
+
+```
+INSERT NPC {
+  name := 'Johnny'
+};
+```
+
+But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
+
+But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `UNLESS CONFLICT ON` comes in, followed by an `ELSE` to explain what to do. `UNLESS CONFLICT ON` is probably easier to explain through an example. Here's one that shows what we can do to insert an unlimited number of characters named Johnny:
+
+```
+WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
+ INSERT NPC {
+ name := 'Johnny'
+ } UNLESS CONFLICT ON .name
+ ELSE (
+ UPDATE NPC
+ SET {
+ name := 'Johnny' ++ <str>(count(johnnies))
+ });
+```
+ 
+Let's look at it step by step:
+ 
+`WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),` Here we select all the `NPC` types that have Johnny in their name.
+ 
+Then a normal insert:
+ 
+```
+INSERT NPC {
+ name := 'Johnny'
+ }
+```
+
+But it might not work so we add `UNLESS CONFLICT ON .name`. Then follow it with an `ELSE` to give instructions on what to do.
+
+But here's the important part: we don't write `ELSE INSERT`, because we are already in the middle of an `INSERT`. What we write instead is `UPDATE` for the type we are inserting, so `UPDATE NPC`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
+
+```
+UPDATE NPC
+ SET {
+ name := 'Johnny' ++ ' ' ++ <str>(count(johnnies))
+ }
+```
+
+With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
+
+[Here is all our code so far up to Chapter 10.](code.md)
+
+## Time to practice
+
+1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
+
+`{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
+
+2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
+
+`{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
+
+3. How would you order the `Person` types by last letter of their names?
+
+4. Try inserting an `NPC` with the name `''`. Now how would you do the same query in question 3?
+
+Hint: the length of `''` is 0, which may be a problem.
+
+5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
+
+6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
+
+Hint: `LIKE` can help. 
+
+Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
+
+[See the answers here.](answers.md)
+
+Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)
