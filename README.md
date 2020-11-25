@@ -417,7 +417,7 @@ Success! Now we get the output we wanted:
 
 Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `FILTER`, which we will learn to use in the next chapter.
 
-[Here is all our code so far up to Chapter 1.](chapter_1_code.md)
+[Here is all our code so far up to Chapter 1.](code.md)
 
 ## Time to practice
 
@@ -610,7 +610,7 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 
 Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having no data in a property.
 
-[Here is all our code so far up to Chapter 2.](chapter_2_code.md)
+[Here is all our code so far up to Chapter 2.](code.md)
 
 ## Time to practice
 
@@ -801,7 +801,7 @@ The output is `{Object {name: 'Hungary'}}`, showing us that we deleted Hungary. 
 
 Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
 
-[Here is all our code so far up to Chapter 3.](chapter_3_code.md)
+[Here is all our code so far up to Chapter 3.](code.md)
 
 ## Time to practice
 
@@ -1064,7 +1064,7 @@ SELECT ( # Start a selection
 
 Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22', awake: 'awake', double_hour: 44}}` We know the date and the hour, we can see that vampires are awake, and even make a computable from the object we just entered.
 
-[Here is all our code so far up to Chapter 4.](chapter_4_code.md)
+[Here is all our code so far up to Chapter 4.](code.md)
 
 ## Time to practice
 
@@ -1313,7 +1313,7 @@ The parts that say `readonly := true` we don't need to worry about, as they are 
 
 And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
 
-[Here is all our code so far up to Chapter 5.](chapter_5_code.md)
+[Here is all our code so far up to Chapter 5.](code.md)
 
 ## Time to practice
 
@@ -1537,7 +1537,7 @@ The output is:
 }
 ```
 
-[Here is all our code so far up to Chapter 6.](chapter_6_code.md)
+[Here is all our code so far up to Chapter 6.](code.md)
 
 ## Time to practice
 
@@ -1767,8 +1767,7 @@ So that will give all `City` types with u in the name, population of more than 2
 }
 ```
 
-
-[Here is all our code so far up to Chapter 7.](chapter_7_code.md)
+[Here is all our code so far up to Chapter 7.](code.md)
 
 ## Time to practice
 
@@ -1999,8 +1998,7 @@ Choosing the five objects from before from the output, it now looks like this:
 }
 ```
 
-
-[Here is all our code so far up to Chapter 8.](chapter_8_code.md)
+[Here is all our code so far up to Chapter 8.](code.md)
 
 ## Time to practice
 
@@ -2302,6 +2300,8 @@ INSERT NPC {
 ```
 
 But he has some sort of relationship to Dracula, similar to the `MinorVampire` type but different. He is also quite strong (as we will see later), so we gave him a `strength` of 10. Later on we'll learn more and more about him and his relationship with Dracula.
+
+[Here is all our code so far up to Chapter 9.](code.md)
 
 ## Time to practice
 
@@ -2660,6 +2660,8 @@ UPDATE NPC
 
 With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
 
+[Here is all our code so far up to Chapter 10.](code.md)
+
 ## Time to practice
 
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
@@ -2887,6 +2889,8 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
 
 ```  ... (further results hidden `\set limit 100`)```
+
+[Here is all our code so far up to Chapter 11.](code.md)
 
 ## Time to practice
 
@@ -3203,6 +3207,8 @@ This gives us the result:
 {'Slovakia, Buda-Pesth, Castle Dracula'}
 ```
 
+[Here is all our code so far up to Chapter 12.](code.md)
+
 ## Time to practice
 
 1. Consider these two functions. Will EdgeDB accept the second one?
@@ -3516,6 +3522,8 @@ SELECT (INTROSPECT Ship) {
   links: {name, target: {name}},
 };             
 ```
+
+[Here is all our code so far up to Chapter 13.](code.md)
 
 ## Time to practice
 
@@ -3869,6 +3877,8 @@ Here is the output:
 }
 ```
 
+[Here is all our code so far up to Chapter 14.](code.md)
+
 ## Time to practice
 
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
@@ -4168,6 +4178,8 @@ And the result:
 
 Beautiful! All the information is right there.
 
+[Here is all our code so far up to Chapter 15.](code.md)
+
 ## Time to practice
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
@@ -4412,6 +4424,8 @@ type City extending Place {
 }
 ```
 
+[Here is all our code so far up to Chapter 16.](code.md)
+
 ## Time to practice
 
 1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
@@ -4601,6 +4615,8 @@ Then we'll make sure that it got them:
 ```
 
 We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
+
+[Here is all our code so far up to Chapter 17.](code.md)
 
 ## Time to practice
 
@@ -4918,6 +4934,8 @@ INSERT Ship {
 ```
 
 Much better!
+
+[Here is all our code so far up to Chapter 18.](code.md)
 
 ## Time to practice
 
@@ -5322,6 +5340,8 @@ With the reverse lookup at the end we have another link between `Country` and it
   },
 }
 ```
+
+[Here is all our code so far up to Chapter 19.](code.md)
 
 ## Time to practice
 
