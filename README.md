@@ -730,7 +730,7 @@ Here's the signature for `max_value()`:
 
 The `anytype` part is interesting, because that means it can work on types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C', 'D', etc.
 
-Now let's go back to our constraint for `HumanAge`, which is 120. It looks like this:
+Now let's go back to our constraint for `HumanAge`, which is 120. The `HumanAge` type looks like this:
 
 ```
 scalar type HumanAge extending int16 {
