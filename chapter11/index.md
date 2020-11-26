@@ -13,7 +13,6 @@ type Event {
   required property end_time -> cal::local_datetime;
   required multi link place -> Place;
   required multi link people -> Person;
-  multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
   property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
