@@ -20,7 +20,7 @@ START MIGRATION TO {
     }
 
     type PC extending Person {
-#      required property transport -> Transport;
+      required property transport -> Transport;
     }
 
     type NPC extending Person {
@@ -59,7 +59,7 @@ START MIGRATION TO {
       property doors -> array<int16>;
     }
 
- #   scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
     type Date {
       required property date -> str;
@@ -75,7 +75,7 @@ START MIGRATION TO {
     type Crewman extending HasNumber, Person {
     }
 
-#   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
     #  property rank -> Rank;
@@ -197,22 +197,22 @@ INSERT Crewman {
 
 INSERT Sailor {
   name := 'The Captain',
-#  rank := <Rank>Captain
+  rank := <Rank>Captain
 };
 
 INSERT Sailor {
   name := 'Petrofsky',
-#  rank := <Rank>FirstMate
+  rank := <Rank>FirstMate
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-#  rank := <Rank>SecondMate
+  rank := <Rank>SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-#  rank := <Rank>Cook
+  rank := <Rank>Cook
 };
 
 INSERT Ship {
