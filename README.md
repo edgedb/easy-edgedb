@@ -679,6 +679,16 @@ type City extending Place;
 type Country extending Place;
 ```
 
+We will need to change `places_visited` in the `Person` type now to be a `Place` instead of a `City`. After all, characters can visit more places than just cities:
+
+```
+abstract type Person {
+  required property name -> str;
+  multi link places_visited -> Place;
+  property age -> int16;
+}
+```
+
 Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert `Country` objects for Hungary and Romania:
 
 ```
