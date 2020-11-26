@@ -2186,13 +2186,15 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we can use this method to insert our five `Crewman` types inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them:
+By the way, now we could use this method to insert our five `Crewman` types inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them. Of course, we already used `UPDATE` to change the inserts but from now on in our code their insert will look like this:
 
 ```
 FOR n IN {1, 2, 3, 4, 5}
   UNION (
   INSERT Crewman {
   number := n
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16),
 });
 ```
 
