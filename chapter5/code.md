@@ -5,7 +5,7 @@ START MIGRATION TO {
   
     abstract type Person {
       required property name -> str;
-      multi link places_visited -> City;
+      multi link places_visited -> Place;
       link lover -> Person;
     }
 
@@ -29,7 +29,7 @@ START MIGRATION TO {
       required link master -> Vampire;
     }
     
-    type Place {
+    abstract type Place {
       required property name -> str;
       property modern_name -> str;
       property important_places -> array<str>;
