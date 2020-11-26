@@ -2050,7 +2050,7 @@ This is a good time to add two new properties to the `Person` type to indicate w
 
 For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
-Doing an insert for the `Crewman` types with the properties `first_appearance` and `last_appearance` looks something like this:
+Doing an insert for the `Crewman` types with the properties `first_appearance` and `last_appearance` will now look something like this:
 
 ```
 INSERT Crewman {
