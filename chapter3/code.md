@@ -24,7 +24,7 @@ START MIGRATION TO {
       property age -> int16;
     }
     
-    type Place {
+    abstract type Place {
       required property name -> str;
       property modern_name -> str;
       property important_places -> array<str>;
