@@ -108,7 +108,7 @@ type NPC extending Person {
 It's our own type with its own name, but underneath it's an `int16` that can't be greater than 120. So if we write this, it won't work:
 
 ```
-insert NPC {
+INSERT NPC {
     name := 'The innkeeper',
     age := 130
 };
