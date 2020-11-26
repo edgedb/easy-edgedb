@@ -68,7 +68,7 @@ INSERT City {
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT Person {
+INSERT NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
