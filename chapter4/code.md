@@ -1,3 +1,4 @@
+```
 # Schema:
 START MIGRATION TO {
   module default {
@@ -105,3 +106,4 @@ INSERT NPC {
   lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
+```
