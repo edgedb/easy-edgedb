@@ -5,7 +5,7 @@ START MIGRATION TO {
   
     abstract type Person {
       required property name -> str;
-      multi link places_visited -> City;
+      multi link places_visited -> Place;
     }
 
     type PC extending Person {
