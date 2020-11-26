@@ -10,7 +10,7 @@ START MIGRATION TO {
     }
 
     type PC extending Person {
-#      required property transport -> Transport;
+      required property transport -> Transport;
     }
 
     scalar type HumanAge extending int16 {
@@ -41,7 +41,7 @@ START MIGRATION TO {
 
     type OtherPlace extending Place;
 
- #   scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
     type Date {
       required property date -> str;
