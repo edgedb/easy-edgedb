@@ -1408,10 +1408,12 @@ SELECT Person {
 
 Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her because we inserted him first. We can change that now:
 
+```
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
     lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
 };
+```
 
 Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
 
