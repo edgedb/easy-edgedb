@@ -52,7 +52,7 @@ INSERT Castle {
 };
 ```
 
-Then we will also add a property `strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
+Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
 
 Now we'll give Jonathan a strength of 5. That's easy with `UPDATE` and `SET` like before:
 
