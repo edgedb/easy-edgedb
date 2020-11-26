@@ -882,7 +882,7 @@ You'll notice two things here:
 Now we want to make a query to see who is single and who is not. This is easy by using a "computable", where we can create a new variable that we define with `:=`. First here is a normal query:
 
 ```
-select Person {
+SELECT Person {
   name,
   lover: {
     name
