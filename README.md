@@ -4239,7 +4239,7 @@ This is very convenient for us. With this we can make a type that holds a date a
 ```
   type BookExcerpt {
     required property date -> cal::local_datetime;
-    required property excerpt -> string;
+    required property excerpt -> str;
     index on (.excerpt);
     required link author -> Person
 }
