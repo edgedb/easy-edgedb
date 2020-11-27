@@ -4845,10 +4845,10 @@ We'll change that to an insert with a `UNION`:
   );
 ```
 
-Then we'll do the same for the `Country` types with the names Romania and Slovakia. Now they are a single insert:
+Then we'll do the same for the four `Country` types that we inserted (Hungary, Romania, France, Slovakia). Now they are a single insert:
 
 ```
-FOR country_name IN {'Romania', 'Slovakia'}
+FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia'}
   UNION (
     INSERT Country {
       name := country_name
@@ -4887,22 +4887,22 @@ FOR n IN {1, 2, 3, 4, 5}
 
 INSERT Sailor {
   name := 'The Captain',
-  rank := 'Captain'
+  rank := <Rank>Captain
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := 'First mate'
+  rank := <Rank>FirstMate
 };
 
 INSERT Sailor {
   name := 'The Second Mate',
-  rank := 'Second mate'
+  rank := <Rank>SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-  rank := 'Cook'
+  rank := <Rank>Cook
 };
 
 INSERT Ship {
@@ -4920,19 +4920,19 @@ INSERT Ship {
    sailors := {
     (INSERT Sailor {
        name := 'The Captain',
-       rank := 'Captain'
+       rank := <Rank>Captain
      }),
     (INSERT Sailor {
        name := 'The First Mate',
-       rank := 'First mate'
+       rank := <Rank>FirstMate
      }),
     (INSERT Sailor {
        name := 'The Second Mate',
-       rank := 'Second mate'
+       rank := <Rank>SecondMate
      }),
     (INSERT Sailor {
        name := 'The Cook',
-       rank := 'Cook'
+       rank := <Rank>Cook
      })
  },
    crew := (
