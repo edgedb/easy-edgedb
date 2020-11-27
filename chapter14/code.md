@@ -1,3 +1,4 @@
+```
 # Schema:
 START MIGRATION TO {
   module default {
@@ -19,7 +20,7 @@ START MIGRATION TO {
     }
 
     type PC extending Person {
-#      required property transport -> Transport;
+      required property transport -> Transport;
     }
 
     type NPC extending Person {
@@ -65,7 +66,7 @@ START MIGRATION TO {
       property doors -> array<int16>;
     }
 
- #   scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
     type Date {
       required property date -> str;
@@ -81,7 +82,7 @@ START MIGRATION TO {
     type Crewman extending HasNumber, Person {
     }
 
-#   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
     #  property rank -> Rank;
@@ -209,17 +210,17 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 
 INSERT Sailor {
   name := 'The Captain',
-#  rank := <Rank>Captain
+  rank := <Rank>Captain
 };
 
 INSERT Sailor {
   name := 'Petrofsky',
-#  rank := <Rank>FirstMate
+  rank := <Rank>FirstMate
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-#  rank := <Rank>SecondMate
+  rank := <Rank>SecondMate
 };
 
 INSERT Sailor {
@@ -357,3 +358,4 @@ UPDATE Crewman
 };
 
 \set introspect-types on;
+```
