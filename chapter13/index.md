@@ -57,7 +57,8 @@ INSERT Vampire {
      first_appearance := lucy.last_appearance,
      strength := lucy.strength + 5,
     }),
- }
+ },
+ places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
 };
 ```
 
