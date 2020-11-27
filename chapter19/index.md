@@ -289,7 +289,7 @@ type Country extending Place {
 }
 
 type Region extending Place {
-  multi link cities -> City
+  multi link cities -> City;
   multi link other_places -> OtherPlace;
   multi link castles -> Castle;
 }
