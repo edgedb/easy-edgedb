@@ -5613,8 +5613,10 @@ Our `Lord` type was only created to show how to use `constraint expression on`, 
 
 ```
 type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord') = true);
-}
+  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+    errmessage := "All lords need \'Lord\' in their name";
+  };
+};
 ```
 
 (We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc. etc.)
