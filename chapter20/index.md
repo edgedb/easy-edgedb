@@ -258,7 +258,9 @@ Another possible way to create a `Lord` is to do it this way, since `Person` has
 
 ```
 type Lord extending Person {
-  constraint expression on (__subject__.title = 'Lord');
+  constraint expression on (__subject__.title = 'Lord') {
+    errmessage := "All lords need \'Lord\' in their name";
+  };
 }
 ```
 
