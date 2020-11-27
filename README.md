@@ -5388,6 +5388,8 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 ## Reviewing the schema
 
+[Here's the schema and inserted data we have up to Chapter 20.](code.md)
+
 Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
 
 The first part to a schema is always the command to start the migration:
