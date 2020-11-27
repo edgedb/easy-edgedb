@@ -189,12 +189,6 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
     strength := 5
 };
 
-INSERT Crewman {
-  number := count(DETACHED Crewman) +1,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
-};
-
 INSERT Sailor {
   name := 'The Captain',
   rank := <Rank>Captain
@@ -214,6 +208,14 @@ INSERT Sailor {
   name := 'The Cook',
   rank := <Rank>Cook
 };
+
+FOR n IN {1, 2, 3, 4, 5}
+  UNION (
+  INSERT Crewman {
+  number := n
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16),
+});
 
 INSERT Ship {
   name := 'The Demeter',
