@@ -4113,7 +4113,7 @@ Here's the `Lord` type now:
 
 ```
 type Lord extending Person {
-    constraint expression on ((contains(__subject__.name, 'Lord') = true)) {
+    constraint expression on (contains(__subject__.name, 'Lord') = true) {
         errmessage := "All lords need \'Lord\' in their name";
     };
 };
