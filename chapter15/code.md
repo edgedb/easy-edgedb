@@ -135,7 +135,7 @@ START MIGRATION TO {
         SELECT city IN person.places_visited.name
       );
 
-    create function can_enter(person_name: str, place: HasCoffins) -> str
+    function can_enter(person_name: str, place: HasCoffins) -> str
       using (
         WITH vampire := (SELECT Person filter .name = person_name LIMIT 1)
           SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
