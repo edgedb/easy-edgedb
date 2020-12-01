@@ -2010,6 +2010,77 @@ Choosing the five objects from before from the output, it now looks like this:
 }
 ```
 
+## Multi in other places
+
+We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one. For example, our `Castle` type has an `array<int16>` for the `doors` property:
+
+```
+type Castle extending Place {
+  property doors -> array<int16>;
+}
+```
+
+But it could do something similar like this:
+
+```
+type Castle extending Place {
+  multi property doors -> int16;
+}
+```
+
+With that, you would insert using `{}` instead of square brackets for an array:
+
+```
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := {6, 19, 10},
+};
+```
+
+The next question of course is which is best to use: `multi property`, `array`, or an object type via a link. The answer is...it depends. But here are some good rules of thumb to help you decide which to choose.
+
+- `multi property` vs. arrays:
+
+How large is the data you are working with? A `multi property` is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi property`.
+
+If you want to use indexes and constraints on individual elements, then you should use a `multi property`. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
+
+If order is important, than an array may be better. It's easier to keep the original order of items in an array.
+
+- `multi property` vs. objects
+
+Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
+
+First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE as TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
+
+```
+{
+  'type default::Castle extending default::Place {
+    required single link __type__ -> schema::Type {
+        readonly := true;
+    };
+    optional single property doors -> array<std::int16>;
+    required single property id -> std::uuid {
+        readonly := true;
+    };
+    optional single property important_places -> array<std::str>;
+    optional single property modern_name -> std::str;
+    required single property name -> std::str;
+};
+```
+
+You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
+
+The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backward link" or "reverse link" (you'll see those in Chapter 14) takes more work as well.
+
+Okay, now here are two positives for objects in comparison.
+
+Do you have a lot of duplication in property values? If so, then using `constraint exclusive` on an object type is the more efficient way to do it.
+
+Objects are easier to migrate if you need to have more than one value with each.
+
+So hopefully that explanation should help. You can see that you have a lot of choice, so remembering the points above should help you make a decision. Most of the time, you'll probably have a sense for which one you want.
+
 [Here is all our code so far up to Chapter 8.](code.md)
 
 ## Time to practice
