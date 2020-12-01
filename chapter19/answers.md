@@ -42,9 +42,3 @@ That gives us a nice output going from the `City` to the `Country` level:
   Object {name: 'Königsberg', region_name: {'Prussia'}, country_name: {'Germany'}},
 }
 ```
-
-3.
-
-4.
-
-5.
