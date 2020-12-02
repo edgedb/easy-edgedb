@@ -161,6 +161,17 @@ You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi
 {'CREATE FUNCTION default::say_hi() ->  std::str USING (\'hi\');'}
 ```
 
+## Deleting (dropping) functions
+
+You can delete a function with the `DROP` keyword and the function signature. You only have to specify the input though, because the input is all that EdgeDB looks at when identifying a function. So in the case of our two `fight()` functions:
+
+```
+fight(one: Person, two: Person) -> str
+fight(names: str, one: int16, two: Person) -> str
+```
+
+You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: Person)`. The `-> str` part isn't needed.
+
 
 ## More about Cartesian products - the coalescing operator
 
