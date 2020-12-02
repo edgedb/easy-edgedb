@@ -1946,6 +1946,27 @@ The result is:
 }
 ```
 
+## The sequence type
+
+On the subject of giving types a number, EdgeDB has a type called [sequence](https://www.edgedb.com/docs/datamodel/scalars/numeric/#type::std::sequence) that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it. Let's imagine a `Townsperson` type for a moment that uses it. Here's the wrong way to do it:
+
+```
+type Townsperson extending Person {
+  property number -> sequence;
+```
+
+This won't work because each `sequence` keeps a record of the most recent number, and if every type just `sequence` then they would share it. So the right way to do it is to extend it to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
+
+```
+scalar type TownspersonNumber extending sequence;
+
+type Townsperson extending Person {
+  property number -> TownspersonNumber;
+  }
+```
+
+The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you *could* create duplicate numbers using `UPDATE` and `SET` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
+
 ## Using IS to query multiple types
 
 So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. 
