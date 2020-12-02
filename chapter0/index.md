@@ -9,7 +9,7 @@ Twenty months and five more Alpha versions later, EdgeDB has now reached beta 1.
 - [A new JavaScript driver](https://github.com/edgedb/edgedb-js) in Alpha 2.0 and more powerful bindings in Alpha 4.0,
 - [We took our cli and Rewrote It In Rust](https://github.com/edgedb/edgedb-cli)! Unsurprisingly, the performance improvements were substantial.
 - [Constraints were added to entire types](https://www.edgedb.com/blog/edgedb-1-0-alpha-5-luhman) and JSON casting became as easy as typing `<json>` before a query (Alpha 5.0),
-- Native GraphQL support has been improved including multiple mutations in a single query, and an `exists` filter (Alpha 5.0),
+- Native [GraphQL support](https://www.edgedb.com/docs/tutorial/graphql#ref-tutorial-graphql) has been improved including multiple mutations in a single query, and an `exists` filter (Alpha 5.0),
 - [Improved UPDATE syntax](https://www.edgedb.com/blog/edgedb-1-0-alpha-6-wolf-359), enums, easier function syntax and cli improvement (Alpha 6.0).
 
 Now that we've reached beta 1.0, we're even more excited to see people give it a try. Up to now our learning and introductory material has been mostly found in the [interactive tutorial](https://tutorial.edgedb.com/), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql). This time we've put something much longer together: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
