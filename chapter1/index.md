@@ -78,6 +78,8 @@ There are also a few places to download packages to highlight your syntax if you
 
 Here's the `City` type we just made with syntax highlighting:
 
+![type City](type_City.png)
+
 ## Selecting
 
 Here are three operators in EdgeDB that have the `=` sign: 
