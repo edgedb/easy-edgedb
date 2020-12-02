@@ -74,6 +74,10 @@ There are naturally a lot of other commands beyond this, though we won't need th
 - [REPL commands](https://www.edgedb.com/docs/cheatsheet/repl): Mostly shortcuts for a lot of the commands we'll be using in this book.
 - [Various commands](https://www.edgedb.com/docs/edgeql/statements/tx_rollback#rollback) about rolling back transactions, declaring savepoints, and so on.
 
+There are also a few places to download packages to highlight your syntax if you like. EdgeDB has these packages available for [Atom](https://atom.io/packages/edgedb), [Visual Studio Code](https://marketplace.visualstudio.com/itemdetails?itemName=magicstack.edgedb), [Sublime Text](https://packagecontrol.io/packages/EdgeDB), and [Vim](https://github.com/edgedb/edgedb-vim).
+
+Here's the `City` type we just made with syntax highlighting:
+
 ## Selecting
 
 Here are three operators in EdgeDB that have the `=` sign: 
