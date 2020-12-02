@@ -249,7 +249,7 @@ This gives us three items:
 }
 ```
 
-This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. We'll select all `City` types and display their `modern_name` with this query:
+This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the [shape](https://www.edgedb.com/docs/edgeql/expressions/shapes/#ref-eql-expr-shapes) of the data we want. We'll select all `City` types and display their `modern_name` with this query:
 
 ```
 SELECT City {
