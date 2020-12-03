@@ -2721,6 +2721,44 @@ This gives us:
 
 In a standard database with users it's much simpler: get users to enter their first names, last names etc. and make each one a property.
 
+## Other escape characters and raw strings
+
+Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list [here](https://www.edgedb.com/docs/edgeql/lexical/#strings). Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
+
+If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
+
+```
+WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
+  SELECT(
+ 'There goes ' ++ helsing.name ++ '.',
+ 'I say! Are you ' ++ helsing.conversational_name ++ '?',
+ 'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.');
+```
+
+Now we get:
+
+```
+{
+  (
+    'There goes Abraham Van Helsing.',
+    'I say! Are you Dr. Abraham Van Helsing?',
+    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.\n\tI am sorry to say that I bring bad news about Lucy.',
+  ),
+}
+```
+
+Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example:
+
+```
+SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them." $$;
+```
+
+Without the `$$` it will look like three separate strings with three unknown keywords between them, and will generate an error.
+
+## All the scalar types
+
+You now have an understanding of all the EdgeDB scalar types. Summed up, the are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `uuid`, `json`, and `enum`. You can see the documentation for them [here](https://www.edgedb.com/docs/datamodel/scalars/index).
+
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 
 We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
