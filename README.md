@@ -2082,6 +2082,25 @@ Choosing the five objects from before from the output, it now looks like this:
 }
 ```
 
+## Supertypes, subtypes, and generic types
+
+The official name for a type that gets extended to another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype = supertype` will return `{true}`. And of course, `supertype = subtype` = `{false}` because supertypes do not inherit the features of their subtypes.
+
+In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` returns `{false}`.
+
+Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
+
+```
+WITH year := 1887,
+SELECT year IS int16 OR year IS int32 OR year IS int64;
+```
+
+Output: `{true}`.
+
+But fortunately these types all [extend from abstract types too](https://www.edgedb.com/docs/datamodel/abstract), and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
+
+So with that you can change the above input to `SELECT 1887 IS anyint` and get `{true}`.
+
 ## Multi in other places
 
 We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one. For example, our `Castle` type has an `array<int16>` for the `doors` property:
