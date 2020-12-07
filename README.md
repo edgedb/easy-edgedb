@@ -1558,7 +1558,7 @@ This might make you wonder: what if we do want two-way links? There's actually a
 
 ## Just type \<json> to generate json
 
-What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
+What do we do if we want the same output in JSON? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to JSON this easily:
 
 ```
 SELECT <json>Vampire { 
@@ -1575,6 +1575,28 @@ The output is:
   "{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
 }
 ```
+
+So what about the other way around, namely JSON to an EdgeDB type? You can do this too, but remember to think about the JSON type that you are giving to cast. The EdgeDB philosophy is that casts should be symmetrical: a type cast into JSON should only be cast back into that type. For example, here is the first date in the book Dracula as a string, then cast to JSON and then into a `cal::local_date`:
+
+```
+SELECT <cal::local_date><json>'18870503';
+```
+
+This is fine because `<json>` turns it into a JSON string, and `cal::local_date` can be created from a string. The result we get is `{<cal::local_date>'1887-05-03'}`. But if we try to turn the JSON value into an `int64`, it won't work:
+
+```
+SELECT <int64><json>'18870503';
+```
+
+The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number, null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
+
+```
+SELECT <int64><str><json>'18870503';
+```
+
+Now it works: we get `{18870503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
+
+The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) explains which JSON types turn into which EdgeDB types and is good to bookmark if you need to convert from JSON a lot.
 
 [Here is all our code so far up to Chapter 6.](code.md)
 
