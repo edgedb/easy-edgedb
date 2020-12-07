@@ -69,6 +69,14 @@ SELECT ( # Put the whole update inside
 
 This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
 
+One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this:
+
+```
+SELECT ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
+```
+
+will return `{true}`.
+
 ## Putting abstract types together
 
 Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. So it would be cool to create a quick function called `change_coffins()` to change the number of coffins in a place. With this function we could write something like `change_coffins('London', -13)` to reduce it by 13, for example. But the problem right now is this: 
