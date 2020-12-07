@@ -1230,6 +1230,27 @@ WITH
 
 The output is the same: `{5100s}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
 
+## Casting to a duration
+
+Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `SELECT <duration>'2 hours`; will return `{7200s}`, and `SELECT <duration>'2 microseconds';` will return `{2µs}`.
+
+You can include multiple units as well. For example:
+
+```
+SELECT <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
+```
+
+This will return `{21960.688999s}`.
+
+EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. So even this horrible input will work:
+
+```
+SELECT <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
+  <duration>'10 microsecond 7 minutes %%%%%%% 10 seconds 5 hour';
+```
+
+The result: `{-14344.99401s}`.
+
 ## datetime_current()
 
 One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
