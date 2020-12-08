@@ -88,6 +88,32 @@ We could have just used `FILTER.name IN Person.name` but two filters is better i
 
 Without too much new to add, let's look at some tips for making queries.
 
+## On target delete
+
+We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in the game until September 1887. Maybe later `PC` types will interact with her, for example. But this might make you wonder about deleting links. What if we had chosen to delete the old type when she became a `MinorVampire`? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have [four options](https://www.edgedb.com/docs/datamodel/links#ref-datamodel-links):
+
+- `restrict`: forbids you from deleting the target object.
+
+So if you declared `MinorVampire` like this:
+
+```
+type MinorVampire extending Person {
+  link former_self -> Person {
+    on target delete restrict;
+    }
+}
+```
+
+then you wouldn't be able to delete Lucy the `NPC` once she was connected to Lucy the `MinorVampire`.
+
+- `delete source`: in this case, deleting Lucy the `Person` (the target of the link) will automatically delete Lucy the `MinorVampire` (the source of the link).
+
+- `allow`: this one simply lets you delete the target (this is the default setting).
+
+- `deferred restrict` - forbids you from deleting the target object, unless it is no longer a target object by the end of a transaction. So this option is like `restrict` but with a bit more flexibility.
+
+So if you wanted to have all the `MinorVampire` types automatically deleted when their `Vampire` dies, you would add a link from `MinorVampire` to the `Vampire` type. Then you would add `on target delete delete source` to this: `Vampire` is the target of the link, and `MinorVampire` is the source that gets deleted.
+
 ## Using DISTINCT, \__type__
 
 - `DISTINCT`
