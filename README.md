@@ -947,7 +947,7 @@ abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
   property lover -> Person;
-  property is_single := NOT EXISTS .lover;
+  property is_single := not exists .lover;
 }
 ```
 
