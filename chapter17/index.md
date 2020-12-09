@@ -172,6 +172,84 @@ Then we'll make sure that it got them:
 
 We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
 
+## Aliases: creating subtypes when you need them
+
+We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts: `Person`, `HasNameAndCoffins`, etc. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes. Aliases also make subtypes, except they use `:=` instead of `extending` and draw from full types.
+
+Let's make an alias for our schema too. Looking at the Demeter again, the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
+
+```
+type Crewman extending HasNumber, Person {
+}
+```
+
+Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, because Bulgarians call each other 'Gospodin' instead of Mr. and our game needs to reflect that. Our Crewman types will get called "Gospodin (name)" whenever they are there. Let's also add a `current_location` computable that makes a link to `Place` types with the name Bulgaria. Here's how to do that:
+
+```
+alias CrewmanInBulgaria := Crewman {
+  name := 'Gospodin ' ++ .name,
+  current_location := (SELECT Place filter .name = 'Bulgaria'),
+}
+```
+
+You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a *shape* on top of the existing `Crewman` type. For the same reason, you can't do an `INSERT CrewmanInBulgaria`, because there is no such type. It gives this error:
+
+```
+error: cannot insert into expression alias 'default::CrewmanInBulgaria'
+```
+
+So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's add Bulgaria now,
+
+```
+INSERT Country {
+  name := 'Bulgaria'
+};
+```
+
+And then select this alias to see what we get:
+
+```
+SELECT CrewmanInBulgaria {
+  name,
+  current_location: {
+    name
+    }
+  };
+```
+
+And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: with *Gospodin* added to their name and linked to the `Country` type we just inserted.
+
+```
+{
+  default::Crewman {
+    name: 'Gospodin Crewman 0',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+  default::Crewman {
+    name: 'Gospodin Crewman 1',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+  default::Crewman {
+    name: 'Gospodin Crewman 2',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+  default::Crewman {
+    name: 'Gospodin Crewman 3',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+  default::Crewman {
+    name: 'Gospodin Crewman 4',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+  default::Crewman {
+    name: 'Gospodin Crewman 5',
+    current_location: default::Country {name: 'Bulgaria'},
+  },
+}
+```
+
+The [documentation on aliases](https://www.edgedb.com/docs/cheatsheet/aliases/) mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
+
 [Here is all our code so far up to Chapter 17.](code.md)
 
 ## Time to practice
