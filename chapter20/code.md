@@ -106,6 +106,11 @@ START MIGRATION TO {
     
     type Crewman extending HasNumber, Person {
     }
+    
+    alias CrewmanInBulgaria := Crewman {
+      name := 'Gospodin ' ++ .name,
+      current_location := (SELECT Place filter .name = 'Bulgaria'),
+    }
 
    scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
@@ -258,7 +263,7 @@ INSERT PC {
   transport := <Transport>HorseDrawnCarriage,
 };
 
-FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia'}
+FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}
   UNION (
     INSERT Country {
       name := country_name
