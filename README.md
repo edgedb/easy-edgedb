@@ -953,6 +953,8 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
+You might be curious about how computables are represented in databases on the back end. They are interesting because they [don't show up in the actual database](https://www.edgedb.com/docs/datamodel/computables), and only appear when you query them. And of course you don't specify the type because the computable itself determines the type. You can kind of imagine this when you look at a query with a quick computable like `SELECT country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computable on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computable are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
+
 ## Ways to tell time
 
 We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
