@@ -4955,6 +4955,49 @@ And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: w
 
 The [documentation on aliases](https://www.edgedb.com/docs/cheatsheet/aliases/) mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
 
+== Creating new names for types in a query (local expression aliases) ==
+
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is sort of: we can use `WITH` and then give a new name for an existing type, though we can't add new properties and links. Take a simple query like this that shows Count Dracula and the names of his slaves:
+
+```
+SELECT Vampire {
+  name,
+  slaves: {
+    name
+  }
+};
+```
+
+If we wanted to use `WITH` to create a new type that is identical to `Vampire`, we would just do this.
+
+```
+WITH Drac := Vampire,
+SELECT Drace {
+  name,
+  slaves: {
+    name
+  }
+};
+```
+
+So far this is nothing special, because the output is the same:
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    slaves: {
+      default::MinorVampire {name: 'Woman 1'},
+      default::MinorVampire {name: 'Woman 2'},
+      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Lucy Westenra'},
+    },
+  },
+}
+```
+
+But where it becomes useful is when using this new type to perform operations or comparisons on the type it is created from. It's the same as `DETACHED`, but we give it a name and have some more flexibility to use it.
+
 [Here is all our code so far up to Chapter 17.](code.md)
 
 ## Time to practice
