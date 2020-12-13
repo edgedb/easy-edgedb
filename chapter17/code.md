@@ -434,6 +434,13 @@ SELECT (
   name, 
   last_appearance
   };
+  
+CREATE FUNCTION fight_2(one: Person, two: Person) -> str
+  USING (
+    SELECT one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' IF one.strength > two.strength 
+      ELSE 
+    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
+);
 
 \set introspect-types on;
 ```
