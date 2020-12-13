@@ -293,6 +293,111 @@ So far this is nothing special, because the output is the same:
 
 But where it becomes useful is when using this new type to perform operations or comparisons on the type it is created from. It's the same as `DETACHED`, but we give it a name and have some more flexibility to use it.
 
+So let's give this a try. We'll pretend that we are testing out our game engine. Right now our `fight()` function is ridiculously simple, but let's pretend that it's complicated and needs a lot of testing. Here's the variant we would use:
+
+```
+function fight(one: Person, two: Person) -> str
+  using (
+    SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+);
+```
+
+But for debugging purposes it would be nice to have some more info. Let's create the same function but call it `fight_2()` and add some more information on who is fighting who.
+
+```
+CREATE FUNCTION fight_2(one: Person, two: Person) -> str
+  USING (
+    SELECT one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' IF one.strength > two.strength 
+      ELSE 
+    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
+);
+```
+
+So let's make our `MinorVampire` types fight each other and see what output we get. We have four of them (the three vampire women plus Lucy). First let's just put the `MinorVampire` type into the function and see what we get. Try to imagine what the output will be.
+
+```
+SELECT fight_2(MinorVampire, MinorVampire);
+```
+
+So the output for this is...
+
+...
+
+```
+{
+  'Lucy Westenra fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 1 fights Woman 1. Woman 1 wins!',
+  'Woman 2 fights Woman 2. Woman 2 wins!',
+  'Woman 3 fights Woman 3. Woman 3 wins!',
+}
+```
+
+The function only gets used four times because a set with only a single object goes in every time...and each `MinorVampire` is fighting itself. That's probably not what we wanted. Now let's try our local type alias again.
+
+```
+WITH M := MinorVampire,
+  SELECT fight_2(M, MinorVampire);
+```
+
+By the way, so far this is exactly the same as:
+
+```
+SELECT fight_2(MinorVampire, DETACHED MinorVampire);
+```
+
+The output is too long now:
+
+```
+{
+  'Lucy Westenra fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 1 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 2 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 3 fights Lucy Westenra. Lucy Westenra wins!',
+  'Lucy Westenra fights Woman 1. Lucy Westenra wins!',
+  'Woman 1 fights Woman 1. Woman 1 wins!',
+  'Woman 2 fights Woman 1. Woman 1 wins!',
+  'Woman 3 fights Woman 1. Woman 1 wins!',
+  'Lucy Westenra fights Woman 2. Lucy Westenra wins!',
+  'Woman 1 fights Woman 2. Woman 2 wins!',
+  'Woman 2 fights Woman 2. Woman 2 wins!',
+  'Woman 3 fights Woman 2. Woman 2 wins!',
+  'Lucy Westenra fights Woman 3. Lucy Westenra wins!',
+  'Woman 1 fights Woman 3. Woman 3 wins!',
+  'Woman 2 fights Woman 3. Woman 3 wins!',
+  'Woman 3 fights Woman 3. Woman 3 wins!',
+}
+```
+
+We succeeded at getting each `MinorVampire` type to fight the other one, but there are still `MinorVampire`s fighting themselves (Lucy vs. Lucy, Woman 1 vs. Woman 1, etc.). This is where the convenience of the local type alias comes in: we can filter on it, for example. Now we'll filter to only use `fight_2()` with objects that are not identical to each other:
+
+```
+WITH M := MinorVampire,
+  SELECT fight_2(M, MinorVampire) FILTER M != MinorVampire;
+```
+
+And now we finally have every combination of `MinorVampire` fighting the other one, with no duplicates.
+
+```
+{
+  'Lucy Westenra fights Woman 1. Lucy Westenra wins!',
+  'Lucy Westenra fights Woman 2. Lucy Westenra wins!',
+  'Lucy Westenra fights Woman 3. Lucy Westenra wins!',
+  'Woman 1 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 1 fights Woman 2. Woman 2 wins!',
+  'Woman 1 fights Woman 3. Woman 3 wins!',
+  'Woman 2 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 2 fights Woman 1. Woman 1 wins!',
+  'Woman 2 fights Woman 3. Woman 3 wins!',
+  'Woman 3 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 3 fights Woman 1. Woman 1 wins!',
+  'Woman 3 fights Woman 2. Woman 2 wins!',
+}
+```
+
+Perfect!
+
+With just `DETACHED` this wouldn't work: `SELECT fight_2(MinorVampire, DETACHED MinorVampire) FILTER MinorVampire != DETACHED MinorVampire;` won't do it because the first `DETACHED MinorVampire` isn't a variable name. Without that name to access, the next `DETACHED MinorVampire` is just a new `DETACHED MinorVampire` with no relation to the other one.
+
 [Here is all our code so far up to Chapter 17.](code.md)
 
 ## Time to practice
