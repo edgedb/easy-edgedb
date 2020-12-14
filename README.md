@@ -4251,7 +4251,7 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 ## More constraints
 
-Let's look at two more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) that we can use as well. 
+Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/edgeql/sdl/constraints/#constraints) that we can use as well. 
 
 There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
 
@@ -4265,6 +4265,28 @@ type PC extending Person {
 ```
 
 Then when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
+
+Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `property title -> str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
+
+```
+property title -> str {
+  constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord')
+}
+```
+
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German *Herr*, etc. etc.).
+
+Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
+
+```
+property month -> int64 {
+  constraint one_of(5, 6, 7, 8, 9, 10)
+}
+```
+
+But that will depend on how the game works.
+
+Now let's learn about perhaps the most interesting constraint in EdgeDB:
 
 ## expression on: the most flexible constraint
 
