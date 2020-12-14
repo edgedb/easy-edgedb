@@ -4484,7 +4484,9 @@ This is very convenient for us. With this we can make a type that holds a date a
 }
 ```
 
-The [`index on (.excerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. We could do this for certain other types too - it might be good for types like `Place` and `Person`. 
+The [`index on (.excerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match. 
+
+We could do this for certain other types too - it might be good for types like `Place` and `Person`. 
 
 Note: `index` is good in limited quantities, but you don't want to index everything. Here is why:
 
