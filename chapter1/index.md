@@ -241,6 +241,8 @@ If you just want to return a single part of a type without the object structure,
 {'Budapest', 'Bistrița'}
 ```
 
+This type of expression is called a *path expression* or a *path*, because it is the direct path to the values inside. And each `.` moves on to the next path, if there is another one to follow.
+
 You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. Those names you choose become the variable names that are displayed. For example:
 
 ```
