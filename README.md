@@ -4495,6 +4495,13 @@ Note: `index` is good in limited quantities, but you don't want to index everyth
 
 This is probably not surprising, because you can see that `index` is a choice that the user needs to make. If using `index` was the best idea in every case, then EdgeDB would just do it automatically.
 
+Finally, here are two times when you don't need to create an `index`:
+
+- on links,
+- on exclusive constraints for a property.
+
+Indexes are automatically created in these two cases so you don't need to use indexes for them.
+
 So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
 ```
