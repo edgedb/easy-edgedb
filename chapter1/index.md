@@ -262,6 +262,8 @@ This prints:
 
 This will not change anything inside the schema - it's just a quick variable name to use in a query.
 
+By the way, `.name` is short for `City.name`. You can also write `City.name` each time (that's called the *fully qualified name*), but it's not required.
+
 So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
 
 ```
