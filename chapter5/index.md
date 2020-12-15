@@ -226,9 +226,11 @@ And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS S
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. What do you think `SELECT to_datetime(3600);` will return, and why?
 
-Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
+   Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
 
 2. Will `SELECT <int16>9 + 1.06n IS decimal;` work? And if it does, will it return `{true}`?
 
@@ -239,5 +241,7 @@ Hint: check the function signatures above and see which one EdgeDB will pick whe
 5. What's the best way to describe a type if you only want to see how you wrote it?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 6: [One of the women vampires to her sisters: "He is young and strong; there are kisses for us all."](../chapter6/index.md)

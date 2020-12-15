@@ -357,28 +357,32 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
 
-`{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
+   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
 
 2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
 
-`{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
+   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
 
 3. How would you order the `Person` types by last letter of their names?
 
 4. Try inserting an `NPC` with the name `''`. Now how would you do the same query in question 3?
 
-Hint: the length of `''` is 0, which may be a problem.
+   Hint: the length of `''` is 0, which may be a problem.
 
 5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
 
 6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
 
-Hint: `LIKE` can help. 
+   Hint: `LIKE` can help.
 
-Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
+   Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)

@@ -386,10 +386,14 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you display all the `City` names and the names of the `Region` they are in?
 
 2. How about the `City` names plus the names of the `Region` and the name of the `Country` they are in?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 20: [The race against time.](../chapter20/index.md)

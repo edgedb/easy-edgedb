@@ -232,44 +232,48 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. This insert is not working.
 
-```
-INSERT NPC {
-  name := 'I Love Mina',
-  lover := (SELECT Person FILTER .name LIKE '%Mina%' LIMIT 1)
-};
-```
+   ```
+   INSERT NPC {
+     name := 'I Love Mina',
+     lover := (SELECT Person FILTER .name LIKE '%Mina%' LIMIT 1)
+   };
+   ```
 
-The error is: `invalid reference to default::NPC: self-referencing INSERTs are not allowed`. What keyword can we use to make this insert work?
+   The error is: `invalid reference to default::NPC: self-referencing INSERTs are not allowed`. What keyword can we use to make this insert work?
 
-Bonus: there is another method we could use too to make it work without the keyword. Can you think of another way?
+   Bonus: there is another method we could use too to make it work without the keyword. Can you think of another way?
 
 2. How would you display up to 2 `Person` types (and their `name` property) whose names include the letter `a`?
 
 3. How would you display all the `Person` types (and their names) that have never visited anywhere?
 
-Hint: all the `Person` types for which `.places_visited` returns `{}`.
+   Hint: all the `Person` types for which `.places_visited` returns `{}`.
 
 4. Imagine that you have the following `cal::local_time` type:
 
-```
-SELECT has_nine_in_it := <cal::local_time>'09:09:09';
-```
+   ```
+   SELECT has_nine_in_it := <cal::local_time>'09:09:09';
+   ```
 
-This displays `{<cal::local_time>'09:09:09'}` but instead you want to display {true} if it has a 9 and {false} otherwise. How could you do that?
+   This displays `{<cal::local_time>'09:09:09'}` but instead you want to display {true} if it has a 9 and {false} otherwise. How could you do that?
 
 5. We are inserting a character called The Innkeeper's Son:
 
-```
-INSERT NPC {
-  name := "The Innkeeper's Son",
-  age := 10
-};
-```
+   ```
+   INSERT NPC {
+     name := "The Innkeeper's Son",
+     age := 10
+   };
+   ```
 
-How would you `SELECT` this insert at the same time to display the `name`, `age`, and `age_ten_years_later` that is made from `age` plus 10?
+   How would you `SELECT` this insert at the same time to display the `name`, `age`, and `age_ten_years_later` that is made from `age` plus 10?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 5: [Jonathan decides to explore the castle a bit. Just to be safe...](../chapter5/index.md)

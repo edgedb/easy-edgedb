@@ -174,33 +174,37 @@ Finally, let's insert Hungary and Romania again to finish the chapter. We'll lea
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 
-```
-SELECT NPC {
-  name,
-  cities := SELECT City.name
-};
-```
+   ```edgeql
+   SELECT NPC {
+     name,
+     cities := SELECT City.name
+   };
+   ```
 
 2. If the `City` type needed a required property called `population`, what would it look like? What type would 'population' be?
 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
-```
-SELECT Person {
-  name,
-  name
-};
-```
+   ```edgeql
+   SELECT Person {
+     name,
+     name
+   };
+   ```
 
-(Hint: the problem is that the name `name` is being used twice)
+   (Hint: the problem is that the name `name` is being used twice)
 
 4. People keep trying to make characters with negative ages. Can you think of a constraint that can stop this?
 
-Hint: the current constraint is `max_value(120);`
+   Hint: the current constraint is `max_value(120);`
 
 5. Can you insert a HumanAge type?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 4: [Jonathan: "This Count Dracula knows so much about history! I'm glad I came."](../chapter4/index.md)

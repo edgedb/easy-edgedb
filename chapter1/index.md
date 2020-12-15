@@ -379,6 +379,8 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
 3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
@@ -386,5 +388,7 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 5. Will typing `SelecT City;` produce an error?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 2: [Jonathan Harker arrives in Romania.](../chapter2/index.md)

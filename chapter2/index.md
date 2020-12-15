@@ -181,27 +181,31 @@ Plus, if you have any `City` types with a name of `''`, even a search for index 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Change the following `SELECT` to display `{100}` by casting: `SELECT '99' + '1'`;
 2. Select all the `City` types that start with 'Mu' (case sensitive).
 3. Select the third letter (i.e. index number 2) of the name of every `NPC`.
 4. Imagine an abstract type called `HasAString`:
 
-```
-abstract type HasAString {
-  property string -> str
-  };
-```
+   ```sdl
+   abstract type HasAString {
+     property string -> str
+   };
+   ```
 
-How would you change the `Person` type to extend `HasAString`?
+   How would you change the `Person` type to extend `HasAString`?
 
 5. This query only shows the id numbers of the places visited. How do you show their name?
 
-```
-SELECT Person {
-  places_visited
-};
-```
+   ```edgeql
+   SELECT Person {
+     places_visited
+   };
+   ```
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 3: [Jonathan gets into the carriage and travels into the cold mountains...](../chapter3/index.md)

@@ -305,18 +305,22 @@ Beautiful! All the information is right there.
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 
 2. How would you let the user know that it needs to be called 'Horse'?
 
 3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
-Try it first with `expression on`.
+   Try it first with `expression on`.
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
 5. How would you make it without touching the schema?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 16: [Could Renfield be of help?](../chapter16/index.md)

@@ -281,40 +281,44 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Why doesn't this insert work and how can it be fixed?
 
-```
-FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
-  UNION(
-    INSERT Castle {
-      name := castle
-});
-```
+   ```
+   FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
+     UNION(
+       INSERT Castle {
+         name := castle
+   });
+   ```
 
 2. How would you do the same insert while displaying the castle's name at the same time?
 3. How would you change the `Vampire` type if all vampires needed a minimum strength of 10?
 4. How would you update all the `Person` types to show that they died on September 11, 1887?
 
-Hint: here's the type again:
+   Hint: here's the type again:
 
-```
-  abstract type Person {
-    required property name -> str {
-        constraint exclusive;
-    }
-    property age -> int16;
-    property strength -> int16;
-    multi link places_visited -> Place;
-    multi link lover -> Person;
-    property first_appearance -> cal::local_date;
-    property last_appearance -> cal::local_date;
-  }
-```
+   ```
+     abstract type Person {
+       required property name -> str {
+           constraint exclusive;
+       }
+       property age -> int16;
+       property strength -> int16;
+       multi link places_visited -> Place;
+       multi link lover -> Person;
+       property first_appearance -> cal::local_date;
+       property last_appearance -> cal::local_date;
+     }
+   ```
 
 5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?
 
-Hint: "bringing back to life" means that `last_appearance` should return `{}`.
+   Hint: "bringing back to life" means that `last_appearance` should return `{}`.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 10: [Thick fog and a storm hit the city of Whitby.](../chapter10/index.md)

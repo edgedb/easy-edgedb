@@ -326,6 +326,8 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you select all the `Place` types and their names, plus the `door` property if it's a `Castle`?
 
 2. How would you select `Place` types with `city_name` for `name` if it's a `City` and `country_name` for `name` if it's a `Country`?
@@ -336,14 +338,16 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
-```
-SELECT Place {
-  __type__,
-  name
-  [IS Castle]doors
-};
-```
+   ```
+   SELECT Place {
+     __type__,
+     name
+     [IS Castle]doors
+   };
+   ```
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 9: [Time to meet Dr. Seward, Arthur Holmwood, Quincey Morris, and the strange Renfield.](../chapter9/index.md)

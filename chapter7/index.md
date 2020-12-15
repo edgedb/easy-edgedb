@@ -271,6 +271,8 @@ The `UPDATE` keyword that we learned last chapter can also take parameters, so t
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you select each City and the length of its name?
 
 2. How would you select each City and the length of `name` minus the length of `modern_name` if `modern_name` exists, and 0 if `modern_name` does not exist?
@@ -282,5 +284,7 @@ The `UPDATE` keyword that we learned last chapter can also take parameters, so t
 5. How would you select only the `Person` types that have the shortest names?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 8: [Workers in the city of Varna load fifty boxes into a ship. Dracula is inside one of them.](../chapter8/index.md)

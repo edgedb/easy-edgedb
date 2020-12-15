@@ -310,37 +310,39 @@ This gives us the result:
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Consider these two functions. Will EdgeDB accept the second one?
 
-First function:
+   First function:
 
-```
-function gives_number(input: int64) -> int64
- using(input);
-```
+   ```
+   function gives_number(input: int64) -> int64
+   using(input);
+   ```
 
-Second function:
+   Second function:
 
-```
-function gives_number(input: int64) -> int32
- using(<int32>input);
-```
+   ```
+   function gives_number(input: int64) -> int32
+   using(<int32>input);
+   ```
 
 2. How about these two functions? Will EdgeDB accept the second one?
 
-First function:
+   First function:
 
-```
-function make64(input: int16) -> int64
-  using(input);
-```  
+   ```
+   function make64(input: int16) -> int64
+     using(input);
+   ```
 
-Second function:
+   Second function:
 
-```
-function make64(input: int32) -> int64
-  using(input);
-```
+   ```
+   function make64(input: int32) -> int64
+     using(input);
+   ```
 
 3. Will `SELECT {} ?? {3, 4} ?? {5, 6};` work?
 
@@ -349,5 +351,7 @@ function make64(input: int32) -> int64
 5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 13: [One of the men gives Lucy his blood again to try to save her. Will it be enough?](../chapter13/index.md)

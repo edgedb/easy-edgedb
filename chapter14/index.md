@@ -328,18 +328,22 @@ Here is the output:
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
 2. Using reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
 
-Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
+   Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
 4. How would you give the `MinorVampire` type an annotation called `note` that says `'first_appearance for MinorVampire should always match last_appearance for its matching NPC type'`?
 
 5. How would you see this `note` annotation for `MinorVampire` in a query?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 15: [Time to get revenge.](../chapter15/index.md)

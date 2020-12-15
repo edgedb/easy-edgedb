@@ -466,12 +466,16 @@ Here's the output:
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you display every NPC's name, strength, name and population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
-3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) ->  Person` that lets you just write the character name and date to do it.
+3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) -> Person` that lets you just write the character name and date to do it.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 18: [Jonathan the detective.](../chapter18/index.md)

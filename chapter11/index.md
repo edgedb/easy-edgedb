@@ -201,20 +201,24 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
 
 2. How would you write a function that takes two strings and returns `Person` types with names that match it?
 
-Hint: try using `SET OF Person` as the return type.
+   Hint: try using `SET OF Person` as the return type.
 
 3. What will the output of this be?
 
-`SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};`
+   `SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};`
 
 4. How would you make a function that tells you how many times larger one city is than another?
 
 5. Will `SELECT (City.population + City.population)` and `SELECT ((SELECT City.population) + (SELECT City.population))` produce different results?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 12: [Lucy one night: "Funny, what's that flapping against the window? Sounds like a bat or something..."](../chapter12/index.md)

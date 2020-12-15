@@ -299,26 +299,30 @@ SELECT (INTROSPECT Ship) {
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you insert an `NPC` named 'Mr. Swales' who has visited the `City` called 'York', the `Country` called 'England', and the `OtherPlace` called 'Whitby Abbey'? Try it in a single insert.
 
 2. How readable is this introspect query?
 
-```
-SELECT (INTROSPECT Ship) {
-  name,
-  properties,
-  links
-};
-```
+   ```
+   SELECT (INTROSPECT Ship) {
+     name,
+     properties,
+     links
+   };
+   ```
 
 3. What would be the shortest way to see what links from the `Vampire` type?
 
 4. What do you think the output of `SELECT DISTINCT {1, 2} + {1, 2};` will be?
 
-Hint: don't forget the Cartesian multiplication.
+   Hint: don't forget the Cartesian multiplication.
 
 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 14: [An old friend returns.](../chapter14/index.md)

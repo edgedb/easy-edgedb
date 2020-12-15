@@ -244,27 +244,31 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
 
-```
-SELECT NPC {
-  name,
-  greeting := ## Put the rest here
-};
-```
+   ```
+   SELECT NPC {
+     name,
+     greeting := ## Put the rest here
+   };
+   ```
 
 2. How would you update Mina's `places_visited` to include Romania if she went to Castle Dracula for a visit?
 
 3. With the set `{'W', 'J', 'C'}`, how would you display all the `Person` types with a name that contains any of these capital letters?
 
-Hint: it involves `WITH` and a bit of concatenation.
+   Hint: it involves `WITH` and a bit of concatenation.
 
 4. How would you display this same query as JSON?
 
 5. How would you add ' the Great' to every Person type?
 
-Bonus question: what's a quick way to undo this using string indexing?
+   Bonus question: what's a quick way to undo this using string indexing?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 7: [Jonathan climbs the castle wall to try to get into Count Dracula's room.](../chapter7/index.md)
