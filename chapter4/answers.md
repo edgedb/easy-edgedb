@@ -7,7 +7,7 @@ The keyword to make it work is `DETACHED`, so that we can pull from the `NPC` ty
 ```edgeql
 INSERT NPC {
   name := 'I Love Mina',
-  lover := (SELECT NPC FILTER .name LIKE '%Mina%' LIMIT 1)
+  lover := (SELECT DETACHED NPC FILTER .name LIKE '%Mina%' LIMIT 1)
 };
 ```
 

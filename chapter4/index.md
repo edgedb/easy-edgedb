@@ -239,7 +239,7 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
    ```
    INSERT NPC {
      name := 'I Love Mina',
-     lover := (SELECT Person FILTER .name LIKE '%Mina%' LIMIT 1)
+     lover := (SELECT NPC FILTER .name LIKE '%Mina%' LIMIT 1)
    };
    ```
 
