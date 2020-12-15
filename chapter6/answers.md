@@ -72,8 +72,8 @@ WITH letters := {'W', 'J', 'C'}
 } FILTER .name LIKE '%' ++ letters ++ '%';
 ```
 
-You need to wrap the SELECT in brackets, cast with <json> and then SELECT that:
- 
+You need to wrap the SELECT in brackets, cast with `<json>` and then SELECT that:
+
 ```
 WITH letters := {'W', 'J', 'C'}
   SELECT <json>(SELECT Person {

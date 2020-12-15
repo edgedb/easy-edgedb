@@ -48,7 +48,7 @@ Take the original query:
 SELECT has_nine_in_it := <cal::local_time>'09:09:09';
 ```
 
-and use <str> to cast the `cal::local_time` to a string, then add `LIKE '%9%' at the end, like so:
+and use `<str>` to cast the `cal::local_time` to a string, then add `LIKE '%9%' at the end, like so:
 
 ```edgeql
 SELECT has_nine_in_it := <str><cal::local_time>'09:09:09' LIKE '%9%';
