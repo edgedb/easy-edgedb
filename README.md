@@ -1854,6 +1854,37 @@ So that will give all `City` types with u in the name, population of more than 2
 }
 ```
 
+Parameters work just as well in inserts too. Here's a `Date` insert that prompts the user for the hour, minute, and second:
+
+```
+SELECT(INSERT Date {
+....... date := <str>$hour ++ <str>$minute ++ <str>$second
+....... }) {
+....... date,
+....... local_time,
+....... hour,
+....... awake
+....... };
+Parameter <str>$hour: 10
+Parameter <str>$minute: 09
+Parameter <str>$second: 09
+```
+
+Here's the output:
+
+```
+{
+  default::Date {
+    date: '100909',
+    local_time: <cal::local_time>'10:09:09',
+    hour: '10',
+    awake: 'asleep',
+  },
+}
+```
+  
+Note that the cast means you can just type 10, not '10'.
+
 [Here is all our code so far up to Chapter 7.](code.md)
 
 ## Time to practice
