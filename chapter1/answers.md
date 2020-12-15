@@ -7,7 +7,7 @@ ___
 
 #### 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
 
-```
+```edgeql
 INSERT City {
   name := 'Constantinople',
   modern_name := 'İstanbul' # Comma after here is fine if you want
@@ -20,7 +20,7 @@ This is all you need: `SELECT City.name;`
 ___
 #### 4. Try selecting all the `City` types along with their `name` and `modern_name` properties, but change `.name` to say `old_name` and change `modern_name` to say `name_now`.
 
-```
+```edgeql
 SELECT City {
   old_name := .name,
   name_now := .modern_name,
