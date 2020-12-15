@@ -250,9 +250,9 @@ And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: w
 
 The [documentation on aliases](https://www.edgedb.com/docs/cheatsheet/aliases/) mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
 
-== Creating new names for types in a query (local expression aliases) ==
+## Creating new names for types in a query (local expression aliases)
 
-It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is sort of: we can use `WITH` and then give a new name for an existing type, though we can't add new properties and links. Take a simple query like this that shows Count Dracula and the names of his slaves:
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is sort yes: we can use `WITH` and then give a new name for an existing type. Take a simple query like this that shows Count Dracula and the names of his slaves:
 
 ```
 SELECT Vampire {
@@ -267,7 +267,7 @@ If we wanted to use `WITH` to create a new type that is identical to `Vampire`, 
 
 ```
 WITH Drac := Vampire,
-SELECT Drace {
+SELECT Drac {
   name,
   slaves: {
     name
@@ -397,6 +397,70 @@ And now we finally have every combination of `MinorVampire` fighting the other o
 Perfect!
 
 With just `DETACHED` this wouldn't work: `SELECT fight_2(MinorVampire, DETACHED MinorVampire) FILTER MinorVampire != DETACHED MinorVampire;` won't do it because the first `DETACHED MinorVampire` isn't a variable name. Without that name to access, the next `DETACHED MinorVampire` is just a new `DETACHED MinorVampire` with no relation to the other one.
+
+So how about adding links and properties in the same way that we did to our `CrewmanInBulgaria` alias? We can do that too by using `SELECT` and then adding any new links and properties you want inside `{}`. Here's a simple example:
+
+```
+WITH NPCExtraInfo := (SELECT NPC {
+ would_win_against_dracula := .strength > Vampire.strength
+ })
+ SELECT NPCExtraInfo {
+ name,
+ would_win_against_dracula
+ };
+```
+
+And here's the result. Looks like nobody wins:
+
+```
+{
+  default::NPC {name: 'Jonathan Harker', would_win_against_dracula: {false}},
+  default::NPC {name: 'Renfield', would_win_against_dracula: {false}},
+  default::NPC {name: 'The innkeeper', would_win_against_dracula: {false}},
+  default::NPC {name: 'Mina Murray', would_win_against_dracula: {false}},
+  default::NPC {name: 'John Seward', would_win_against_dracula: {false}},
+  default::NPC {name: 'Quincey Morris', would_win_against_dracula: {false}},
+  default::NPC {name: 'Arthur Holmwood', would_win_against_dracula: {false}},
+  default::NPC {name: 'Abraham Van Helsing', would_win_against_dracula: {false}},
+  default::NPC {name: 'Lucy Westenra', would_win_against_dracula: {false}},
+}
+```
+
+Let's create a quick type alias where Dracula has achieved all his goals and now rules London. We'll create a quick new type called `DraculaKingOfLondon` with a better name, and a link to `subjects` (= people under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
+
+```
+WITH DraculaKingOfLondon := (SELECT Vampire {
+ name := .name ++ ', King of London',
+ subjects := (SELECT Person FILTER 'London' in .places_visited.name),
+ })
+ SELECT DraculaKingOfLondon {
+ name,
+ subjects: {name},
+ number_of_subjects := count(.subjects)
+};
+```
+
+Here's the output:
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula, King of London',
+    subjects: {
+      default::NPC {name: 'Jonathan Harker'},
+      default::NPC {name: 'Renfield'},
+      default::NPC {name: 'The innkeeper'},
+      default::NPC {name: 'Mina Murray'},
+      default::NPC {name: 'John Seward'},
+      default::NPC {name: 'Quincey Morris'},
+      default::NPC {name: 'Arthur Holmwood'},
+      default::NPC {name: 'Abraham Van Helsing'},
+      default::NPC {name: 'Lucy Westenra'},
+    },
+    number_of_subjects: 9,
+  },
+}
+```
 
 [Here is all our code so far up to Chapter 17.](code.md)
 
