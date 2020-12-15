@@ -248,6 +248,23 @@ Here's the output:
   
 Note that the cast means you can just type 10, not '10'.
 
+So what if you just want to have the *option* of a parameter? No problem, just put `OPTIONAL` before the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
+
+```
+SELECT(INSERT Date {
+ date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
+ }) {
+ date,
+ local_time,
+ hour,
+ awake
+};
+```
+
+Of course, the `Date` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
+
+The opposite of `OPTIONAL` is `REQUIRED`, but it's the default so you don't need to write it.
+
 [Here is all our code so far up to Chapter 7.](code.md)
 
 ## Time to practice
