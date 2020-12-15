@@ -248,7 +248,7 @@ Here's the output:
   
 Note that the cast means you can just type 10, not '10'.
 
-So what if you just want to have the *option* of a parameter? No problem, just put `OPTIONAL` before the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
+So what if you just want to have the *option* of a parameter? No problem, just put `OPTIONAL` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
 
 ```
 SELECT(INSERT Date {
