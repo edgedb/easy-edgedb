@@ -13,7 +13,7 @@ Last chapter, we used the `fight()` function for some characters, but most only 
 Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called `round()` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
 
 ```
-SELECT <int16>round((random() * 5)); 
+SELECT <int16>round((random() * 5));
 ```
 
 So now we'll use this to update our Person types and give them all a random strength.
@@ -21,11 +21,11 @@ So now we'll use this to update our Person types and give them all a random stre
 ```
 WITH random_5 := (SELECT <int16>round((random() * 5)))
  # WITH isn't necessary - just making the query prettier
- 
+
 UPDATE Person
   FILTER NOT EXISTS .strength
   SET {
-    strength := random_5 
+    strength := random_5
 };
 ```
 
@@ -107,7 +107,7 @@ So that's how function overloading works - you can create functions with the sam
 
 You see overloading in a lot of existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
-`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter. 
+`fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter.
 
 Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
 
@@ -172,7 +172,6 @@ fight(names: str, one: int16, two: Person) -> str
 
 You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: Person)`. The `-> str` part isn't needed.
 
-
 ## More about Cartesian products - the coalescing operator
 
 Now let's learn more about Cartesian products in EdgeDB. You might be surprised to see that even a single `{}` input always results in an output of `{}`, but this is the way that Cartesian products work. Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
@@ -212,7 +211,7 @@ Okay, one more time, this time making sure that the `{}` empty set is of type `s
 ```
 edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
-edgedb>  
+edgedb>
 ```
 
 Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
@@ -241,9 +240,9 @@ So let's get back to our original query, this time with the coalescing operator:
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
      f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
-     SELECT 
-       b_places.name ++ ' ' ++ f_places.name IF EXISTS b_places.name AND EXISTS f_places.name 
-     ELSE 
+     SELECT
+       b_places.name ++ ' ' ++ f_places.name IF EXISTS b_places.name AND EXISTS f_places.name
+     ELSE
        b_places.name ?? f_places.name;
 ```
 
@@ -255,14 +254,14 @@ This returns:
 
 That's better.
 
-But now back to Cartesian products. Remember, when we add or concatenate sets we are working with *every item in each set* separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
+But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
 
 ```
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
      m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
-     SELECT 
-       b_places.name ++ ' ' ++ m_places.name IF EXISTS b_places.name AND EXISTS m_places.name 
-     ELSE 
+     SELECT
+       b_places.name ++ ' ' ++ m_places.name IF EXISTS b_places.name AND EXISTS m_places.name
+     ELSE
        b_places.name ?? m_places.name;
 ```
 
@@ -272,7 +271,7 @@ Then we'll get this result:
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
-instead of something like 'Buda-Peth, Bistritz, Munich'. 
+instead of something like 'Buda-Peth, Bistritz, Munich'.
 
 To get the output that we want, we can use two more functions:
 

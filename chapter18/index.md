@@ -49,13 +49,13 @@ type Pound extending Currency {
     overloaded required property major {
         default := 'pound'
     }
-    overloaded required property minor { 
+    overloaded required property minor {
         default := 'shilling'
     }
     overloaded required property minor_conversion {
         default := 20
     }
-    overloaded property sub_minor { 
+    overloaded property sub_minor {
         default := 'pence'
     }
     overloaded property sub_minor_conversion {
@@ -168,7 +168,7 @@ SELECT(INSERT Dollar {
 };
 ```
 
-Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect! 
+Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
 
 Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
 

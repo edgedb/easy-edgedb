@@ -1,6 +1,6 @@
 # Chapter 4 - "What a strange man this Count Dracula is."
 
->Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to an asylum for crazy people, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning - they talked through the whole night again. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
+> Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to an asylum for crazy people, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning - they talked through the whole night again. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
 
 First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema called `lover`:
 
@@ -109,13 +109,11 @@ The part of Romania where Jonathan Harker is has an average sunrise of around 7 
 
 EdgeDB uses two major types for time.
 
--`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
--`cal::local_datetime`, which doesn't worry about timezone.
+-`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard. -`cal::local_datetime`, which doesn't worry about timezone.
 
 There are two others that are almost the same as `cal::local_datetime`:
 
--`cal::local_time`, when you only need to know the time of day, and
--`cal::local_date`, when you only need to know the month and the day.
+-`cal::local_time`, when you only need to know the time of day, and -`cal::local_date`, when you only need to know the month and the day.
 
 We'll start with `cal::local_time` first.
 
@@ -141,7 +139,7 @@ type Date {
 }
 ```
 
-`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop *before* index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
@@ -175,9 +173,9 @@ SELECT Date {
 };
 ```
 
-That gives us a nice output that shows everything, including the hour: 
+That gives us a nice output that shows everything, including the hour:
 
-```{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}```.
+`{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
 Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
@@ -195,9 +193,9 @@ So `awake` is calculated like this:
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
-Now if we `SELECT` this with all the properties, it will give us this: 
+Now if we `SELECT` this with all the properties, it will give us this:
 
-```Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}```
+`Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}`
 
 ## SELECT while you INSERT
 

@@ -27,7 +27,7 @@ INSERT City {
 };
 ```
 
-But for the rest of them it would be nice to update everything at the same time. 
+But for the rest of them it would be nice to update everything at the same time.
 
 ## Working with tuples and arrays
 
@@ -166,14 +166,14 @@ WITH cities := City.population
 );
 ```
 
-This used quite a few functions: 
+This used quite a few functions:
 
 - `count()` to count the number of items,
-- `all()` to return `{true}` if all items match and `{false}` otherwise, 
-- `sum()` to add them all together, 
-- `max()` to give the highest value, 
-- `min()` to give the lowest one, 
-- `math::mean()` to give the average, 
+- `all()` to return `{true}` if all items match and `{false}` otherwise,
+- `sum()` to add them all together,
+- `max()` to give the highest value,
+- `min()` to give the lowest one,
+- `math::mean()` to give the average,
 - `any()` to return `{true}` if any item matches and `{false}` otherwise, and
 - `math::stddev()` for the standard deviation.
 
@@ -327,13 +327,13 @@ WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
  name := 'Johnny' ++ <str>(count(johnnies))
  });
 ```
- 
+
 Let's look at it step by step:
- 
+
 `WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),` Here we select all the `NPC` types that have Johnny in their name.
- 
+
 Then a normal insert:
- 
+
 ```
 INSERT NPC {
  name := 'Johnny'

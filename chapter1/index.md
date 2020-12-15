@@ -2,7 +2,7 @@
 
 In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database in **bold**:
 
->**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
+> **3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
 ## Schema, object types
 
@@ -10,7 +10,7 @@ This is already a lot of information, and it helps us start to think about our d
 
 - Some kind of City or Location type. These types that we can create are called [object types](https://www.edgedb.com/docs/datamodel/objects#object-types), made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
 - Some kind of Person type. We need it to have a name, and also a way to track the places that the person visited.
- 
+
 To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
 
 ```sdl
@@ -33,7 +33,7 @@ With `required property name` our `Person` objects are always guaranteed to have
 MissingRequiredError: missing value for required property default::Person.name
 ```
 
-A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote  makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
+A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
 
 An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Vienna", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
 
@@ -58,7 +58,7 @@ We haven't created our database yet, though. There are two small steps that we n
 CREATE DATABASE dracula;
 ```
 
-Then we type ```\c dracula``` to connect to it.
+Then we type `\c dracula` to connect to it.
 
 Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB:
 
@@ -82,13 +82,13 @@ Here's the `City` type we just made with syntax highlighting:
 
 ## Selecting
 
-Here are three operators in EdgeDB that have the `=` sign: 
+Here are three operators in EdgeDB that have the `=` sign:
 
-- `:=` is used to declare, 
+- `:=` is used to declare,
 - `=` is used to check equality (not `==`),
 - `!=` is the opposite of `=`.
 
-Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. 
+Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it.
 
 By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
 
@@ -119,7 +119,7 @@ The output is `{false}`, then `{true}`. Of course, you can just write `SELECT 'J
 
 ## Inserting objects
 
-Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. 
+Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`.
 
 Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
 
@@ -226,7 +226,6 @@ SELECT City {
 
 This gives the output:
 
-
 ```
 {
   Object {name: 'Vienna', modern_name: {}},
@@ -331,7 +330,7 @@ INSERT Person {
 };
 ```
 
-We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
+We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
 
 ```edgeql
 select Person {

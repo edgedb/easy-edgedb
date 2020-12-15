@@ -2,19 +2,19 @@
 
 > Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions:
 
-> “Where are you now?”  
+> “Where are you now?”
 >
-> “I do not know. It is all strange to me!”  
+> “I do not know. It is all strange to me!”
 >
-> “What do you see?”  
+> “What do you see?”
 >
-> “I can see nothing; it is all dark.”  
+> “I can see nothing; it is all dark.”
 >
-> “What do you hear?”  
+> “What do you hear?”
 >
-> “The water... and little waves.”  
+> “The water... and little waves.”
 >
-> “Then you are on a ship?”  
+> “Then you are on a ship?”
 >
 > “Oh, yes!”
 
@@ -41,7 +41,7 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna towards London. 
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna towards London.
 
 But first we'll insert a new `Ship` and two new places (`City`s) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
@@ -69,7 +69,7 @@ SELECT (INTROSPECT OtherPlace) {
   annotations: {
      @value
    }
-};  
+};
 ```
 
 Let's look at the output to see what we wrote before to make sure that we should use it:
@@ -207,18 +207,18 @@ SELECT Ship.<ship[IS Visit] {
    awake
    }),
  } FILTER .place.name = 'Galatz';
- ```
- 
- Here's the output, including whether vampires are awake or asleep.
- 
- ```
- {
-  default::Visit {
-    place: default::City {name: 'Galatz'},
-    ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
-    time: default::Date {date: '13:00:00', local_time: <cal::local_time>'13:00:00', hour: '13', awake: 'asleep'},
-  },
+```
+
+Here's the output, including whether vampires are awake or asleep.
+
+```
+{
+ default::Visit {
+   place: default::City {name: 'Galatz'},
+   ship: default::Ship {name: 'Czarina Catherine'},
+   date: <cal::local_date>'1887-10-28',
+   time: default::Date {date: '13:00:00', local_time: <cal::local_time>'13:00:00', hour: '13', awake: 'asleep'},
+ },
 }
 ```
 

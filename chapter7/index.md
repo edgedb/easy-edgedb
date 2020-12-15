@@ -50,8 +50,8 @@ With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampi
 
 Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
 
-- Doors have a strength, and people have strength as well. 
-- If a person has greater strength than the door, then he or she can open it. 
+- Doors have a strength, and people have strength as well.
+- If a person has greater strength than the door, then he or she can open it.
 
 So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
@@ -86,7 +86,7 @@ Great. We know that Jonathan can't break out of the castle, but let's try to sho
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
 ```
-WITH 
+WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
     SELECT jonathan_strength > min(castle_doors);
@@ -111,7 +111,7 @@ That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[
 Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
 
 ```
-WITH 
+WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
     SELECT jonathan_strength > min(array_unpack(doors));
@@ -119,7 +119,7 @@ WITH
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
 
-Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC`  types:
+Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` types:
 
 ```
 SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
@@ -193,10 +193,10 @@ SELECT City {
   name,
   population,
   } FILTER
-  .name ILIKE '%' ++ <str>$name ++ '%' 
-  AND 
+  .name ILIKE '%' ++ <str>$name ++ '%'
+  AND
   .population > <int64>$population
-  AND 
+  AND
   <int64>len(.name) > <int64>$length;
 ```
 

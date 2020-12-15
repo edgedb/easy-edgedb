@@ -2,7 +2,7 @@
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
->Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
+> Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
 Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
@@ -80,7 +80,7 @@ INSERT PC {
 };
 ```
 
-Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do *casting*, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
+Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do _casting_, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
 
 ```edgeql
 SELECT 'feet' IS Transport;
@@ -100,7 +100,7 @@ You can cast more than once at a time if you need to. This example isn't somethi
 SELECT <str><int64><str><int32>50 is str;
 ```
 
-That also gives us `{true}` because all we did is ask if it is a `str`, which it is. 
+That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
 
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
@@ -117,15 +117,15 @@ SELECT Person {
 
 `FILTER .name` is short for `FILTER Person.name`. You can write `FILTER Person.name` too if you want - it's the same thing.
 
-The output is this: 
+The output is this:
 
 ```
 {Object {name: 'Emil Sinclair', places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}}}}
 ```
 
-Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string. 
+Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string.
 
-- `LIKE` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not. 
+- `LIKE` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
 - `ILIKE` is not case-sensitive (the I in ILIKE means **insensitive**), so "Bistritz" matches "BiStRitz", "bisTRITz", etc.
 
 You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
