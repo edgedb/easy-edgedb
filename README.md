@@ -1858,13 +1858,13 @@ Parameters work just as well in inserts too. Here's a `Date` insert that prompts
 
 ```
 SELECT(INSERT Date {
-....... date := <str>$hour ++ <str>$minute ++ <str>$second
-....... }) {
-....... date,
-....... local_time,
-....... hour,
-....... awake
-....... };
+ date := <str>$hour ++ <str>$minute ++ <str>$second
+ }) {
+ date,
+ local_time,
+ hour,
+ awake
+};
 Parameter <str>$hour: 10
 Parameter <str>$minute: 09
 Parameter <str>$second: 09
