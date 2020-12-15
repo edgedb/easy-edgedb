@@ -205,7 +205,9 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
+Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. You can probably guess that the same is true for array constructors too, so `SELECT [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+
+Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```
 edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
