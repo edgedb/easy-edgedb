@@ -60,11 +60,21 @@ UPDATE NPC
 };
 ```
 
+You'll know that it succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
+
+```
+{ 
+  Object { id: <uuid>"6f436006-3f65-11eb-b6de-a3e7cc8efd4f" } 
+}
+```
+
+And if we had written something like `FILTER .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched.
+
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
 With that we now know [all three operators](https://www.edgedb.com/docs/edgeql/statements/update) used after `SET`: `:=`, `+=`, and `-=`.
 
-Remember this?
+Let's do another update. Remember this?
 
 ```
 SELECT Person {
