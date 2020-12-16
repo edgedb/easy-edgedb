@@ -1440,6 +1440,8 @@ UPDATE NPC
 
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
+With that we now know [all three operators](https://www.edgedb.com/docs/edgeql/statements/update) used after `SET`: `:=`, `+=`, and `-=`.
+
 Remember this?
 
 ```
