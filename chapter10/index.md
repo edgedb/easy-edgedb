@@ -195,6 +195,48 @@ The output also makes it clear how they work:
 
 `any()`, `all()` and `count()` are particularly useful in operations to give you an idea of your data.
 
+## Importing modules with WITH
+
+You can use the keyword `WITH` to import modules too. In the example above we used two functions from EdgeDB's `math` module: `math::mean()` and `math::stddev()`. Just writing `mean()` and `stddev()` would produce this error:
+
+```
+ERROR: InvalidReferenceError: function 'mean' does not exist
+```
+
+If you don't want to write the module name every time you can just import the module after `WITH`. Let's slip that into the query we just used. See if you can see what's changed:
+
+```
+WITH cities := City.population,
+MODULE math
+  SELECT (
+   'Number of cities: ' ++ <str>count(cities),
+   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
+   'Total population: ' ++ <str>sum(cities),
+   'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+   'Average population: ' ++ <str>mean(cities),
+   'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+   'Standard deviation: ' ++ <str>stddev(cities)
+);
+```
+
+The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`. This becomes useful once the schema gets a lot larger. In our game database you could imagine types inside modules like `characters::NPCs::Barkeeper` and using `WITH` would keep queries readable:
+
+```
+WITH module characters::NPCs,
+SELECT Barkeeper {
+  # properties, links...
+  }
+```
+
+You can also use `AS` to rename a module (well, to *alias* a module) in the same way that you can rename a type. So this will work too:
+
+```
+WITH M AS MODULE math,
+  SELECT M::mean(City.population);
+```
+
+That gives us the mean: `{831245.8}`.
+
 ## Some more computables for names
 
 We saw in this chapter that Dr. Seward asked his old teacher Dr. Van Helsing to come and help Lucy. Here is how Dr. Van Helsing began his letter to say that he was coming:
