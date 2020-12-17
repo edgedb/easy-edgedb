@@ -222,7 +222,7 @@ The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, 
 
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
-And for a _really_ long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
+And for a _really_ long output, try typing `DESCRIBE SCHEMA` or `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole schema we've built so far.
 
 So if `TYPE` comes after `DESCRIBE` for types and `MODULE` after `DESCRIBE` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `OBJECT`, `ANNOTATION`, `CONSTRAINT`, `FUNCTION`, `LINK`, `MODULE`, `PROPERTY`, `SCALAR TYPE`, `TYPE`. If you don't want to remember them all, just go with `OBJECT`: it will match anything inside your schema (except modules).
 
