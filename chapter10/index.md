@@ -27,7 +27,7 @@ INSERT City {
 };
 ```
 
-But for the rest of them it would be nice to update everything at the same time. 
+But for the rest of them it would be nice to update everything at the same time.
 
 ## Working with tuples and arrays
 
@@ -166,14 +166,14 @@ WITH cities := City.population
 );
 ```
 
-This used quite a few functions: 
+This used quite a few functions:
 
 - `count()` to count the number of items,
-- `all()` to return `{true}` if all items match and `{false}` otherwise, 
-- `sum()` to add them all together, 
-- `max()` to give the highest value, 
-- `min()` to give the lowest one, 
-- `math::mean()` to give the average, 
+- `all()` to return `{true}` if all items match and `{false}` otherwise,
+- `sum()` to add them all together,
+- `max()` to give the highest value,
+- `min()` to give the lowest one,
+- `math::mean()` to give the average,
 - `any()` to return `{true}` if any item matches and `{false}` otherwise, and
 - `math::stddev()` for the standard deviation.
 
@@ -369,13 +369,13 @@ WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
  name := 'Johnny' ++ <str>(count(johnnies))
  });
 ```
- 
+
 Let's look at it step by step:
- 
+
 `WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),` Here we select all the `NPC` types that have Johnny in their name.
- 
+
 Then a normal insert:
- 
+
 ```
 INSERT NPC {
  name := 'Johnny'
@@ -399,28 +399,32 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
 
-`{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
+   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
 
 2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
 
-`{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
+   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
 
 3. How would you order the `Person` types by last letter of their names?
 
 4. Try inserting an `NPC` with the name `''`. Now how would you do the same query in question 3?
 
-Hint: the length of `''` is 0, which may be a problem.
+   Hint: the length of `''` is 0, which may be a problem.
 
 5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
 
 6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
 
-Hint: `LIKE` can help. 
+   Hint: `LIKE` can help.
 
-Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
+   Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)

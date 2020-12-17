@@ -4,7 +4,7 @@
 
 All it needs is brackets around the `SELECT` - remember, putting it in brackets "captures" the output so it can be used.
 
-```
+```edgeql
 SELECT NPC {
   name,
   cities := (SELECT City.name)
@@ -15,13 +15,13 @@ SELECT NPC {
 
 Right now `City` is just extending `Place`:
 
-```
+```sdl
 type City extending Place;
 ```
 
 So it would need a `required property` for population:
 
-```
+```sdl
 type City extending Place {
   required property population -> int32
 };
@@ -33,7 +33,7 @@ type City extending Place {
 
 You can access `property name` twice by giving it a different name the second time. Let's call it name2:
 
-```
+```edgeql
 SELECT Person {
   name,
   name2 := .name
@@ -44,7 +44,7 @@ SELECT Person {
 
 We haven't seen this constraint but it's easy to guess: with `min_value()` you can do it. With these two constraints, HumanAge must be between 0 and 120:
 
-```
+```sdl
 scalar type HumanAge extending int16 {
   constraint max_value(120);
   constraint min_value(0);
@@ -57,7 +57,7 @@ No, because it's a scalar type and not an object - a `HumanAge` would just be an
 
 But of course, you can select one by casting:
 
-```
+```edgeql
 SELECT <HumanAge>16;
 ```
 
@@ -65,7 +65,7 @@ This gives `{16}`.
 
 You can also see that it is just a different name for an `int16` by trying the following:
 
-```
+```edgeql
 SELECT <HumanAge>16 IS int16;
 SELECT <HumanAge>16 IS HumanAge;
 ```

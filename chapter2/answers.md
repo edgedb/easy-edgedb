@@ -16,7 +16,7 @@ You can cast with a numeric type, such as `SELECT <int64>'99' + <int64>'1'`. Not
 
 Just add `extending HasAString` to the type, which would now look like this:
 
-```
+```sdl
 abstract type Person extending HasAString {
   required property name -> str;
   multi link places_visited -> City;
@@ -27,7 +27,7 @@ abstract type Person extending HasAString {
 
 Change it to this:
 
-```
+```edgeql
 SELECT Person {
   places_visited: {name}
 };
@@ -35,7 +35,7 @@ SELECT Person {
 
 Don't forget the `:` and remember that spacing doesn't matter, so you could write it this way too:
 
-```
+```edgeql
 SELECT Person {
   places_visited: {
     name

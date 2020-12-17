@@ -2,14 +2,14 @@
 
 > Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, he found his way to Budapest in August and then to a hospital, which sent Mina a letter. Mina took a train to the hospital where Jonathan was recovering, and they took a train back to England to the city of Exeter where they got married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it. Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
-So we have a new city called Exeter, and adding it is of course easy: 
+So we have a new city called Exeter, and adding it is of course easy:
 
 ```
 INSERT City {
-  name := 'Exeter', 
+  name := 'Exeter',
   population := 40000
 };
-``` 
+```
 
 That's the population of Exeter at the time, and it doesn't have a `modern_name` that is different from the one in the book.
 
@@ -54,7 +54,7 @@ Uh oh, not quite:
 }
 ```
 
-Ah, of course: the `annotations: {name}` part returns the name of the *type*, which is `std::description`. This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
 
 ```
 SELECT (INTROSPECT City) {
@@ -89,7 +89,6 @@ Now we see the actual annotation:
   },
 }
 ```
-
 
 What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning so that's what we'll call it:
 
@@ -131,7 +130,7 @@ And here it is:
 
 ## Even more working with dates
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{23}`. 
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{23}`.
 
 There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
@@ -166,7 +165,7 @@ So now let's use it with `SELECT enumerate(Person.name);` to make sure that we h
 There are only 18? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
 
 ```
-WITH 
+WITH
   a := array_agg((SELECT enumerate(Person.name))),
   b:= array_agg((SELECT enumerate(Crewman.number))),
   SELECT (a, b);
@@ -208,7 +207,7 @@ So now that everyone has a name, let's use that to see if they are dead or not. 
 ```
 WITH p := (SELECT Person),
   date := <cal::local_date>'1887-08-16',
-  SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));  
+  SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
 Here is the output:
@@ -269,13 +268,13 @@ SELECT MinorVampire {
 
 Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
 
-This is where reverse links come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`. 
+This is where reverse links come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`.
 
 First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
 
 ```
 SELECT MinorVampire.<slaves[IS Vampire] {
-  name, 
+  name,
   age
   };
 ```
@@ -328,18 +327,22 @@ Here is the output:
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
 2. Using reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
 
-Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
+   Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
 4. How would you give the `MinorVampire` type an annotation called `note` that says `'first_appearance for MinorVampire should always match last_appearance for its matching NPC type'`?
 
 5. How would you see this `note` annotation for `MinorVampire` in a query?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 15: [Time to get revenge.](../chapter15/index.md)

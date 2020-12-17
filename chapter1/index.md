@@ -2,7 +2,7 @@
 
 In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database in **bold**:
 
->**3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
+> **3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
 ## Schema, object types
 
@@ -10,17 +10,17 @@ This is already a lot of information, and it helps us start to think about our d
 
 - Some kind of City or Location type. These types that we can create are called [object types](https://www.edgedb.com/docs/datamodel/objects#object-types), made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
 - Some kind of Person type. We need it to have a name, and also a way to track the places that the person visited.
- 
+
 To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
 
-```
+```sdl
 type Person {
 }
 ```
 
 That's all you need to create a type, but there's nothing inside there yet. Inside the brackets we add the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional.
 
-```
+```sdl
 type Person {
   required property name -> str;
   property places_visited -> array<str>;
@@ -33,7 +33,7 @@ With `required property name` our `Person` objects are always guaranteed to have
 MissingRequiredError: missing value for required property default::Person.name
 ```
 
-A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote  makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
+A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
 
 An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Vienna", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
 
@@ -41,7 +41,7 @@ An `array` is a collection of the same type, and our array here is an array of `
 
 Now for our City type:
 
-```
+```sdl
 type City {
   required property name -> str;
   property modern_name -> str;
@@ -54,11 +54,11 @@ This is similar, just properties with strings. The book Dracula was published in
 
 We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://edgedb.com/download). First we create a database with the `CREATE DATABASE` keyword and our name for it:
 
-```
+```edgeql
 CREATE DATABASE dracula;
 ```
 
-Then we type ```\c dracula``` to connect to it.
+Then we type `\c dracula` to connect to it.
 
 Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB:
 
@@ -82,19 +82,19 @@ Here's the `City` type we just made with syntax highlighting:
 
 ## Selecting
 
-Here are three operators in EdgeDB that have the `=` sign: 
+Here are three operators in EdgeDB that have the `=` sign:
 
-- `:=` is used to declare, 
+- `:=` is used to declare,
 - `=` is used to check equality (not `==`),
 - `!=` is the opposite of `=`.
 
-Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. 
+Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it.
 
 By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
 
 First we'll just select a string:
 
-```
+```edgeql
 SELECT 'Jonathan Harker\'s journey begins.';
 ```
 
@@ -102,7 +102,7 @@ This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there.
 
 Next we'll use `:=` to assign a variable:
 
-```
+```edgeql
 SELECT jonathans_name := 'Jonathan Harker';
 ```
 
@@ -110,7 +110,7 @@ This just returns what we gave it: `{'Jonathan Harker'}`. But this time it's a s
 
 Now let's do something with this variable. We can do a `SELECT` by first assigning to `jonathans_name` and then comparing it to `'Count Dracula'`:
 
-```
+```edgeql
 SELECT jonathans_name := 'Jonathan Harker' = 'Count Dracula';
 SELECT jonathans_name := 'Jonathan Harker' != 'Count Dracula';
 ```
@@ -119,11 +119,11 @@ The output is `{false}`, then `{true}`. Of course, you can just write `SELECT 'J
 
 ## Inserting objects
 
-Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`. 
+Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`.
 
 Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
 
-```
+```edgeql
 INSERT City {
   name := 'Munich',
 };
@@ -143,7 +143,7 @@ Note that a comma at the end is optional - you can put it in or leave it out. He
 
 Finally, the `Person` insert would look like this:
 
-```
+```edgeql
 INSERT Person {
   name := 'Jonathan Harker',
   places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
@@ -163,14 +163,14 @@ As you can see, `str`s are fine with unicode letters like ț. Even emojis and sp
 
 EdgeDB also has a byte literal type that gives you the bytes of a string, but they must be characters that are 1 byte long. You create it by adding a `b` in front of the string:
 
-```
+```edgeql
 SELECT b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
-```
+```edgeql
 SELECT b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
 ```
@@ -183,7 +183,7 @@ Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the uniq
 
 It is also what shows up when you use `SELECT` to select a type. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
 
-```
+```edgeql
 SELECT City;
 ```
 
@@ -199,7 +199,7 @@ This gives us three items:
 
 This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the [shape](https://www.edgedb.com/docs/edgeql/expressions/shapes/#ref-eql-expr-shapes) of the data we want. We'll select all `City` types and display their `modern_name` with this query:
 
-```
+```edgeql
 SELECT City {
   modern_name,
 };
@@ -217,7 +217,7 @@ So there is some object with an empty set for `modern_name`, while the other two
 
 The first object is a mystery so we'll add `name` to the query so we can see that it's the city of Vienna:
 
-```
+```edgeql
 SELECT City {
   name,
   modern_name
@@ -225,7 +225,6 @@ SELECT City {
 ```
 
 This gives the output:
-
 
 ```
 {
@@ -245,7 +244,7 @@ This type of expression is called a *path expression* or a *path*, because it is
 
 You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. Those names you choose become the variable names that are displayed. For example:
 
-```
+```edgeql
 SELECT City {
   name_in_dracula := .name,
   name_today := .modern_name,
@@ -268,7 +267,7 @@ By the way, `.name` is short for `City.name`. You can also write `City.name` eac
 
 So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
 
-```
+```edgeql
 SELECT City {
   name_in_dracula := .name,
   name_today := .modern_name,
@@ -294,7 +293,7 @@ On the other hand, it can use "type inference" to guess the type, and that is wh
 
 So now the last thing left to do is to change our `property` in `Person` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `Person`. We'll change `Person` to look like this:
 
-```
+```sdl
 type Person {
   required property name -> str;
   multi link places_visited -> City;
@@ -305,7 +304,7 @@ We wrote `multi` in front of `link` because one `Person` should be able to link 
 
 Now when we insert Jonathan Harker, he will be connected to the type `City`. Don't forget that `places_visited` is not `required`, so we can still insert with just his name to create him:
 
-```
+```edgeql
 INSERT Person {
   name := 'Jonathan Harker',
 };
@@ -313,7 +312,7 @@ INSERT Person {
 
 But this would only create a `Person` type connected to the `City` type but with nothing in it. Let's see what's inside:
 
-```
+```edgeql
 SELECT Person {
   name,
   places_visited
@@ -324,16 +323,16 @@ Here is the output: `{Object {name: 'Jonathan Harker', places_visited: {}}}`
 
 But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
 
-```
+```edgeql
 INSERT Person {
   name := 'Jonathan Harker',
   places_visited := City,
 };
 ```
 
-We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need: 
+We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
 
-```
+```edgeql
 select Person {
   name,
   places_visited
@@ -355,7 +354,7 @@ Here is the output:
 
 Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
 
-```
+```edgeql
 select Person {
   name,
   places_visited: {
@@ -379,6 +378,8 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
 3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
@@ -386,5 +387,7 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 5. Will typing `SelecT City;` produce an error?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 2: [Jonathan Harker arrives in Romania.](../chapter2/index.md)

@@ -49,13 +49,13 @@ type Pound extending Currency {
     overloaded required property major {
         default := 'pound'
     }
-    overloaded required property minor { 
+    overloaded required property minor {
         default := 'shilling'
     }
     overloaded required property minor_conversion {
         default := 20
     }
-    overloaded property sub_minor { 
+    overloaded property sub_minor {
         default := 'pence'
     }
     overloaded property sub_minor_conversion {
@@ -168,7 +168,7 @@ SELECT(INSERT Dollar {
 };
 ```
 
-Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect! 
+Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
 
 Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
 
@@ -307,20 +307,24 @@ Much better!
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
 
 2. Try adding two annotations to this type. One should be called `description` and mention that `One mark = 100 Pfennig`. The other should be called `note` and mention the types of coins there are.
 
-[Here are the types of coins](https://en.wikipedia.org/w/index.php?title=German_gold_mark&oldid=972733514#Base_metal_coins): 1, 2, 5, 10, 20, 25 Pfennig coins.
+   [Here are the types of coins](https://en.wikipedia.org/w/index.php?title=German_gold_mark&oldid=972733514#Base_metal_coins): 1, 2, 5, 10, 20, 25 Pfennig coins.
 
 3. A vampire named Godbrand has just attacked a village and turned three villagers into `MinorVampire`s. How would you insert all four of them at once?
 
-Here is their data (name, date of birth (`first_appearance`, date turned into a MinorVampire (`last_appearance`):
+   Here is their data (name, date of birth (`first_appearance`, date turned into a MinorVampire (`last_appearance`):
 
-('Fritz Frosch', '1850-01-15', '1887-09-11'),
-('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
-('김훈', '1860-09-09', '1887-09-11'),
+   ('Fritz Frosch', '1850-01-15', '1887-09-11'),
+   ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
+   ('김훈', '1860-09-09', '1887-09-11'),
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 19: [Only Mina can tell them where Dracula has gone.](../chapter19/index.md)

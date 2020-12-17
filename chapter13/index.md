@@ -114,7 +114,7 @@ So if you wanted to have all the `MinorVampire` types automatically deleted when
 
 Now let's look at some tips for making queries.
 
-## Using DISTINCT, \__type__
+## Using DISTINCT, \_\_type\_\_
 
 - `DISTINCT`
 
@@ -175,7 +175,7 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 But there is a settingy you can use to always see the type when you make a query: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
 
 ```
-SELECT Person 
+SELECT Person
   {
 name
 } FILTER .name = 'Lucy Westenra';
@@ -201,9 +201,9 @@ type Ship {
 }
 ```
 
-First, here is the simplest `INTROSPECT` query: 
+First, here is the simplest `INTROSPECT` query:
 
-```SELECT (INTROSPECT Ship.name);``` 
+`SELECT (INTROSPECT Ship.name);`
 
 This query isn't very useful to us but it does show how it works: it returns `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
 
@@ -258,11 +258,11 @@ SELECT (INTROSPECT Ship) {
 };
 ```
 
-So what this will give is: 
+So what this will give is:
 
-1) The type name for `Ship`, 
-2) The properties, and their names. But we also use `target`, which is what a property points to (the part after the `->`). For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
-3) The links and their names, and the targets to the links...and the names of *their* targets too.
+1. The type name for `Ship`,
+2. The properties, and their names. But we also use `target`, which is what a property points to (the part after the `->`). For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
+3. The links and their names, and the targets to the links...and the names of _their_ targets too.
 
 With all that together, we get something readable and useful. The output looks like this:
 
@@ -292,33 +292,37 @@ SELECT (INTROSPECT Ship) {
   name,
   properties: {name, target: {name}},
   links: {name, target: {name}},
-};             
+};
 ```
 
 [Here is all our code so far up to Chapter 13.](code.md)
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you insert an `NPC` named 'Mr. Swales' who has visited the `City` called 'York', the `Country` called 'England', and the `OtherPlace` called 'Whitby Abbey'? Try it in a single insert.
 
 2. How readable is this introspect query?
 
-```
-SELECT (INTROSPECT Ship) {
-  name,
-  properties,
-  links
-};
-```
+   ```
+   SELECT (INTROSPECT Ship) {
+     name,
+     properties,
+     links
+   };
+   ```
 
 3. What would be the shortest way to see what links from the `Vampire` type?
 
 4. What do you think the output of `SELECT DISTINCT {1, 2} + {1, 2};` will be?
 
-Hint: don't forget the Cartesian multiplication.
+   Hint: don't forget the Cartesian multiplication.
 
 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 14: [An old friend returns.](../chapter14/index.md)

@@ -1,6 +1,6 @@
 # Chapter 6 Questions and Answers
 
-1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
+#### 1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
 
 You can do it with concatenation using `++`:
 
@@ -27,7 +27,7 @@ You can of course go with `UPDATE NPC` and `SELECT City` if you prefer.
 Also, here is the same thing using `WITH`:
 
 ```
-WITH 
+WITH
   mina := (SELECT NPC FILTER .name = 'Mina Murray'),
   romania := (SELECT Country FILTER .name = 'Romania'),
 UPDATE mina
@@ -72,8 +72,8 @@ WITH letters := {'W', 'J', 'C'}
 } FILTER .name LIKE '%' ++ letters ++ '%';
 ```
 
-You need to wrap the SELECT in brackets, cast with <json> and then SELECT that:
- 
+You need to wrap the SELECT in brackets, cast with `<json>` and then SELECT that:
+
 ```
 WITH letters := {'W', 'J', 'C'}
   SELECT <json>(SELECT Person {

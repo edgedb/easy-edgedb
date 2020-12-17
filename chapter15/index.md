@@ -8,7 +8,7 @@ This chapter they learned something about vampires: they need to sleep in coffin
 
 - Each place in the world either has coffins doesn't have them,
 - Has coffins = vampires can enter and terrorize the people,
-- If a place has coffins, we should know how many of them there are. 
+- If a place has coffins, we should know how many of them there are.
 
 This sounds like a good case for an abstract type. Here it is:
 
@@ -59,7 +59,7 @@ function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := (SELECT Person filter .name = person_name LIMIT 1)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-        );   
+        );
 ```
 
 You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
@@ -88,7 +88,7 @@ Now we can finally call up our function and see if it works:
 
 ```
 SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
-``` 
+```
 
 We get `{'Count Dracula can enter.'}`.
 
@@ -99,7 +99,7 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 ## More constraints
 
-Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/datamodel/constraints) that we can use as well. 
+Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/datamodel/constraints) that we can use as well.
 
 There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
 
@@ -122,7 +122,7 @@ property title -> str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German *Herr*, etc. etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, etc. etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
@@ -138,7 +138,7 @@ Now let's learn about perhaps the most interesting constraint in EdgeDB:
 
 ## expression on: the most flexible constraint
 
-One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type *as long as* (insert expression here)".
+One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type _as long as_ (insert expression here)".
 
 Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called [contains()](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) that looks like this:
 
@@ -184,8 +184,8 @@ SELECT (
    name
    }
  };
- ```
- 
+```
+
 Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ```
@@ -305,18 +305,22 @@ Beautiful! All the information is right there.
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 
 2. How would you let the user know that it needs to be called 'Horse'?
 
 3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
 
-Try it first with `expression on`.
+   Try it first with `expression on`.
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
 5. How would you make it without touching the schema?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 16: [Could Renfield be of help?](../chapter16/index.md)

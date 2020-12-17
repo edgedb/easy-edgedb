@@ -1,6 +1,6 @@
 # Chapter 16 - Is Renfield telling the truth?
 
-> Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes. 
+> Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
 
 > Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing. And one night, Renfield was very serious and asks them to let him leave. He says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
 
@@ -33,7 +33,7 @@ This is very convenient for us. With this we can make a type that holds a date a
 
 The [`index on (.excerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match.
 
-We could do this for certain other types too - it might be good for types like `Place` and `Person`. 
+We could do this for certain other types too - it might be good for types like `Place` and `Person`.
 
 Note: `index` is good in limited quantities, but you don't want to index everything. Here is why:
 
@@ -190,10 +190,10 @@ Now the `n`s are all gone:
 You can also split by `\n` to split by new line. You can't see it but from the point of view of the computer every new line has a `\n` in it. So this:
 
 ```
-SELECT str_split('Oh, hear me! 
-hear me! 
-Let me go! 
-let me go! 
+SELECT str_split('Oh, hear me!
+hear me!
+Let me go!
+let me go!
 let me go!', '\n');
 ```
 
@@ -210,12 +210,12 @@ SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-The function signature is `std::re_match(pattern: str, string: str) -> array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that: 
+The function signature is `std::re_match(pattern: str, string: str) -> array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
 
-- start with a `T` or a `t`, 
-- then have an `o`, 
-- maybe have an `-` in between, 
-- and end in `night`, 
+- start with a `T` or a `t`,
+- then have an `o`,
+- maybe have an `-` in between,
+- and end in `night`,
 
 so it gives: `{['tonight'], ['to-night']}`.
 
@@ -237,24 +237,28 @@ type City extending Place {
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
 
 2. How would you display all the `Person` names and where the string 'ma' is in their name?
 
-Hint: this uses the function `find()`.
+   Hint: this uses the function `find()`.
 
 3. How would you index on the `pen_name` property for type Person?
 
-Hint: try using `describe type Person as SDL` to take a look at it the `pen_name` property again.
+   Hint: try using `describe type Person as SDL` to take a look at it the `pen_name` property again.
 
 4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
 
-Hint: the [str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat) function could help (though there is more than one way to do it)
+   Hint: the [str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat) function could help (though there is more than one way to do it)
 
 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 
-Hint: [Here are some basic concepts](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=988356211#Basic_concepts) if you want a quick read on regular expressions.
+   Hint: [Here are some basic concepts](https://en.wikipedia.org/w/index.php?title=Regular_expression&oldid=988356211#Basic_concepts) if you want a quick read on regular expressions.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 17: [The truth about Renfield.](../chapter17/index.md)

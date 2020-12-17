@@ -1,6 +1,6 @@
 # Chapter 6 - Still no escape
 
->The women vampires are next to Jonathan and he can't move. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and is angry. He burns them in front of Jonathan and tells him not to do that again. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
+> The women vampires are next to Jonathan and he can't move. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and is angry. He burns them in front of Jonathan and tells him not to do that again. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
 
 ## Filtering on sets when doing an insert
 
@@ -107,7 +107,7 @@ UPDATE Person
 
 One other operator is `++`, which does concatenation (joining together) instead of adding.
 
-You can do simple operations with it like: ```SELECT 'My name is ' ++ 'Jonathan Harker';``` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
+You can do simple operations with it like: `SELECT 'My name is ' ++ 'Jonathan Harker';` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
 ```
 SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
@@ -128,7 +128,7 @@ This prints:
 Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `multi link`:
 
 ```
-type Vampire extending Person {            
+type Vampire extending Person {
   property age -> int16;
   multi link slaves -> MinorVampire;
 }
@@ -201,7 +201,7 @@ This might make you wonder: what if we do want two-way links? There's actually a
 What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
 ```
-SELECT <json>Vampire { 
+SELECT <json>Vampire {
       # <json> is the only difference from the SELECT above
   name,
   slaves: {name}
@@ -244,27 +244,31 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
 
-```
-SELECT NPC {
-  name,
-  greeting := ## Put the rest here
-};
-```
+   ```
+   SELECT NPC {
+     name,
+     greeting := ## Put the rest here
+   };
+   ```
 
 2. How would you update Mina's `places_visited` to include Romania if she went to Castle Dracula for a visit?
 
 3. With the set `{'W', 'J', 'C'}`, how would you display all the `Person` types with a name that contains any of these capital letters?
 
-Hint: it involves `WITH` and a bit of concatenation.
+   Hint: it involves `WITH` and a bit of concatenation.
 
 4. How would you display this same query as JSON?
 
 5. How would you add ' the Great' to every Person type?
 
-Bonus question: what's a quick way to undo this using string indexing?
+   Bonus question: what's a quick way to undo this using string indexing?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 7: [Jonathan climbs the castle wall to try to get into Count Dracula's room.](../chapter7/index.md)

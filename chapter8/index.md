@@ -160,11 +160,11 @@ type Townsperson extending Person {
   }
 ```
 
-The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you *could* create duplicate numbers using `UPDATE` and `SET` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
+The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `UPDATE` and `SET` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
 
 ## Using IS to query multiple types
 
-So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. 
+So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`.
 
 But this gives us a problem if we want to query them all at the same time. They all extend `Person`, but `Person` doesn't have all of their links and properties. So this query won't work:
 
@@ -176,7 +176,7 @@ SELECT Person {
 };
 ```
 
-The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. 
+The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`.
 
 Luckily there is an easy fix for this: we can use `IS` inside square brackets to specify the type. Here's how it works:
 
@@ -211,7 +211,7 @@ This is pretty good, but the output doesn't show us the type for each of them. T
 
 ```
 SELECT Person {
-  __type__: { 
+  __type__: {
     name      # Name of the type inside module default
   },
   name, # Person.name
@@ -326,6 +326,8 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you select all the `Place` types and their names, plus the `door` property if it's a `Castle`?
 
 2. How would you select `Place` types with `city_name` for `name` if it's a `City` and `country_name` for `name` if it's a `Country`?
@@ -336,14 +338,16 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
-```
-SELECT Place {
-  __type__,
-  name
-  [IS Castle]doors
-};
-```
+   ```
+   SELECT Place {
+     __type__,
+     name
+     [IS Castle]doors
+   };
+   ```
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 9: [Time to meet Dr. Seward, Arthur Holmwood, Quincey Morris, and the strange Renfield.](../chapter9/index.md)

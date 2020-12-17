@@ -1,18 +1,17 @@
 # Chapter 17 - Poor Renfield. Poor Mina.
 
-> Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that they were destroying his coffins and decided to attack Mina. He succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now. 
+> Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that they were destroying his coffins and decided to attack Mina. He succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
 
 > The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. He was in communication with Dracula and thought that he would help him become a vampire too, so he let him in the house. But once inside Dracula ignored him, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting her, but Dracula was much stronger and won.
 
 > Van Helsing does not give up though, and has a good idea. If Mina is now connected to Dracula, what happens if he uses hypnotism on her? Could that work? He takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
-
 
 ## Named tuples
 
 Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, Person)` as input. Let's give it Dracula and Renfield:
 
 ```
-WITH 
+WITH
   dracula := (SELECT Person FILTER .name = 'Count Dracula'),
   renfield := (SELECT Person FILTER .name = 'Renfield'),
 SELECT fight(dracula, renfield);
@@ -33,7 +32,7 @@ That's not bad, but there is a way to make it clearer: we can give names to the 
 
 ```
 WITH fighters := (
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'), 
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
   renfield := (SELECT Person FILTER .name = 'Renfield')),
   SELECT fight(fighters.dracula, fighters.renfield);
 ```
@@ -42,7 +41,7 @@ Here's one more example of a named tuple:
 
 ```
 WITH minor_vampires := (
-  women := (SELECT MinorVampire FILTER .name LIKE '%Woman%'), 
+  women := (SELECT MinorVampire FILTER .name LIKE '%Woman%'),
   lucy := (SELECT MinorVampire FILTER .name LIKE '%Lucy%')),
 SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
 ```
@@ -62,7 +61,7 @@ SELECT ( # Put the whole update inside
   last_appearance := <cal::local_date>'1887-10-03'
 }) # then use it to call up name and last_appearance
   {
-  name, 
+  name,
   last_appearance
   };
 ```
@@ -79,7 +78,7 @@ will return `{true}`.
 
 ## Putting abstract types together
 
-Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. So it would be cool to create a quick function called `change_coffins()` to change the number of coffins in a place. With this function we could write something like `change_coffins('London', -13)` to reduce it by 13, for example. But the problem right now is this: 
+Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. So it would be cool to create a quick function called `change_coffins()` to change the number of coffins in a place. With this function we could write something like `change_coffins('London', -13)` to reduce it by 13, for example. But the problem right now is this:
 
 - the `HasCoffins` type is an abstract type, with one property: `coffins`
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
@@ -119,14 +118,14 @@ abstract type Place extending HasNameAndCoffins {
 }
 ```
 
-Finally, we can change our `can_enter()` function. This one needed a `HasCoffins` type before: 
+Finally, we can change our `can_enter()` function. This one needed a `HasCoffins` type before:
 
 ```
     function can_enter(person_name: str, place: HasCoffins) -> str
       using (
         with vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
         SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-            );   
+            );
 ```
 
 But now that `HasNameAndCoffins` holds `name`, the user can now just enter a string. We'll change it to this:
@@ -134,11 +133,11 @@ But now that `HasNameAndCoffins` holds `name`, the user can now just enter a str
 ```
 function can_enter(person_name: str, place: str) -> str
   using (
-  with 
+  with
     vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
     place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-    );   
+    );
 ```
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
@@ -192,7 +191,7 @@ alias CrewmanInBulgaria := Crewman {
 }
 ```
 
-You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a *shape* on top of the existing `Crewman` type. For the same reason, you can't do an `INSERT CrewmanInBulgaria`, because there is no such type. It gives this error:
+You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. For the same reason, you can't do an `INSERT CrewmanInBulgaria`, because there is no such type. It gives this error:
 
 ```
 error: cannot insert into expression alias 'default::CrewmanInBulgaria'
@@ -217,7 +216,7 @@ SELECT CrewmanInBulgaria {
   };
 ```
 
-And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: with *Gospodin* added to their name and linked to the `Country` type we just inserted.
+And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: with _Gospodin_ added to their name and linked to the `Country` type we just inserted.
 
 ```
 {
@@ -466,12 +465,16 @@ Here's the output:
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. How would you display every NPC's name, strength, name and population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
-3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) ->  Person` that lets you just write the character name and date to do it.
+3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) -> Person` that lets you just write the character name and date to do it.
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 18: [Jonathan the detective.](../chapter18/index.md)

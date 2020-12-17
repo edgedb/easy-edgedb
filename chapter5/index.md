@@ -2,19 +2,19 @@
 
 Poor Jonathan is not having much luck. Here's what happens to him in this chapter:
 
->During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
+> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
 ## std::datetime
 
 Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
 
-```YYYY-MM-DDTHH:MM:SSZ```
+`YYYY-MM-DDTHH:MM:SSZ`
 
 And an actual date looks like this.
 
 `'2020-12-06T22:12:10Z'`
 
-The `T` inside there is just a separator, and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it *is* UTC.
+The `T` inside there is just a separator, and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
 
 One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
 
@@ -63,7 +63,7 @@ std::to_datetime(epochseconds: float64) -> datetime
 std::to_datetime(epochseconds: int64) -> datetime
 ```
 
-The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp. 
+The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp.
 
 Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
 
@@ -94,7 +94,7 @@ The answer is 5100 seconds: `{5100s}`.
 To make the query easier for us to read, we can also use the `WITH` keyword to create variables. We can then use the variables in `SELECT` below. We'll make one called `jonathan_wants_to_escape` and another called `mina_has_tea`, and subtract one from another to get a `duration`. With variable names it is now a lot clearer what we are trying to do:
 
 ```
-WITH 
+WITH
   jonathan_wants_to_escape := to_datetime(2020, 5, 12, 10, 35, 0, 'EEST'),
   mina_has_tea := to_datetime(2020, 5, 12, 6, 10, 0, 'UTC'),
   SELECT jonathan_wants_to_escape - mina_has_tea;
@@ -172,7 +172,7 @@ error: possibly more than one element returned by an expression for a computable
 
 Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `DESCRIBE` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - this will give the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL. 
+- `DESCRIBE TYPE MinorVampire` - this will give the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do a migration. And if you understand SDL it will not be hard to pick up some tricks in DDL.
 
 Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Person` type looks like:
 
@@ -222,7 +222,7 @@ The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, 
 
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
-And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
+And for a _really_ long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
 
 So if `TYPE` comes after `DESCRIBE` for types and `MODULE` after `DESCRIBE` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `OBJECT`, `ANNOTATION`, `CONSTRAINT`, `FUNCTION`, `LINK`, `MODULE`, `PROPERTY`, `SCALAR TYPE`, `TYPE`. If you don't want to remember them all, just go with `OBJECT`: it will match anything inside your schema (except modules).
 
@@ -230,9 +230,11 @@ So if `TYPE` comes after `DESCRIBE` for types and `MODULE` after `DESCRIBE` for 
 
 ## Time to practice
 
+<!-- quiz-start -->
+
 1. What do you think `SELECT to_datetime(3600);` will return, and why?
 
-Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
+   Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
 
 2. Will `SELECT <int16>9 + 1.06n IS decimal;` work? And if it does, will it return `{true}`?
 
@@ -243,5 +245,7 @@ Hint: check the function signatures above and see which one EdgeDB will pick whe
 5. What's the best way to describe a type if you only want to see how you wrote it?
 
 [See the answers here.](answers.md)
+
+<!-- quiz-end -->
 
 Up next in Chapter 6: [One of the women vampires to her sisters: "He is young and strong; there are kisses for us all."](../chapter6/index.md)
