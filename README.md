@@ -1354,6 +1354,8 @@ The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, 
 }
 ```
 
+(Note: `AS TEXT` doesn't include constraints and annotations. To see those, add `VERBOSE` at the end: `DESCRIBE TYPE MinorVampire AS TEXT VERBOSE;`. You'll learn about annotations in Chapter 14.)
+
 The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
 
 And for a *really* long output, try typing `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole module we've built so far.
