@@ -5076,7 +5076,7 @@ The [documentation on aliases](https://www.edgedb.com/docs/cheatsheet/aliases/) 
 
 ## Creating new names for types in a query (local expression aliases)
 
-It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is sort yes: we can use `WITH` and then give a new name for an existing type. Take a simple query like this that shows Count Dracula and the names of his slaves:
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `WITH` and then give a new name for an existing type. (In fact, the keyword `WITH` that we have been using the whole time is defined as a "[block used to define aliases](https://www.edgedb.com/docs/edgeql/statements/with)"). Take a simple query like this that shows Count Dracula and the names of his slaves:
 
 ```
 SELECT Vampire {
