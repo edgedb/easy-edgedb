@@ -168,6 +168,8 @@ SELECT (DELETE Country) {
 
 The output is `{Object {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
 
+(Fun fact: `DELETE` statements in EdgeDB are actually [syntactic sugar](https://www.edgedb.com/docs/edgeql/statements/delete/) for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
+
 Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
 
 [Here is all our code so far up to Chapter 3.](code.md)
