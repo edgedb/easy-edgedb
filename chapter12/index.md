@@ -323,7 +323,13 @@ false
 }
 ```
 
-instead of `{}` for the whole thing.
+instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:
+
+```
+SELECT Vampire.lover.name ?= Crewman.name;
+```
+
+will return `{true}`. (Because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`.)
 
 [Here is all our code so far up to Chapter 12.](code.md)
 
