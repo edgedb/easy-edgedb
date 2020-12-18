@@ -3567,6 +3567,26 @@ This gives us the result:
 {'Slovakia, Buda-Pesth, Castle Dracula'}
 ```
 
+Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
+
+```
+WITH cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+cities2 := <str>{}, # Don't forget to cast to <str>
+SELECT cities1 ?= cities2;
+```
+
+and get the output
+
+```
+{
+false,
+false,
+false
+}
+```
+
+instead of `{}` for the whole thing.
+
 [Here is all our code so far up to Chapter 12.](code.md)
 
 ## Time to practice
