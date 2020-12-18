@@ -2202,6 +2202,34 @@ But fortunately these types all [extend from abstract types too](https://www.edg
 
 So with that you can change the above input to `SELECT 1887 IS anyint` and get `{true}`.
 
+# The type union operator: |
+
+Another operator related to types is `|`, which is used to combine them (similar to writing `OR`). This query for example pulling up all `Person` types will return true:
+
+```
+SELECT (SELECT Person FILTER .name = 'Lucy Westenra') IS NPC | MinorVampire | Vampire;
+```
+
+It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `Person` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
+
+One cool thing about the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control the other. Right now though `Vampire`s can only control `MinorVampire`s:
+
+```
+type Vampire extending Person {
+  multi link slaves -> MinorVampire;
+}
+```
+
+So to represent this change, you could just use `|` and add another type:
+
+```
+type Vampire extending Person {
+  multi link slaves -> MinorVampire | Vampire;
+}
+```
+
+We only have Count Dracula in our database as the main `Vampire` type so we won't change our schema in this way, but keep this `|` operator in mind in case you need it.
+
 ## Multi in other places
 
 We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one. For example, our `Castle` type has an `array<int16>` for the `doors` property:
