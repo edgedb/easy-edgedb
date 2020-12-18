@@ -1059,6 +1059,15 @@ Now if we `SELECT` this with all the properties, it will give us this:
 
 ```Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}```
 
+One more note on `ELSE`: you can keep on using `ELSE` as many times as you like in the format `(result) IF (condition) ELSE`. Here's an example:
+
+```
+property awake := 'just waking up' IF <int16>.hour = 19 ELSE
+                  'going to bed' IF <int16>.hour = 6 ELSE
+                  'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 
+                  'awake';
+```
+
 ## SELECT while you INSERT
 
 Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Date`, all we get is a `uuid`:
