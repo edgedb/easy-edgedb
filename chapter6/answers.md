@@ -4,7 +4,7 @@
 
 You can do it with concatenation using `++`:
 
-```
+```edgeql
 SELECT NPC {
   name,
   greeting := "Pleased to meet you, I'm " ++ .name
@@ -15,10 +15,10 @@ SELECT NPC {
 
 Here is one way:
 
-```
+```edgeql
 UPDATE Person FILTER .name = 'Mina Murray'
-  SET {
-    places_visited += (SELECT Place FILTER .name = 'Romania')
+SET {
+  places_visited += (SELECT Place FILTER .name = 'Romania')
 };
 ```
 
@@ -26,7 +26,7 @@ You can of course go with `UPDATE NPC` and `SELECT City` if you prefer.
 
 Also, here is the same thing using `WITH`:
 
-```
+```edgeql
 WITH
   mina := (SELECT NPC FILTER .name = 'Mina Murray'),
   romania := (SELECT Country FILTER .name = 'Romania'),
@@ -40,10 +40,10 @@ SET {
 
 It looks like this:
 
-```
+```edgeql
 WITH letters := {'W', 'J', 'C'}
-  SELECT Person {
-   name
+SELECT Person {
+  name
 } FILTER .name LIKE '%' ++ letters ++ '%';
 ```
 
@@ -65,20 +65,22 @@ The key is that `LIKE` takes a string, so you can concatenate `%` on the left an
 
 Getting JSON output is super easy by casting with `<json>`, but where does it go? You can't put it in front of `SELECT`, and `<json>Person` isn't an expression either, so this won't work:
 
-```
+```edgeql
 WITH letters := {'W', 'J', 'C'}
-  SELECT <json>Person {
-    name
+SELECT <json>Person {
+  name
 } FILTER .name LIKE '%' ++ letters ++ '%';
 ```
 
 You need to wrap the SELECT in brackets, cast with `<json>` and then SELECT that:
 
-```
+```edgeql
 WITH letters := {'W', 'J', 'C'}
-  SELECT <json>(SELECT Person {
+SELECT <json>(
+  SELECT Person {
     name
-} FILTER .name LIKE '%' ++ letters ++ '%');
+  } FILTER .name LIKE '%' ++ letters ++ '%'
+);
 ```
 
 So you're selecting the casted-to-JSON version of the result of `SELECT Person`.
@@ -87,10 +89,10 @@ So you're selecting the casted-to-JSON version of the result of `SELECT Person`.
 
 Easy, just update without `FILTER`:
 
-```
+```edgeql
 UPDATE Person
-  SET {
-    name := .name ++ ' the Great'
+SET {
+  name := .name ++ ' the Great'
 };
 ```
 
@@ -98,9 +100,9 @@ Now their names are 'Woman 1 the Great', 'Mina Murray the Great', and so on.
 
 **Bonus question**: to undo this, just set `name` to the same string minus the last 10 characters using `[0:-10]`:
 
-```
+```edgeql
 UPDATE Person
-  SET {
-    name := .name[0:-10]
+SET {
+  name := .name[0:-10]
 };
 ```

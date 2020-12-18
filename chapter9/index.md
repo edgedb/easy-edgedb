@@ -14,7 +14,7 @@ For these two properties we will just use `cal::local_date` for the sake of simp
 
 Doing an insert for the `Crewman` types with the properties `first_appearance` and `last_appearance` will now look something like this:
 
-```
+```edgeql
 INSERT Crewman {
   number := count(DETACHED Crewman) +1,
   first_appearance := cal::to_local_date(1887, 7, 6),
@@ -26,7 +26,7 @@ And since we have a lot of `Crewman` types already inserted, we can easily use t
 
 Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
 
-```
+```edgeql
 SELECT <cal::local_date>'1887-07-08';
 ```
 
@@ -44,9 +44,9 @@ cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 
 Now we update the `Crewman` types and give them all the same date to keep things simple:
 
-```
+```edgeql
 UPDATE Crewman
-  SET {
+SET {
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16)
 };
@@ -58,7 +58,7 @@ This will of course depend on our game. Can a `PC` actually visit the ship when 
 
 Now let's get back to inserting the new characters. First we'll insert Lucy:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Lucy Westenra',
   places_visited := (SELECT City FILTER .name = 'London')
@@ -69,7 +69,7 @@ Hmm, it looks like we're doing a lot of work to insert 'London' every time we ad
 
 With `default` and `overloaded` added, it now looks like this:
 
-```
+```sdl
 type NPC extending Person {
   property age -> HumanAge;
   overloaded multi link places_visited -> Place {
@@ -84,7 +84,7 @@ We're almost ready to insert our three new characters, and now we don't need to 
 
 To do this, we can use a `FOR` loop, followed by the keyword `UNION`. First, here's the `FOR` part:
 
-```
+```edgeql
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 ```
 
@@ -92,37 +92,38 @@ In other words: take this set of three strings and do something to each one. `ch
 
 `UNION` comes next, because it is the keyword used to join sets together. For example, this query:
 
-```
+```edgeql
 WITH city_names := (SELECT City.name),
   castle_names := (SELECT Castle.name),
-  SELECT city_names UNION castle_names;
+SELECT city_names UNION castle_names;
 ```
 
 joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
 
 Now let's return to the `FOR` loop with the variable name `character_name`, which looks like this:
 
-```
+```edgeql
 FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
-  UNION (
-    INSERT NPC {
+UNION (
+  INSERT NPC {
     name := character_name,
     lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
-});
+  }
+);
 ```
 
 We get three `uuid`s as a response to show that they were entered.
 
 Then we can check to make sure that it worked:
 
-```
+```edgeql
 SELECT NPC {
   name,
   places_visited: {
     name,
   },
   lover: {
-  name,
+    name,
   },
 } FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
 ```
@@ -130,6 +131,7 @@ SELECT NPC {
 And as we hoped, they are all connected to Lucy now.
 
 ```
+{
   Object {
     name: 'John Seward',
     places_visited: {Object {name: 'London'}},
@@ -150,19 +152,20 @@ And as we hoped, they are all connected to Lucy now.
 
 By the way, now we could use this method to insert our five `Crewman` types inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them. Of course, we already used `UPDATE` to change the inserts but from now on in our code their insert will look like this:
 
-```
+```edgeql
 FOR n IN {1, 2, 3, 4, 5}
-  UNION (
+UNION (
   INSERT Crewman {
-  number := n
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
-});
+    number := n
+    first_appearance := cal::to_local_date(1887, 7, 6),
+    last_appearance := cal::to_local_date(1887, 7, 16),
+  }
+);
 ```
 
 It's a good idea to familiarize yourself with [the order to follow](https://www.edgedb.com/docs/edgeql/statements/for#for) when you use `FOR`:
 
-```
+```edgeql-synopsis
 [ WITH with-item [, ...] ]
 
 FOR variable IN "{" iterator-set [, ...]  "}"
@@ -174,7 +177,7 @@ The important part is the `{` and `}`, because `FOR` is used on a set. If you tr
 
 Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
 
-```
+```edgeql
 UPDATE NPC FILTER .name = 'Lucy Westenra'
 SET {
   lover := (
@@ -185,11 +188,11 @@ SET {
 
 Now we'll select her to make sure it worked. Let's use `LIKE` this time for fun when doing the filter:
 
-```
+```edgeql
 SELECT NPC {
   name,
   lover: {
-  name
+    name
   }
 } FILTER .name LIKE 'Lucy%';
 ```
@@ -213,15 +216,15 @@ And this does indeed print her out with her three lovers.
 
 So now that we know the keyword `overloaded`, we don't need the `HumanAge` type for `NPC` anymore. Right now it looks like this:
 
-```
+```sdl
 scalar type HumanAge extending int16 {
-      constraint max_value(120);
+  constraint max_value(120);
 }
 ```
 
 You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there. Now `NPC` uses `overloaded` twice:
 
-```
+```sdl
 type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
@@ -234,7 +237,7 @@ type NPC extending Person {
 
 This is convenient because we can delete `age` from `Vampire` too:
 
-```
+```sdl
 type Vampire extending Person {
   # property age -> int16; **Delete this one now**
   multi link slaves -> MinorVampire;
@@ -249,25 +252,25 @@ Okay, let's read the rest of the introduction for this chapter. It continues to 
 
 Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
 
-```
+```edgeql
 UPDATE NPC FILTER .name = 'Lucy Westenra'
-  SET {
-    lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
+SET {
+  lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
 };
 ```
 
 And then remove her from the other two. We'll just give them a sad empty set.
 
-```
+```edgeql
 UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
-  SET {
-    lover := {} # 😢
+SET {
+  lover := {} # 😢
 };
 ```
 
 Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `FILTER` for:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
@@ -285,12 +288,13 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 1. Why doesn't this insert work and how can it be fixed?
 
-   ```
+   ```edgeql
    FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
-     UNION(
-       INSERT Castle {
-         name := castle
-   });
+   UNION (
+     INSERT Castle {
+       name := castle
+     }
+   );
    ```
 
 2. How would you do the same insert while displaying the castle's name at the same time?
@@ -299,18 +303,18 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
    Hint: here's the type again:
 
-   ```
-     abstract type Person {
-       required property name -> str {
-           constraint exclusive;
-       }
-       property age -> int16;
-       property strength -> int16;
-       multi link places_visited -> Place;
-       multi link lover -> Person;
-       property first_appearance -> cal::local_date;
-       property last_appearance -> cal::local_date;
+   ```sdl
+   abstract type Person {
+     required property name -> str {
+       constraint exclusive;
      }
+     property age -> int16;
+     property strength -> int16;
+     multi link places_visited -> Place;
+     multi link lover -> Person;
+     property first_appearance -> cal::local_date;
+     property last_appearance -> cal::local_date;
+   }
    ```
 
 5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?

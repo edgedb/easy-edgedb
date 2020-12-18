@@ -4,7 +4,7 @@
 
 First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema called `lover`:
 
-```
+```sdl
 abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
@@ -16,7 +16,7 @@ With this we can link the two of them together. We will assume that a person can
 
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
-```
+```edgeql
 INSERT City {
     name := 'London',
 };
@@ -28,7 +28,7 @@ To give her the city of London, we can just do a quick `SELECT City FILTER .name
 
 For `lover` it is the same process but a bit more complicated:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Mina Murray',
   lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
@@ -43,7 +43,7 @@ You'll notice two things here:
 
 Now we want to make a query to see who is single and who is not. This is easy by using a "computable", where we can create a new variable that we define with `:=`. First here is a normal query:
 
-```
+```edgeql
 SELECT Person {
   name,
   lover: {
@@ -67,7 +67,7 @@ Okay, so Mina Murray has a lover but Jonathan Harker does not yet, because he wa
 
 Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computable to the query, using `EXISTS`. `EXISTS` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
 
-```
+```edgeql
 select Person {
   name,
   is_single := NOT EXISTS Person.lover,
@@ -88,7 +88,7 @@ This also shows why abstract types are useful. Here we did a quick search on `Pe
 
 We can also put the computable in the type itself. Here's the same computable except now it's inside the `Person` type:
 
-```
+```sdl
 abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
@@ -109,17 +109,19 @@ The part of Romania where Jonathan Harker is has an average sunrise of around 7 
 
 EdgeDB uses two major types for time.
 
--`std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard. -`cal::local_datetime`, which doesn't worry about timezone.
+- `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
+- `cal::local_datetime`, which doesn't worry about timezone.
 
 There are two others that are almost the same as `cal::local_datetime`:
 
--`cal::local_time`, when you only need to know the time of day, and -`cal::local_date`, when you only need to know the month and the day.
+- `cal::local_time`, when you only need to know the time of day, and
+- `cal::local_date`, when you only need to know the month and the day.
 
 We'll start with `cal::local_time` first.
 
 `cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
-```
+```edgeql
 SELECT <cal::local_time>('15:44:56');
 ```
 
@@ -131,7 +133,7 @@ This gives us the output:
 
 We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Date` type that can help. It looks like this:
 
-```
+```sdl
 type Date {
   required property date -> str;
   property local_time := <cal::local_time>.date;
@@ -143,7 +145,7 @@ type Date {
 
 So this won't work:
 
-```
+```edgeql
 SELECT <cal::local_time>'9:55:05';
 ```
 
@@ -157,7 +159,7 @@ Because of that, we are sure that slicing from index 0 to 2 will give us two num
 
 Now with this `Date` type, we can get the hour by doing this:
 
-```
+```edgeql
 INSERT Date {
     date := '09:55:05',
 };
@@ -165,7 +167,7 @@ INSERT Date {
 
 And then we can `SELECT` our `Date` types and everything inside:
 
-```
+```edgeql
 SELECT Date {
   date,
   local_time,
@@ -179,7 +181,7 @@ That gives us a nice output that shows everything, including the hour:
 
 Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
-```
+```sdl
 type Date {
   required property date -> str;
   property local_time := <cal::local_time>.date;
@@ -210,7 +212,7 @@ property awake := 'just waking up' IF <int16>.hour = 19 ELSE
 
 Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Date`, all we get is a `uuid`:
 
-```
+```edgeql
 INSERT Date {
   date := '22.44.10'
 };
@@ -220,11 +222,12 @@ The output is just something like this: `{Object {id: 528941b8-f638-11ea-acc7-2f
 
 So let's wrap the whole entry in `SELECT ()` so we can display its properties as we insert it. Because it's enclosed in brackets, EdgeDB will do that operation first, and then give it for us to select and do a normal query. Besides the properties to display, we can also add a computable while we are at it. Let's give it a try:
 
-```
+```edgeql
 SELECT ( # Start a selection
   INSERT Date { # Put the insert inside it
     date := '22.44.10'
-}) # The bracket finishes the selection
+  }
+) # The bracket finishes the selection
   { # Now just choose the properties we want
     date,
     hour,
@@ -243,7 +246,7 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 1. This insert is not working.
 
-   ```
+   ```edgeql
    INSERT NPC {
      name := 'I Love Mina',
      lover := (SELECT NPC FILTER .name LIKE '%Mina%' LIMIT 1)
@@ -262,7 +265,7 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 4. Imagine that you have the following `cal::local_time` type:
 
-   ```
+   ```edgeql
    SELECT has_nine_in_it := <cal::local_time>'09:09:09';
    ```
 
@@ -270,7 +273,7 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 5. We are inserting a character called The Innkeeper's Son:
 
-   ```
+   ```edgeql
    INSERT NPC {
      name := "The Innkeeper's Son",
      age := 10

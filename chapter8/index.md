@@ -10,9 +10,9 @@ We are finally away from Castle Dracula. Here is what happens in this chapter:
 
 While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for types that need a number:
 
-```
+```sdl
 abstract type HasNumber {
-    required property number -> int16;
+  required property number -> int16;
 }
 ```
 
@@ -20,14 +20,14 @@ We will also remove `required` from `name` for the `Person` type. Not every `Per
 
 Now we can use multiple inheritance for the `Crewman` type. It's very simple: just add a comma between every type you want to extend.
 
-```
+```sdl
 type Crewman extending HasNumber, Person {
 }
 ```
 
 Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
 
-```
+```edgeql
 INSERT Crewman {
   number := count(DETACHED Crewman) + 1
 };
@@ -47,21 +47,21 @@ So if there are no `Crewman` types, he will get the number 1. The next will get 
 
 Next is the `Sailor` type. The sailors have ranks, so first we will make an enum for that:
 
-```
+```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 ```
 
 And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
 
-```
+```sdl
 type Sailor extending Person {
-    property rank -> Rank;
+  property rank -> Rank;
 }
 ```
 
 Then we will make a `Ship` type to hold them all.
 
-```
+```sdl
 type Ship {
   required property name -> str;
   multi link sailors -> Sailor;
@@ -71,7 +71,7 @@ type Ship {
 
 Now to insert the sailors we just give them each a name and choose a rank from the enum:
 
-```
+```edgeql
 INSERT Sailor {
   name := 'The Captain',
   rank := 'Captain'
@@ -95,7 +95,7 @@ INSERT Sailor {
 
 Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `FILTER` anywhere.
 
-```
+```edgeql
 INSERT Ship {
   name := 'The Demeter',
   sailors := Sailor,
@@ -105,16 +105,16 @@ INSERT Ship {
 
 Then we can look up the `Ship` to make sure that the whole crew is there:
 
-```
+```edgeql
 SELECT Ship {
   name,
   sailors: {
     name,
     rank,
-    },
+  },
   crew: {
     number
-    },
+  },
 };
 ```
 
@@ -145,19 +145,20 @@ The result is:
 
 On the subject of giving types a number, EdgeDB has a type called [sequence](https://www.edgedb.com/docs/datamodel/scalars/numeric/#type::std::sequence) that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it. Let's imagine a `Townsperson` type for a moment that uses it. Here's the wrong way to do it:
 
-```
+```sdl
 type Townsperson extending Person {
   property number -> sequence;
+}
 ```
 
 This won't work because each `sequence` keeps a record of the most recent number, and if every type just `sequence` then they would share it. So the right way to do it is to extend it to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
 
-```
+```sdl
 scalar type TownspersonNumber extending sequence;
 
 type Townsperson extending Person {
   property number -> TownspersonNumber;
-  }
+}
 ```
 
 The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `UPDATE` and `SET` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
@@ -168,7 +169,7 @@ So now we have quite a few types that extend the `Person` type, many with their 
 
 But this gives us a problem if we want to query them all at the same time. They all extend `Person`, but `Person` doesn't have all of their links and properties. So this query won't work:
 
-```
+```edgeql
 SELECT Person {
   name,
   age,
@@ -186,7 +187,7 @@ Luckily there is an easy fix for this: we can use `IS` inside square brackets to
 
 Now it will work:
 
-```
+```edgeql
 SELECT Person {
   name,
   [IS NPC].age,
@@ -209,7 +210,7 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 
 This is pretty good, but the output doesn't show us the type for each of them. To refer to self in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
 
-```
+```edgeql
 SELECT Person {
   __type__: {
     name      # Name of the type inside module default
@@ -240,7 +241,7 @@ In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SE
 
 Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
 
-```
+```edgeql
 WITH year := 1887,
 SELECT year IS int16 OR year IS int32 OR year IS int64;
 ```
@@ -283,7 +284,7 @@ We only have Count Dracula in our database as the main `Vampire` type so we won'
 
 We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one. For example, our `Castle` type has an `array<int16>` for the `doors` property:
 
-```
+```sdl
 type Castle extending Place {
   property doors -> array<int16>;
 }
@@ -291,7 +292,7 @@ type Castle extending Place {
 
 But it could do something similar like this:
 
-```
+```sdl
 type Castle extending Place {
   multi property doors -> int16;
 }
@@ -299,10 +300,10 @@ type Castle extending Place {
 
 With that, you would insert using `{}` instead of square brackets for an array:
 
-```
+```edgeql
 INSERT Castle {
-    name := 'Castle Dracula',
-    doors := {6, 19, 10},
+  name := 'Castle Dracula',
+  doors := {6, 19, 10},
 };
 ```
 
@@ -310,43 +311,43 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
 - `multi property` vs. arrays:
 
-How large is the data you are working with? A `multi property` is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi property`.
+  How large is the data you are working with? A `multi property` is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi property`.
 
-If you want to use indexes and constraints on individual elements, then you should use a `multi property`. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
+  If you want to use indexes and constraints on individual elements, then you should use a `multi property`. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
 
-If order is important, than an array may be better. It's easier to keep the original order of items in an array.
+  If order is important, than an array may be better. It's easier to keep the original order of items in an array.
 
 - `multi property` vs. objects
 
-Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
+  Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
 
-First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE as TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
+  First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE as TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
 
-```
-{
-  'type default::Castle extending default::Place {
-    required single link __type__ -> schema::Type {
+  ```
+  {
+    'type default::Castle extending default::Place {
+      required single link __type__ -> schema::Type {
         readonly := true;
-    };
-    optional single property doors -> array<std::int16>;
-    required single property id -> std::uuid {
+      };
+      optional single property doors -> array<std::int16>;
+      required single property id -> std::uuid {
         readonly := true;
-    };
-    optional single property important_places -> array<std::str>;
-    optional single property modern_name -> std::str;
-    required single property name -> std::str;
-};
-```
+      };
+      optional single property important_places -> array<std::str>;
+      optional single property modern_name -> std::str;
+      required single property name -> std::str;
+  };
+  ```
 
-You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
+  You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
-The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backward link" or "reverse link" (you'll see those in Chapter 14) takes more work as well.
+  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backward link" or "reverse link" (you'll see those in Chapter 14) takes more work as well.
 
-Okay, now here are two positives for objects in comparison.
+  Okay, now here are two positives for objects in comparison.
 
-Do you have a lot of duplication in property values? If so, then using `constraint exclusive` on an object type is the more efficient way to do it.
+  Do you have a lot of duplication in property values? If so, then using `constraint exclusive` on an object type is the more efficient way to do it.
 
-Objects are easier to migrate if you need to have more than one value with each.
+  Objects are easier to migrate if you need to have more than one value with each.
 
 So hopefully that explanation should help. You can see that you have a lot of choice, so remembering the points above should help you make a decision. Most of the time, you'll probably have a sense for which one you want.
 
@@ -366,7 +367,7 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
-   ```
+   ```edgeql
    SELECT Place {
      __type__,
      name

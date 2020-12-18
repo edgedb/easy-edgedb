@@ -6,7 +6,7 @@
 
 There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Jonathan Harker',
   places_visited := City,
@@ -15,7 +15,7 @@ INSERT NPC {
 
 This was fine when we only had cities, but now we have the `Place` and `Country` types. First we'll insert two more `Country` types to have some more variety:
 
-```
+```edgeql
 INSERT Country {
   name := 'France'
 };
@@ -30,7 +30,7 @@ Then we'll make a new type called `OtherPlace` for places that aren't cities or 
 
 Then we'll insert our first `OtherPlace`:
 
-```
+```edgeql
 INSERT OtherPlace {
   name := 'Castle Dracula'
 };
@@ -40,7 +40,7 @@ That gives us a good number of types from `Place` that aren't of the `City` type
 
 So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := SELECT Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. It looks like this:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Jonathan Harker',
   places_visited := (SELECT Place FILTER .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
@@ -51,20 +51,19 @@ You'll notice that we just wrote the names in a set using `{}`, so we didn't nee
 
 Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
 
-```
+```edgeql
 UPDATE NPC
-  FILTER
-  .name = 'Jonathan Harker'
-  SET {
-    places_visited += (SELECT Place FILTER .name = 'Slovakia')
+FILTER .name = 'Jonathan Harker'
+SET {
+  places_visited += (SELECT Place FILTER .name = 'Slovakia')
 };
 ```
 
 You'll know that it succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
 
 ```
-{ 
-  Object { id: <uuid>"6f436006-3f65-11eb-b6de-a3e7cc8efd4f" } 
+{
+  Object { id: <uuid>"6f436006-3f65-11eb-b6de-a3e7cc8efd4f" }
 }
 ```
 
@@ -76,7 +75,7 @@ With that we now know [all three operators](https://www.edgedb.com/docs/edgeql/s
 
 Let's do another update. Remember this?
 
-```
+```edgeql
 SELECT Person {
   name,
   lover
@@ -85,10 +84,10 @@ SELECT Person {
 
 Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her because we inserted him first. We can change that now:
 
-```
+```edgeql
 UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+SET {
+  lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
 };
 ```
 
@@ -96,11 +95,11 @@ Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
 
 Of course, if you use `UPDATE` without `FILTER` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
-```
+```edgeql
 UPDATE Person
-  SET {
-    places_visited := Place
-    };
+SET {
+  places_visited := Place
+};
 ```
 
 ## Concatenation with ++
@@ -109,7 +108,7 @@ One other operator is `++`, which does concatenation (joining together) instead 
 
 You can do simple operations with it like: `SELECT 'My name is ' ++ 'Jonathan Harker';` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
-```
+```edgeql
 SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
 ```
 
@@ -127,7 +126,7 @@ This prints:
 
 Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `multi link`:
 
-```
+```sdl
 type Vampire extending Person {
   property age -> int16;
   multi link slaves -> MinorVampire;
@@ -147,28 +146,28 @@ DETAILS: Object is still referenced in link master of default::MinorVampire (cc8
 
 So first we simply change `MinorVampire` to a type extending `Person`:
 
-```
+```sdl
 type MinorVampire extending Person {
 }
 ```
 
 and then we create them all together with Count Dracula like this:
 
-```
+```edgeql
 INSERT Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
     (INSERT MinorVampire {
       name := 'Woman 1',
-  }),
+    }),
     (INSERT MinorVampire {
-     name := 'Woman 2',
-  }),
+      name := 'Woman 2',
+    }),
     (INSERT MinorVampire {
-     name := 'Woman 3',
-  }),
- }
+      name := 'Woman 3',
+    }),
+  }
 };
 ```
 
@@ -178,7 +177,7 @@ Now we don't have to insert the `MinorVampire` types first and then filter: we c
 
 Then when we `select Vampire` like this:
 
-```
+```edgeql
 SELECT Vampire {
   name,
   slaves: {name}
@@ -191,7 +190,7 @@ We have a nice output that shows them all together:
 Object {
   name: 'Count Dracula',
   slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}},
-  },
+},
 ```
 
 This might make you wonder: what if we do want two-way links? There's actually a very convenient way to do it (it's called a **backward link**), but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
@@ -200,7 +199,7 @@ This might make you wonder: what if we do want two-way links? There's actually a
 
 What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
-```
+```edgeql
 SELECT <json>Vampire {
       # <json> is the only difference from the SELECT above
   name,
@@ -220,19 +219,19 @@ The output is:
 
 So what about the other way around, namely JSON to an EdgeDB type? You can do this too, but remember to think about the JSON type that you are giving to cast. The EdgeDB philosophy is that casts should be symmetrical: a type cast into JSON should only be cast back into that type. For example, here is the first date in the book Dracula as a string, then cast to JSON and then into a `cal::local_date`:
 
-```
+```edgeql
 SELECT <cal::local_date><json>'18870503';
 ```
 
 This is fine because `<json>` turns it into a JSON string, and `cal::local_date` can be created from a string. The result we get is `{<cal::local_date>'1887-05-03'}`. But if we try to turn the JSON value into an `int64`, it won't work:
 
-```
+```edgeql
 SELECT <int64><json>'18870503';
 ```
 
 The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number, null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
 
-```
+```edgeql
 SELECT <int64><str><json>'18870503';
 ```
 
@@ -248,7 +247,7 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
 
-   ```
+   ```edgeql
    SELECT NPC {
      name,
      greeting := ## Put the rest here

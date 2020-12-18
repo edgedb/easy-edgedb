@@ -22,7 +22,7 @@ Yes, and yes. EdgeDB will choose `decimal` as the more precise of the two types.
 
 This one is easy with the `to_datetime()` function:
 
-```
+```edgeql
 SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT') - to_datetime(2003, 12, 25, 5, 0, 0, 'TMT');
 ```
 
@@ -32,11 +32,11 @@ The answer is 568,000 seconds: `{568800s}`
 
 It would look something like this (depending on the name you give the variable and the order you prefer):
 
-```
+```edgeql
 WITH
   uzbek_time := (SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT')),
   turkmen_time := (SELECT to_datetime(2003, 12, 25, 5, 0, 0, 'TMT')),
- SELECT uzbek_time - turkmen_time;
+SELECT uzbek_time - turkmen_time;
 ```
 
 The output is exactly the same: `{568800s}`
@@ -48,8 +48,8 @@ The best way is `DESCRIBE TYPE AS SDL`, which doesn't have all the extra info th
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link master -> default::Vampire;
-};',
+     required single link master -> default::Vampire;
+   };',
 }
 ```
 

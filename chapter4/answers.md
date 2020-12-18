@@ -68,19 +68,23 @@ INSERT NPC {
 then wrap it in parentheses, add a SELECT and remove the `;`
 
 ```edgeql
-SELECT(INSERT NPC {
-  name := "The Innkeeper's Son",
-  age := 10
-});
+SELECT (
+  INSERT NPC {
+    name := "The Innkeeper's Son",
+    age := 10
+  }
+);
 ```
 
 Now just add the fields like in any other `SELECT`, then add `age_ten_years_later`:
 
 ```edgeql
-SELECT(INSERT NPC {
+SELECT (
+  INSERT NPC {
     name := "The Innkeeper's Son",
     age := 10
- }) {
+  }
+) {
   name,
   age,
   age_ten_years_later := .age + 10
