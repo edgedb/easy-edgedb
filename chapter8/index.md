@@ -232,6 +232,8 @@ Choosing the five objects from before from the output, it now looks like this:
 }
 ```
 
+This is officially called a [polymorphic query](https://www.edgedb.com/docs/edgeql/overview/#ref-eql-polymorphic-queries), and is one of the best reasons to use abstract types in your schema.
+
 ## Supertypes, subtypes, and generic types
 
 The official name for a type that gets extended to another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype = supertype` will return `{true}`. And of course, `supertype = subtype` = `{false}` because supertypes do not inherit the features of their subtypes.
