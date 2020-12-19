@@ -126,6 +126,28 @@ FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
 
 So it sends each tuple into the `FOR` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
 
+Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`, like this:
+
+```
+WITH london := ('London', 3500000),
+SELECT <tuple<json, int32>>london;
+```
+
+That gives us this output:
+
+```
+{("\"London\"", 3500000)}
+```
+
+Here's another example if we need to do some math with floats on London's population:
+
+```
+WITH london := <tuple<json, float64>>('London', 3500000),
+  SELECT (london.0, london.1 / 9);
+```
+
+The output is `{("\"London\"", 388888.8888888889)}`.
+
 ## Ordering results and using math
 
 Now that we have some numbers, we can start playing around with ordering and math. Ordering is quite simple: type `ORDER BY` and then indicate the property/link you want to order by. Here we order them by population:
