@@ -179,6 +179,17 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 
 Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having no data in a property.
 
+Finally, did you notice that we wrote a comment with `#` just now? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
+
+So this:
+
+```edgeql
+SELECT 1887#0503 is the first day of the book Dracula when...
+;
+```
+
+returns `{1887}`.
+
 [Here is all our code so far up to Chapter 2.](code.md)
 
 ## Time to practice
