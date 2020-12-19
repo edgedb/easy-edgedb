@@ -442,6 +442,10 @@ Not as bad as you might have thought! The two general rules for experimenting a 
 - You can get a lot done just by adding `CREATE` to every line, `ALTER` to change things and `DROP` to delete them,
 - Using `DESCRIBE TYPE` and `DESCRIBE TYPE AS SDL` are very useful to compare the two. If you do this with a type you created and are familiar with, you'll be able to use it as a stepping stone if you are curious about DDL.
 
+## EdgeDB lexical structure
+
+You might want to take a look at or bookmark [this page](https://www.edgedb.com/docs/edgeql/lexical/) for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. Things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
+
 ## Getting help
 
 Help is always just a message away. The best way to get help is to start a discussion on [our discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on this very page.
