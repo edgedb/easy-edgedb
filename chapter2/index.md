@@ -104,6 +104,8 @@ That also gives us `{true}` because all we did is ask if it is a `str`, which it
 
 Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
+Also note that casting is only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into each other.
+
 ## Filter
 
 Finally, let's learn how to `FILTER` before we're done Chapter 2. You can use `FILTER` after the curly brackets in `SELECT` to only show certain results. Let's `FILTER` to only show `Person` types that have the name 'Emil Sinclair':
