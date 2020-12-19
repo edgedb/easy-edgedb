@@ -4919,7 +4919,7 @@ so it gives: `{['tonight'], ['to-night']}`.
 
 And to match anything, you can use the wildcard character: `.`
 
-## One more note on `index on`
+## Two more notes on `index on`
 
 By the way, `index on` can also be used on expressions that you make yourself. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
@@ -4930,6 +4930,20 @@ type City extending Place {
     index on (.name ++ ': ' ++ <str>.population);
 }
 ```
+
+Also don't forget that you can add add an annotation to this as well. `(.name ++ ': ' + <str>.population)` might be a good case for an annotation if you think readers of the code might not know what it's for:
+
+```
+type City extending Place {
+    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    property population -> int64;
+    index on (.name ++ ': ' ++ <str>.population) {
+      annotation title := 'Lists city name and population for use in game function get_city_names';
+    }
+}
+```
+
+`get_city_names` isn't a real function; we're just pretending that it's used somewhere in the game and is important to remember.
 
 [Here is all our code so far up to Chapter 16.](code.md)
 
