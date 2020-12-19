@@ -238,7 +238,7 @@ SELECT <int64><str><json>'18870503';
 
 Now it works: we get `{18870503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
 
-The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) explains which JSON types turn into which EdgeDB types and is good to bookmark if you need to convert from JSON a lot.
+The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) explains which JSON types turn into which EdgeDB types and is good to bookmark if you need to convert from JSON a lot. You can also see a list of JSON functions [here](https://www.edgedb.com/docs/edgeql/funcops/json).
 
 [Here is all our code so far up to Chapter 6.](code.md)
 
