@@ -4,7 +4,7 @@
 
 Like this:
 
-```
+```edgeql
 SELECT Place {
   name,
   [IS Castle].doors
@@ -15,7 +15,7 @@ Without `[IS Castle]`, it will give an error.
 
 #### 2. How would you select `Place` types with `city_name` for `name` if it's a `City` and `country_name` for `name` if it's a `Country`?
 
-```
+```edgeql
 SELECT Place {
   city_name := [IS City].name,
   country_name := [IS Country].name
@@ -41,7 +41,7 @@ This question is because Question 2 gives this result:
 
 The `Object {city_name: {}, country_name: {}},` lines are not useful to us to we'll filter them out with `EXISTS`:
 
-```
+```edgeql
 SELECT Place {
   city_name := [IS City].name,
   country_name := [IS Country].name
@@ -52,23 +52,22 @@ SELECT Place {
 
 To get all these single people, names and object types, just do this:
 
-```
+```edgeql
 SELECT Person {
   name,
   __type__: {
     name
-    }
+  }
 } FILTER NOT EXISTS .lover;
 ```
 
 Don't forget `name` after type! It won't make an error but the type name will be something like this and not very helpful: `__type__: Object {id: 20ef52ae-1d97-11eb-8cb6-0de731b01cc9}`
 
-
 #### 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
 The two parts that need to be fixed are: 1) a `,` after `name` and a `.` after `[IS Castle]`:
 
-```
+```edgeql
 SELECT Place {
   __type__,
   name,
@@ -76,13 +75,13 @@ SELECT Place {
 };
 ```
 
-The part that *should* be fixed: we should probably put `name` after `__type__` so that it's readable to us (instead of `__type__: Object {id: e0a9ab38-1e6e-11eb-9497-5bb5357741af}`). It looks like this:
+The part that _should_ be fixed: we should probably put `name` after `__type__` so that it's readable to us (instead of `__type__: Object {id: e0a9ab38-1e6e-11eb-9497-5bb5357741af}`). It looks like this:
 
-```
+```edgeql
 SELECT Place {
   __type__: {
     name
-    },
+  },
   name,
   [IS Castle].doors
 };

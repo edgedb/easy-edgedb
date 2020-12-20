@@ -4,9 +4,9 @@
 
 The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
-```
+```sdl
 type City extending Place {
-    property population -> int64;
+  property population -> int64;
 }
 ```
 
@@ -20,7 +20,7 @@ By the way, here's the approximate population for our three cities at the time o
 
 Inserting Whitby is easy enough:
 
-```
+```edgeql
 INSERT City {
   name := 'Whitby',
   population := 14400
@@ -43,7 +43,7 @@ You'll remember that we use square brackets to access part of an array or a stri
 
 You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
-```
+```edgeql
 SELECT NPC.name[0:10];
 ```
 
@@ -63,7 +63,7 @@ This prints the first ten letters of every NPC's name:
 
 But the same can be done with a negative number if you want to start from the index at the end. For example:
 
-```
+```edgeql
 SELECT NPC.name[2:-2];
 ```
 
@@ -85,7 +85,7 @@ Tuples are quite different: they behave more like object types with properties t
 
 So this is completely fine:
 
-```
+```edgeql
 SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
 ```
 
@@ -100,7 +100,7 @@ The output is:
 
 But now that the type is set (this one is type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
 
-```
+```edgeql
 SELECT {(1, 2, 3), (4, 5, '6')};
 ```
 
@@ -115,13 +115,14 @@ In the above example we could easily just cast the last string into an integer a
 
 To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
 
-```
+```edgeql
 FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
-  UNION (
-    UPDATE City FILTER .name = data.0
-    SET {
+UNION (
+  UPDATE City FILTER .name = data.0
+  SET {
     population := data.1
-});
+  }
+);
 ```
 
 So it sends each tuple into the `FOR` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
@@ -152,7 +153,7 @@ The output is `{("\"London\"", 388888.8888888889)}`.
 
 Now that we have some numbers, we can start playing around with ordering and math. Ordering is quite simple: type `ORDER BY` and then indicate the property/link you want to order by. Here we order them by population:
 
-```
+```edgeql
 SELECT City {
   name,
   population
@@ -175,16 +176,16 @@ What's `DESC`? It means descending, so largest first and then going down. If we 
 
 For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as the `math` module [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
-```
+```edgeql
 WITH cities := City.population
-  SELECT (
-   'Number of cities: ' ++ <str>count(cities),
-   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
-   'Total population: ' ++ <str>sum(cities),
-   'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
-   'Average population: ' ++ <str>math::mean(cities),
-   'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
-   'Standard deviation: ' ++ <str>math::stddev(cities)
+SELECT (
+  'Number of cities: ' ++ <str>count(cities),
+  'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
+  'Total population: ' ++ <str>sum(cities),
+  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Average population: ' ++ <str>math::mean(cities),
+  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Standard deviation: ' ++ <str>math::stddev(cities)
 );
 ```
 
@@ -227,34 +228,34 @@ ERROR: InvalidReferenceError: function 'mean' does not exist
 
 If you don't want to write the module name every time you can just import the module after `WITH`. Let's slip that into the query we just used. See if you can see what's changed:
 
-```
+```edgeql
 WITH cities := City.population,
-MODULE math
-  SELECT (
-   'Number of cities: ' ++ <str>count(cities),
-   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
-   'Total population: ' ++ <str>sum(cities),
-   'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
-   'Average population: ' ++ <str>mean(cities),
-   'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
-   'Standard deviation: ' ++ <str>stddev(cities)
+  MODULE math
+SELECT (
+  'Number of cities: ' ++ <str>count(cities),
+  'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
+  'Total population: ' ++ <str>sum(cities),
+  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Average population: ' ++ <str>mean(cities),
+  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Standard deviation: ' ++ <str>stddev(cities)
 );
 ```
 
 The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`. This becomes useful once the schema gets a lot larger. In our game database you could imagine types inside modules like `characters::NPCs::Barkeeper` and using `WITH` would keep queries readable:
 
-```
+```edgeql
 WITH module characters::NPCs,
 SELECT Barkeeper {
   # properties, links...
-  }
+}
 ```
 
-You can also use `AS` to rename a module (well, to *alias* a module) in the same way that you can rename a type. So this will work too:
+You can also use `AS` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
 
-```
+```edgeql
 WITH M AS MODULE math,
-  SELECT M::mean(City.population);
+SELECT M::mean(City.population);
 ```
 
 That gives us the mean: `{831245.8}`.
@@ -282,7 +283,7 @@ That would lead us to think that we should have titles like `first_name`, `last_
 
 We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
 
-```
+```sdl
 property title -> str;
 property degrees -> str;
 property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
@@ -293,7 +294,7 @@ We could try to do something fancier with `degrees` by making it an `array<str>`
 
 Now it's time to insert Van Helsing:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
@@ -303,12 +304,13 @@ INSERT NPC {
 
 Now we can make use of these properties to liven up our conversation engine in the game. For example:
 
-```
+```edgeql
 WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
-  SELECT(
- 'There goes ' ++ helsing.name ++ '.',
- 'I say! Are you ' ++ helsing.conversational_name ++ '?',
- 'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.');
+SELECT (
+  'There goes ' ++ helsing.name ++ '.',
+  'I say! Are you ' ++ helsing.conversational_name ++ '?',
+  'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
+);
 ```
 
 By the way, the `\n` inside the string creates a new line, while `\t` moves it one tab to the right.
@@ -334,12 +336,13 @@ Besides `\n` and `\t` there are quite a few other escape characters - you can se
 
 If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
-```
+```edgeql
 WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
-  SELECT(
- 'There goes ' ++ helsing.name ++ '.',
- 'I say! Are you ' ++ helsing.conversational_name ++ '?',
- 'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.');
+SELECT (
+  'There goes ' ++ helsing.name ++ '.',
+  'I say! Are you ' ++ helsing.conversational_name ++ '?',
+  'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
+);
 ```
 
 Now we get:
@@ -356,7 +359,7 @@ Now we get:
 
 Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example:
 
-```
+```edgeql
 SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them." $$;
 ```
 
@@ -370,7 +373,7 @@ You now have an understanding of all the EdgeDB scalar types. Summed up, the are
 
 We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
 
-```
+```edgeql
 INSERT NPC {
   name := 'Johnny'
 };
@@ -380,16 +383,17 @@ But if we try again we will get this error: `ERROR: ConstraintViolationError: na
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `UNLESS CONFLICT ON` comes in, followed by an `ELSE` to explain what to do. `UNLESS CONFLICT ON` is probably easier to explain through an example. Here's one that shows what we can do to insert an unlimited number of characters named Johnny:
 
-```
+```edgeql
 WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
- INSERT NPC {
- name := 'Johnny'
- } UNLESS CONFLICT ON .name
- ELSE (
- UPDATE NPC
- SET {
- name := 'Johnny' ++ <str>(count(johnnies))
- });
+INSERT NPC {
+  name := 'Johnny'
+} UNLESS CONFLICT ON .name
+ELSE (
+  UPDATE NPC
+  SET {
+    name := 'Johnny' ++ <str>(count(johnnies))
+  }
+);
 ```
 
 Let's look at it step by step:
@@ -398,21 +402,21 @@ Let's look at it step by step:
 
 Then a normal insert:
 
-```
+```edgeql
 INSERT NPC {
- name := 'Johnny'
- }
+  name := 'Johnny'
+}
 ```
 
 But it might not work so we add `UNLESS CONFLICT ON .name`. Then follow it with an `ELSE` to give instructions on what to do.
 
 But here's the important part: we don't write `ELSE INSERT`, because we are already in the middle of an `INSERT`. What we write instead is `UPDATE` for the type we are inserting, so `UPDATE NPC`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
 
-```
+```edgeql
 UPDATE NPC
- SET {
- name := 'Johnny' ++ ' ' ++ <str>(count(johnnies))
- }
+SET {
+  name := 'Johnny' ++ ' ' ++ <str>(count(johnnies))
+}
 ```
 
 With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
@@ -425,11 +429,11 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
 
-   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')`
+   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')}`
 
 2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
 
-   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})`
+   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})}`
 
 3. How would you order the `Person` types by last letter of their names?
 

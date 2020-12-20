@@ -163,15 +163,15 @@ As you can see, `str`s are fine with unicode letters like ț. Even emojis and sp
 
 EdgeDB also has a byte literal type that gives you the bytes of a string, but they must be characters that are 1 byte long. You create it by adding a `b` in front of the string:
 
-```edgeql
-SELECT b'Bistritz';
+```edgeql-repl
+edgedb> SELECT b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
-```edgeql
-SELECT b'Bistrița';
+```edgeql-repl
+edgedb> SELECT b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
 ```
 
@@ -240,7 +240,7 @@ If you just want to return a single part of a type without the object structure,
 {'Budapest', 'Bistrița'}
 ```
 
-This type of expression is called a *path expression* or a *path*, because it is the direct path to the values inside. And each `.` moves on to the next path, if there is another one to follow.
+This type of expression is called a _path expression_ or a _path_, because it is the direct path to the values inside. And each `.` moves on to the next path, if there is another one to follow.
 
 You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. Those names you choose become the variable names that are displayed. For example:
 
@@ -263,7 +263,7 @@ This prints:
 
 This will not change anything inside the schema - it's just a quick variable name to use in a query.
 
-By the way, `.name` is short for `City.name`. You can also write `City.name` each time (that's called the *fully qualified name*), but it's not required.
+By the way, `.name` is short for `City.name`. You can also write `City.name` each time (that's called the _fully qualified name_), but it's not required.
 
 So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
 

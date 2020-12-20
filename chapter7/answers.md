@@ -4,7 +4,7 @@
 
 Easy, just use the `len()` function:
 
-```
+```edgeql
 SELECT City {
   name,
   name_length := len(.name)
@@ -15,7 +15,7 @@ SELECT City {
 
 For this we use our old friends `IF EXISTS` and `ELSE`:
 
-```
+```edgeql
 SELECT City {
   name,
   length_difference := len(.name) - len(.modern_name) IF EXISTS .modern_name ELSE 0
@@ -26,7 +26,7 @@ SELECT City {
 
 First of all, here's what we can't do:
 
-```
+```edgeql
 SELECT City {
   name,
   length_difference := len(.name) - len(.modern_name) IF EXISTS .modern_name ELSE 'Modern name does not exist'
@@ -41,7 +41,7 @@ error: operator 'std::IF' cannot be applied to operands of type 'std::int64', 's
 
 Fortunately, we can just cast the results to a string:
 
-```
+```edgeql
 SELECT City {
   name,
   length_difference := <str>(len(.name) - len(.modern_name)) IF EXISTS .modern_name ELSE 'Modern name does not exist'
@@ -63,7 +63,7 @@ It should give this result:
 
 It looks like this:
 
-```
+```edgeql
 INSERT NPC {
   name := 'NPC number ' ++ <str>(count(DETACHED NPC) + 1)
 };
@@ -75,7 +75,7 @@ INSERT NPC {
 
 First, here's how **not** to do it:
 
-```
+```edgeql
 SELECT Person {
   name,
 } FILTER len(.name) = min(len(Person.name));
@@ -85,19 +85,17 @@ This seems like it might work, but `min(len(Person.name))` is the minimum length
 
 Adding `DETACHED` solves it:
 
-```
+```edgeql
 SELECT Person {
   name,
-} FILTER len(.name) = min(len(Person.name));
+} FILTER len(.name) = min(len(DETACHED Person.name));
 ```
 
 We could do the same with `WITH` as well, which is maybe a bit easier to read:
 
-```
+```edgeql
 WITH minimum_length := min(len(DETACHED Person.name))
-  SELECT Person {
-    name,
+SELECT Person {
+  name,
 } FILTER len(.name) = minimum_length;
 ```
-
-

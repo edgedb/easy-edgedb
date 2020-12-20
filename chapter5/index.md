@@ -20,7 +20,7 @@ One other way to get a `datetime` is to use the `to_datetime()` function. [Here 
 
 By the way, you'll notice one unfamiliar type inside called a [`decimal`](https://www.edgedb.com/docs/datamodel/scalars/numeric#type::std::decimal) type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=-3c8G0JMM5Q) thanks to rounding errors. This example shows it:
 
-```
+```edgeql-repl
 edgedb> SELECT 6.777777777777777; # Good so far
 {6.777777777777777}
 edgedb> SELECT 6.7777777777777777; # Add one more digit...
@@ -29,7 +29,7 @@ edgedb> SELECT 6.7777777777777777; # Add one more digit...
 
 If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
 
-```
+```edgeql-repl
 edgedb> SELECT 6.7777777777777777n;
 {6.7777777777777777n}
 edgedb> SELECT 6.7777777777777777777777777777777777777777777777777n;
@@ -38,7 +38,7 @@ edgedb> SELECT 6.7777777777777777777777777777777777777777777777777n;
 
 Meanwhile, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
 
-```
+```edgeql-repl
 edgedb> SELECT 9223372036854775807; # Good so far...
 {9223372036854775807}
 edgedb> SELECT 9223372036854775808; # But add 1 and it will fail
@@ -47,7 +47,7 @@ ERROR: NumericOutOfRangeError: std::int64 out of range
 
 So here you can just add an `n` and it will create a `bigint` that can accommodate any size.
 
-```
+```edgeql-repl
 edgedb> SELECT 9223372036854775808n;
 {9223372036854775808n}
 ```
@@ -77,7 +77,7 @@ The `07:35:00` part shows that it was automatically converted to UTC, which is L
 
 We can also use this to see the duration between events. EdgeDB has a `duration` type that you can get by subtracting a datetime from another one. Let's practice by calculating the exact number of seconds between one date in Central Europe and another in Korea:
 
-```
+```edgeql
 SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
 ```
 
@@ -85,7 +85,7 @@ This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 200
 
 Now let's try something similar with Jonathan in Castle Dracula again, trying to escape. It's May 12 at 10:35 am. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
 
-```
+```edgeql
 SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST') - to_datetime(2020, 5, 12, 6, 10, 0, 'UTC');
 ```
 
@@ -93,11 +93,11 @@ The answer is 5100 seconds: `{5100s}`.
 
 To make the query easier for us to read, we can also use the `WITH` keyword to create variables. We can then use the variables in `SELECT` below. We'll make one called `jonathan_wants_to_escape` and another called `mina_has_tea`, and subtract one from another to get a `duration`. With variable names it is now a lot clearer what we are trying to do:
 
-```
+```edgeql
 WITH
   jonathan_wants_to_escape := to_datetime(2020, 5, 12, 10, 35, 0, 'EEST'),
   mina_has_tea := to_datetime(2020, 5, 12, 6, 10, 0, 'UTC'),
-  SELECT jonathan_wants_to_escape - mina_has_tea;
+SELECT jonathan_wants_to_escape - mina_has_tea;
 ```
 
 The output is the same: `{5100s}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
@@ -108,7 +108,7 @@ Besides subtracting a `datetime` from another `datetime`, you can also just cast
 
 You can include multiple units as well. For example:
 
-```
+```edgeql
 SELECT <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 ```
 
@@ -116,7 +116,7 @@ This will return `{21960.688999s}`.
 
 EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. So even this horrible input will work:
 
-```
+```edgeql
 SELECT <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
   <duration>'10 microsecond 7 minutes %%%%%%% 10 seconds 5 hour';
 ```
@@ -127,14 +127,14 @@ The result: `{-14344.99401s}`.
 
 One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
 
-```
-SELECT datetime_current();
+```edgeql-repl
+edgedb> SELECT datetime_current();
 {<datetime>'2020-11-17T06:13:24.418765000Z'}
 ```
 
 This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. If we were to put it into the `Place` type for example it would look like this:
 
-```
+```sdl
 abstract type Place {
   required property name -> str;
   property modern_name -> str;
@@ -147,7 +147,7 @@ abstract type Place {
 
 Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`. This is because Dracula controls them and they only exist as `MinorVampire`s because he exists.
 
-```
+```sdl
 type MinorVampire extending Person {
   required link master -> Vampire;
 }
@@ -155,7 +155,7 @@ type MinorVampire extending Person {
 
 Now that it's required, we can't insert a `MinorVampire` with just a name. It will give us this error: `ERROR: MissingRequiredError: missing value for required link default::MinorVampire.master`. So let's insert one and connect her to Dracula:
 
-```
+```edgeql
 INSERT MinorVampire {
   name := 'Woman 1',
   master := (SELECT Vampire Filter .name = 'Count Dracula'),
@@ -180,7 +180,7 @@ Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Per
 {
   'CREATE TYPE default::MinorVampire EXTENDING default::Person {
     CREATE REQUIRED SINGLE LINK master -> default::Vampire;
-};',
+  };',
 }
 ```
 
@@ -194,7 +194,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 {
   'type default::MinorVampire extending default::Person {
     required single link master -> default::Vampire;
-};',
+  };',
 }
 ```
 
@@ -214,7 +214,7 @@ The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, 
         readonly := true;
     };
     required single property name -> std::str;
-};',
+  };',
 }
 ```
 

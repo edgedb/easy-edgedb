@@ -6,7 +6,7 @@
 
 While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
 
-```
+```sdl
 abstract type Person {
   required property name -> str { ## Add a block
       constraint exclusive;       ## and the constraint
@@ -18,7 +18,7 @@ abstract type Person {
 
 Now we know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
 
-```
+```sdl
 abstract type Place {
   required property name -> str {
       constraint exclusive;
@@ -34,7 +34,7 @@ Now that our `Person` type has `constraint exclusive` for the property `name`, n
 
 Fortunately there's an easy way to get around this: the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. So the type is exactly the same except for this keyword:
 
-```
+```sdl
 abstract type Place {
   required property name -> str {
       delegated constraint exclusive;
@@ -55,7 +55,7 @@ Let's also think about our game mechanics a bit. The book says that the doors in
 
 So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
-```
+```sdl
 type Castle extending Place {
     property doors -> array<int16>;
 }
@@ -63,10 +63,10 @@ type Castle extending Place {
 
 Then we'll imagine that there are three main doors to enter and leave Castle Dracula, so we `INSERT` them as follows:
 
-```
+```edgeql
 INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
+  name := 'Castle Dracula',
+  doors := [6, 19, 10],
 };
 ```
 
@@ -74,10 +74,10 @@ Then we will also add a `property strength -> int16;` to our `Person` type. It w
 
 Now we'll give Jonathan a strength of 5. That's easy with `UPDATE` and `SET` like before:
 
-```
+```edgeql
 UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
-    strength := 5
+SET {
+  strength := 5
 };
 ```
 
@@ -85,11 +85,11 @@ Great. We know that Jonathan can't break out of the castle, but let's try to sho
 
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
-```
+```edgeql
 WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT jonathan_strength > min(castle_doors);
+SELECT jonathan_strength > min(castle_doors);
 ```
 
 Here's the error:
@@ -110,18 +110,18 @@ That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[
 
 Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
 
-```
+```edgeql
 WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT jonathan_strength > min(array_unpack(doors));
+SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
 
 Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` types:
 
-```
+```edgeql
 SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
 ```
 
@@ -137,7 +137,7 @@ Don't forget that we need to cast with `<str>` because `len()` returns an intege
 
 The other example is with `count()`, which also has a cast to a `<str>`:
 
-```
+```edgeql
 SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more places than castles';
 ```
 
@@ -149,11 +149,11 @@ In a few chapters we will learn how to create our own functions to make queries 
 
 Imagine we need to look up `City` types all the time, with this sort of query:
 
-```
+```edgeql
 SELECT City {
   name,
   population
-  } FILTER .name ILIKE '%a%' AND len(.name) > 5 AND .population > 6000;
+} FILTER .name ILIKE '%a%' AND len(.name) > 5 AND .population > 6000;
 ```
 
 This works fine, returning one city: `{Object {name: 'Buda-Pesth', population: 402706}}`.
@@ -162,42 +162,42 @@ But this last line with all the filters can be a little annoying to change: ther
 
 This could be a good time to add parameters to a query by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
 
-```
+```edgeql
 SELECT City {
   name
-  } FILTER .name = 'London';
+} FILTER .name = 'London';
 ```
 
 Now let's change 'London' to `$name`. Note: this won't work yet. Try to guess why!
 
-```
+```edgeql
 SELECT City {
   name
-  } FILTER .name = $name;
+} FILTER .name = $name;
 ```
 
 The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: missing a type cast before the parameter`. So because it's a string, we'll cast with `<str>`:
 
-```
+```edgeql
 SELECT City {
   name
-  } FILTER .name = <str>$name;
+} FILTER .name = <str>$name;
 ```
 
 When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{Object {name: 'London'}}`
 
 Now let's take that to make a much more complicated (and useful) query, using three parameters. We'll call them `$name`, `$population`, and `$length`. Don't forget to cast them all:
 
-```
+```edgeql
 SELECT City {
   name,
   population,
-  } FILTER
-  .name ILIKE '%' ++ <str>$name ++ '%'
+} FILTER
+    .name ILIKE '%' ++ <str>$name ++ '%'
   AND
-  .population > <int64>$population
+    .population > <int64>$population
   AND
-  <int64>len(.name) > <int64>$length;
+    <int64>len(.name) > <int64>$length;
 ```
 
 Since there are three of them, EdgeDB will ask us to input three values. Here's one example of what it looks like:
@@ -219,14 +219,16 @@ So that will give all `City` types with u in the name, population of more than 2
 
 Parameters work just as well in inserts too. Here's a `Date` insert that prompts the user for the hour, minute, and second:
 
-```
-SELECT(INSERT Date {
- date := <str>$hour ++ <str>$minute ++ <str>$second
- }) {
- date,
- local_time,
- hour,
- awake
+```edgeql
+SELECT(
+  INSERT Date {
+    date := <str>$hour ++ <str>$minute ++ <str>$second
+  }
+) {
+  date,
+  local_time,
+  hour,
+  awake
 };
 Parameter <str>$hour: 10
 Parameter <str>$minute: 09
@@ -245,19 +247,21 @@ Here's the output:
   },
 }
 ```
-  
+
 Note that the cast means you can just type 10, not '10'.
 
-So what if you just want to have the *option* of a parameter? No problem, just put `OPTIONAL` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
+So what if you just want to have the _option_ of a parameter? No problem, just put `OPTIONAL` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
 
-```
-SELECT(INSERT Date {
- date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
- }) {
- date,
- local_time,
- hour,
- awake
+```edgeql
+SELECT(
+  INSERT Date {
+    date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
+  }
+) {
+  date,
+  local_time,
+  hour,
+  awake
 };
 ```
 
