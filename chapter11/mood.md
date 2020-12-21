@@ -33,3 +33,39 @@ Presently he took an opportunity of telling Mrs. Westenra that she must not remo
 After another hour Lucy waked from her sleep, fresh and bright and seemingly not much the worse for her terrible ordeal.
 
 What does it all mean? I am beginning to wonder if my long habit of life amongst the insane is beginning to tell upon my own brain.
+
+## Background: first arrival of the garlic + garlic flowers and their application
+
+11 September.—This afternoon I went over to Hillingham. Found Van Helsing in excellent spirits, and Lucy much better. Shortly after I had arrived, a big parcel from abroad came for the Professor. He opened it with much impressment—assumed, of course—and showed a great bundle of white flowers.
+
+“These are for you, Miss Lucy,” he said.
+
+“For me? Oh, Dr. Van Helsing!”
+
+“Yes, my dear, but not for you to play with. These are medicines.” Here Lucy made a wry face. “Nay, but they are not to take in a decoction or in nauseous form, so you need not snub that so charming nose, or I shall point out to my friend Arthur what woes he may have to endure in seeing so much beauty that he so loves so much distort. Aha, my pretty miss, that bring the so nice nose all straight again. This is medicinal, but you do not know how. I put him in your window, I make pretty wreath, and hang him round your neck, so that you sleep well. Oh yes! they, like the lotus flower, make your trouble forgotten. It smell so like the waters of Lethe, and of that fountain of youth that the Conquistadores sought for in the Floridas, and find him all too late.”
+
+Whilst he was speaking, Lucy had been examining the flowers and smelling them. Now she threw them down, saying, with half-laughter, and half-disgust:—
+
+“Oh, Professor, I believe you are only putting up a joke on me. Why, these flowers are only common garlic.”
+
+To my surprise, Van Helsing rose up and said with all his sternness, his iron jaw set and his bushy eyebrows meeting:—
+
+“No trifling with me! I never jest! There is grim purpose in all I do; and I warn you that you do not thwart me. Take care, for the sake of others if not for your own.” Then seeing poor Lucy scared, as she might well be, he went on more gently: “Oh, little miss, my dear, do not fear me. I only do for your good; but there is much virtue to you in those so common flowers. See, I place them myself in your room. I make myself the wreath that you are to wear. But hush! no telling to others that make so inquisitive questions. We must obey, and silence is a part of obedience; and obedience is to bring you strong and well into loving arms that wait for you. Now sit still awhile. Come with me, friend John, and you shall help me deck the room with my garlic, which is all the way from Haarlem, where my friend Vanderpool raise herb in his glass-houses all the year. I had to telegraph yesterday, or they would not have been here.”
+
+We went into the room, taking the flowers with us. The Professor’s actions were certainly odd and not to be found in any pharmacopœia that I ever heard of. First he fastened up the windows and latched them securely; next, taking a handful of the flowers, he rubbed them all over the sashes, as though to ensure that every whiff of air that might get in would be laden with the garlic smell. Then with the wisp he rubbed all over the jamb of the door, above, below, and at each side, and round the fireplace in the same way. It all seemed grotesque to me, and presently I said:—
+
+“Well, Professor, I know you always have a reason for what you do, but this certainly puzzles me. It is well we have no sceptic here, or he would say that you were working some spell to keep out an evil spirit.”
+
+“Perhaps I am!” he answered quietly as he began to make the wreath which Lucy was to wear round her neck.
+
+We then waited whilst Lucy made her toilet for the night, and when she was in bed he came and himself fixed the wreath of garlic round her neck. The last words he said to her were:—
+
+“Take care you do not disturb it; and even if the room feel close, do not to-night open the window or the door.”
+
+“I promise,” said Lucy, “and thank you both a thousand times for all your kindness to me! Oh, what have I done to be blessed with such friends?”
+
+As we left the house in my fly, which was waiting, Van Helsing said:—
+
+“To-night I can sleep in peace, and sleep I want—two nights of travel, much reading in the day between, and much anxiety on the day to follow, and a night to sit up, without to wink. To-morrow in the morning early you call for me, and we come together to see our pretty miss, so much more strong for my ‘spell’ which I have work. Ho! ho!”
+
+He seemed so confident that I, remembering my own confidence two nights before and with the baneful result, felt awe and vague terror. It must have been my weakness that made me hesitate to tell it to my friend, but I felt it all the more, like unshed tears.
