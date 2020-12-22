@@ -4,15 +4,16 @@
 
 It's pretty simple, just don't forget to return `NPC` (or `Person`, depending on your preference):
 
-```
+```sdl
 function lucy() -> NPC
   using (
-  SELECT NPC FILTER .name = 'Lucy Westenra');
+    SELECT NPC FILTER .name = 'Lucy Westenra'
+  );
 ```
 
 Then you would use it as follows:
 
-```
+```edgeql
 SELECT lucy() {
   name,
   places_visited: {name}
@@ -23,17 +24,18 @@ SELECT lucy() {
 
 Let's call the function `get_two()`. It could look like this:
 
-```
+```sdl
 function get_two(one: str, two: str) -> SET OF Person
- using (
- with person_1 := (SELECT Person filter .name = one LIMIT 1),
- person_2 := (SELECT Person filter .name = two LIMIT 1),
- SELECT {person_1, person_2});
+  using (
+    WITH person_1 := (SELECT Person filter .name = one LIMIT 1),
+         person_2 := (SELECT Person filter .name = two LIMIT 1),
+    SELECT {person_1, person_2}
+  );
 ```
 
 Here it is used for a regular query for John Seward, Count Dracula and their slaves:
 
-```
+```edgeql
 SELECT get_two('John Seward', 'Count Dracula') {
   name,
   [IS Vampire].slaves: {name},
@@ -60,7 +62,7 @@ Here's the output:
 
 Looking at the input, you can see that there will be 16 lines generated, because each part of each set will be combined with each part of every other set:
 
-```
+```edgeql
 SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
 ```
 
@@ -93,18 +95,18 @@ That gives the following result:
 
 Here's one way to do it:
 
-```
+```sdl
 function two_cities(city_one: str, city_two: str) -> float64
   using (
     WITH first_city := (SELECT City filter .name = city_one),
          second_city := (SELECT City filter .name = city_two),
     SELECT first_city.population / second_city.population
-);
+  );
 ```
 
 Then it would be used in this sort of way:
 
-```
+```edgeql-repl
 edgedb> SELECT two_cities('Munich', 'Bistritz');
 {25.277252747252746}
 edgedb> SELECT two_cities('Munich', 'London');

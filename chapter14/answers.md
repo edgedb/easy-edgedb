@@ -4,7 +4,7 @@
 
 One way to do it is with `enumerate()`. This is easy if we are just starting from 0, since `enumerate()` gives a tuple with two items. The first one is an `int64` so we select that:
 
-```
+```edgeql
 SELECT enumerate(Person).0;
 ```
 
@@ -12,17 +12,18 @@ That will display: `{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1
 
 Warning: selecting `.1` will generate an error since that is where the rest of the object type is, and there is no way to properly display that. But displaying a single property is fine, such as in this example:
 
-```
+```edgeql
 SELECT enumerate(Person.strength).1;
 ```
 
 So now how to display starting from 1? With a `FOR` loop:
 
-```
+```edgeql
 WITH numbers := enumerate(Person).0,
- FOR number in {numbers}
- UNION(
- SELECT number + 1);
+FOR number in {numbers}
+UNION (
+  SELECT number + 1
+);
 ```
 
 Don't forget to write `number in {numbers}` so that `numbers` becomes a set.
@@ -31,15 +32,15 @@ Don't forget to write `number in {numbers}` so that `numbers` becomes a set.
 
 This is not too hard if you start it in steps, first with a filter to get all the `Place` types:
 
-```
+```edgeql
 SELECT Place {
   name
-  } FILTER .name LIKE '%o%';
+} FILTER .name LIKE '%o%';
 ```
 
 And here they are:
 
-```
+```edgeql
 {
   default::Country {name: 'Romania'},
   default::Country {name: 'Slovakia'},
@@ -49,11 +50,11 @@ And here they are:
 
 Now we'll add the reverse lookup to the same query, and call the computable `visitors`:
 
-```
+```edgeql
 SELECT Place {
- name,
- visitors := .<places_visited[IS Person].name
- } FILTER .name LIKE '%o%';
+  name,
+  visitors := .<places_visited[IS Person].name
+} FILTER .name LIKE '%o%';
 ```
 
 Now we can see who visited:
@@ -85,11 +86,11 @@ A clear victory for London as the most visited place! If you wanted, you could a
 
 We can do it with a computable again, which we'll call `later_vampire`. Then we use reverse lookup to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
 
-```
+```edgeql
 SELECT Person {
   name,
   later_vampire := .<former_self[IS MinorVampire].name
-  } FILTER exists .later_vampire;
+} FILTER exists .later_vampire;
 ```
 
 That just gives us Lucy:
@@ -98,16 +99,16 @@ That just gives us Lucy:
 
 This is not bad, but we can probably do better - `later_vampire` here isn't telling us anything about the type. Let's add some type info:
 
-```
+```edgeql
 SELECT Person {
-   name,
-   later_vampire := .<former_self[IS MinorVampire] {
-     name,
-     __type__: {
-       name
-       }
-     }
-   } FILTER exists .later_vampire;
+  name,
+  later_vampire := .<former_self[IS MinorVampire] {
+    name,
+    __type__: {
+      name
+    }
+  }
+} FILTER exists .later_vampire;
 ```
 
 Now we can see that `later_vampire` is of type `MinorVampire` instead of just displaying a string:
@@ -130,16 +131,16 @@ Now we can see that `later_vampire` is of type `MinorVampire` instead of just di
 
 First you would create the annotation itself, since it's not available yet:
 
-```
+```sdl
 abstract annotation note;
 ```
 
 After that you would just put it into the `MinorVampire` type and it's done!
 
-```
+```sdl
 type MinorVampire extending Person {
-    link former_self -> Person;
-    annotation note := 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type';
+  link former_self -> Person;
+  annotation note := 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type';
 }
 ```
 
@@ -147,7 +148,7 @@ type MinorVampire extending Person {
 
 It would look like this:
 
-```
+```edgeql
 SELECT (INTROSPECT MinorVampire) {
   name,
   annotations: {

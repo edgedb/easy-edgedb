@@ -4,20 +4,20 @@
 
 Here it is, similar to the `Ship` insert we did:
 
-```
+```edgeql
 INSERT NPC {
- name := 'Mr. Swales',
- places_visited := {
-   (INSERT City {
-     name := 'York'
-   }),
-   (INSERT Country {
-     name := 'England'
-   }),
-   (INSERT OtherPlace {
-     name := 'Whitby Abbey'
-   }),
- }
+  name := 'Mr. Swales',
+  places_visited := {
+    (INSERT City {
+      name := 'York'
+    }),
+    (INSERT Country {
+      name := 'England'
+    }),
+    (INSERT OtherPlace {
+      name := 'Whitby Abbey'
+    }),
+  }
 };
 ```
 
@@ -25,7 +25,7 @@ INSERT NPC {
 
 This query:
 
-```
+```edgeql
 SELECT (INTROSPECT Ship) {
   name,
   properties,
@@ -54,15 +54,11 @@ is one third readable: `name` will actually show up as a real human-readable nam
 
 Add `: {name}` in two places to make it fully readable:
 
-```
+```edgeql
 SELECT (INTROSPECT Ship) {
   name,
-  properties: {
-    name
-    },
-  links: {
-    name
-    },
+  properties: {name},
+  links: {name},
 };
 ```
 
@@ -89,7 +85,7 @@ Now it gives this:
 
 Similar to how `SELECT Vampire.name` just gives all the names for the `Vampire` type (as opposed to `SELECT Vampire { name }`, you can do this:
 
-``` 
+```edgeql
 SELECT (Introspect Vampire).links { name };
 ```
 
@@ -112,10 +108,10 @@ Here's the output:
 {2, 3, 3, 4}
 ```
 
-You can see that `DISTINCT` works individually on each set, so `SELECT DISTINCT {1, 2} + {1, 2};` and `SELECT {1, 2} + {1, 2};` are the same. But if you were to write `SELECT {2, 2}` the output would be just `{2}`.
+You can see that `DISTINCT` works individually on each set, so `SELECT DISTINCT {1, 2} + {1, 2};` and `SELECT {1, 2} + {1, 2};` are the same. But if you were to write `SELECT DISTINCT {2, 2}` the output would be just `{2}`.
 
 #### 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
 
-The output will be `{2, 2}` because `DISTINCT` only works on the first set.
+The output will be `{4, 4}` because `DISTINCT` only works on the first set.
 
-To get the output {2}, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`
+To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`

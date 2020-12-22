@@ -12,7 +12,7 @@ This chapter they learned something about vampires: they need to sleep in coffin
 
 This sounds like a good case for an abstract type. Here it is:
 
-```
+```sdl
 abstract type HasCoffins {
   required property coffins -> int16 {
     default := 0;
@@ -32,7 +32,7 @@ With a more complex game we could imagine that vampire terrorism is worse in the
 
 With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City`, `OtherPlace`, etc.:
 
-```
+```sdl
 abstract type Place extending HasCoffins {
   required property name -> str {
     constraint exclusive;
@@ -44,7 +44,7 @@ abstract type Place extending HasCoffins {
 
 Ships are also big enough to have coffins (the Demeter had 50 of them, after all) so we'll extend for `Ship` as well:
 
-```
+```sdl
 type Ship extending HasCoffins {
   property name -> str;
   multi link sailors -> Sailor;
@@ -54,19 +54,19 @@ type Ship extending HasCoffins {
 
 If we want, we can now make a quick function to test whether a vampire can enter a place:
 
-```
+```sdl
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := (SELECT Person filter .name = person_name LIMIT 1)
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-        );
+  );
 ```
 
 You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
 
 - Overload the function to have two signatures, one for each type of Vampire:
 
-```
+```sdl
 function can_enter(vampire: Vampire, place: HasCoffins) -> str
 function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 ```
@@ -77,16 +77,16 @@ Overloading the function is probably the easier option, because we wouldn't need
 
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
-```
+```edgeql
 UPDATE City filter .name = 'London'
-  SET {
-    coffins := 21
- };
+SET {
+  coffins := 21
+};
 ```
 
 Now we can finally call up our function and see if it works:
 
-```
+```edgeql
 SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
 ```
 
@@ -103,7 +103,7 @@ Let's look at some more constraints. We've seen `exclusive` and `max_value` alre
 
 There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
 
-```
+```sdl
 type PC extending Person {
   required property transport -> Transport;
   overloaded required property name -> str {
@@ -116,7 +116,7 @@ Then when we try to insert a `PC` with a name that is too long, it will refuse w
 
 Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `property title -> str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
-```
+```sdl
 property title -> str {
   constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord')
 }
@@ -126,7 +126,7 @@ For us it's probably not worth it to add a `one_of` constraint though, as there 
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
-```
+```sdl
 property month -> int64 {
   constraint one_of(5, 6, 7, 8, 9, 10)
 }
@@ -142,7 +142,7 @@ One particularly flexible constraint is called [`expression on`](https://www.edg
 
 Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called [contains()](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) that looks like this:
 
-```
+```sdl
 std::contains(haystack: str, needle: str) -> bool
 ```
 
@@ -150,11 +150,11 @@ It returns `{true}` if the `haystack` (a string) contains the `needle` (usually 
 
 We can write the constraint with `expression on` and `contains()` like this:
 
-```
+```sdl
 type Lord extending Person {
   constraint expression on (
     contains(__subject__.name, 'Lord') = true
-    );
+  );
 }
 ```
 
@@ -162,7 +162,7 @@ type Lord extending Person {
 
 Now when we try to insert a `Lord` without it, it won't work:
 
-```
+```edgeql
 INSERT Lord {
   name := 'Billy'
   # Other stuff..
@@ -173,17 +173,18 @@ But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
 
 While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
 
-```
+```edgeql
 SELECT (
- INSERT Lord {
- name := 'Lord Billy',
- places_visited := (SELECT Place),
- }) {
- name,
- places_visited: {
-   name
-   }
- };
+  INSERT Lord {
+    name := 'Lord Billy',
+    places_visited := (SELECT Place),
+  }
+) {
+  name,
+  places_visited: {
+    name
+  }
+};
 ```
 
 Now that `.name` contains the substring `Lord`, it works like a charm:
@@ -220,11 +221,11 @@ Now the error becomes:
 
 Here's the `Lord` type now:
 
-```
+```sdl
 type Lord extending Person {
-    constraint expression on (contains(__subject__.name, 'Lord') = true) {
-        errmessage := "All lords need \'Lord\' in their name";
-    };
+  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+    errmessage := "All lords need \'Lord\' in their name";
+  };
 };
 ```
 
@@ -236,49 +237,51 @@ Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire
 
 First, here is the `MinorVampire` type at present:
 
-```
+```sdl
 type MinorVampire extending Person {
-    link former_self -> Person;
+  link former_self -> Person;
 }
 ```
 
 To add the `master` link again, the best way is to start with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
 
-```
+```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := (SELECT .<slaves[IS Vampire] FILTER .name = MinorVampire.master_name LIMIT 1;
+  link master := (
+    SELECT .<slaves[IS Vampire] FILTER .name = MinorVampire.master_name LIMIT 1
+  );
   required single property master_name -> str;
 };
 ```
 
 Now let's test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
 
-```
+```edgeql
 INSERT Vampire {
- name := 'Kain',
- slaves := {
-   (INSERT MinorVampire {
-     name := 'Billy',
-     master_name := 'Kain'
-   }),
-   (INSERT MinorVampire {
-     name := 'Bob',
-     master_name := 'Kain'
-   })
+  name := 'Kain',
+  slaves := {
+    (INSERT MinorVampire {
+      name := 'Billy',
+      master_name := 'Kain'
+    }),
+    (INSERT MinorVampire {
+      name := 'Bob',
+      master_name := 'Kain'
+    })
   }
 };
 ```
 
 Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to do a reverse lookup. Let's check:
 
-```
+```edgeql
 SELECT MinorVampire {
-   name,
-   master_name,
-   master: {
-     name
-   }
+  name,
+  master_name,
+  master: {
+    name
+  }
 } FILTER .name IN {'Billy', 'Bob'};
 ```
 

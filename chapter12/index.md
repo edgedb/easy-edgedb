@@ -12,31 +12,31 @@ Last chapter, we used the `fight()` function for some characters, but most only 
 
 Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called [round()](https://www.edgedb.com/docs/edgeql/funcops/generic/#function::std::round) that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
 
-```
+```edgeql
 SELECT <int16>round((random() * 5));
 ```
 
 So now we'll use this to update our Person types and give them all a random strength.
 
-```
+```edgeql
 WITH random_5 := (SELECT <int16>round((random() * 5)))
  # WITH isn't necessary - just making the query prettier
 
 UPDATE Person
-  FILTER NOT EXISTS .strength
-  SET {
-    strength := random_5
+FILTER NOT EXISTS .strength
+SET {
+  strength := random_5
 };
 ```
 
 And we'll make sure Count Dracula gets 20 strength, because he's Dracula:
 
-```
+```edgeql
 UPDATE Vampire
 FILTER .name = 'Count Dracula'
 SET {
   strength := 20
-  };
+};
 ```
 
 Now let's `SELECT Person.strength;` and see if it works:
@@ -49,16 +49,16 @@ Looks like it worked.
 
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight. There are a lot of ways to do it, but we'll choose a simple one:
 
-```
-    function fight(names: str, one: int16, two: Person) -> str
+```sdl
+function fight(names: str, one: int16, two: Person) -> str
   using (
     SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
-);
+  );
 ```
 
 Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
 
-```
+```sdl
 fight(one: Person, two: Person) -> str
 fight(names: str, one: int16, two: Person) -> str
 ```
@@ -69,14 +69,16 @@ So now it's the same function name, but we enter the names of the people togethe
 
 Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
 
-```
+```edgeql
 WITH
-  jon_and_ren_strength := <int16>(SELECT sum(
-    (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength)
-    ),
+  jon_and_ren_strength := <int16>(
+    SELECT sum(
+      (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength
+    )
+  ),
   dracula := (SELECT Person FILTER .name = 'Count Dracula'),
 
-  SELECT fight('Jon and Ren', jon_and_ren_strength, dracula);
+SELECT fight('Jon and Ren', jon_and_ren_strength, dracula);
 ```
 
 So did they...
@@ -87,11 +89,16 @@ So did they...
 
 No, they didn't win. How about four people?
 
-```
+```edgeql
 WITH
-  four_people_strength := <int16>(SELECT sum(
-    (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'}).strength)
-    ),
+  four_people_strength := <int16>(
+    SELECT sum(
+      (
+        SELECT NPC
+        FILTER .name IN {'Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'}
+      ).strength
+    )
+  ),
   dracula := (SELECT Person FILTER .name = 'Count Dracula'),
 
   SELECT fight('The four people', four_people_strength, dracula);
@@ -111,17 +118,17 @@ You see overloading in a lot of existing functions, such as [sum](https://www.ed
 
 Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
 
-```
+```sdl
 function visited(person: str, city: str) -> bool
-      using (
-        WITH person := (SELECT Person FILTER .name = person LIMIT 1),
-        SELECT city IN person.places_visited.name
-      );
+  using (
+    WITH person := (SELECT Person FILTER .name = person LIMIT 1),
+    SELECT city IN person.places_visited.name
+  );
 ```
 
 Now our queries are much faster:
 
-```
+```edgeql-repl
 edgedb> SELECT visited('Mina Murray', 'London');
 {true}
 edgedb> SELECT visited('Mina Murray', 'Bistritz');
@@ -130,25 +137,25 @@ edgedb> SELECT visited('Mina Murray', 'Bistritz');
 
 Thanks to the function, even more complicated queries are still quite readable:
 
-```
+```edgeql
 SELECT(
   'Did Mina visit Bistritz? ' ++ <str>visited('Mina Murray', 'Bistritz'),
   'What about Jonathan and Romania? ' ++ <str>visited('Jonathan Harker', 'Romania')
- );
+);
 ```
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
 The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without touching the schema. For example, here's a function that just says hi:
 
-```
+```sdl
 function say_hi() -> str
-  using('hi');
+  using ('hi');
 ```
 
 If you want to create it right now, just do this:
 
-```
+```edgeql
 CREATE FUNCTION say_hi() -> str
   USING ('hi');
 ```
@@ -165,7 +172,7 @@ You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi
 
 You can delete a function with the `DROP` keyword and the function signature. You only have to specify the input though, because the input is all that EdgeDB looks at when identifying a function. So in the case of our two `fight()` functions:
 
-```
+```sdl
 fight(one: Person, two: Person) -> str
 fight(names: str, one: int16, two: Person) -> str
 ```
@@ -176,10 +183,10 @@ You would delete them with `DROP fight(one: Person, two: Person)` and `DROP figh
 
 Now let's learn more about Cartesian products in EdgeDB. You might be surprised to see that even a single `{}` input always results in an output of `{}`, but this is the way that Cartesian products work. Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
 
-```
+```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
-  f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
-  SELECT b_places.name ++ ' ' ++ f_places.name;
+     f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
+SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
 The output is....maybe unexpected if you didn't read the previous paragraph.
@@ -190,7 +197,7 @@ The output is....maybe unexpected if you didn't read the previous paragraph.
 
 !! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
 
-```
+```edgeql
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
 ```
 
@@ -208,10 +215,9 @@ Another surprise! This is an important point though: EdgeDB requires a cast for 
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
-```
+```edgeql-repl
 edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
-edgedb>
 ```
 
 Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
@@ -229,7 +235,7 @@ So if the item on the left is not empty it will return that, and otherwise it wi
 
 Here is a quick example:
 
-```
+```edgeql-repl
 edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
 ```
 
@@ -237,13 +243,12 @@ Because we used `??` instead of `++`, the result is `{'Count Dracula is now in W
 
 So let's get back to our original query, this time with the coalescing operator:
 
-```
+```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
      f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
-     SELECT
-       b_places.name ++ ' ' ++ f_places.name IF EXISTS b_places.name AND EXISTS f_places.name
-     ELSE
-       b_places.name ?? f_places.name;
+SELECT b_places.name ++ ' ' ++ f_places.name
+  IF EXISTS b_places.name AND EXISTS f_places.name
+  ELSE b_places.name ?? f_places.name;
 ```
 
 This returns:
@@ -256,13 +261,12 @@ That's better.
 
 But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
 
-```
+```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
      m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
-     SELECT
-       b_places.name ++ ' ' ++ m_places.name IF EXISTS b_places.name AND EXISTS m_places.name
-     ELSE
-       b_places.name ?? m_places.name;
+SELECT b_places.name ++ ' ' ++ m_places.name
+  IF EXISTS b_places.name AND EXISTS m_places.name
+  ELSE b_places.name ?? m_places.name;
 ```
 
 Then we'll get this result:
@@ -278,25 +282,24 @@ To get the output that we want, we can use two more functions:
 - First [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), which turns the set into an array.
 - Next, [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
 
-```
+```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
      m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
-     SELECT
-     array_join(array_agg(b_places.name), ', ') ++ ', ' ++ array_join(array_agg(m_places.name), ', ') IF EXISTS b_places.name AND EXISTS m_places.name
-
-      ELSE
-        b_places.name ?? m_places.name;
+SELECT array_join(array_agg(b_places.name), ', ') ++ ', ' ++
+  array_join(array_agg(m_places.name), ', ')
+  IF EXISTS b_places.name AND EXISTS m_places.name
+  ELSE b_places.name ?? m_places.name;
 ```
 
 Finally! The output is `{'Buda-Pesth, Bistritz, Munich'}`. Now with this more robust query we can use it on anything and don't need to worry about getting {} if we choose a letter like x. Let's look at every place that contains k or e:
 
-```
+```edgeql
 WITH has_k := (SELECT Place FILTER Place.name ILIKE '%k%'),
      has_e := (SELECT Place FILTER Place.name ILIKE '%e%'),
-     SELECT
-     array_join(array_agg(has_k.name), ', ') ++ ', ' ++ array_join(array_agg(has_e.name), ', ') IF EXISTS has_k.name AND EXISTS has_e.name
-     ELSE
-    has_k.name ?? has_e.name;
+SELECT array_join(array_agg(has_k.name), ', ') ++ ', ' ++
+  array_join(array_agg(has_e.name), ', ')
+  IF EXISTS has_k.name AND EXISTS has_e.name
+  ELSE has_k.name ?? has_e.name;
 ```
 
 This gives us the result:
@@ -307,9 +310,9 @@ This gives us the result:
 
 Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
 
-```
+```edgeql
 WITH cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
-cities2 := <str>{}, # Don't forget to cast to <str>
+     cities2 := <str>{}, # Don't forget to cast to <str>
 SELECT cities1 ?= cities2;
 ```
 
@@ -317,15 +320,15 @@ and get the output
 
 ```
 {
-false,
-false,
-false
+  false,
+  false,
+  false
 }
 ```
 
 instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:
 
-```
+```edgeql
 SELECT Vampire.lover.name ?= Crewman.name;
 ```
 
@@ -341,30 +344,30 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
 
    First function:
 
-   ```
+   ```sdl
    function gives_number(input: int64) -> int64
-   using(input);
+     using(input);
    ```
 
    Second function:
 
-   ```
+   ```sdl
    function gives_number(input: int64) -> int32
-   using(<int32>input);
+     using(<int32>input);
    ```
 
 2. How about these two functions? Will EdgeDB accept the second one?
 
    First function:
 
-   ```
+   ```sdl
    function make64(input: int16) -> int64
      using(input);
    ```
 
    Second function:
 
-   ```
+   ```sdl
    function make64(input: int32) -> int64
      using(input);
    ```
