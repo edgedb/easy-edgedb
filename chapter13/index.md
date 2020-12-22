@@ -6,16 +6,16 @@ Looks like Lucy, an `NPC`, has become a `MinorVampire`. How should we show this 
 
 Right now `MinorVampire` is nothing special, just a type that extends `Person`:
 
-```
+```sdl
 type MinorVampire extending Person {
-    }
+}
 ```
 
 Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` named Count Dracula.
 
 So instead of trying to change the `NPC` type, we can just give `MinorVampire` an optional link to `Person`:
 
-```
+```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
 }
@@ -25,9 +25,9 @@ It's optional because we don't always know anything people before they were made
 
 Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 
-```
+```edgeql
 UPDATE Person filter .name = 'Lucy Westenra'
-  SET {
+SET {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 ```
@@ -36,7 +36,7 @@ Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we c
 
 Here's the insert:
 
-```
+```edgeql
 WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
 INSERT Vampire {
   name := 'Count Dracula',
@@ -44,27 +44,27 @@ INSERT Vampire {
   slaves := {
     (INSERT MinorVampire {
       name := 'Woman 1',
-  }),
-    (INSERT MinorVampire {
-     name := 'Woman 2',
-  }),
-    (INSERT MinorVampire {
-     name := 'Woman 3',
-  }),
-    (INSERT MinorVampire {
-     name := lucy.name,
-     former_self := lucy,
-     first_appearance := lucy.last_appearance,
-     strength := lucy.strength + 5,
     }),
- },
- places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
+    (INSERT MinorVampire {
+      name := 'Woman 2',
+    }),
+    (INSERT MinorVampire {
+      name := 'Woman 3',
+    }),
+    (INSERT MinorVampire {
+      name := lucy.name,
+      former_self := lucy,
+      first_appearance := lucy.last_appearance,
+      strength := lucy.strength + 5,
+    }),
+  },
+  places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
 };
 ```
 
 With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects. We'll use two filters to make sure:
 
-```
+```edgeql
 SELECT MinorVampire {
   name,
   strength,
@@ -94,11 +94,11 @@ We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in 
 
 So if you declared `MinorVampire` like this:
 
-```
+```sdl
 type MinorVampire extending Person {
   link former_self -> Person {
     on target delete restrict;
-    }
+  }
 }
 ```
 
@@ -132,10 +132,10 @@ Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 
 
 We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `SELECT Person.name`, we can get all the type names like this:
 
-```
+```edgeql
 SELECT Person.__type__ {
   name
-  };
+};
 ```
 
 It shows us all the types attached to `Person` so far:
@@ -154,12 +154,12 @@ It shows us all the types attached to `Person` so far:
 
 Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy Westenra`:
 
-```
+```edgeql
 SELECT Person {
   __type__: {
-  name
+    name
   },
-name
+  name
 } FILTER .name = 'Lucy Westenra';
 ```
 
@@ -172,12 +172,11 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 }
 ```
 
-But there is a settingy you can use to always see the type when you make a query: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
+But there is a setting you can use to always see the type when you make a query: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
 
-```
-SELECT Person
-  {
-name
+```edgeql
+SELECT Person {
+  name
 } FILTER .name = 'Lucy Westenra';
 ```
 
@@ -193,7 +192,7 @@ Because it's so convenient, from now on this book will show results as given wit
 
 The word `introspect` we just used in `\set introspect-types on` is also its own keyword: `INTROSPECT`. Every type has the following fields that we can access: `name`, `properties`, `links` and `target`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all four. Here are the properties and links of `Ship` again so we don't forget:
 
-```
+```sdl
 type Ship {
   property name -> str;
   multi link sailors -> Sailor;
@@ -203,13 +202,15 @@ type Ship {
 
 First, here is the simplest `INTROSPECT` query:
 
-`SELECT (INTROSPECT Ship.name);`
+```edgeql
+SELECT (INTROSPECT Ship.name);
+```
 
 This query isn't very useful to us but it does show how it works: it returns `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
 
 Now let's put `name`, `properties` and `links` inside the introspection:
 
-```
+```edgeql
 SELECT (INTROSPECT Ship) {
   name,
   properties,
@@ -240,21 +241,21 @@ Just like using `SELECT` on a type, if the output contains another type, propert
 
 So let's add some more to the query to get the information we want:
 
-```
+```edgeql
 SELECT (INTROSPECT Ship) {
-   name,
-   properties: {
-     name,
-     target: {
-       name
-       }
- },
- links: {
-   name,
- target: {
-   name
-   },
- },
+  name,
+  properties: {
+    name,
+    target: {
+      name
+    }
+  },
+  links: {
+    name,
+    target: {
+      name
+    },
+  },
 };
 ```
 
@@ -287,7 +288,7 @@ This type of query seems complex but it is just built on top of adding things li
 
 Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way, which looks much simpler now:
 
-```
+```edgeql
 SELECT (INTROSPECT Ship) {
   name,
   properties: {name, target: {name}},
@@ -305,7 +306,7 @@ SELECT (INTROSPECT Ship) {
 
 2. How readable is this introspect query?
 
-   ```
+   ```edgeql
    SELECT (INTROSPECT Ship) {
      name,
      properties,

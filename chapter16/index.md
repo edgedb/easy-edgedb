@@ -22,12 +22,12 @@ Mina Murray’s Journal.
 
 This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (excerpt = part of a book).
 
-```
-  type BookExcerpt {
-    required property date -> cal::local_datetime;
-    required property excerpt -> str;
-    index on (.excerpt);
-    required link author -> Person
+```sdl
+type BookExcerpt {
+  required property date -> cal::local_datetime;
+  required property excerpt -> str;
+  index on (.excerpt);
+  required link author -> Person
 }
 ```
 
@@ -51,7 +51,7 @@ Indexes are automatically created in these two cases so you don't need to use in
 
 So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
-```
+```edgeql
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
   author := (SELECT Person FILTER .name = 'John Seward' LIMIT 1),
@@ -59,7 +59,7 @@ INSERT BookExcerpt {
 };
 ```
 
-```
+```edgeql
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
   author := (SELECT Person FILTER .name = 'Jonathan Harker' LIMIT 1),
@@ -69,14 +69,16 @@ INSERT BookExcerpt {
 
 Then later on we could do this sort of query to get all the entries in order and displayed as JSON.
 
-```
-SELECT <json>(SELECT BookExcerpt {
-  date,
-  author: {
-    name
+```edgeql
+SELECT <json>(
+  SELECT BookExcerpt {
+    date,
+    author: {
+      name
     },
-  excerpt
-} ORDER BY .date);
+    excerpt
+  } ORDER BY .date
+);
 ```
 
 Here's the JSON output with just a small part of the excerpts:
@@ -90,7 +92,7 @@ Here's the JSON output with just a small part of the excerpts:
 
 After this, we can add a link to our `Event` type to join it to our new `BookExcerpt` type. `Event` now looks like this:
 
-```
+```sdl
 type Event {
   required property description -> str;
   required property start_time -> cal::local_datetime;
@@ -100,7 +102,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
 }
 ```
 
@@ -110,14 +112,14 @@ You can see that `description` is a short string that we write, while `excerpt` 
 
 The [functions for strings](https://www.edgedb.com/docs/edgeql/funcops/string) can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called [`str_lower()`](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_lower) and makes strings lowercase:
 
-```
-SELECT str_lower('RENFIELD WAS HERE');
+```edgeql-repl
+edgedb> SELECT str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
 Here it is in a longer query:
 
-```
+```edgeql
 select BookExcerpt {
   excerpt,
   length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
@@ -145,8 +147,8 @@ Some other functions for strings are:
 
 - `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
 
-```
-SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+```edgeql-repl
+edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 
 {
   [
@@ -170,7 +172,7 @@ SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 
 But this works too:
 
-```
+```edgeql
 SELECT MinorVampire {
   names := (SELECT str_split(.name, 'n'))
 };
@@ -189,7 +191,7 @@ Now the `n`s are all gone:
 
 You can also split by `\n` to split by new line. You can't see it but from the point of view of the computer every new line has a `\n` in it. So this:
 
-```
+```edgeql
 SELECT str_split('Oh, hear me!
 hear me!
 Let me go!
@@ -205,8 +207,8 @@ will split it by line and give the following array:
 
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
 
-```
-SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+```edgeql-repl
+edgedb> SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
@@ -225,11 +227,11 @@ And to match anything, you can use the wildcard character: `.`
 
 By the way, `index on` can also be used on expressions that you make yourself. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
-```
+```sdl
 type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
-    property population -> int64;
-    index on (.name ++ ': ' ++ <str>.population);
+  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  property population -> int64;
+  index on (.name ++ ': ' ++ <str>.population);
 }
 ```
 

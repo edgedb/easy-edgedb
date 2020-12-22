@@ -4,17 +4,21 @@
 
 No, because the input signature for both of them is the same:
 
-```
+```sdl
 function gives_number(input: int64) -> int64
- using(input);
- 
+  using(input);
+
 function gives_number(input: int64) -> int32
- using(<int32>input);
+  using(<int32>input);
 ```
 
 There is no way to know which of the two you want to use if both could take an `int64`.
 
-Here's the error: `error: cannot create the `default::gives_number(input: std::int64)` function: a function with the same signature is already defined`
+Here's the error:
+
+```
+error: cannot create the `default::gives_number(input: std::int64)` function: a function with the same signature is already defined
+```
 
 #### 2. How about these two functions? Will EdgeDB accept the second one?
 
@@ -23,7 +27,7 @@ Yes, they have different signatures because the input is different: one takes an
 ```
 {
   'function default::make64(input: std::int16) ->  std::int64 using (input);
-function default::make64(input: std::int32) ->  std::int64 using (input);',
+   function default::make64(input: std::int32) ->  std::int64 using (input);',
 }
 ```
 
@@ -33,13 +37,15 @@ Note however that `SELECT make64(8);` will actually produce an error! The error 
 error: could not find a function variant make64
 ```
 
-That's because `SELECT make64(8)` is giving it an `int64`, and it doesn't have a signature for that. You would need to cast with `SELECT make64(<int32>8);` (or `<int16>` to make it work.
+That's because `SELECT make64(8)` is giving it an `int64`, and it doesn't have a signature for that. You would need to cast with `SELECT make64(<int32>8);` (or `<int16>`) to make it work.
 
 #### 3. Will `SELECT {} ?? {3, 4} ?? {5, 6};` work?
 
 No, because EdgeDB doesn't know what type `{}` is. But if you cast the `{}` to an `int64`:
 
-```SELECT <int64>{} ?? {3, 4} ?? {5, 6};```
+```edgeql
+SELECT <int64>{} ?? {3, 4} ?? {5, 6};
+```
 
 Then it will give the output `{3, 4}`.
 
@@ -49,7 +55,7 @@ Yes, with the output `{1, 2}`. If you continue to use `??`, it will keep going u
 
 Knowing that, you can probably guess the output of this:
 
-```
+```edgeql
 SELECT <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
 ```
 
@@ -63,7 +69,7 @@ The error message gives a hint:
 
 That means that the input that it received doesn't match any of its function signatures. And if you check [the function itself](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join), you can see why: it needs a second string:
 
-```
+```sdl
 std::array_join(array: array<str>, delimiter: str) -> str
 ```
 

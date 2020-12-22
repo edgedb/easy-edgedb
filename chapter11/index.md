@@ -6,7 +6,7 @@ We are starting to see more and more events in the book with various characters.
 
 This `Event` type is a bit long, but it would be the main type for our events in the game so it needs to be detailed. We can put it together like this:
 
-```
+```sdl
 type Event {
   required property description -> str;
   required property start_time -> cal::local_datetime;
@@ -15,7 +15,7 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
 }
 ```
 
@@ -29,7 +29,7 @@ Luckily for us, the events in the book all take place in the north part of the p
 
 Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
-```
+```edgeql
 INSERT Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
   start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
@@ -45,20 +45,20 @@ With all this information we can now find events by description, character, loca
 
 Now let's do a query for all events with the word `garlic flowers` in them:
 
-```
+```edgeql
 SELECT Event {
   description,
   start_time,
   end_time,
   place: {
-  __type__: {
+    __type__: {
+      name
+    },
     name
-    },
-  name
-   },
+  },
   people: {
-  name
-    },
+    name
+  },
   exact_location,
   url
 } FILTER .description ILIKE '%garlic flowers%';
@@ -79,12 +79,12 @@ It generates a nice output that shows us everything about the event:
       Object {name: 'Abraham Van Helsing'},
     },
     exact_location: (54.4858, 0.6206),
-    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858 N 0.6206 W',
+    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
   },
 }
 ```
 
-The url works nicely too. Here it is: https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W Clicking on it takes you directly to the city of Whitby.
+The url works nicely too. Here it is: <https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W> Clicking on it takes you directly to the city of Whitby.
 
 ## Writing our own functions
 
@@ -92,7 +92,7 @@ We saw that Renfield is quite strong: he has a strength of 10, compared to Jonat
 
 We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate both the input type and the return type in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
 
-```
+```sdl
 function does_something(input: int16) -> float64
 ```
 
@@ -106,7 +106,7 @@ For the body of the function we do the following:
 
 Here's a very simple function that takes a number and returns a string from it:
 
-```
+```sdl
 function make_string(input: int64) -> str
   using (<str>input);
 ```
@@ -115,35 +115,35 @@ That's all there is to it!
 
 Now let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
 
-```
+```sdl
 function fight(one: Person, two: Person) -> str
   using (
     SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
-);
+  );
 ```
 
 So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other:
 
-```
+```edgeql
 WITH
   renfield := (SELECT Person filter .name = 'Renfield'),
   jonathan := (SELECT Person filter .name = 'Jonathan Harker')
-    SELECT (
-     fight(jonathan, renfield)
-     );
+SELECT (
+  fight(jonathan, renfield)
+);
 ```
 
 It prints what we wanted to see: `{'Renfield wins!'}`
 
 It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one. For example, let's imagine that we forgot that there were three women in the castle and wrote this:
 
-```
+```edgeql
 WITH
   the_woman := (SELECT Person filter .name ILIKE '%woman%'),
   jonathan := (SELECT Person filter .name = 'Jonathan Harker')
-  SELECT (
-    fight(the_woman, jonathan)
-    );
+SELECT (
+  fight(the_woman, jonathan)
+);
 ```
 
 It would give us this result:
@@ -170,11 +170,13 @@ So if there are two in the first set, and three in the second, it will run the f
 
 To demonstrate, let's put three objects in for each side of our function. We'll also make the output a little more clear:
 
-```
+```edgeql
 WITH
   first_group := (SELECT Person FILTER .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
   second_group := (SELECT Person FILTER .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
-  SELECT(first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group));
+SELECT (
+  first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
+);
 ```
 
 Here is the output. It's a total of nine fights, where each person in Set 1 fights once against each person in Set 2.
@@ -211,7 +213,9 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 3. What will the output of this be?
 
-   `SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};`
+   ```edgeql
+   SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+   ```
 
 4. How would you make a function that tells you how many times larger one city is than another?
 

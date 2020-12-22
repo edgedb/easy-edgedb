@@ -8,10 +8,10 @@ If you're curious about the ending to this scene, just [check out the book on Gu
 
 We are sure that the vampire women have been destroyed, however, so we can do one final change by giving them a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. But don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
-```
+```edgeql
 UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
-  SET {
-    last_appearance := <cal::local_date>'1887-11-05'
+SET {
+  last_appearance := <cal::local_date>'1887-11-05'
 };
 ```
 
@@ -34,16 +34,16 @@ Here's an example with `Person`, which starts like this and shows us the module 
 
 For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
 
-Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game 
+Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game
 
-- 1) has a name, and 
-- 2) has a number of coffins (which is important because places without coffins are safer from vampires).
+1. has a name, and
+2. has a number of coffins (which is important because places without coffins are safer from vampires).
 
-```
+```sdl
 abstract type HasNameAndCoffins {
   required property coffins -> int16 {
     default := 0;
-}
+  }
   required property name -> str {
     constraint exclusive;
     constraint max_len_value(30);
@@ -55,14 +55,14 @@ We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/do
 
 Next is `abstract type Person`. This type is by far the largest, and does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`, so they can extend from it too.
 
-```
+```sdl
 abstract type Person {
   property first -> str;
   property last -> str;
   property title -> str;
   property degrees -> str;
   required property name -> str {
-      constraint exclusive
+    constraint exclusive
   }
   property age -> int16;
   property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
@@ -71,8 +71,7 @@ abstract type Person {
   multi link places_visited -> Place;
   multi link lover -> Person;
   property first_appearance -> cal::local_date;
-  property last_appearance -> cal::local_date;   
-
+  property last_appearance -> cal::local_date;
 }
 ```
 
@@ -90,23 +89,21 @@ error: possibly more than one element returned by an expression for a computable
 
 For `first_appearance` and `last_appearance` we use `cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant. One other reason why we use `cal::local_date` is because if you try to create a `datetime` before 1970 (when [Unix time](https://en.wikipedia.org/wiki/Unix_time) began), it will return an error. So don't write this - it will not be happy.
 
-```
+```edgeql
 SELECT <datetime>'1887-09-09';
 ```
 
 But for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like [`std::to_datetime`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
-
-```
-SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST')
-# October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
-;
+```edgeql-repl
+edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500000000Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
 
 A similar abstract type to `HasNameAndCoffins` is this one:
 
-```
+```sdl
 abstract type HasNumber {
   required property number -> int16;
 }
@@ -114,17 +111,17 @@ abstract type HasNumber {
 
 We only used this for the `Crewman` type, which only extends two abstract types and nothing else:
 
-```
+```sdl
 type Crewman extending HasNumber, Person {
 }
 ```
 
 This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
 
-```
+```edgeql
 UPDATE Crewman
-  SET {
-    name := 'Crewman ' ++ <str>.number
+SET {
+  name := 'Crewman ' ++ <str>.number
 };
 ```
 
@@ -132,8 +129,8 @@ So even though it was rarely used, it could become useful later on. For types la
 
 Our vampire types extend `Person`, while `MinorVampire` also has an optional (single) link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
 
-```
-type Vampire extending Person {    
+```sdl
+type Vampire extending Person {
   multi link slaves -> MinorVampire;
 }
 
@@ -144,7 +141,7 @@ type MinorVampire extending Person {
 
 With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
 
-```
+```edgeql
 SELECT Person {
   name,
   vampire_name := .<former_self[IS MinorVampire].name
@@ -155,7 +152,7 @@ In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_na
 
 Our two enums were used for the `PC` and `Sailor` types:
 
-```
+```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 type Sailor extending Person {
   property rank -> Rank;
@@ -169,8 +166,8 @@ type PC extending Person {
 
 The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
 
-- choosing `Feet` gives the character a certain speed and costs nothing, 
-- `HorseDrawnCarriage` increases speed but decreases money, 
+- choosing `Feet` gives the character a certain speed and costs nothing,
+- `HorseDrawnCarriage` increases speed but decreases money,
 - `Train` increases speed the most but decreases money and can only follow railway lines, etc.
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Date` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
@@ -179,7 +176,7 @@ The enum `Transport` never really got used, and needs some more transportation t
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computable called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
-```
+```sdl
 type Visit {
   required link ship -> Ship;
   required link place -> Place;
@@ -193,7 +190,7 @@ type Visit {
 
 The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
 
-```
+```sdl
 type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
@@ -206,16 +203,16 @@ type NPC extending Person {
 
 Our `Place` type shows that you can extend as many times as you want. It's an `abstract type` that extends another `abstract type`, and then gets extended for other types like `City`.
 
-```
+```sdl
 abstract type Place extending HasNameAndCoffins {
   property modern_name -> str;
   property important_places -> array<str>;
 }
 ```
 
-The `important_places` property only got used once in this insert: 
+The `important_places` property only got used once in this insert:
 
-```
+```edgeql
 INSERT City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
@@ -225,7 +222,7 @@ INSERT City {
 
 and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the [annotation](https://www.edgedb.com/docs/edgeql/sdl/annotations#annotations) shows:
 
-```
+```sdl
 type OtherPlace extending Place {
   annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
   annotation warning := 'Castles and castle towns count! Use the Castle type for that';
@@ -236,7 +233,7 @@ So in a real game we would create some other smaller location types and make the
 
 Annotations: we used `abstract annotation` to add a new annotation:
 
-```
+```sdl
 abstract annotation warning;
 ```
 
@@ -244,9 +241,9 @@ because by default a type [can only have annotations](https://www.edgedb.com/doc
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
-```
+```sdl
 type Lord extending Person {
-constraint expression on (contains(__subject__.name, 'Lord') = true) {
+  constraint expression on (contains(__subject__.name, 'Lord') = true) {
     errmessage := "All lords need \'Lord\' in their name";
   };
 };
@@ -258,7 +255,7 @@ The `Lord` type uses the function [`contains`](https://www.edgedb.com/docs/edgeq
 
 Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
 
-```
+```sdl
 type Lord extending Person {
   constraint expression on (__subject__.title = 'Lord') {
     errmessage := "All lords need \'Lord\' in their name";
@@ -270,7 +267,7 @@ This will depend on if we want to create `Lord` types with names just as a singl
 
 Our next types extending `Place` including `Country` and `Region` were looked at just last chapter, so we won't review them here. But `Castle` is a bit unique:
 
-```
+```sdl
 type Castle extending Place {
   property doors -> array<int16>;
 }
@@ -278,27 +275,27 @@ type Castle extending Place {
 
 Back in Chapter 7, we used this in a query to see if Jonathan could break any of the doors and escape the castle. The idea was simple: Jonathan would try to open every door, and if he had more strength then any one of them then he could escape the castle.
 
-```
-WITH 
+```edgeql
+WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT jonathan_strength > min(array_unpack(doors));
+SELECT jonathan_strength > min(array_unpack(doors));
 ```
 
 However, later on we learned the `any()` function so let's see how we could use it here. With `any()`, we could change the query to this:
 
-```
+```edgeql
 WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
   doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-    SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
+SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
 And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
 
 Don't forget, we needed `array_unpack()` because the function [`any()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::any) works on sets:
 
-```
+```sdl
 std::any(values: SET OF bool) -> bool
 ```
 
@@ -314,18 +311,18 @@ operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std:
 
 Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
-```
+```sdl
 type BookExcerpt {
-    required property date -> cal::local_datetime;
-    required link author -> Person;
-    required property excerpt -> str;
-    index on (.excerpt);
+  required property date -> cal::local_datetime;
+  required link author -> Person;
+  required property excerpt -> str;
+  index on (.excerpt);
 }
 ```
 
 Next is our other fun and hacky type, `Event`.
 
-```
+```sdl
 type Event {
   required property description -> str;
   required property start_time -> cal::local_datetime;
@@ -335,14 +332,13 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
 }
 ```
 
 This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property is for users of the database with descriptions like `'The Demeter arrives at Whitby, crashing on the beach'` that are used to find events when we need to.
 
 The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
-
 
 ## Navigating EdgeDB documentation
 
@@ -354,7 +350,7 @@ This book included a lot of links to EdgeDB documentation, such as types, functi
 
 For a simple example, [here is the syntax on creating a module](https://www.edgedb.com/docs/edgeql/sdl/modules):
 
-```
+```sdl-synopsis
 module ModuleName "{"
   [ schema-declarations ]
   ...
@@ -365,7 +361,7 @@ Looking at that you can see that a module is just a module name, `{}`, and every
 
 How about object types? [They look like this](https://www.edgedb.com/docs/edgeql/sdl/objects):
 
-```
+```sdl-synopsis
 [abstract] type TypeName [extending supertype [, ...] ]
 [ "{"
     [ annotation-declarations ]
@@ -381,7 +377,7 @@ This should be familiar to you: you need `type TypeName` to start. You can add `
 
 Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/sdl/props) and include three types: concrete, computable, and abstract. We're most familiar with concrete so let's take a look at that:
 
-```
+```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
   property name
   [ extending base [, ...] ] -> type
@@ -398,7 +394,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-DDL is something you'll see frequently in the documentation. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need. 
+DDL is something you'll see frequently in the documentation. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need.
 
 SDL: `function says_hi() -> str using('hi');`
 
@@ -408,7 +404,7 @@ And even the capitalization doesn't matter.
 
 But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. This could still be worth it if you want to make small changes or quick types though. For example, here is a Cat type that just has a name:
 
-```
+```sdl
 type Cat {
   property name -> str;
   property sound := 'meow';
@@ -417,7 +413,7 @@ type Cat {
 
 When you enter `DESCRIBE TYPE Cat as SDL`, it will show something similar:
 
-```
+```sdl
 type default::Cat {
   optional single property cat_name -> std::str;
 };
@@ -431,9 +427,9 @@ It's the same declaration but includes some information we didn't need to specif
 
 So what does it look like as DDL? `DESCRIBE TYPE Cat` will show us:
 
-```
+```edgeql
 CREATE TYPE default::Cat {
-    CREATE OPTIONAL SINGLE PROPERTY name -> std::str;
+  CREATE OPTIONAL SINGLE PROPERTY name -> std::str;
 };
 ```
 
@@ -454,13 +450,13 @@ Help is always just a message away. The best way to get help is to start a discu
 
 We hope you enjoyed learning EdgeDB through a story, and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on the forums! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
 
->The Road goes ever on and on  
->Down from the door where it began.  
->Now far ahead the Road has gone,  
->And I must follow, if I can,  
->Pursuing it with eager feet,  
->Until it joins some larger way  
->Where many paths and errands meet.  
->And whither then? I cannot say.  
+> The Road goes ever on and on
+> Down from the door where it began.
+> Now far ahead the Road has gone,
+> And I must follow, if I can,
+> Pursuing it with eager feet,
+> Until it joins some larger way
+> Where many paths and errands meet.
+> And whither then? I cannot say.
 
 See you, or not see you, however things turn out! Thanks again for reading.

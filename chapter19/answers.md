@@ -4,13 +4,12 @@
 
 This is not too hard for us now, just a reverse lookup. We'll also put a filter on to only show `City` objects that are inside a `Region`:
 
-```
+```edgeql
 SELECT City {
   name,
   region_name := .<cities[IS Region].name
 } FILTER EXISTS .region_name;
 ```
-
 
 #### 2. How about the `City` names plus the names of the `Region` and the name of the `Country` they are in?
 
@@ -22,7 +21,7 @@ In the same way that `.<cities[IS Region].name` means "the name of the `Region` 
 
 In other words, "the name of the `Country` connected via a link called `regions` to the type called `Region` connected to the city via a link called `cities`.
 
-```
+```edgeql
 SELECT City {
   name,
   region_name := .<cities[IS Region].name,
