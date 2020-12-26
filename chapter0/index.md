@@ -2,7 +2,7 @@
 
 Thanks for checking out our new book to learn Easy EdgeDB!
 
-We've had quite the journey so far up to the release of this book. It began in spring 2019 with the public release of [EdgeDB Alpha 1](https://www.edgedb.com/blog/edgedb-1-0-alpha-1), showing the possibilies of an open source database built on top of PostgreSQL that combines the simplicity of a NoSQL database with relational model’s powerful querying, strictness, consistency, and performance.
+We've had quite the journey so far up to the release of this book. It began in spring 2019 with the public release of [EdgeDB Alpha 1](https://www.edgedb.com/blog/edgedb-1-0-alpha-1), showing the possibilities of an open source database built on top of PostgreSQL that combines the simplicity of a NoSQL database with relational model’s powerful querying, strictness, consistency, and performance.
 
 Twenty months and five more Alpha versions later, EdgeDB has now reached beta 1.0. Here are just a few changes that happened along the way:
 
@@ -18,7 +18,7 @@ Easy EdgeDB is a bit of a unique book. Here's how it differs from what you might
 
 ## A story to follow
 
-The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like C++/Rust/C# on the frontend, and EdgeDB as the game's database.
+The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like [Python](https://www.edgedb.com/docs/clients/00_python/index/)/[JavaScript](https://www.edgedb.com/docs/clients/01_js/index/)/[Go](https://github.com/edgedb/edgedb-go) on the frontend, and EdgeDB as the game's database. (Why Python, JavaScript and Go? Because EdgeDB has drivers for all three of those languages.)
 
 Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons:
 
