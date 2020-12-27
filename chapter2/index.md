@@ -156,8 +156,8 @@ Here is the result:
 You can also index a string with `[]` square brackets, starting at 0. For example, the indexes in the string 'Jonathan' look like this:
 
 ```
-Jonathan
-01234567
+J o n a t h a n
+0 1 2 3 4 5 6 7
 ```
 
 So `'Jonathan'[0]` is 'J' and `'Jonathan'[4]` is 't'.
