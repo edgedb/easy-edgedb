@@ -1,6 +1,6 @@
 # Chapter 1 - Jonathan Harker travels to Transylvania
 
-In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan still doesn't know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database in **bold**:
+In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan doesn't yet know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database are in **bold**:
 
 > **3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
@@ -63,8 +63,8 @@ Then we type `\c dracula` to connect to it.
 Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB:
 
 - First you start them with `START MIGRATION TO {}`
-- Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. You go up and down a level inside a module with `::`. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
-- Then you add the types we mentioned above, and type `POPULATE MIGRATION` to add the data.
+- Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
+- Then you add the types we mentioned above, and finish up the block by ending with a `}`. Then outside of that, type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
 
 There are naturally a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
@@ -76,9 +76,14 @@ There are naturally a lot of other commands beyond this, though we won't need th
 
 There are also a few places to download packages to highlight your syntax if you like. EdgeDB has these packages available for [Atom](https://atom.io/packages/edgedb), [Visual Studio Code](https://marketplace.visualstudio.com/itemdetails?itemName=magicstack.edgedb), [Sublime Text](https://packagecontrol.io/packages/EdgeDB), and [Vim](https://github.com/edgedb/edgedb-vim).
 
-Here's the `City` type we just made with syntax highlighting:
+So here's the `City` type we just made:
 
-![type City](type_City.png)
+```edgeql
+type City {
+  required property name -> str;
+  property modern_name -> str;
+}
+```
 
 ## Selecting
 
@@ -98,7 +103,7 @@ First we'll just select a string:
 SELECT 'Jonathan Harker\'s journey begins.';
 ```
 
-This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there.
+This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact [everything in EdgeDB is a set](https://www.edgedb.com/docs/edgeql/overview#everything-is-a-set) (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
 
 Next we'll use `:=` to assign a variable:
 
