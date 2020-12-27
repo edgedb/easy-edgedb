@@ -86,6 +86,34 @@ This gives us:
 
 We could have just used `FILTER.name IN Person.name` but two filters is better if we have a lot of characters later on. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
+# The type union operator: |
+
+Another operator related to types is `|`, which is used to combine them (similar to writing `OR`). This query for example pulling up all `Person` types will return true:
+
+```
+SELECT (SELECT Person FILTER .name = 'Lucy Westenra') IS NPC | MinorVampire | Vampire;
+```
+
+It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `Person` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
+
+One cool thing about the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control the other. Right now though `Vampire`s can only control `MinorVampire`s:
+
+```
+type Vampire extending Person {
+  multi link slaves -> MinorVampire;
+}
+```
+
+So to represent this change, you could just use `|` and add another type:
+
+```
+type Vampire extending Person {
+  multi link slaves -> MinorVampire | Vampire;
+}
+```
+
+We only have Count Dracula in our database as the main `Vampire` type so we won't change our schema in this way, but keep this `|` operator in mind in case you need it.
+
 ## On target delete
 
 We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in the game until September 1887. Maybe later `PC` types will interact with her, for example. But this might make you wonder about deleting links. What if we had chosen to delete the old type when she became a `MinorVampire`? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have [four options](https://www.edgedb.com/docs/datamodel/links#ref-datamodel-links):
