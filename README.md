@@ -2090,7 +2090,7 @@ type Townsperson extending Person {
   property number -> sequence;
 ```
 
-This won't work because each `sequence` keeps a record of the most recent number, and if every type just `sequence` then they would share it. So the right way to do it is to extend it to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
+This won't work because each `sequence` keeps a record of the most recent number, and if every type just uses `sequence` then they would share it. So the right way to do it is to extend it to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
 
 ```
 scalar type TownspersonNumber extending sequence;
@@ -2147,7 +2147,7 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 }
 ```
 
-This is pretty good, but the output doesn't show us the type for each of them. To refer to self in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
+This is pretty good, but the output doesn't show us the type for each of them. To refer to an object's own type in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
 
 ```
 SELECT Person {
@@ -2176,7 +2176,7 @@ This is officially called a [polymorphic query](https://www.edgedb.com/docs/edge
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended to another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype = supertype` will return `{true}`. And of course, `supertype = subtype` = `{false}` because supertypes do not inherit the features of their subtypes.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype = supertype` will return `{true}`. And of course, `supertype IS subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
 
 In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` returns `{false}`.
 
@@ -2195,7 +2195,7 @@ So with that you can change the above input to `SELECT 1887 IS anyint` and get `
 
 ## Multi in other places
 
-We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one. For example, our `Castle` type has an `array<int16>` for the `doors` property:
+We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
 
 ```
 type Castle extending Place {
