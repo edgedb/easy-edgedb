@@ -78,6 +78,45 @@ type NPC extending Person {
 }
 ```
 
+## datetime_current()
+
+One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
+
+```edgeql-repl
+edgedb> SELECT datetime_current();
+{<datetime>'2020-11-17T06:13:24.418765000Z'}
+```
+
+This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
+
+```sdl
+abstract type Place {
+  required property name -> str {
+    constraint exclusive;
+  }
+  property modern_name -> str;
+  property important_places -> array<str>;
+  property post_date := datetime_current(); # this is new
+}
+```
+
+This will actually generate the date when you *query* a `Place` object, not when you insert it. So to make a `Place` type that would have the date when you insert it, we can use `default` instead:
+
+```sdl
+abstract type Place {
+  required property name -> str {
+    constraint exclusive;
+  }
+  property modern_name -> str;
+  property important_places -> array<str>;
+  property post_date := datetime_current() {
+    default := datetime_current()
+  }
+}
+```
+
+We don't need this in our schema so we won't change `Place`, but this is how you would do it.
+
 ## Using FOR and UNION
 
 We're almost ready to insert our three new characters, and now we don't need to add `(SELECT City FILTER .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
