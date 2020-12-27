@@ -1277,26 +1277,6 @@ SELECT <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
 
 The result: `{-14344.99401s}`.
 
-## datetime_current()
-
-One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
-
-```
-SELECT datetime_current();
-{<datetime>'2020-11-17T06:13:24.418765000Z'}
-```
-
-This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. If we were to put it into the `Place` type for example it would look like this:
-
-```
-abstract type Place {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date := datetime_current();
-}
-```
-
 ## Required links
 
 Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`. This is because Dracula controls them and they only exist as `MinorVampire`s because he exists.
@@ -2389,6 +2369,45 @@ type NPC extending Person {
   }
 }
 ```
+
+## datetime_current()
+
+One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
+
+```edgeql-repl
+edgedb> SELECT datetime_current();
+{<datetime>'2020-11-17T06:13:24.418765000Z'}
+```
+
+This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
+
+```sdl
+abstract type Place {
+  required property name -> str {
+    constraint exclusive;
+  }
+  property modern_name -> str;
+  property important_places -> array<str>;
+  property post_date := datetime_current(); # this is new
+}
+```
+
+This will actually generate the date when you *query* a `Place` object, not when you insert it. So to make a `Place` type that would have the date when you insert it, we can use `default` instead:
+
+```sdl
+abstract type Place {
+  required property name -> str {
+    constraint exclusive;
+  }
+  property modern_name -> str;
+  property important_places -> array<str>;
+  property post_date := datetime_current() {
+    default := datetime_current()
+  }
+}
+```
+
+We don't need this in our schema so we won't change `Place`, but this is how you would do it.
 
 ## Using FOR and UNION
 
