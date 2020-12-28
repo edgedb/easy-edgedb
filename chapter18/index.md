@@ -4,7 +4,7 @@
 
 This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
-Now, there is one difficulty: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 cents to 1 pound, it was as follows:
+Now, there is one difficulty: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 pence to 1 pound, it was as follows:
 
 - 12 pence (the smallest coin) made one shilling,
 - 20 shillings made one pound, thus
