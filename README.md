@@ -1973,7 +1973,7 @@ INSERT Crewman {
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `SELECT Crewman {number};` to see the result. It gives us:
+So if there are no `Crewman` objects, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `SELECT Crewman {number};` to see the result. It gives us:
 
 ```
 {
@@ -2304,7 +2304,7 @@ This is a good time to add two new properties to the `Person` type to indicate w
 
 For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
-Doing an insert for the `Crewman` types with the properties `first_appearance` and `last_appearance` will now look something like this:
+Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
 
 ```
 INSERT Crewman {
@@ -2314,7 +2314,7 @@ INSERT Crewman {
 };
 ```
 
-And since we have a lot of `Crewman` types already inserted, we can easily use the `UPDATE` and `SET` syntax on all of them if we assume they all died at the same time (or if being super precise doesn't matter).
+And since we have a lot of `Crewman` objects already inserted, we can easily use the `UPDATE` and `SET` syntax on all of them if we assume they all died at the same time (or if being super precise doesn't matter).
 
 Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
 
@@ -2334,7 +2334,7 @@ cal::to_local_date(dt: datetime, zone: str) -> local_date
 cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```
 
-Now we update the `Crewman` types and give them all the same date to keep things simple:
+Now we update the `Crewman` objects and give them all the same date to keep things simple:
 
 ```
 UPDATE Crewman
@@ -2479,7 +2479,7 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we could use this method to insert our five `Crewman` types inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them. Of course, we already used `UPDATE` to change the inserts but from now on in our code their insert will look like this:
+By the way, now we could use this method to insert our five `Crewman` objects inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them. Of course, we already used `UPDATE` to change the inserts but from now on in our code their insert will look like this:
 
 ```
 FOR n IN {1, 2, 3, 4, 5}
@@ -4249,7 +4249,7 @@ But the result is less than satisfying:
 }
 ```
 
-The `Crewman` types are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
+The `Crewman` objects are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
 
 ```
 UPDATE Crewman
@@ -5216,7 +5216,7 @@ SELECT CrewmanInBulgaria {
   };
 ```
 
-And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: with *Gospodin* added to their name and linked to the `Country` type we just inserted.
+And now we see the same `Crewman` objects under their `CrewmanInBulgaria` alias: with *Gospodin* added to their name and linked to the `Country` type we just inserted.
 
 ```
 {
