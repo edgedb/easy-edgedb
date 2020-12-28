@@ -22,7 +22,7 @@ SET {
 };
 ```
 
-You can of course go with `UPDATE NPC` and `SELECT City` if you prefer.
+You can of course go with `UPDATE NPC` and `SELECT Country` if you prefer.
 
 Also, here is the same thing using `WITH`:
 
