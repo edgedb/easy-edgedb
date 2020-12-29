@@ -217,11 +217,11 @@ So that will give all `City` types with u in the name, population of more than 2
 }
 ```
 
-Parameters work just as well in inserts too. Here's a `Date` insert that prompts the user for the hour, minute, and second:
+Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
 ```edgeql
 SELECT(
-  INSERT Date {
+  INSERT Time {
     date := <str>$hour ++ <str>$minute ++ <str>$second
   }
 ) {
@@ -239,7 +239,7 @@ Here's the output:
 
 ```
 {
-  default::Date {
+  default::Time {
     date: '100909',
     local_time: <cal::local_time>'10:09:09',
     hour: '10',
@@ -254,7 +254,7 @@ So what if you just want to have the _option_ of a parameter? No problem, just p
 
 ```edgeql
 SELECT(
-  INSERT Date {
+  INSERT Time {
     date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
   }
 ) {
@@ -265,7 +265,7 @@ SELECT(
 };
 ```
 
-Of course, the `Date` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
+Of course, the `Time` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
 
 The opposite of `OPTIONAL` is `REQUIRED`, but it's the default so you don't need to write it.
 
