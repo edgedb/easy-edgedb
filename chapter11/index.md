@@ -27,6 +27,8 @@ The url that we are generating needs to know whether a location is east or west 
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
+(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computable: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+
 Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```edgeql
