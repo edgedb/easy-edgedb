@@ -83,7 +83,7 @@ START MIGRATION TO {
 
     scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
-    type Date {
+    type Time {
       required property date -> str;
       property local_time := <cal::local_time>.date;
       property hour := .date[0:2];
