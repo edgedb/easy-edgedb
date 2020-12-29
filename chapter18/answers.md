@@ -2,7 +2,7 @@
 
 #### 1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
 
-This is a lot easier than the `Pound` type, since Germany has
+This is a lot easier than the `Pound` type, since the only thing smaller than a Goldmark was a Pfennig (as easy as dollars/euros and cents today).
 
 ```sdl
 type Goldmark extending Currency {
