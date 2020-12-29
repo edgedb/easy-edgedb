@@ -10,6 +10,8 @@ Now, there is one difficulty: in the 1800s, monetary systems were more complicat
 - 20 shillings made one pound, thus
 - 240 pence per pound.
 
+(There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
+
 To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
 
 ```sdl
