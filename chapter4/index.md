@@ -240,9 +240,9 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 [Here is all our code so far up to Chapter 4.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. This insert is not working.
 

@@ -208,9 +208,9 @@ So if `TYPE` comes after `DESCRIBE` for types and `MODULE` after `DESCRIBE` for 
 
 [Here is all our code so far up to Chapter 5.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. What do you think `SELECT to_datetime(3600);` will return, and why?
 

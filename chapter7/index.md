@@ -273,9 +273,9 @@ The `UPDATE` keyword that we learned last chapter can also take parameters, so t
 
 [Here is all our code so far up to Chapter 7.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you select each City and the length of its name?
 

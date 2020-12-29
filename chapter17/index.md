@@ -471,9 +471,9 @@ Here's the output:
 
 [Here is all our code so far up to Chapter 17.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you display every NPC's name, strength, name and population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 

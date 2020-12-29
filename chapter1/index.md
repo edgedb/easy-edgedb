@@ -381,9 +381,9 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 [Here is all our code so far up to Chapter 1.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.

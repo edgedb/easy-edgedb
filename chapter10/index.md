@@ -423,9 +423,9 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 [Here is all our code so far up to Chapter 10.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
 

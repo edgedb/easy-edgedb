@@ -318,9 +318,9 @@ Much better!
 
 [Here is all our code so far up to Chapter 18.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
 

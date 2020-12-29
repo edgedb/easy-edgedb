@@ -391,9 +391,9 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 [Here is all our code so far up to Chapter 19.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you display all the `City` names and the names of the `Region` they are in?
 

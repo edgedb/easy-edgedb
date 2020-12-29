@@ -251,9 +251,9 @@ type City extending Place {
 
 [Here is all our code so far up to Chapter 16.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
 

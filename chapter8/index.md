@@ -327,9 +327,9 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 [Here is all our code so far up to Chapter 8.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you select all the `Place` types and their names, plus the `door` property if it's a `Castle`?
 
