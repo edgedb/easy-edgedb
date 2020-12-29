@@ -321,9 +321,9 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 [Here is all our code so far up to Chapter 9.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. Why doesn't this insert work and how can it be fixed?
 

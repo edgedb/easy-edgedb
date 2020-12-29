@@ -241,9 +241,9 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 [Here is all our code so far up to Chapter 6.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
 

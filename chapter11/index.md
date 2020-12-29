@@ -203,9 +203,9 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 [Here is all our code so far up to Chapter 11.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
 

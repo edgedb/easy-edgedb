@@ -324,9 +324,9 @@ SELECT (INTROSPECT Ship) {
 
 [Here is all our code so far up to Chapter 13.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you insert an `NPC` named 'Mr. Swales' who has visited the `City` called 'York', the `Country` called 'England', and the `OtherPlace` called 'Whitby Abbey'? Try it in a single insert.
 

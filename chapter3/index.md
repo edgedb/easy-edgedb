@@ -174,9 +174,9 @@ Finally, let's insert Hungary and Romania again to finish the chapter. We'll lea
 
 [Here is all our code so far up to Chapter 3.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 

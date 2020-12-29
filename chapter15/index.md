@@ -306,9 +306,9 @@ Beautiful! All the information is right there.
 
 [Here is all our code so far up to Chapter 15.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
 

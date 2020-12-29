@@ -194,9 +194,9 @@ returns `{1887}`.
 
 [Here is all our code so far up to Chapter 2.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. Change the following `SELECT` to display `{100}` by casting: `SELECT '99' + '1'`;
 2. Select all the `City` types that start with 'Mu' (case sensitive).

@@ -333,9 +333,9 @@ Here is the output:
 
 [Here is all our code so far up to Chapter 14.](code.md)
 
-## Time to practice
-
 <!-- quiz-start -->
+
+## Time to practice
 
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
