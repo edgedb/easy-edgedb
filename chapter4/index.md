@@ -214,7 +214,7 @@ Back in Chapter 3, we learned how to select while deleting at the same time. You
 
 ```edgeql
 INSERT Time {
-  date := '22.44.10'
+  date := '22:44:10'
 };
 ```
 
@@ -225,7 +225,7 @@ So let's wrap the whole entry in `SELECT ()` so we can display its properties as
 ```edgeql
 SELECT ( # Start a selection
   INSERT Time { # Put the insert inside it
-    date := '22.44.10'
+    date := '22:44:10'
   }
 ) # The bracket finishes the selection
   { # Now just choose the properties we want
