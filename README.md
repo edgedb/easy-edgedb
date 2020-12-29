@@ -1318,7 +1318,7 @@ Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Per
 }
 ```
 
-The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
+The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it declares what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
 
 - `DESCRIBE TYPE MinorVampire AS SDL` - same thing, but in SDL.
 
