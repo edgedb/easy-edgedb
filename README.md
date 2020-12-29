@@ -1034,7 +1034,7 @@ INSERT Time {
 };
 ```
 
-And then we can `SELECT` our `Time` types and everything inside:
+And then we can `SELECT` our `Time` objects and everything inside:
 
 ```
 SELECT Time {
