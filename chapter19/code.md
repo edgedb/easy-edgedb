@@ -156,20 +156,20 @@ START MIGRATION TO {
     required link owner -> Person;
 
     required property major -> str;
-    required property major_amount -> float64 {
+    required property major_amount -> int64 {
         default := 0;
         constraint min_value(0);
     }
 
     property minor -> str;
-    property minor_amount -> float64 {
+    property minor_amount -> int64 {
         default := 0;
         constraint min_value(0);
     }
     property minor_conversion -> int64;
 
     property sub_minor -> str;
-    property sub_minor_amount -> float64 {
+    property sub_minor_amount -> int64 {
         default := 0;
         constraint min_value(0);
     }
