@@ -125,4 +125,4 @@ ELSE (
 );
 ```
 
-It's a bit cleaner but is case sensitive.
+It's a bit cleaner and is also case sensitive.
