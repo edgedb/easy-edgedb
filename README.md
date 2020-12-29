@@ -1000,10 +1000,10 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Date` type that can help. It looks like this:
+We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that can help. It looks like this:
 
 ```
-type Date {
+type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
@@ -1026,18 +1026,18 @@ ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:0
 
 Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
 
-Now with this `Date` type, we can get the hour by doing this:
+Now with this `Time` type, we can get the hour by doing this:
 
 ```
-INSERT Date {
+INSERT Time {
     date := '09:55:05',
 };
 ```
 
-And then we can `SELECT` our `Date` types and everything inside:
+And then we can `SELECT` our `Time` types and everything inside:
 
 ```
-SELECT Date {
+SELECT Time {
   date,
   local_time,
   hour,
@@ -1048,10 +1048,10 @@ That gives us a nice output that shows everything, including the hour:
 
 ```{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}```.
 
-Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
+Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
 ```
-type Date {
+type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
@@ -1079,10 +1079,10 @@ property awake := 'just waking up' IF <int16>.hour = 19 ELSE
 
 ## SELECT while you INSERT
 
-Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Date`, all we get is a `uuid`:
+Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Time`, all we get is a `uuid`:
 
 ```
-INSERT Date {
+INSERT Time {
   date := '22.44.10'
 };
 ```
@@ -1093,7 +1093,7 @@ So let's wrap the whole entry in `SELECT ()` so we can display its properties as
 
 ```
 SELECT ( # Start a selection
-  INSERT Date { # Put the insert inside it
+  INSERT Time { # Put the insert inside it
     date := '22.44.10'
 }) # The bracket finishes the selection
   { # Now just choose the properties we want
@@ -1870,10 +1870,10 @@ So that will give all `City` types with u in the name, population of more than 2
 }
 ```
 
-Parameters work just as well in inserts too. Here's a `Date` insert that prompts the user for the hour, minute, and second:
+Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
 ```
-SELECT(INSERT Date {
+SELECT(INSERT Time {
  date := <str>$hour ++ <str>$minute ++ <str>$second
  }) {
  date,
@@ -1904,7 +1904,7 @@ Note that the cast means you can just type 10, not '10'.
 So what if you just want to have the *option* of a parameter? No problem, just put `OPTIONAL` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
 
 ```
-SELECT(INSERT Date {
+SELECT(INSERT Time {
  date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
  }) {
  date,
@@ -1914,7 +1914,7 @@ SELECT(INSERT Date {
 };
 ```
 
-Of course, the `Date` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
+Of course, the `Time` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
 
 The opposite of `OPTIONAL` is `REQUIRED`, but it's the default so you don't need to write it.
 
@@ -2302,7 +2302,7 @@ It looks like we have some more people to insert. But first, let's think about t
 
 This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
-For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
+For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Time` type.)
 
 Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
 
@@ -5980,10 +5980,10 @@ By the way, the heroes of the story found out about the Czarina Catherine thanks
 “Czarina Catherine reported entering Galatz at one o’clock to-day.”
 ```
 
-Remember our `Date` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
+Remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
 
 ```
-type Date {
+type Time {
  required property date -> str;
  property local_time := <cal::local_time>.date;
  property hour := .date[0:2];
@@ -6002,7 +6002,7 @@ SELECT Ship.<ship[IS Visit] {
      name
      },
    date,
-   time := (SELECT(Insert Date {
+   time := (SELECT(Insert Time {
  date := '13:00:00'
  }) {
    date,
@@ -6028,7 +6028,7 @@ SELECT Ship.<ship[IS Visit] {
 
 ## More cleaning up the schema
 
-It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Date` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Date` to improve the `Visit` type instead.
+It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Time` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Time` to improve the `Visit` type instead.
 
 ```
   type Visit {
@@ -6069,7 +6069,7 @@ SELECT Ship.<ship[IS Visit] {
  } FILTER .place.name = 'Galatz';
 ```
 
-And now we get all the output that the `Date` type gave us before, plus our extra info about when Arthur got the telegram:
+And now we get all the output that the `Time` type gave us before, plus our extra info about when Arthur got the telegram:
 
 ```
 {
@@ -6373,7 +6373,7 @@ The enum `Transport` never really got used, and needs some more transportation t
 - `HorseDrawnCarriage` increases speed but decreases money, 
 - `Train` increases speed the most but decreases money and can only follow railway lines, etc.
 
-`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Date` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
+`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
 
 - by casting it into a <cal::local_time> to make the `local_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
