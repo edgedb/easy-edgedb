@@ -55,7 +55,7 @@ type NPC extending Person {
 }
 ```
 
-Another option is just to use the `max_len_value()` and `min_len_value()` functions that we learned in this chapter.
+Another option is just to use the `max_len_value()` and `min_len_value()` constraints that we learned in this chapter.
 
 #### 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
 
