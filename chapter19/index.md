@@ -179,10 +179,10 @@ By the way, the heroes of the story found out about the Czarina Catherine thanks
 “Czarina Catherine reported entering Galatz at one o’clock to-day.”
 ```
 
-Remember our `Date` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
+Remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
 
 ```sdl
-type Date {
+type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
@@ -203,7 +203,7 @@ SELECT Ship.<ship[IS Visit] {
   date,
   time := (
     SELECT (
-      Insert Date {
+      Insert Time {
         date := '13:00:00'
       }
     ) {
@@ -231,7 +231,7 @@ Here's the output, including whether vampires are awake or asleep.
 
 ## More cleaning up the schema
 
-It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Date` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Date` to improve the `Visit` type instead.
+It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Time` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Time` to improve the `Visit` type instead.
 
 ```sdl
 type Visit {
@@ -272,7 +272,7 @@ SELECT Ship.<ship[IS Visit] {
 } FILTER .place.name = 'Galatz';
 ```
 
-And now we get all the output that the `Date` type gave us before, plus our extra info about when Arthur got the telegram:
+And now we get all the output that the `Time` type gave us before, plus our extra info about when Arthur got the telegram:
 
 ```
 {
