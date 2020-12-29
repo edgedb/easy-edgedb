@@ -207,7 +207,7 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
 
-2. How would you write a function that takes two strings and returns `Person` types with names that match it?
+2. How would you write a function that takes two strings and returns `Person` objects with names that match each string?
 
    Hint: try using `SET OF Person` as the return type.
 
