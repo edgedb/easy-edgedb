@@ -131,10 +131,10 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Date` type that can help. It looks like this:
+We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that can help. It looks like this:
 
 ```sdl
-type Date {
+type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
@@ -157,18 +157,18 @@ ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:0
 
 Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
 
-Now with this `Date` type, we can get the hour by doing this:
+Now with this `Time` type, we can get the hour by doing this:
 
 ```edgeql
-INSERT Date {
+INSERT Time {
     date := '09:55:05',
 };
 ```
 
-And then we can `SELECT` our `Date` types and everything inside:
+And then we can `SELECT` our `Time` objects and everything inside:
 
 ```edgeql
-SELECT Date {
+SELECT Time {
   date,
   local_time,
   hour,
@@ -179,10 +179,10 @@ That gives us a nice output that shows everything, including the hour:
 
 `{Object {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
-Finally, we can add some logic to the `Date` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
+Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
 ```sdl
-type Date {
+type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
@@ -210,10 +210,10 @@ property awake := 'just waking up' IF <int16>.hour = 19 ELSE
 
 ## SELECT while you INSERT
 
-Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Date`, all we get is a `uuid`:
+Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Time`, all we get is a `uuid`:
 
 ```edgeql
-INSERT Date {
+INSERT Time {
   date := '22.44.10'
 };
 ```
@@ -224,7 +224,7 @@ So let's wrap the whole entry in `SELECT ()` so we can display its properties as
 
 ```edgeql
 SELECT ( # Start a selection
-  INSERT Date { # Put the insert inside it
+  INSERT Time { # Put the insert inside it
     date := '22.44.10'
   }
 ) # The bracket finishes the selection
