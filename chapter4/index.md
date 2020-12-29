@@ -115,7 +115,7 @@ EdgeDB uses two major types for time.
 There are two others that are almost the same as `cal::local_datetime`:
 
 - `cal::local_time`, when you only need to know the time of day, and
-- `cal::local_date`, when you only need to know the month and the day.
+- `cal::local_date`, when you only need to know the month, the day, and year.
 
 We'll start with `cal::local_time` first.
 
