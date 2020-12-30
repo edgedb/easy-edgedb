@@ -35,16 +35,17 @@ Now that our `Person` type has `constraint exclusive` for the property `name`, n
 Fortunately there's an easy way to get around this: the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. So the type is exactly the same except for this keyword:
 
 ```sdl
-abstract type Place {
+abstract type Person {
   required property name -> str {
-      delegated constraint exclusive;
-  };
-  property modern_name -> str;
-  property important_places -> array<str>;
+    delegated constraint exclusive;
+  }
+  multi link places_visited -> Place;
+  link lover -> Person;
+  property strength -> int16;
 }
 ```
 
-With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Place`.
+With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
 ## Using functions in queries
 
