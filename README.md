@@ -1919,7 +1919,7 @@ Of course, the `Time` type needs the proper formatting for the `date` property s
 
 The opposite of `OPTIONAL` is `REQUIRED`, but it's the default so you don't need to write it.
 
-The `UPDATE` keyword that we learned last chapter can also take parameters, so that's three in total where you can use them: `SELECT`, `INSERT`, and `UPDATE`.
+The `UPDATE` keyword that we learned last chapter can also take parameters, so that's four in total where you can use them: `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
 
 [Here is all our code so far up to Chapter 7.](code.md)
 
