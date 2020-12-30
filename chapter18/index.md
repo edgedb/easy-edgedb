@@ -198,7 +198,7 @@ INSERT City {
 };
 ```
 
-We'll change that to an insert with a `UNION`:
+We'll change that to an insert with a `FOR` loop:
 
 ```edgeql
 FOR city_name IN {'Munich', 'London'}
