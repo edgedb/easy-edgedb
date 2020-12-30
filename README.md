@@ -528,6 +528,8 @@ INSERT PC {
 };
 ```
 
+Entering `places_visited := City` is short for `places_visited := (SELECT City)` - you don't have to type `SELECT` every time.
+
 Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do *casting*, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
 
 ```
