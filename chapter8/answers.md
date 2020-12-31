@@ -48,6 +48,8 @@ SELECT Place {
 } FILTER EXISTS .city_name OR EXISTS .country_name;
 ```
 
+One other way to filter is to use `FILTER Place IS City | Country`. You might be familiar with `|` in other programming languages. In EdgeDB this is called the type union operator, and you'll learn more about it in Chapter 13.
+
 #### 4. How would you display all the `Person` types that don't have `lover`s, with their names and their type names?
 
 To get all these single people, names and object types, just do this:
