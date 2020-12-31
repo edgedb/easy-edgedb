@@ -80,7 +80,7 @@ Now we can see who visited:
 }
 ```
 
-A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := .<places_visited[IS Person].name` to it to get the number of visitors too.
+A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := count(.<places_visited[IS Person].name)` to it to get the number of visitors too.
 
 #### 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
 
