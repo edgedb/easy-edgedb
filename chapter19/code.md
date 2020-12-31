@@ -223,8 +223,8 @@ START MIGRATION TO {
       using (
       with 
         vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
-        place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
-        SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+        enter_place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
+        SELECT vampire.name ++ ' can enter.' IF enter_place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
         );   
 
 
