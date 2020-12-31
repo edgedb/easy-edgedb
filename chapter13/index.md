@@ -86,7 +86,7 @@ This gives us:
 
 We could have just used `FILTER.name IN Person.name` but two filters is better if we have a lot of characters later on. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
-# The type union operator: |
+## The type union operator: |
 
 Another operator related to types is `|`, which is used to combine them (similar to writing `OR`). This query for example pulling up all `Person` types will return true:
 
@@ -142,9 +142,7 @@ So if you wanted to have all the `MinorVampire` types automatically deleted when
 
 Now let's look at some tips for making queries.
 
-## Using DISTINCT, \_\_type\_\_
-
-- `DISTINCT`
+## Using DISTINCT
 
 `DISTINCT` is easy: just change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
 
