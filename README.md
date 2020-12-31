@@ -4263,6 +4263,14 @@ UPDATE Crewman
 };
 ```
 
+By the way, we don't have any more `Crewman` types to add but if we did, then we could just change the schema to this to avoid needing `UPDATE`:
+
+```
+type Crewman extending HasNumber, Person {
+  overloaded property name := 'Crewman ' ++ <str>.number; #this part is new
+}
+```
+
 So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
 
 ```
