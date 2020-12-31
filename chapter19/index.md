@@ -67,6 +67,7 @@ The captain's book from the Demeter has a lot of other places too, so let's look
 
 ```edgeql
 SELECT (INTROSPECT OtherPlace) {
+  name,
   annotations: {
     @value
   }
@@ -78,6 +79,7 @@ Let's look at the output to see what we wrote before to make sure that we should
 ```
 {
   schema::ObjectType {
+    name: 'default::OtherPlace',
     annotations: {
       schema::Annotation {
         @value: 'A place with under 50 buildings - hamlets, small villages, etc.',
