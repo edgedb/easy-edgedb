@@ -77,7 +77,7 @@ SELECT Place {
 };
 ```
 
-The part that _should_ be fixed: we should probably put `name` after `__type__` so that it's readable to us (instead of `__type__: Object {id: e0a9ab38-1e6e-11eb-9497-5bb5357741af}`). It looks like this:
+The part that _should_ be fixed: we should probably put `name` inside `__type__` so that it's readable to us (instead of `__type__: Object {id: e0a9ab38-1e6e-11eb-9497-5bb5357741af}`). It looks like this:
 
 ```edgeql
 SELECT Place {
