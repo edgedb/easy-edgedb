@@ -114,4 +114,4 @@ You can see that `DISTINCT` works individually on each set, so `SELECT DISTINCT 
 
 The output will be `{4, 4}` because `DISTINCT` only works on the first set.
 
-To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`
+To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`. Or you can wrap the whole thing like this: `SELECT DISTINCT({2, 2} + {2,2})`.
