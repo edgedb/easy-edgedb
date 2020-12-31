@@ -3340,13 +3340,13 @@ Last chapter, we used the `fight()` function for some characters, but most only 
 Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called [round()](https://www.edgedb.com/docs/edgeql/funcops/generic/#function::std::round) that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
  
 ```
-SELECT <int16>round((random() * 5)); 
+SELECT <int16>round(random() * 5); 
 ```
 
-So now we'll use this to update our Person types and give them all a random strength.
+So now we'll use this to update our `Person` types and give them all a random strength.
 
 ```
-WITH random_5 := (SELECT <int16>round((random() * 5)))
+WITH random_5 := (SELECT <int16>round(random() * 5))
  # WITH isn't necessary - just making the query prettier
  
 UPDATE Person
