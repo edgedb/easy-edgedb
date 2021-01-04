@@ -62,14 +62,14 @@ INSERT Vampire {
 };
 ```
 
-With our `MinorVampire` types inserted that way, it's easy to find minor vampires that come from `Person` objects. We'll use two filters to make sure:
+And thanks to the `former_self` link, it's easy to find all the minor vampires that come from `Person` objects. Just filter by `EXISTS former_self`:
 
 ```edgeql
 SELECT MinorVampire {
   name,
   strength,
   first_appearance,
-} FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;
+} FILTER EXISTS .former_self;
 ```
 
 This gives us:
@@ -84,7 +84,7 @@ This gives us:
 }
 ```
 
-We could have just used `FILTER.name IN Person.name` but two filters is better if we have a lot of characters later on. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
+Other filters such as `FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;` are possible too but checking if the link `EXISTS` is easiest. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
 ## The type union operator: |
 
