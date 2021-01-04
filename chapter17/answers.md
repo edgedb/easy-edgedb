@@ -9,7 +9,7 @@ SELECT (
   NPC.name,
   NPC.strength,
   (NPC.places_visited[IS City].name, NPC.places_visited[IS City].population),
-  NPC.age if EXISTS NPC.age else 0
+  NPC.age IF EXISTS NPC.age else 0
 );
 ```
 
