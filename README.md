@@ -4874,6 +4874,16 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
 }
 ```
 
+Another way to make `the_date` is with the [to_str](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::to_str) method, which (as you can probably guess) will turn it into a string:
+
+```edgeql
+select BookExcerpt {
+  excerpt,
+  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
+  the_date := (SELECT to_str(.date)), #only this part is different
+} FILTER contains(str_lower(.excerpt), 'mina');
+```
+
 Some other functions for strings are:
 
 - `find()` This gives the index of the first match it finds, and returns `-1` if it can't find anything:
