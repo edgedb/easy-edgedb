@@ -31,14 +31,11 @@ index on (.name ++ ' ' ++ .degrees IF EXISTS .degrees ELSE .name)
 
 #### 4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
 
-Here is one way to do it:
+Here is perhaps the easiest way to do it - just use the `str_upper` and `str_lower` methods to do the work and add a space with `++ ' '`:
 
 ```edgeql
-WITH doubled := (SELECT str_repeat(Person.name, 2)),
-SELECT str_upper(doubled[0:len(Person.name)]) ++ ' ' ++ str_lower(doubled[:-len(Person.name)]);
+SELECT str_upper(Person.name) ++ ' ' ++ str_lower(Person.name);
 ```
-
-In other words, it uses `str_repeat` to make a string like `Jonathan HarkerJonathanHarker`, then uses the length of `Jonathan Harker` to index the part to use `str_upper()` on. Then it adds a space and does the same with `str_upper()`, starting at the end this time.
 
 #### 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 
