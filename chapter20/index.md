@@ -299,12 +299,6 @@ So this (a set) will work: `SELECT any({5, 6, 7} = 7);`
 
 But this (an array) will not: `SELECT any([5, 6, 7] = 7);`
 
-Here is the error:
-
-```
-operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std::int64'
-```
-
 Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
 ```sdl
