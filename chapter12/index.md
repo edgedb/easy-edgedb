@@ -244,8 +244,8 @@ Because we used `??` instead of `++`, the result is `{'Count Dracula is now in W
 So let's get back to our original query, this time with the coalescing operator:
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
-     f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
+WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
+     f_places := (SELECT Place FILTER .name ILIKE 'f%'),
 SELECT b_places.name ++ ' ' ++ f_places.name
   IF EXISTS b_places.name AND EXISTS f_places.name
   ELSE b_places.name ?? f_places.name;
@@ -262,8 +262,8 @@ That's better.
 But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
+     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
 SELECT b_places.name ++ ' ' ++ m_places.name
   IF EXISTS b_places.name AND EXISTS m_places.name
   ELSE b_places.name ?? m_places.name;
@@ -277,35 +277,51 @@ Then we'll get this result:
 
 instead of something like 'Buda-Peth, Bistritz, Munich'.
 
-To get the output that we want, we can use two more functions:
+Let's experiment some more while introducing two new functions, called `array_agg` and `array_join`. Here's what they do:
 
-- First [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), which turns the set into an array.
-- Next, [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) to turn the array into a string.
+- [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), turns sets into arrays (it 'aggregates' them).
+- [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) turns arrays into a single string. So let's give that a try:
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
+     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
 SELECT array_join(array_agg(b_places.name), ', ') ++ ', ' ++
   array_join(array_agg(m_places.name), ', ')
   IF EXISTS b_places.name AND EXISTS m_places.name
   ELSE b_places.name ?? m_places.name;
 ```
 
-Finally! The output is `{'Buda-Pesth, Bistritz, Munich'}`. Now with this more robust query we can use it on anything and don't need to worry about getting {} if we choose a letter like x. Let's look at every place that contains k or e:
+This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But there are a few problems here:
+
+- This only works if the empty set is second.
+- If both sets are not empty we get a single string separated by commas, but otherwise we get a set of strings.
+
+So that's not very robust. Plus the query is kind of hard to read now. 
+
+The best way is actually the easiest: just `UNION` the sets.
 
 ```edgeql
-WITH has_k := (SELECT Place FILTER Place.name ILIKE '%k%'),
-     has_e := (SELECT Place FILTER Place.name ILIKE '%e%'),
-SELECT array_join(array_agg(has_k.name), ', ') ++ ', ' ++
-  array_join(array_agg(has_e.name), ', ')
-  IF EXISTS has_k.name AND EXISTS has_e.name
-  ELSE has_k.name ?? has_e.name;
+WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
+     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+     both_places := b_places UNION m_places,
+SELECT both_places.name;
+```
+
+Finally! The output is `{'Buda-Pesth', 'Bistritz', 'Munich'}`
+
+Now with this more robust query we can use it on anything and don't need to worry about getting {} if we choose a letter like x. Let's look at every place that contains k or e:
+
+```edgeql
+WITH has_k := (SELECT Place FILTER .name ILIKE '%k%'),
+     has_e := (SELECT Place FILTER .name ILIKE 'm%'),
+     has_both := has_k UNION has_e,
+SELECT has_both.name;
 ```
 
 This gives us the result:
 
 ```
-{'Slovakia, Buda-Pesth, Castle Dracula'}
+{'Slovakia', 'Buda-Pesth', 'Castle Dracula'}
 ```
 
 Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
