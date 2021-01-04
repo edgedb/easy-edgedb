@@ -16,17 +16,11 @@ Warning: selecting `.1` will generate an error since that is where the rest of t
 SELECT enumerate(Person.strength).1;
 ```
 
-So now how to display starting from 1? With a `FOR` loop:
+And then to display numbers starting with 1, we just use `enumerate` again and add 1 to it:
 
 ```edgeql
-WITH numbers := enumerate(Person).0,
-FOR number in {numbers}
-UNION (
-  SELECT number + 1
-);
+SELECT enumerate(Person).0 + 1
 ```
-
-Don't forget to write `number in {numbers}` so that `numbers` becomes a set.
 
 #### 2. Using a reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
