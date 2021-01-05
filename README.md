@@ -3618,10 +3618,10 @@ SELECT array_join(array_agg(b_places.name), ', ') ++ ', ' ++
   ELSE b_places.name ?? m_places.name;
 ```
 
-This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But there are a few problems here:
+This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But there's a small problem:
 
-- This only works if the empty set is second.
-- If both sets are not empty we get a single string separated by commas, but otherwise we get a set of strings.
+- if both sets are not empty we get a single string with commas,
+- otherwise we get a set of strings.
 
 So that's not very robust. Plus the query is kind of hard to read now. 
 
