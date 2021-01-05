@@ -1,8 +1,8 @@
 # Chapter 1 Questions and Answers
 
-#### 1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
+#### 1. Entering the code below returns an error. Try adding one character to make it return `{true}`.
 
-Answer: change `my_name =` to `my_name :=`. This will assign the string 'Timothy' to `my_name`, and then it will compare it to `'Benjamin'`, and return `{true}` because they are not equal.
+Answer: change `WITH my_name = 'Timothy'` to `WITH my_name := 'Timothy'`. This will assign the string 'Timothy' to `my_name` (instead of trying to compare 'Timothy' to `my_name` which doesn't exist). Then it will compare it to `'Benjamin'` and return `{true}` because they are not equal.
 
 ---
 
