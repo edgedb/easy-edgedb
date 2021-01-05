@@ -387,10 +387,10 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 1. Entering the code below returns an error. Try adding one character to make it return `{true}`.
 
-```edgeql
-WITH my_name = 'Timothy',
-SELECT my_name != 'Benjamin';
-```
+   ```edgeql
+   WITH my_name = 'Timothy',
+   SELECT my_name != 'Benjamin';
+   ```
 
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
 3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
