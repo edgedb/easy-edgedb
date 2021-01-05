@@ -113,14 +113,14 @@ SELECT jonathans_name := 'Jonathan Harker';
 
 This just returns what we gave it: `{'Jonathan Harker'}`. But this time it's a string that we assigned called `jonathans_name` that is being returned.
 
-Now let's do something with this variable. We can do a `SELECT` by first assigning to `jonathans_name` and then comparing it to `'Count Dracula'`:
+Now let's do something with this variable. We can use the keyword `WITH` to use this variable and then compare it to `'Count Dracula'`:
 
 ```edgeql
-SELECT jonathans_name := 'Jonathan Harker' = 'Count Dracula';
-SELECT jonathans_name := 'Jonathan Harker' != 'Count Dracula';
+WITH jonathans_name := 'Jonathan Harker',
+SELECT jonathans_name != 'Count Dracula';
 ```
 
-The output is `{false}`, then `{true}`. Of course, you can just write `SELECT 'Jonathan Harker' = 'Count Dracula'` and `SELECT 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
+The output is `{true}`. Of course, you can just write `SELECT 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
 
 ## Inserting objects
 
@@ -385,7 +385,13 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 ## Time to practice
 
-1. Entering `SELECT my_name = 'Timothy' != 'Benjamin';` returns an error. Try adding one character to make it return `{true}`.
+1. Entering the code below returns an error. Try adding one character to make it return `{true}`.
+
+```edgeql
+WITH my_name = 'Timothy',
+SELECT my_name != 'Benjamin';
+```
+
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
 3. Try displaying all the names of the cities in the database. (Hint: you can do it in a single line of code and won't need `{}` to do it)
 4. Try selecting all the `City` types along with their `name` and `modern_name` properties, but change `.name` to say `old_name` and change `modern_name` to say `name_now`.
