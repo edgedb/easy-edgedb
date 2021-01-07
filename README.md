@@ -908,7 +908,9 @@ For `lover` it is the same process but a bit more complicated:
 ```
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := (SELECT DETACHED NPC 
+    FILTER .name = 'Jonathan Harker' 
+    LIMIT 1),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 ```
