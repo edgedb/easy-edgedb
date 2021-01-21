@@ -42,6 +42,6 @@ Going through the book, we will learn how to use queries that are more and more 
 
 ## Beauty
 
-We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. We teamed up with illustrator Damian Dideńko [didiusz on Instagram](https://www.instagram.com/didiusz/) to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter.
+We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. We teamed up with illustrator Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)) to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter.
 
 [So let's get started - on to Chapter 1!](../chapter1/index.md)
