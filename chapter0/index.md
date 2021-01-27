@@ -42,6 +42,10 @@ Going through the book, we will learn how to use queries that are more and more 
 
 ## Beauty
 
-We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. We teamed up with illustrator Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)) to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter.
+We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. To give a feel for the beauty of the original work (with a steampunk-ish vibe added for good measure) we teamed up with Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)), an illustrator of 10 years from Katowice, Poland, to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter. You'll soon become familiar with his illustrations but here is how he describes them and what inspires him:
+
+>I try to take inspiration from everything that I have contact with. In my works, I like to build slightly surreal, understated/untold stories that leave the viewer room for their own interpretation. The works themselves are a loose stream of thoughts that make sense while creating, sometimes at the very end and sometimes not at all - because not everything has to make sense. My works often start with a small idea that grows into a much larger composition. I like to create works that are rich in detail, in which I sometimes hide what inspires me. They are a bit like little easter eggs for the watchful observer.
+
+We're pleased to have teamed up with Damian to put the final touch on a book that blends the old and the new in a form that we hope will keep you turning the page as you familiarize yourself with EdgeDB and discover what it has to offer you.
 
 [So let's get started - on to Chapter 1!](../chapter1/index.md)
