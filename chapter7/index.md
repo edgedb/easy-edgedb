@@ -1,3 +1,7 @@
+---
+tags: Constraint Delegation, $ Parameters
+---
+
 # Chapter 7 - Jonathan finally "leaves" the castle
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now he knows that he is a vampire. A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door: but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. He also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped. Later, Jonathan hears Dracula tell the vampire women that they can have him tomorrow after he leaves. Dracula's friends take him away the next day (he is inside a coffin), and Jonathan is alone...and soon it will be night. All the doors are locked. He decides to climb out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
