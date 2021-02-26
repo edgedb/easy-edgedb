@@ -1,3 +1,7 @@
+---
+tags: Ddl, Sdl, Edgedb Community
+---
+
 # Chapter 20 - The final battle
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
