@@ -1,3 +1,7 @@
+---
+tags: Complex Inserts, Schema Cleanup
+---
+
 # Chapter 18 - Using Dracula's own weapon against him
 
 > Van Helsing was correct: Mina is connected to Dracula. He continues to use hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula. They find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
