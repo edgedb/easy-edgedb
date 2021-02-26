@@ -1,3 +1,7 @@
+---
+tags: Aliases, Named Tuples
+---
+
 # Chapter 17 - Poor Renfield. Poor Mina.
 
 > Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that they were destroying his coffins and decided to attack Mina. He succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
