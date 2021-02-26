@@ -1,3 +1,7 @@
+---
+tags: Indexing, String Functions
+---
+
 # Chapter 16 - Is Renfield telling the truth?
 
 > Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
