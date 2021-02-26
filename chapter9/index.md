@@ -1,3 +1,7 @@
+---
+tags: Defaults, Overloading, For Loops
+---
+
 # Chapter 9 - Strange events in England
 
 For this chapter we've gone back in time a few weeks to when the ship left Varna and Mina and Lucy haven't left for Whitby yet. The introduction is also split into two parts. Here's the first:
