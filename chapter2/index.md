@@ -80,7 +80,7 @@ Let's also experiment with a player character. We'll make one called Emil Sincla
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := <Transport>'HorseDrawnCarriage',
 };
 ```
 
