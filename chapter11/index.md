@@ -164,7 +164,7 @@ By the way, this result is unbelievable because Jonathan is weaker than all of t
 
 This brings us to the subject of Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
-![](Cartesian_product.png)
+![](cartesian_product.svg)
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
 
