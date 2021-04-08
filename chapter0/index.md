@@ -1,3 +1,7 @@
+---
+leadImage: illustration_00.jpg
+---
+
 # Chapter 0 - EdgeDB and the book Easy EdgeDB
 
 Thanks for checking out our new book to learn Easy EdgeDB!

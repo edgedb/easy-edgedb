@@ -1,5 +1,6 @@
 ---
 tags: Scalar Types, Abstract Types, Filter
+leadImage: illustration_02.jpg
 ---
 
 # Chapter 2 - At the Hotel in Bistritz
