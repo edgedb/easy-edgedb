@@ -1,5 +1,6 @@
 ---
 tags: Constraints, Deleting
+leadImage: illustration_03.jpg
 ---
 
 # Chapter 3 - Jonathan goes to Castle Dracula

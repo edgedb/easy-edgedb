@@ -1,5 +1,6 @@
 ---
 tags: Object Types, Select, Insert
+leadImage: illustration_01.jpg
 ---
 
 # Chapter 1 - Jonathan Harker travels to Transylvania
