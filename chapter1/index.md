@@ -171,7 +171,9 @@ But first let's look a bit closer at what happens when we use `INSERT`.
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
 
-EdgeDB also has a byte literal type that gives you the bytes of a string, but they must be characters that are 1 byte long. You create it by adding a `b` in front of the string:
+EdgeDB also has a byte literal type that gives you the bytes of a string. This is mainly for raw data that humans don't need to view such when saving to files. They must be characters that are 1 byte long.
+
+You create byte literals by adding a `b` in front of the string:
 
 ```edgeql-repl
 edgedb> SELECT b'Bistritz';
