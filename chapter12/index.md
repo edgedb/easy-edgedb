@@ -150,7 +150,7 @@ SELECT(
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without needing to do a migration. For example, here's a function that just says hi:
+The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without needing to do an explicit migration. For example, here's a function that just says hi:
 
 ```sdl
 function say_hi() -> str
@@ -240,7 +240,7 @@ So if the item on the left is not empty it will return that, and otherwise it wi
 Here is a quick example:
 
 ```edgeql-repl
-edgedb> SELECT {'Count Dracula is now in Whitby'} ?? <str>{};
+edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 Because we used `??` instead of `++`, the result is `{'Count Dracula is now in Whitby'}` and not `{}`.
@@ -317,7 +317,7 @@ Now with this more robust query we can use it on anything and don't need to worr
 
 ```edgeql
 WITH has_k := (SELECT Place FILTER .name ILIKE '%k%'),
-     has_e := (SELECT Place FILTER .name ILIKE 'm%'),
+     has_e := (SELECT Place FILTER .name ILIKE '%e%'),
      has_both := has_k UNION has_e,
 SELECT has_both.name;
 ```
