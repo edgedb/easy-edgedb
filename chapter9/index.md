@@ -113,7 +113,7 @@ abstract type Place {
   }
   property modern_name -> str;
   property important_places -> array<str>;
-  property post_date := datetime_current() {
+  property post_date -> datetime {
     default := datetime_current()
   }
 }
