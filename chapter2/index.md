@@ -90,13 +90,13 @@ Entering `places_visited := City` is short for `places_visited := (SELECT City)`
 Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do _casting_, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
 
 ```edgeql
-SELECT 'feet' IS Transport;
+SELECT 'Feet' IS Transport;
 ```
 
-We will get an output of `{false}`, because 'feet' is just a `str` and nothing else. But this will work:
+We will get an output of `{false}`, because 'Feet' is just a `str` and nothing else. But this will work:
 
 ```edgeql
-SELECT <Transport>'feet' IS Transport;
+SELECT <Transport>'Feet' IS Transport;
 ```
 
 Then we get `{true}`.
@@ -184,7 +184,26 @@ That gives the same result. Careful though: if you set the number too high then 
 ERROR: InvalidValueError: string index 18 is out of bounds
 ```
 
-Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. But if you use `LIKE` or `ILIKE` with an empty parameter, it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having no data in a property.
+Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
+
+You can also slice a string to get a piece of it. Because 'Jonathan' starts at zero, its index values look like this:
+
+```
+|J|o|n|a|t|h|a|n|
+0 1 2 3 4 5 6 7 8
+```
+
+It's 8 characters long, so it fits entirely between 0 and 8. If you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friend to tell them that you're 'at their house': you're not telling them that you're inside it.
+
+Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1` (= 7), etc.
+
+So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `LIKE` or `ILIKE` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
+
+- "no data" in Edgedb is shown as an empty set: `{}`
+- `""` (an empty string) is actually data.
+
+Keeping that in mind helps you understand the behaviour between the two.
+
 
 Finally, did you notice that we wrote a comment with `#` just now? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
 
