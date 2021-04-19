@@ -30,12 +30,12 @@ This is very convenient for us. With this we can make a type that holds a date a
 type BookExcerpt {
   required property date -> cal::local_datetime;
   required property excerpt -> str;
-  index on (.excerpt);
+  index on (.date);
   required link author -> Person
 }
 ```
 
-The [`index on (.excerpt)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match.
+The [`index on (.date)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match. Indexing makes a lookup by an exact match faster compared to always scanning everything.
 
 We could do this for certain other types too - it might be good for types like `Place` and `Person`.
 
