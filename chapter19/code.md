@@ -136,7 +136,7 @@ START MIGRATION TO {
     type BookExcerpt {
       required property date -> cal::local_datetime;
       required property excerpt -> str;
-      index on (.excerpt);
+      index on (.date);
       required link author -> Person
     }
 
