@@ -246,14 +246,7 @@ SELECT (
 );
 ```
 
-The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`. This becomes useful once the schema gets a lot larger. In our game database you could imagine types inside modules like `characters::NPCs::Barkeeper` and using `WITH` would keep queries readable:
-
-```edgeql
-WITH module characters::NPCs,
-SELECT Barkeeper {
-  # properties, links...
-}
-```
+The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`.
 
 You can also use `AS` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
 
@@ -361,13 +354,13 @@ Now we get:
 }
 ```
 
-Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example:
+Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
-SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them." $$;
+SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them, but he'd sound crazy." $$;
 ```
 
-Without the `$$` it will look like three separate strings with three unknown keywords between them, and will generate an error.
+Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error.
 
 ## All the scalar types
 
