@@ -149,7 +149,7 @@ And then it will give a result similar to this with our collections of money, ea
 
 (If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float64>`.)
 
-You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them.
+You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required link owner -> Person;` to `optional link owner -> Person;` if it's possible for a character in the game to lose them.
 
 Of course, if we only had one type of money then it would be simpler to just put it inside the `Person` type. We won't do this in our schema, but let's imagine how to do it. If the game were only inside the United States, it would be easier to just do this without an abstract `Currency` type:
 
@@ -185,6 +185,8 @@ SELECT(
 Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
 
 Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
+
+One final note: our `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
 
 ## Cleaning up the schema
 
