@@ -88,7 +88,7 @@ INSERT Sailor {
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := 'SecondMate'
+  rank := 'FirstMate'
 };
 
 INSERT Sailor {
@@ -241,9 +241,18 @@ This is officially called a [polymorphic query](https://www.edgedb.com/docs/edge
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype = supertype` will return `{true}`. And of course, `supertype IS subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype IS supertype` will return `{true}`. And of course, `supertype IS subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
 
-In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` returns `{false}`.
+In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
+
+To make a query that will show this, just add a shape query with the computable `Person IS PC` and EdgeDB will tell you:
+
+```edgeql
+SELECT Person {
+    name,
+    is_PC := Person IS PC,
+};
+```
 
 Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
 
