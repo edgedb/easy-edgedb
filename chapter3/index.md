@@ -49,7 +49,6 @@ We will need to change `places_visited` in the `Person` type now to be a `Place`
 abstract type Person {
   required property name -> str;
   multi link places_visited -> Place;
-  property age -> int16;
 }
 ```
 
@@ -64,9 +63,11 @@ INSERT Country {
 };
 ```
 
+(By the way, you might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi link`. That's true, though in this tutorial we never end up using it and it just stays in the schema as an array. If this were a schema for a real game, it would probably either end up turned to a `multi link` or removed if we decide we don't need it.)
+
 ## Capturing a SELECT expression
 
-With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets are necessary to capture the result of the `SELECT`. In other words, EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
+With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets (parentheses) are necessary to capture the result of the query using `SELECT`, that we then use to do something. In other words, the brackets delimit (set the boundaries for) a set. EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
 
 ```edgeql
 INSERT Vampire {
@@ -78,7 +79,7 @@ INSERT Vampire {
 
 The result is `{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}`.
 
-The `uuid` there is the reply from the server showing that we were successful (otherwise it would show `{}`).
+The `uuid` there is the reply from the server showing which object was just created and that we were successful.
 
 Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `SELECT` it:
 
