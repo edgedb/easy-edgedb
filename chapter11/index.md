@@ -141,28 +141,11 @@ SELECT (
 
 It prints what we wanted to see: `{'Renfield wins!'}`
 
-It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one. For example, let's imagine that we forgot that there were three women in the castle and wrote this:
-
-```edgeql
-WITH
-  the_woman := (SELECT Person filter .name ILIKE '%woman%'),
-  jonathan := (SELECT Person filter .name = 'Jonathan Harker')
-SELECT (
-  fight(the_woman, jonathan)
-);
-```
-
-It would give us this result:
-
-```
-{'Jonathan Harker wins!', 'Jonathan Harker wins!', 'Jonathan Harker wins!'}
-```
-
-By the way, this result is unbelievable because Jonathan is weaker than all of the vampire women (vampires are very strong, both male and female). But right now their `strength` property just returns `{}`, so even Jonathan's strength of 5 is greater than this.
+It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one for each possible combination. The way EdgeDB handles this is through Cartesian multiplication, so let's learn about that now.
 
 ## Cartesian multiplication
 
-This brings us to the subject of Cartesian multiplication. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+Cartesian multiplication sounds intimidating but it really just means "join every item in one set to every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![](cartesian_product.svg)
 
