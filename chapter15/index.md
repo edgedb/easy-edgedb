@@ -10,7 +10,7 @@ tags: Expression On, Error Messages
 
 This chapter they learned something about vampires: they need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
 
-- Each place in the world either has coffins doesn't have them,
+- Each place in the world either has coffins or doesn't have them,
 - Has coffins = vampires can enter and terrorize the people,
 - If a place has coffins, we should know how many of them there are.
 
@@ -77,7 +77,15 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 - Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> str`
 
-Overloading the function is probably the easier option, because we wouldn't need to touch the schema.
+Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
+
+One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. [The documentation](https://www.edgedb.com/docs/edgeql/overview#optional) explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
+
+Interesting! You'll remember the coalescing operator `?` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
+
+`OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
+
+So those are some ideas for how to set up your functions depending on how you think people might use them.
 
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
@@ -217,7 +225,7 @@ Since `expression on` is so flexible, you can use it in almost any way you can i
 
 `ERROR: ConstraintViolationError: invalid Lord`
 
-So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := 'All lords need 'Lord' in their name.`
+So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
 
 Now the error becomes:
 
@@ -252,9 +260,7 @@ To add the `master` link again, the best way is to start with a property called 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := (
-    SELECT .<slaves[IS Vampire] FILTER .name = MinorVampire.master_name LIMIT 1
-  );
+  link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
   required single property master_name -> str;
 };
 ```
