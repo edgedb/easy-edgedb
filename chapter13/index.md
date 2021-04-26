@@ -36,7 +36,9 @@ SET {
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
+Then we can add Lucy to the `INSERT` for Dracula. (If you are following along, just `DELETE Vampire;` and `DELETE Minorvampire;` first so we can practice doing this longer `INSERT`.)
+
+Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
 Here's the insert:
 
@@ -233,7 +235,7 @@ type Ship {
 First, here is the simplest `INTROSPECT` query:
 
 ```edgeql
-SELECT (INTROSPECT Ship.name);
+SELECT (INTROSPECT Ship);
 ```
 
 This query isn't very useful to us but it does show how it works: it returns `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
