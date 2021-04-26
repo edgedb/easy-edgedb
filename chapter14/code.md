@@ -179,7 +179,7 @@ INSERT City {
 
 INSERT NPC {
   name := 'Jonathan Harker',
-  places_visited := (SELECT Place FILTER .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+  places_visited := (SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
 };
 
 INSERT NPC {
