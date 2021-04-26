@@ -47,7 +47,7 @@ So back to Jonathan: in our database, he's been to four cities, one country, and
 ```edgeql
 INSERT NPC {
   name := 'Jonathan Harker',
-  places_visited := (SELECT Place FILTER .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+  places_visited := (SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
 };
 ```
 
@@ -71,7 +71,7 @@ You'll know that it succeeded because EdgeDB will return the IDs of the objects 
 }
 ```
 
-And if we had written something like `FILTER .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched.
+And if we had written something like `FILTER .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `FILTER .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `FILTER` there.
 
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
