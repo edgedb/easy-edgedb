@@ -487,6 +487,6 @@ Here's the output:
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 18: [Jonathan the detective.](../chapter18/index.md)
+
+<!-- quiz-end -->

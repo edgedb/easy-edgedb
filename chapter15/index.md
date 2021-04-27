@@ -334,6 +334,6 @@ Beautiful! All the information is right there.
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 16: [Could Renfield be of help?](../chapter16/index.md)
+
+<!-- quiz-end -->

@@ -448,6 +448,6 @@ With this, the name becomes Johnny plus a number, namely the number of character
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)
+
+<!-- quiz-end -->

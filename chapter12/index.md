@@ -400,6 +400,6 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 13: [One of the men gives Lucy his blood again to try to save her. Will it be enough?](../chapter13/index.md)
+
+<!-- quiz-end -->

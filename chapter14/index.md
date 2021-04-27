@@ -355,6 +355,6 @@ Here is the output:
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 15: [Time to get revenge.](../chapter15/index.md)
+
+<!-- quiz-end -->

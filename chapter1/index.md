@@ -406,6 +406,6 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 2: [Jonathan Harker arrives in Romania.](../chapter2/index.md)
+
+<!-- quiz-end -->

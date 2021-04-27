@@ -272,6 +272,6 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 7: [Jonathan climbs the castle wall to try to get into Count Dracula's room.](../chapter7/index.md)
+
+<!-- quiz-end -->

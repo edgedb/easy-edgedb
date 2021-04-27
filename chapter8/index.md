@@ -364,6 +364,6 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 9: [Time to meet Dr. Seward, Arthur Holmwood, Quincey Morris, and the strange Renfield.](../chapter9/index.md)
+
+<!-- quiz-end -->

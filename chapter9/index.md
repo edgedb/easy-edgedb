@@ -366,6 +366,6 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 10: [Thick fog and a storm hit the city of Whitby.](../chapter10/index.md)
+
+<!-- quiz-end -->

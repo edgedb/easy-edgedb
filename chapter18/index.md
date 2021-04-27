@@ -346,6 +346,6 @@ Much better!
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 19: [Only Mina can tell them where Dracula has gone.](../chapter19/index.md)
+
+<!-- quiz-end -->

@@ -291,6 +291,6 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 5: [Jonathan decides to explore the castle a bit. Just to be safe...](../chapter5/index.md)
+
+<!-- quiz-end -->

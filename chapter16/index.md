@@ -289,6 +289,6 @@ type City extending Place {
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 17: [The truth about Renfield.](../chapter17/index.md)
+
+<!-- quiz-end -->

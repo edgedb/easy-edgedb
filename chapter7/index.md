@@ -294,6 +294,6 @@ The `UPDATE` keyword that we learned last chapter can also take parameters, so t
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 8: [Workers in the city of Varna load fifty boxes into a ship. Dracula is inside one of them.](../chapter8/index.md)
+
+<!-- quiz-end -->

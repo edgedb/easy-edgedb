@@ -52,4 +52,8 @@ We looked far and wide, and didn't see any rule that a text on database software
 
 We're pleased to have teamed up with Damian to put the final touch on a book that blends the old and the new in a form that we hope will keep you turning the page as you familiarize yourself with EdgeDB and discover what it has to offer you.
 
+<!-- hidden-start -->
+
 [So let's get started - on to Chapter 1!](../chapter1/index.md)
+
+<!-- hidden-end -->

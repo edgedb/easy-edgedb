@@ -212,6 +212,6 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 12: [Lucy one night: "Funny, what's that flapping against the window? Sounds like a bat or something..."](../chapter12/index.md)
+
+<!-- quiz-end -->

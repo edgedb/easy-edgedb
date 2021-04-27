@@ -407,6 +407,6 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 20: [The race against time.](../chapter20/index.md)
+
+<!-- quiz-end -->

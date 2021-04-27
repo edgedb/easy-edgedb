@@ -356,6 +356,6 @@ SELECT (INTROSPECT Ship) {
 
 [See the answers here.](answers.md)
 
-<!-- quiz-end -->
-
 Up next in Chapter 14: [An old friend returns.](../chapter14/index.md)
+
+<!-- quiz-end -->
