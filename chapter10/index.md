@@ -440,13 +440,8 @@ With this, we are guaranteed to get a `City` object called Munich with a populat
 
    Hint: the length of `''` is 0, which may be a problem.
 
-5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
+5. Dr. Van Helsing has a list of `MinorVampire`s with their names and strengths. We already have some `MinorVampire`s in the database. How would you `INSERT` them while making sure to `UPDATE` if the object is already there?
 
-6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
-
-   Hint: `LIKE` can help.
-
-   Bonus challenge: give the function [`contains()`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) a try to see if you can do the same thing. This function will return `{true}` for example from `SELECT contains('Jonathan Harker', 'Jonathan');`.
 
 [See the answers here.](answers.md)
 
