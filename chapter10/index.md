@@ -378,45 +378,47 @@ INSERT NPC {
 
 But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
 
-But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `UNLESS CONFLICT ON` comes in, followed by an `ELSE` to explain what to do. `UNLESS CONFLICT ON` is probably easier to explain through an example. Here's one that shows what we can do to insert an unlimited number of characters named Johnny:
+But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `UNLESS CONFLICT ON` comes in, followed by an `ELSE` to explain what to do. `UNLESS CONFLICT ON` is probably easier to explain through an example. Here's one that shows what we can do to either insert a `City` with its population, and to `UPDATE` the population if it already exists in the database.
+
+Munich had a population of 230,023 in 1880, and five years later it was 261,023. So let's imagine we are updating the `City` data and some cities might exist, while others might not. The `INSERT` will look like this:
 
 ```edgeql
-WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),
-INSERT NPC {
-  name := 'Johnny'
+INSERT City {
+  name := 'Munich',
+  population := 261023,
 } UNLESS CONFLICT ON .name
 ELSE (
-  UPDATE NPC
+  UPDATE City
   SET {
-    name := 'Johnny' ++ <str>(count(johnnies))
+    population := 261023,
   }
 );
 ```
 
 Let's look at it step by step:
 
-`WITH johnnies := (SELECT NPC FILTER .name LIKE '%Johnny%'),` Here we select all the `NPC` types that have Johnny in their name.
-
-Then a normal insert:
+First a normal insert:
 
 ```edgeql
 INSERT NPC {
-  name := 'Johnny'
+  name := 'Munich'
 }
 ```
 
-But it might not work so we add `UNLESS CONFLICT ON .name`. Then follow it with an `ELSE` to give instructions on what to do.
+But there might be a `City` there already so it might not work, so we add `UNLESS CONFLICT ON .name`. Then follow it with an `ELSE` to give instructions on what to do.
 
-But here's the important part: we don't write `ELSE INSERT`, because we are already in the middle of an `INSERT`. What we write instead is `UPDATE` for the type we are inserting, so `UPDATE NPC`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
+But here's the important part: we don't write `ELSE INSERT`, because we are already in the middle of an `INSERT`. What we write instead is `UPDATE` for the type we are inserting, so `UPDATE City`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
 
 ```edgeql
-UPDATE NPC
-SET {
-  name := 'Johnny' ++ ' ' ++ <str>(count(johnnies))
-}
+ELSE (
+  UPDATE City
+  SET {
+    population := 261023
+  }
+);
 ```
 
-With this, the name becomes Johnny plus a number, namely the number of characters with Johnny in their name already. If there's a Johnny already then the next will be 'Johnny 1', then 'Johnny 2', and so on.
+With this, we are guaranteed to get a `City` object called Munich with a population of 261,023, whether it already exists in the database or not.
 
 [Here is all our code so far up to Chapter 10.](code.md)
 
