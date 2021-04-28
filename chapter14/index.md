@@ -58,7 +58,9 @@ Uh oh, not quite:
 }
 ```
 
-Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. In other words, it's a link, and the target of a link just tells us the kind of annotation that gets used. But we're looking for the value inside it.
+
+This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
 
 ```edgeql
 SELECT (INTROSPECT City) {
