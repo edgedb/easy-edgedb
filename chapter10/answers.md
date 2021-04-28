@@ -73,56 +73,36 @@ SELECT Person {
 } ORDER BY .name[-1];
 ```
 
-#### 5. How would you insert a `Country` called Slovakia, or Slovak Republic if the name is already taken?
+#### 5. Dr. Van Helsing has a list of MinorVampires with their names and strengths. We already have some MinorVampires in the database. How would you INSERT them while making sure to UPDATE if the object is already there?
 
-You can do it with `UNLESS CONFLICT ON` and `ELSE`:
+You can do it with `UNLESS CONFLICT ON` and `ELSE`. An insert for one named Carmilla then would look like this:
 
 ```edgeql
-INSERT Country {
-  name := 'Slovakia'
+INSERT MinorVampire {
+  name := 'Carmilla',
+  strength := 10,
 } UNLESS CONFLICT ON .name
 ELSE (
-  UPDATE Country
+  UPDATE MinorVampire
   SET {
-    name := 'Slovak Republic'
+    name := 'Carmilla',
+    strength := 10,
   }
 );
 ```
 
-#### 6. How would you insert a character called 'Jonathan Harker', or 'Jonathan Harker 2', 'Jonathan Harker 3' etc. if the name has been taken?
-
-Here is one way to do it:
+Then even if his data has a conflicting name (like 'Woman 1'), it will still update with their correct strength instead of just giving up:
 
 ```edgeql
-WITH npc_name := 'Jonathan Harker',
-     users_with_name := (SELECT NPC FILTER .name LIKE npc_name ++ '%')
-INSERT NPC {
-  name := npc_name
+INSERT MinorVampire {
+  name := 'Woman 1',
+  strength := 7,
 } UNLESS CONFLICT ON .name
 ELSE (
-  UPDATE NPC
+  UPDATE MinorVampire
   SET {
-    name := npc_name ++ ' ' ++ <str>(count(users_with_name) + 1)
+    name := 'Woman 1',
+    strength := 7,
   }
 );
 ```
-
-Matching with `LIKE` on `users_with_name` is important because 'Jonathan Harker 2' won't match 'Jonathan Harker' exactly.
-
-Here's the same using the function `contains()`:
-
-```edgeql
-WITH npc_name := 'Jonathan Harker',
-     users_with_name := (SELECT NPC FILTER contains(.name, npc_name))
-INSERT NPC {
-  name := npc_name
-} UNLESS CONFLICT ON .name
-ELSE (
-  UPDATE NPC
-  SET {
-    name := npc_name ++ ' ' ++ <str>(count(users_with_name) + 1)
-  }
-);
-```
-
-It's a bit cleaner and is also case sensitive.
