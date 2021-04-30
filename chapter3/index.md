@@ -215,4 +215,4 @@ Finally, let's insert Hungary and Romania again to finish the chapter. We'll lea
 
 <!-- quiz-end -->
 
-Up next in Chapter 4: [Jonathan: "This Count Dracula knows so much about history! I'm glad I came."](../chapter4/index.md)
+__Up next:__ _Jonathan: "This Count Dracula knows so much about history! I'm glad I came."_
