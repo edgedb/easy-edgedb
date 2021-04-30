@@ -247,4 +247,4 @@ returns `{1887}`.
 
 <!-- quiz-end -->
 
-Up next in Chapter 3: [Jonathan gets into the carriage and travels into the cold mountains...](../chapter3/index.md)
+__Up next:__ _Jonathan gets into the carriage and travels into the cold mountains._
