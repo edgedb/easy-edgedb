@@ -293,4 +293,4 @@ Now the output is more meaningful to us: `{Object {date: '22.44.10', hour: '22',
 
 <!-- quiz-end -->
 
-__Up next:__ _Jonathan decides to explore the castle a bit. Just to be safe..._
+__Up next:__ _Jonathan's curiosity gets the better of him. What's inside this castle?_
