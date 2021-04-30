@@ -489,4 +489,4 @@ Here's the output:
 
 <!-- quiz-end -->
 
-Up next in Chapter 18: [Jonathan the detective.](../chapter18/index.md)
+__Up next:__ _Jonathan the detective._
