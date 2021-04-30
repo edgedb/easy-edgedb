@@ -447,4 +447,4 @@ With this, we are guaranteed to get a `City` object called Munich with a populat
 
 <!-- quiz-end -->
 
-Up next in Chapter 11: [How can Van Helsing help them without sounding crazy?](../chapter11/index.md)
+__Up next:__ _Will they believe Van Helsing when he tells them the truth?_
