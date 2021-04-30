@@ -1,5 +1,6 @@
 ---
 tags: Datetime, Describing Types
+leadImage: illustration_05.jpg
 ---
 
 # Chapter 5 - Jonathan tries to leave the castle

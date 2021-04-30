@@ -1,5 +1,6 @@
 ---
 tags: Local Time, Advanced Filtering
+leadImage: illustration_04.jpg
 ---
 
 # Chapter 4 - "What a strange man this Count Dracula is."
