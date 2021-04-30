@@ -409,4 +409,4 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 <!-- quiz-end -->
 
-Up next in Chapter 20: [The race against time.](../chapter20/index.md)
+__Up next:__ _The race against time._
