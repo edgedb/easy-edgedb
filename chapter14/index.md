@@ -2,7 +2,7 @@
 tags: Type Annotations, Reverse Links
 ---
 
-# Chapter 14 - Jonathan Harker returns
+# Chapter 14 - A ray of hope
 
 > Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons." Mina takes a train to the hospital where Jonathan was recovering, and they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it. Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
@@ -359,4 +359,4 @@ Here is the output:
 
 <!-- quiz-end -->
 
-Up next in Chapter 15: [Time to get revenge.](../chapter15/index.md)
+__Up next:__ _Time to get revenge._
