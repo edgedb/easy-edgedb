@@ -408,4 +408,4 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 <!-- quiz-end -->
 
-Up next in Chapter 2: [Jonathan Harker arrives in Romania.](../chapter2/index.md)
+'''Up next:''' ''Jonathan Harker arrives in Romania.''
