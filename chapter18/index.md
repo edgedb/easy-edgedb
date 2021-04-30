@@ -348,4 +348,4 @@ Much better!
 
 <!-- quiz-end -->
 
-Up next in Chapter 19: [Only Mina can tell them where Dracula has gone.](../chapter19/index.md)
+__Up next:__ _Only Mina can tell them where Dracula has gone._
