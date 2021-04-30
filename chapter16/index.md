@@ -291,4 +291,4 @@ type City extending Place {
 
 <!-- quiz-end -->
 
-Up next in Chapter 17: [The truth about Renfield.](../chapter17/index.md)
+__Up next:__ _The truth about Renfield._
