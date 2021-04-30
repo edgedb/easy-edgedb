@@ -236,4 +236,4 @@ So if `TYPE` comes after `DESCRIBE` for types and `MODULE` after `DESCRIBE` for 
 
 <!-- quiz-end -->
 
-Up next in Chapter 6: [One of the women vampires to her sisters: "He is young and strong; there are kisses for us all."](../chapter6/index.md)
+__Up next:__ _One of the women vampires to her sisters: "He is young and strong; there are kisses for us all..."_
