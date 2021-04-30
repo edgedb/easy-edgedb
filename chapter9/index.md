@@ -368,4 +368,4 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 <!-- quiz-end -->
 
-Up next in Chapter 10: [Thick fog and a storm hit the city of Whitby.](../chapter10/index.md)
+__Up next:__ _Thick fog and a storm hit the city of Whitby._
