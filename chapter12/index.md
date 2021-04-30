@@ -402,4 +402,4 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
 
 <!-- quiz-end -->
 
-Up next in Chapter 13: [One of the men gives Lucy his blood again to try to save her. Will it be enough?](../chapter13/index.md)
+__Up next:__ _One of the men gives his blood to try to save Lucy. Will it be enough?_
