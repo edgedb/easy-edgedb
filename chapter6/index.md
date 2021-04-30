@@ -274,4 +274,4 @@ The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) 
 
 <!-- quiz-end -->
 
-Up next in Chapter 7: [Jonathan climbs the castle wall to try to get into Count Dracula's room.](../chapter7/index.md)
+__Up next:__ _Jonathan climbs the castle wall to get into the Count's room._
