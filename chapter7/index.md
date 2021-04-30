@@ -296,4 +296,4 @@ The `UPDATE` keyword that we learned last chapter can also take parameters, so t
 
 <!-- quiz-end -->
 
-Up next in Chapter 8: [Workers in the city of Varna load fifty boxes into a ship. Dracula is inside one of them.](../chapter8/index.md)
+__Up next:__ _Workers in the city of Varna load boxes into a ship. Dracula is inside one of them..._
