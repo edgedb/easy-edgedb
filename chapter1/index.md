@@ -408,4 +408,4 @@ Of course, Jonathan Harker has been inserted with a connection to every city in 
 
 <!-- quiz-end -->
 
-'''Up next:''' ''Jonathan Harker arrives in Romania.''
+__Up next:__ _Jonathan Harker arrives in Romania._
