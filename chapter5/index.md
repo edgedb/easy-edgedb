@@ -109,7 +109,7 @@ The output is the same: `{5100s}`. As long as we know the timezone, the `datetim
 
 ## Casting to a duration
 
-Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `SELECT <duration>'2 hours`; will return `{7200s}`, and `SELECT <duration>'2 microseconds';` will return `{2µs}`.
+Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `SELECT <duration>'2 hours';` will return `{7200s}`, and `SELECT <duration>'2 microseconds';` will return `{2µs}`.
 
 You can include multiple units as well. For example:
 
