@@ -8,7 +8,7 @@ Thanks for checking out our new book to learn Easy EdgeDB!
 
 We've had quite the journey so far up to the release of this book. It began in spring 2019 with the public release of [EdgeDB Alpha 1](https://www.edgedb.com/blog/edgedb-1-0-alpha-1), showing for the first time the possibilities of an open source database built on top of PostgreSQL that combines the simplicity of a NoSQL database with relational model’s powerful querying, strictness, consistency, and performance. To see what's going on since then, see [our blog](https://www.edgedb.com/blog) where we announce the latest developments in the EdgeDB ecosystem.
 
-Much of our learning material can be found in the [interactive tutorial](https://tutorial.edgedb.com/), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql), but we also wanted to put something together that immerses the learner for longer - a full book. The result is Easy EdgeDB: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
+Much of our learning material can be found in the [interactive tutorial](https://edgedb.com/tutorial), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql), but we also wanted to put something together that immerses the learner for longer - a full book. The result is Easy EdgeDB: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
 
 Easy EdgeDB is a fairly unique textbook, to say the least. Here's how it differs from what you might expect from text of its type:
 
@@ -32,7 +32,7 @@ We want to give as many people as possible the opportunity to sit down and give 
 
 ## Interactivity and experimentation
 
-Because the book uses the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more. It starts with a simple schema (structure) and builds up from there, changing it as we go. The idea is to simulate the mental process for someone new to EdgeDB that has been given the task of putting this all together. That includes sometimes modifying the schema, creating new types, deleting ones that aren't used, and all the tinkering you'd see in real life. 
+Because the book uses the events in the book for the background, we need a database to tie everything together. It will need to show the connections between the characters, locations, dates, and more. It starts with a simple schema (structure) and builds up from there, changing it as we go. The idea is to simulate the mental process for someone new to EdgeDB that has been given the task of putting this all together. That includes sometimes modifying the schema, creating new types, deleting ones that aren't used, and all the tinkering you'd see in real life.
 
 Going through the book, we will learn how to use queries that are more and more complex. Each chapter contains the schema and inserted data that we've built up so far, and a REPL for you to experiment with. On top of that, each chapter has a number of questions for you to solve if you feel like a small challenge.
 
