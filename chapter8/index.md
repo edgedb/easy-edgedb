@@ -87,8 +87,8 @@ INSERT Sailor {
 };
 
 INSERT Sailor {
-  name := 'The First Mate',
-  rank := 'FirstMate'
+  name := 'The Second Mate',
+  rank := 'SecondMate'
 };
 
 INSERT Sailor {
