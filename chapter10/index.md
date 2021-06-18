@@ -400,7 +400,7 @@ Let's look at it step by step:
 First a normal insert:
 
 ```edgeql
-INSERT NPC {
+INSERT City {
   name := 'Munich'
 }
 ```
