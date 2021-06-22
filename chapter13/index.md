@@ -100,7 +100,7 @@ Another operator related to types is `|`, which is used to combine them (similar
 SELECT (SELECT Person FILTER .name = 'Lucy Westenra') IS NPC | MinorVampire | Vampire;
 ```
 
-It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `Person` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
+It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
 
 One cool thing about the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control the other. Right now though `Vampire`s can only control `MinorVampire`s:
 
@@ -122,7 +122,7 @@ We only have Count Dracula in our database as the main `Vampire` type so we won'
 
 ## On target delete
 
-We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in the game until September 1887. Maybe later `PC` types will interact with her, for example. But this might make you wonder about deleting links. What if we had chosen to delete the old type when she became a `MinorVampire`? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have [four options](https://www.edgedb.com/docs/datamodel/links#ref-datamodel-links):
+We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in the game until September 1887. Maybe later `PC` types will interact with her, for example. But this might make you wonder about deleting links. What if we had chosen to delete the old type when she became a `MinorVampire`? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have [four options](https://www.edgedb.com/docs/datamodel/links#deletion):
 
 - `restrict`: forbids you from deleting the target object.
 
@@ -142,7 +142,7 @@ then you wouldn't be able to delete Lucy the `NPC` once she was connected to Luc
 
 - `allow`: this one simply lets you delete the target (this is the default setting).
 
-- `deferred restrict` - forbids you from deleting the target object, unless it is no longer a target object by the end of a transaction. So this option is like `restrict` but with a bit more flexibility.
+- `deferred restrict`: forbids you from deleting the target object, unless it is no longer a target object by the end of a transaction. So this option is like `restrict` but with a bit more flexibility.
 
 So if you wanted to have all the `MinorVampire` types automatically deleted when their `Vampire` dies, you would add a link from `MinorVampire` to the `Vampire` type. Then you would add `on target delete delete source` to this: `Vampire` is the target of the link, and `MinorVampire` is the source that gets deleted.
 
