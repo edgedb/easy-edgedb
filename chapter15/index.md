@@ -28,7 +28,7 @@ Most places will not have a special vampire coffin, so the default is 0. The `co
 
 - Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
 - Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
-- Around 1 or 2 pm, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
+- Around 1 or 2 am, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
 So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
@@ -81,7 +81,7 @@ Overloading the function is probably the easier option, because we wouldn't need
 
 One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. [The documentation](https://www.edgedb.com/docs/edgeql/overview#optional) explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `?` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
 
 `OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
 
@@ -324,7 +324,7 @@ Beautiful! All the information is right there.
 
 2. How would you let the user know that it needs to be called 'Horse'?
 
-3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+3. How would you make sure that `name` for type `NPC` is always between 5 and 30 characters in length?
 
    Try it first with `expression on`.
 
