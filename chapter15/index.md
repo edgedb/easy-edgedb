@@ -255,13 +255,23 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the `master` link again, the best way is to start with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
+To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
   link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
   required single property master_name -> str;
+};
+```
+
+But then again, if we want this `master_name` shortcut we can now just use the `master` link to do it. Let's change it from `required single property master_name -> str` to `property master_name := .master.name`:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
+  property master_name := .master.name;
 };
 ```
 
@@ -273,11 +283,9 @@ INSERT Vampire {
   slaves := {
     (INSERT MinorVampire {
       name := 'Billy',
-      master_name := 'Kain'
     }),
     (INSERT MinorVampire {
       name := 'Bob',
-      master_name := 'Kain'
     })
   }
 };
