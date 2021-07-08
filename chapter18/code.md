@@ -242,7 +242,7 @@ INSERT City {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}
