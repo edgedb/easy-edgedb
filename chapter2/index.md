@@ -43,6 +43,8 @@ scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
+To choose between the variants (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Transport.Feet`, `Transport.Train`, or `Transport.HorseDrawnCarriage`.
+
 This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need a `PC` type and an `NPC` type, but our `Person` type should stay too - we can use it a base type for both. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` for the other `PC` and `NPC` types.
 
 So now this part of the schema looks like this:
@@ -81,25 +83,50 @@ Let's also experiment with a player character. We'll make one called Emil Sincla
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>'HorseDrawnCarriage',
+  transport := Transport.HorseDrawnCarriage,
 };
 ```
 
 Entering `places_visited := City` is short for `places_visited := (SELECT City)` - you don't have to type `SELECT` every time.
 
-Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants. The `<>` angle brackets do _casting_, meaning to change one type into another. EdgeDB won't try to change one type into another unless you ask it to with casting. That's why this won't give us `true`:
+Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants.
+
+## Casting 
+
+Casting means to quickly change one type into another, Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. For example:
 
 ```edgeql
-SELECT 'Feet' IS Transport;
+SELECT 9 + 9.9;
 ```
 
-We will get an output of `{false}`, because 'Feet' is just a `str` and nothing else. But this will work:
+EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
 
 ```edgeql
-SELECT <Transport>'Feet' IS Transport;
+SELECT (9 + 9.9) is float64;
 ```
 
-Then we get `{true}`.
+This will give `true`, while `SELECT (9 + 9.9) is float32;` gives `false`.
+
+When you need to do the cast yourself, you can indicate the type using `<>` angle brackets. For example, this will generate an error:
+
+```edgeql
+SELECT '9' + 9;
+```
+
+EdgeDB tells us the exact problem here:
+
+```
+QueryError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+Hint: Consider using an explicit type cast or a conversion function.
+```
+
+And to fix it, just use the angle brackets:
+
+```
+SELECT <int32>'9' + 9;
+```
+
+And you will get `18`, a 32-bit integer.
 
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
 
