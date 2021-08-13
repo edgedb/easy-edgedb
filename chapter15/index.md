@@ -61,12 +61,14 @@ If we want, we can now make a quick function to test whether a vampire can enter
 ```sdl
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
-    with vampire := (SELECT Person filter .name = person_name LIMIT 1)
+    with vampire := assert_single(
+        (SELECT Person filter .name = person_name)
+    )
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
   );
 ```
 
-You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It uses `assert_single()` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
 
 - Overload the function to have two signatures, one for each type of Vampire:
 
@@ -206,14 +208,17 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
   default::Lord {
     name: 'Lord Billy',
     places_visited: {
+      default::Country {name: 'Hungary'},
+      default::Country {name: 'Romania'},
+      default::Country {name: 'France'},
+      default::Country {name: 'Slovakia'},
       default::Castle {name: 'Castle Dracula'},
       default::City {name: 'Whitby'},
       default::City {name: 'Munich'},
       default::City {name: 'Buda-Pesth'},
       default::City {name: 'Bistritz'},
+      default::City {name: 'Exeter'},
       default::City {name: 'London'},
-      default::Country {name: 'Romania'},
-      default::Country {name: 'Slovakia'},
     },
   },
 }
@@ -255,12 +260,12 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
+To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `assert_single()` (it won't work otherwise). Here is what the type would look like now:
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
+  link master := assert_single(.<slaves[IS Vampire]);
   required single property master_name -> str;
 };
 ```
@@ -270,7 +275,7 @@ But then again, if we want this `master_name` shortcut we can now just use the `
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
+  link master := assert_single(.<slaves[IS Vampire]);
   property master_name := .master.name;
 };
 ```

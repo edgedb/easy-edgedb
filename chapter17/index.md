@@ -33,7 +33,7 @@ WITH fighters := (
 SELECT fight(fighters.0, fighters.1);
 ```
 
-That's not bad, but there is a way to make it clearer: we can give names to the items in the tuple instead of using `.0` and `.1`. It looks like a regular computable, using `:=`:
+That's not bad, but there is a way to make it clearer: we can give names to the items in the tuple instead of using `.0` and `.1`. It looks like a regular computed link or property, using `:=`:
 
 ```edgeql
 WITH fighters := (
@@ -56,7 +56,7 @@ SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
 The output is:
 
 ```
-{('Woman 1', 'Lucy Westenra'), ('Woman 2', 'Lucy Westenra'), ('Woman 3', 'Lucy Westenra')}
+{('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
 ```
 
 Renfield is no longer alive, so we need to use `UPDATE` to give him a `last_appearance`. Let's do a fancy one again where we `SELECT` the update we just made and display that information:
@@ -86,7 +86,7 @@ will return `{true}`.
 
 ## Putting abstract types together
 
-Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. So it would be cool to create a quick function called `change_coffins()` to change the number of coffins in a place. With this function we could write something like `change_coffins('London', -13)` to reduce it by 13, for example. But the problem right now is this:
+Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. It would be nice to have a generic to update this information. But the problem right now is this:
 
 - the `HasCoffins` type is an abstract type, with one property: `coffins`
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
@@ -131,7 +131,9 @@ Finally, we can change our `can_enter()` function. This one needed a `HasCoffins
 ```sdl
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
-    with vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
+    with vampire := assert_single(
+        (SELECT Person FILTER .name = person_name)
+    ),
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
   );
 ```
@@ -142,30 +144,36 @@ But now that `HasNameAndCoffins` holds `name`, the user can now just enter a str
 function can_enter(person_name: str, place: str) -> str
   using (
     with
-      vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
-      enter_place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
+      vampire := assert_single(
+        (SELECT Person FILTER .name = person_name)
+      ),
+      enter_place := assert_single(
+        (SELECT HasNameAndCoffins FILTER .name = place)
+      )
     SELECT vampire.name ++ ' can enter.' IF enter_place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
   );
 ```
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
 
-Finally, we can make our `change_coffins` function. It's easy:
+Finally, we can make our generic update for changing the number of coffins. It's easy:
 
 ```sdl
-function change_coffins(place_name: str, number: int16) -> HasNameAndCoffins
-  using (
-    UPDATE HasNameAndCoffins FILTER .name = place_name
-    SET {
-      coffins := .coffins + number
-    }
-  );
+UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
+SET {
+  coffins := .coffins + <int16>$number
+}
 ```
 
 Now let's give the ship `The Demeter` some coffins.
 
-```edgeql
-SELECT change_coffins('The Demeter', 10);
+```edgeql-repl
+edgedb> UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
+....... SET {
+.......   coffins := .coffins + <int16>$number
+....... };
+Parameter <str>$place_name: The Demeter
+Parameter <int16>$number: 10
 ```
 
 Then we'll make sure that it got them:
@@ -190,13 +198,13 @@ type Crewman extending HasNumber, Person {
 }
 ```
 
-Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, because Bulgarians call each other 'Gospodin' instead of Mr. and our game needs to reflect that. Our Crewman types will get called "Gospodin (name)" whenever they are there. Let's also add a `current_location` computable that makes a link to `Place` types with the name Bulgaria. Here's how to do that:
+Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, because Bulgarians call each other 'Gospodin' instead of Mr. and our game needs to reflect that. Our Crewman types will get called "Gospodin (name)" whenever they are there. Let's also add a `current_location` computed link that makes a link to `Place` types with the name Bulgaria. Here's how to do that:
 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
   name := 'Gospodin ' ++ .name,
   current_location := (SELECT Place filter .name = 'Bulgaria'),
-}
+};
 ```
 
 You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. For the same reason, you can't do an `INSERT CrewmanInBulgaria`, because there is no such type. It gives this error:
@@ -228,10 +236,6 @@ And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: w
 
 ```
 {
-  default::Crewman {
-    name: 'Gospodin Crewman 0',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
   default::Crewman {
     name: 'Gospodin Crewman 1',
     current_location: default::Country {name: 'Bulgaria'},
@@ -292,7 +296,7 @@ So far this is nothing special, because the output is the same:
       default::MinorVampire {name: 'Woman 1'},
       default::MinorVampire {name: 'Woman 2'},
       default::MinorVampire {name: 'Woman 3'},
-      default::MinorVampire {name: 'Lucy Westenra'},
+      default::MinorVampire {name: 'Lucy'},
     },
   },
 }
@@ -320,7 +324,16 @@ CREATE FUNCTION fight_2(one: Person, two: Person) -> str
   );
 ```
 
-So let's make our `MinorVampire` types fight each other and see what output we get. We have four of them (the three vampire women plus Lucy). First let's just put the `MinorVampire` type into the function and see what we get. Try to imagine what the output will be.
+So let's make our `MinorVampire` types fight each other and see what output we get. We have four of them (the three vampire women plus Lucy). Let's make sure that all vampires have strength 9 unless otherwise specified:
+
+```edgeql
+UPDATE MinorVampire FILTER NOT EXISTS .strength
+SET {
+  strength := 9
+};
+```
+
+First let's just put the `MinorVampire` type into the function and see what we get. Try to imagine what the output will be.
 
 ```edgeql
 SELECT fight_2(MinorVampire, MinorVampire);
@@ -332,7 +345,7 @@ So the output for this is...
 
 ```
 {
-  'Lucy Westenra fights Lucy Westenra. Lucy Westenra wins!',
+  'Lucy fights Lucy. Lucy wins!',
   'Woman 1 fights Woman 1. Woman 1 wins!',
   'Woman 2 fights Woman 2. Woman 2 wins!',
   'Woman 3 fights Woman 3. Woman 3 wins!',
@@ -356,21 +369,21 @@ The output is too long now:
 
 ```
 {
-  'Lucy Westenra fights Lucy Westenra. Lucy Westenra wins!',
-  'Woman 1 fights Lucy Westenra. Lucy Westenra wins!',
-  'Woman 2 fights Lucy Westenra. Lucy Westenra wins!',
-  'Woman 3 fights Lucy Westenra. Lucy Westenra wins!',
-  'Lucy Westenra fights Woman 1. Lucy Westenra wins!',
+  'Lucy fights Lucy. Lucy wins!',
+  'Lucy fights Woman 1. Lucy wins!',
+  'Lucy fights Woman 2. Lucy wins!',
+  'Lucy fights Woman 3. Lucy wins!',
+  'Woman 1 fights Lucy. Lucy wins!',
   'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Lucy Westenra fights Woman 2. Lucy Westenra wins!',
   'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
-  'Lucy Westenra fights Woman 3. Lucy Westenra wins!',
   'Woman 1 fights Woman 3. Woman 3 wins!',
+  'Woman 2 fights Lucy. Lucy wins!',
+  'Woman 2 fights Woman 1. Woman 1 wins!',
+  'Woman 2 fights Woman 2. Woman 2 wins!',
   'Woman 2 fights Woman 3. Woman 3 wins!',
+  'Woman 3 fights Lucy. Lucy wins!',
+  'Woman 3 fights Woman 1. Woman 1 wins!',
+  'Woman 3 fights Woman 2. Woman 2 wins!',
   'Woman 3 fights Woman 3. Woman 3 wins!',
 }
 ```
@@ -386,16 +399,16 @@ And now we finally have every combination of `MinorVampire` fighting the other o
 
 ```
 {
-  'Lucy Westenra fights Woman 1. Lucy Westenra wins!',
-  'Lucy Westenra fights Woman 2. Lucy Westenra wins!',
-  'Lucy Westenra fights Woman 3. Lucy Westenra wins!',
-  'Woman 1 fights Lucy Westenra. Lucy Westenra wins!',
+  'Lucy fights Woman 1. Lucy wins!',
+  'Lucy fights Woman 2. Lucy wins!',
+  'Lucy fights Woman 3. Lucy wins!',
+  'Woman 1 fights Lucy. Lucy wins!',
   'Woman 1 fights Woman 2. Woman 2 wins!',
   'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 2 fights Lucy. Lucy wins!',
   'Woman 2 fights Woman 1. Woman 1 wins!',
   'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy Westenra. Lucy Westenra wins!',
+  'Woman 3 fights Lucy. Lucy wins!',
   'Woman 3 fights Woman 1. Woman 1 wins!',
   'Woman 3 fights Woman 2. Woman 2 wins!',
 }
@@ -424,7 +437,6 @@ And here's the result. Looks like nobody wins:
 ```
 {
   default::NPC {name: 'Jonathan Harker', would_win_against_dracula: {false}},
-  default::NPC {name: 'Renfield', would_win_against_dracula: {false}},
   default::NPC {name: 'The innkeeper', would_win_against_dracula: {false}},
   default::NPC {name: 'Mina Murray', would_win_against_dracula: {false}},
   default::NPC {name: 'John Seward', would_win_against_dracula: {false}},
@@ -432,6 +444,7 @@ And here's the result. Looks like nobody wins:
   default::NPC {name: 'Arthur Holmwood', would_win_against_dracula: {false}},
   default::NPC {name: 'Abraham Van Helsing', would_win_against_dracula: {false}},
   default::NPC {name: 'Lucy Westenra', would_win_against_dracula: {false}},
+  default::NPC {name: 'Renfield', would_win_against_dracula: {false}},
 }
 ```
 
@@ -459,7 +472,6 @@ Here's the output:
     name: 'Count Dracula, King of London',
     subjects: {
       default::NPC {name: 'Jonathan Harker'},
-      default::NPC {name: 'Renfield'},
       default::NPC {name: 'The innkeeper'},
       default::NPC {name: 'Mina Murray'},
       default::NPC {name: 'John Seward'},
@@ -467,6 +479,7 @@ Here's the output:
       default::NPC {name: 'Arthur Holmwood'},
       default::NPC {name: 'Abraham Van Helsing'},
       default::NPC {name: 'Lucy Westenra'},
+      default::NPC {name: 'Renfield'},
     },
     number_of_subjects: 9,
   },
@@ -482,8 +495,6 @@ Here's the output:
 1. How would you display every NPC's name, strength, name and population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
-
-3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) -> Person` that lets you just write the character name and date to do it.
 
 [See the answers here.](answers.md)
 

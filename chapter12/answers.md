@@ -34,7 +34,13 @@ Yes, they have different signatures because the input is different: one takes an
 Note however that `SELECT make64(8);` will actually produce an error! The error is:
 
 ```
-error: could not find a function variant make64
+error: function "make64(arg0: std::int64)" does not exist
+  ┌─ query:1:8
+  │
+1 │ SELECT make64(8);
+  │        ^^^^^^^^^ Did you want one of the following functions instead:
+default::make64(input: std::int16)
+default::make64(input: std::int32)
 ```
 
 That's because `SELECT make64(8)` is giving it an `int64`, and it doesn't have a signature for that. You would need to cast with `SELECT make64(<int32>8);` (or `<int16>`) to make it work.
@@ -65,7 +71,7 @@ The output is `{1}`, the first not empty set that it sees.
 
 The error message gives a hint:
 
-`error: could not find a function variant array_join`
+`error: function "array_join(arg0: array<std::str>)" does not exist`
 
 That means that the input that it received doesn't match any of its function signatures. And if you check [the function itself](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join), you can see why: it needs a second string:
 

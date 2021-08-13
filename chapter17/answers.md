@@ -44,26 +44,8 @@ Now the output looks a lot better:
   (name := 'Mina Murray', strength := 0, city_populations := ('London', 3500000), age := 0),
   (name := 'John Seward', strength := 0, city_populations := ('London', 3500000), age := 0),
   (name := 'Quincey Morris', strength := 0, city_populations := ('London', 3500000), age := 0),
+  # ...
 }
 ```
 
 You could even name the tuple inside the tuple with the city name and population if you wanted.
-
-#### 3. Renfield is now dead and needs a `last_appearance`. Try writing a function called `make_dead(person_name: str, date: str) -> Person` that lets you just write the character name and date to do it.
-
-Here's how you could do it:
-
-```sdl
-function make_dead(person_name: str, date: str) ->  Person {
-  using (
-    WITH dead_person := (
-        SELECT default::Person
-        FILTER (.name = person_name)
-        LIMIT 1
-      )
-    UPDATE dead_person
-    SET {
-      last_appearance := <cal::local_date>date
-    }
-  );
-```

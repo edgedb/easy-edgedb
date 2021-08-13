@@ -1,5 +1,5 @@
 ---
-tags: Tuples, Computables, Math
+tags: Tuples, Computed Properties, Math
 ---
 
 # Chapter 10 - Terrible events in Whitby
@@ -55,13 +55,14 @@ This prints the first ten letters of every NPC's name:
 
 ```
 {
-  'Jonathan H',
   'The innkee',
   'Mina Murra',
+  'Jonathan H',
+  'Lucy Weste',
   'John Sewar',
   'Quincey Mo',
-  'Lucy Weste',
   'Arthur Hol',
+  'Renfield',
 }
 ```
 
@@ -75,13 +76,14 @@ This prints from index 2 up to 2 indexes away from the end (it'll cut off the fi
 
 ```
 {
-  'nathan Hark',
   'e innkeep',
   'na Murr',
+  'nathan Hark',
+  'cy Westen',
   'hn Sewa',
   'incey Morr',
-  'cy Westen',
   'thur Holmwo',
+  'nfie',
 }
 ```
 
@@ -168,11 +170,11 @@ This returns:
 
 ```
 {
-  Object {name: 'London', population: 3500000},
-  Object {name: 'Buda-Pesth', population: 402706},
-  Object {name: 'Munich', population: 230023},
-  Object {name: 'Whitby', population: 14400},
-  Object {name: 'Bistritz', population: 9100},
+  default::City {name: 'London', population: 3500000},
+  default::City {name: 'Buda-Pesth', population: 402706},
+  default::City {name: 'Munich', population: 230023},
+  default::City {name: 'Whitby', population: 14400},
+  default::City {name: 'Bistritz', population: 9100},
 }
 ```
 
@@ -227,7 +229,7 @@ The output also makes it clear how they work:
 You can use the keyword `WITH` to import modules too. In the example above we used two functions from EdgeDB's `math` module: `math::mean()` and `math::stddev()`. Just writing `mean()` and `stddev()` would produce this error:
 
 ```
-ERROR: InvalidReferenceError: function 'mean' does not exist
+ERROR: InvalidReferenceError: function 'default::mean' does not exist
 ```
 
 If you don't want to write the module name every time you can just import the module after `WITH`. Let's slip that into the query we just used. See if you can see what's changed:
@@ -257,7 +259,7 @@ SELECT M::mean(City.population);
 
 That gives us the mean: `{831245.8}`.
 
-## Some more computables for names
+## Some more computed properties for names
 
 We saw in this chapter that Dr. Seward asked his old teacher Dr. Van Helsing to come and help Lucy. Here is how Dr. Van Helsing began his letter to say that he was coming:
 
@@ -276,7 +278,7 @@ Title | First name | Last name | Degree
 
 So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
 
-That would lead us to think that we should have titles like `first_name`, `last_name`, `title` etc. and then join them together using a computable. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+That would lead us to think that we should have titles like `first_name`, `last_name`, `title` etc. and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
 
 We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
 
@@ -349,7 +351,7 @@ Now we get:
   (
     'There goes Abraham Van Helsing.',
     'I say! Are you Dr. Abraham Van Helsing?',
-    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.\n\tI am sorry to say that I bring bad news about Lucy.',
+    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.,\\n\\tI am sorry to say that I bring bad news about Lucy.',
   ),
 }
 ```

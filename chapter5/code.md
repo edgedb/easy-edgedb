@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     abstract type Person {
       required property name -> str;
       multi link places_visited -> Place;
@@ -47,7 +46,6 @@ START MIGRATION TO {
       property hour := .date[0:2];
       property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
     }
-
   }
 };
 
@@ -107,7 +105,7 @@ INSERT City {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := assert_single((SELECT DETACHED NPC Filter .name = 'Jonathan Harker')),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 

@@ -40,13 +40,13 @@ is one third readable: `name` will actually show up as a real human-readable nam
   schema::ObjectType {
     name: 'default::Ship',
     properties: {
-      schema::Property {id: 70719b55-2031-11eb-b0e6-81bc5b4ee64b},
-      schema::Property {id: 7075a94c-2031-11eb-9cb0-6d25e19e0e31},
+      schema::Property {id: 28e76c59-0209-11ec-adaa-85e1ecb99e47},
+      schema::Property {id: 28e94e33-0209-11ec-9818-fb533a2c495f},
     },
     links: {
-      schema::Link {id: 70798bba-2031-11eb-b091-1d60d8428852},
-      schema::Link {id: 70740220-2031-11eb-9bd0-f94fde12382f},
-      schema::Link {id: 7076b0c7-2031-11eb-9cab-b7b889902e39},
+      schema::Link {id: 28e87ca8-0209-11ec-9ba8-71ef0b23db38},
+      schema::Link {id: 28e8ee51-0209-11ec-b47e-8fd9b07debd3},
+      schema::Link {id: 29176353-0209-11ec-a6c5-797987ef08b5},
     },
   },
 }
@@ -73,8 +73,8 @@ Now it gives this:
       schema::Property {name: 'name'},
     },
     links: {
-      schema::Link {name: 'crew'},
       schema::Link {name: '__type__'},
+      schema::Link {name: 'crew'},
       schema::Link {name: 'sailors'},
     },
   },
@@ -94,9 +94,9 @@ Here's the output:
 ```
 {
   schema::Link {name: 'slaves'},
-  schema::Link {name: '__type__'},
   schema::Link {name: 'lover'},
   schema::Link {name: 'places_visited'},
+  schema::Link {name: '__type__'},
 }
 ```
 

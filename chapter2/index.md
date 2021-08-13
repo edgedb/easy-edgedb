@@ -69,8 +69,8 @@ Now the characters from the book will be `NPC`s (non-player characters), while `
 error: cannot insert into abstract object type 'default::Person'
   ┌─ query:1:8
   │
-1 │ INSERT Person {
-  │        ^^^^^^^ error
+1 │ INSERT Person {name := 'Mr. HasAName'};
+  │        ^^^^^^ error
 ```
 
 No problem - just change `Person` to `NPC` and it will work.
@@ -102,10 +102,10 @@ SELECT 9 + 9.9;
 EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
 
 ```edgeql
-SELECT (9 + 9.9) is float64;
+SELECT (9 + 9.9) IS float64;
 ```
 
-This will give `true`, while `SELECT (9 + 9.9) is float32;` gives `false`.
+This will give `true`, while `SELECT (9 + 9.9) IS float32;` gives `false`.
 
 When you need to do the cast yourself, you can indicate the type using `<>` angle brackets. For example, this will generate an error:
 
@@ -116,8 +116,12 @@ SELECT '9' + 9;
 EdgeDB tells us the exact problem here:
 
 ```
-QueryError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
-Hint: Consider using an explicit type cast or a conversion function.
+error: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+  ┌─ query:1:8
+  │
+1 │ SELECT '9' + 9;
+  │        ^^^^^^^ Consider using an explicit type cast or a conversion function.
+
 ```
 
 And to fix it, just use the angle brackets:
@@ -131,7 +135,7 @@ And you will get `18`, a 32-bit integer.
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
 
 ```edgeql
-SELECT <str><int64><str><int32>50 is str;
+SELECT <str><int64><str><int32>50 IS str;
 ```
 
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
@@ -156,7 +160,16 @@ SELECT Person {
 The output is this:
 
 ```
-{Object {name: 'Emil Sinclair', places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}}}}
+{
+  default::PC {
+    name: 'Emil Sinclair',
+    places_visited: {
+      default::City {name: 'Munich'},
+      default::City {name: 'Buda-Pesth'},
+      default::City {name: 'Bistritz'},
+    },
+  },
+}
 ```
 
 Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string.
@@ -183,8 +196,10 @@ SELECT City {
 Here is the result:
 
 ```
-  Object {name: 'Buda-Pesth', modern_name: 'Budapest'},
-  Object {name: 'Bistritz', modern_name: 'Bistrița'},
+{
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
+}
 ```
 
 You can also index a string with `[]` square brackets, starting at 0. For example, the indexes in the string 'Jonathan' look like this:
@@ -202,7 +217,7 @@ Let's try it:
 SELECT City {
   name,
   modern_name,
-} FILTER .name[0]; = 'B'; # First character must be 'B'
+} FILTER .name[0] = 'B'; # First character must be 'B'
 ```
 
 That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`FILTER .name[18]; = 'B';`), we'll get this:

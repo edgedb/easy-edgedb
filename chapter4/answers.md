@@ -7,7 +7,9 @@ The keyword to make it work is `DETACHED`, so that we can pull from the `NPC` ty
 ```edgeql
 INSERT NPC {
   name := 'I Love Mina',
-  lover := (SELECT DETACHED NPC FILTER .name LIKE '%Mina%' LIMIT 1)
+  lover := assert_single(
+    (SELECT DETACHED NPC FILTER .name LIKE '%Mina%')
+  )
 };
 ```
 
@@ -16,7 +18,9 @@ One other method that can work is this:
 ```edgeql
 INSERT NPC {
   name := 'I Love Mina',
-  lover := (SELECT Person FILTER .name LIKE '%Mina%' LIMIT 1)
+  lover := assert_single(
+    (SELECT Person FILTER .name LIKE '%Mina%')
+  )
 };
 ```
 
@@ -91,4 +95,4 @@ SELECT (
 };
 ```
 
-This gives us: `{Object {name: 'The Innkeeper\'s Son', age: 10, age_ten_years_later: 20}}`
+This gives us: `{default::NPC {name: 'The Innkeeper\'s Son', age: 10, age_ten_years_later: 20}}`

@@ -28,14 +28,15 @@ This question is because Question 2 gives this result:
 
 ```
 {
-  Object {city_name: {}, country_name: {}},
-  Object {city_name: 'Munich', country_name: {}},
-  Object {city_name: 'Buda-Pesth', country_name: {}},
-  Object {city_name: 'Bistritz', country_name: {}},
-  Object {city_name: 'London', country_name: {}},
-  Object {city_name: {}, country_name: 'Romania'},
-  Object {city_name: {}, country_name: 'Slovakia'},
-  Object {city_name: {}, country_name: {}},
+  default::City {city_name: 'Munich', country_name: {}},
+  default::City {city_name: 'Buda-Pesth', country_name: {}},
+  default::City {city_name: 'Bistritz', country_name: {}},
+  default::City {city_name: 'London', country_name: {}},
+  default::Castle {city_name: {}, country_name: {}},
+  default::Country {city_name: {}, country_name: 'Hungary'},
+  default::Country {city_name: {}, country_name: 'Romania'},
+  default::Country {city_name: {}, country_name: 'France'},
+  default::Country {city_name: {}, country_name: 'Slovakia'},
 }
 ```
 
