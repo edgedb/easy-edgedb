@@ -33,11 +33,11 @@ That gives us a nice output going from the `City` to the `Country` level:
 
 ```
 {
-  Object {name: 'Dresden', region_name: {'Saxony'}, country_name: {'Germany'}},
-  Object {name: 'Leipzig', region_name: {'Saxony'}, country_name: {'Germany'}},
-  Object {name: 'Darmstadt', region_name: {'Hesse'}, country_name: {'Germany'}},
-  Object {name: 'Mainz', region_name: {'Hesse'}, country_name: {'Germany'}},
-  Object {name: 'Berlin', region_name: {'Prussia'}, country_name: {'Germany'}},
-  Object {name: 'Königsberg', region_name: {'Prussia'}, country_name: {'Germany'}},
+  default::City {name: 'Dresden', region_name: {'Saxony'}, country_name: {'Germany'}},
+  default::City {name: 'Leipzig', region_name: {'Saxony'}, country_name: {'Germany'}},
+  default::City {name: 'Darmstadt', region_name: {'Hesse'}, country_name: {'Germany'}},
+  default::City {name: 'Mainz', region_name: {'Hesse'}, country_name: {'Germany'}},
+  default::City {name: 'Berlin', region_name: {'Prussia'}, country_name: {'Germany'}},
+  default::City {name: 'Königsberg', region_name: {'Prussia'}, country_name: {'Germany'}},
 }
 ```

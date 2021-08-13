@@ -83,6 +83,17 @@ SELECT <json>(
 );
 ```
 
+Or you can use `WITH` to do this:
+
+```edgeql
+WITH
+  letters := {'W', 'J', 'C'},
+  P := (
+    SELECT Person FILTER .name LIKE '%' ++ letters ++ '%'
+  )
+SELECT <json>P { name };
+```
+
 So you're selecting the casted-to-JSON version of the result of `SELECT Person`.
 
 #### 5. How would you add ' the Great' to every Person type?

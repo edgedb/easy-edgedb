@@ -10,11 +10,7 @@ SELECT enumerate(Person).0;
 
 That will display: `{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}`
 
-Warning: selecting `.1` will generate an error since that is where the rest of the object type is, and there is no way to properly display that. But displaying a single property is fine, such as in this example:
-
-```edgeql
-SELECT enumerate(Person.strength).1;
-```
+Warning: selecting `.1` will produce a bunch of objects without the details.
 
 And then to display numbers starting with 1, we just use `enumerate` again and add 1 to it:
 
@@ -42,7 +38,7 @@ And here they are:
 }
 ```
 
-Now we'll add the reverse lookup to the same query, and call the computable `visitors`:
+Now we'll add the reverse lookup to the same query, and call the computed property `visitors`:
 
 ```edgeql
 SELECT Place {
@@ -55,20 +51,20 @@ Now we can see who visited:
 
 ```
 {
-  default::Country {name: 'Romania', visitors: {}},
+  default::Country {name: 'Romania', visitors: {'Jonathan Harker', 'Count Dracula'}},
   default::Country {name: 'Slovakia', visitors: {}},
   default::City {
     name: 'London',
     visitors: {
-      'Lucy Westenra',
+      'Jonathan Harker',
       'The innkeeper',
       'Mina Murray',
+      'Lucy Westenra',
       'John Seward',
       'Quincey Morris',
       'Arthur Holmwood',
       'Renfield',
       'Abraham Van Helsing',
-      'Emil Sinclair',
     },
   },
 }
@@ -78,7 +74,7 @@ A clear victory for London as the most visited place! If you wanted, you could a
 
 #### 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
 
-We can do it with a computable again, which we'll call `later_vampire`. Then we use reverse lookup to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
+We can do it with a computed property again, which we'll call `later_vampire`. Then we use reverse lookup to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
 
 ```edgeql
 SELECT Person {
@@ -89,7 +85,7 @@ SELECT Person {
 
 That just gives us Lucy:
 
-`{default::NPC {name: 'Lucy Westenra', later_vampire: {'Lucy Westenra'}}}`
+`{default::NPC {name: 'Lucy Westenra', later_vampire: {'Lucy'}}}`
 
 This is not bad, but we can probably do better - `later_vampire` here isn't telling us anything about the type. Let's add some type info:
 
@@ -113,7 +109,7 @@ Now we can see that `later_vampire` is of type `MinorVampire` instead of just di
     name: 'Lucy Westenra',
     later_vampire: {
       default::MinorVampire {
-        name: 'Lucy Westenra',
+        name: 'Lucy',
         __type__: schema::ObjectType {name: 'default::MinorVampire'},
       },
     },

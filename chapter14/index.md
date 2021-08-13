@@ -153,22 +153,33 @@ The output is:
 {(0, 'first'), (1, 'second'), (2, 'third')}
 ```
 
-So now let's use it with `SELECT enumerate(Person.name);` to make sure that we have 23 results. The last index should be 22:
+So now let's use it with `SELECT enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
 
 ```
 {
-  (0, 'Renfield'),
-  (1, 'The innkeeper'),
-  (2, 'Mina Murray'),
-# snip
-  (14, 'Count Dracula'),
-  (15, 'Woman 1'),
-  (16, 'Woman 2'),
-  (17, 'Woman 3'),
+  (0, 'Jonathan Harker'),
+  (1, 'Renfield'),
+  (2, 'The innkeeper'),
+  (3, 'Mina Murray'),
+  (4, 'John Seward'),
+  (5, 'Quincey Morris'),
+  (6, 'Arthur Holmwood'),
+  (7, 'Abraham Van Helsing'),
+  (8, 'Lucy Westenra'),
+  (9, 'Woman 1'),
+  (10, 'Woman 2'),
+  (11, 'Woman 3'),
+  (12, 'Lucy'),
+  (13, 'Count Dracula'),
+  (14, 'The Captain'),
+  (15, 'Petrofsky'),
+  (16, 'The First Mate'),
+  (17, 'The Cook'),
+  (18, 'Emil Sinclair'),
 }
 ```
 
-There are only 18? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
+There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
 
 ```edgeql
 WITH
@@ -185,14 +196,14 @@ But the result is less than satisfying:
 {
   (
     [
-      (0, 'Renfield'),
-      (1, 'The innkeeper'),
-      (2, 'Mina Murray'),
-# snip
-      (14, 'Count Dracula'),
-      (15, 'Woman 1'),
-      (16, 'Woman 2'),
-      (17, 'Woman 3'),
+      (0, 'Jonathan Harker'),
+      (1, 'Renfield'),
+      (2, 'The innkeeper'),
+      (3, 'Mina Murray'),
+      # snip
+      (16, 'The First Mate'),
+      (17, 'The Cook'),
+      (18, 'Emil Sinclair'),
     ],
     [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)],
   ),
@@ -208,14 +219,6 @@ SET {
 };
 ```
 
-By the way, we don't have any more `Crewman` types to add but if we did, then we could just change the schema to this to avoid needing `UPDATE`:
-
-```
-type Crewman extending HasNumber, Person {
-  overloaded property name := 'Crewman ' ++ <str>.number; #this part is new
-}
-```
-
 So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
 
 ```edgeql
@@ -228,12 +231,12 @@ Here is the output:
 
 ```
 {
-  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1888-08-16? true'),
-  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1888-08-16? true'),
+  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1887-08-16? false'),
+  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
 }
 ```
 
@@ -264,7 +267,7 @@ That shows us the following:
       default::MinorVampire {name: 'Woman 1'},
       default::MinorVampire {name: 'Woman 2'},
       default::MinorVampire {name: 'Woman 3'},
-      default::MinorVampire {name: 'Lucy Westenra'},
+      default::MinorVampire {name: 'Lucy'},
     },
   },
 }
@@ -318,22 +321,10 @@ Here is the output:
 
 ```
 {
-  default::MinorVampire {
-    name: 'Lucy Westenra',
-    master: {default::Vampire {name: 'Count Dracula'}},
-  },
-  default::MinorVampire {
-    name: 'Woman 1',
-    master: {default::Vampire {name: 'Count Dracula'}},
-  },
-  default::MinorVampire {
-    name: 'Woman 2',
-    master: {default::Vampire {name: 'Count Dracula'}},
-  },
-  default::MinorVampire {
-    name: 'Woman 3',
-    master: {default::Vampire {name: 'Count Dracula'}},
-  },
+  default::MinorVampire {name: 'Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```
 

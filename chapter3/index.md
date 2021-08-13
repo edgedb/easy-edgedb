@@ -67,7 +67,7 @@ INSERT Country {
 
 ## Capturing a SELECT expression
 
-With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets (parentheses) are necessary to capture the result of the query using `SELECT`, that we then use to do something. In other words, the brackets delimit (set the boundaries for) a set. EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
+With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets (parentheses) are necessary to capture the result of the query using `SELECT`, that we then use to do something. In other words, the brackets delimit (set the boundaries for) the `SELECT` query so that its result can be used as a whole. EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
 
 ```edgeql
 INSERT Vampire {
@@ -77,7 +77,7 @@ INSERT Vampire {
 };
 ```
 
-The result is `{Object {id: 0a1b83dc-f2aa-11ea-9f40-038d228e2bba}}`.
+The result is `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
 
 The `uuid` there is the reply from the server showing which object was just created and that we were successful.
 
@@ -91,7 +91,7 @@ SELECT Vampire {
 };
 ```
 
-This gives us: `{Object {places_visited: {Object {name: 'Romania'}}}}`
+This gives us: `{default::Vampire {places_visited: {default::Country {name: 'Romania'}}}}`
 
 Perfect.
 
@@ -138,7 +138,7 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 Deleting in EdgeDB is very easy: just use the `DELETE` keyword. It's similar to `SELECT` in that you write `DELETE` and then the type, which will by default delete them all. And in the same way as `SELECT`, if you `FILTER` then it will only delete the ones that match the filter.
 
-This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them. `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why a confirmation message pops up if you delete without `FILTER` to make sure that you really want to delete everything. But it won't confirm if you use `FILTER`, because it deletes fewer things and assumes that you know exactly what you want to delete.
+This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them. `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
 
 So let's give it a try. Remember our two `Country` objects for Hungary and Romania? Let's delete them:
 
@@ -146,10 +146,31 @@ So let's give it a try. Remember our two `Country` objects for Hungary and Roman
 DELETE Country;
 ```
 
-Just like an insert, it gives us the id numbers of the objects that are now deleted:
+We got an error telling us that deleting a `Country` is not possible because it is still referenced by `places_visited` of a `Person`.
 
 ```
-{Object {id: bc9c4766-2898-11eb-b5e8-0bfd25af166c}, Object {id: bd0a6b1a-2898-11eb-b5e8-ef85694d442f}}
+ERROR: ConstraintViolationError: deletion of default::Country (7f3c611c-ff43-11eb-af59-dfe5a152a5cb) is prohibited by link target policy
+  Detail: Object is still referenced in link places_visited of default::Person (7f5b25ac-ff43-11eb-af59-3f8e155c6686).
+```
+
+That's Count Dracula who visited Romania getting in the way. Let's delete him first then:
+
+```edgeql
+DELETE Vampire;
+```
+
+Just like an insert, it gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`. Now we can try deleting the `Country` objects:
+
+```edgeql
+DELETE Country;
+```
+
+We got confirmation that two `Country` objects have been deleted:
+
+```
+{
+    default::Country {id: 7f2da5e6-ff43-11eb-af59-33db995c2682}, default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb},
+}
 ```
 
 Okay, insert them again. Now let's delete with a filter:
@@ -164,7 +185,7 @@ Nothing matches, so the output is `{}` - we deleted nothing. Let's try again:
 DELETE Country FILTER .name ILIKE '%ania%';
 ```
 
-We got a `{Object {id: eaa9b03a-2898-11eb-b5e8-27121e63218a}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `DELETE` inside brackets and `SELECT` it. Let's delete all the `Country` objects again but this time we'll select it:
+We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `DELETE` inside brackets and `SELECT` it. Let's delete all the `Country` objects again but this time we'll select it:
 
 ```edgeql
 SELECT (DELETE Country) {
@@ -172,7 +193,7 @@ SELECT (DELETE Country) {
 };
 ```
 
-The output is `{Object {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
+The output is `{default::Country {name: 'hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
 
 (Fun fact: `DELETE` statements in EdgeDB are actually [syntactic sugar](https://www.edgedb.com/docs/edgeql/statements/delete/) for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
 

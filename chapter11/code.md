@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     abstract type Person {
       property name -> str {
         constraint exclusive;
@@ -78,7 +77,7 @@ START MIGRATION TO {
    scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
-    #  property rank -> Rank;
+      property rank -> Rank;
     }
 
     type Ship {
@@ -95,14 +94,13 @@ START MIGRATION TO {
       required multi link people -> Person;
       property exact_location -> tuple<float64, float64>;
       property east -> bool;
-      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
     }
   
     function fight(one: Person, two: Person) -> str
       using (
-        SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
-    );
-
+        (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+      );
   }
 };
 
@@ -149,8 +147,9 @@ INSERT Country {
   name := 'Slovakia'
 };
 
-INSERT OtherPlace {
-  name := 'Castle Dracula'
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
 };
 
 INSERT City {
@@ -169,13 +168,13 @@ INSERT NPC {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
 };
 
 INSERT Vampire {
@@ -195,11 +194,6 @@ INSERT Vampire {
    places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
 };
 
-INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
-};
-
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
     strength := 5
@@ -207,22 +201,22 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 
 INSERT Sailor {
   name := 'The Captain',
-  rank := <Rank>Captain
+  rank := Rank.Captain
 };
 
 INSERT Sailor {
   name := 'Petrofsky',
-  rank := <Rank>FirstMate
+  rank := Rank.FirstMate
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := <Rank>SecondMate
+  rank := Rank.SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-  rank := <Rank>Cook
+  rank := Rank.Cook
 };
 
 FOR n IN {1, 2, 3, 4, 5}
@@ -260,7 +254,7 @@ SET {
 
 UPDATE NPC FILTER .name = 'Lucy Westenra'
   SET {
-    lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
+    lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
 };
 
 UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
@@ -300,5 +294,10 @@ INSERT Event {
   people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
   east := false
+};
+
+UPDATE Person FILTER NOT EXISTS .strength
+SET {
+  strength := 5
 };
 ```
