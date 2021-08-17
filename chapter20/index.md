@@ -173,7 +173,7 @@ The enum `Transport` never really got used, and needs some more transportation t
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
 
-- by casting it into a <cal::local_time> to make the `local_time` property,
+- by casting it into a `<cal::local_time>` to make the `local_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computable called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
