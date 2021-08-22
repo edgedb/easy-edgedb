@@ -59,7 +59,7 @@ INSERT Ship {
 After that we have the two cities of Varna and Galatz. We'll put them in at the same time:
 
 ```edgeql
-FOR city in {'Varna', 'Galatz'}
+FOR city IN {'Varna', 'Galatz'}
 UNION (
   INSERT City {
     name := city
@@ -107,7 +107,7 @@ INSERT OtherPlace {
 That was easy. Now we can put the ship visits in.
 
 ```edgeql
-FOR visit in {
+FOR visit IN {
     ('The Demeter', 'Varna', '1887-07-06'),
     ('The Demeter', 'Bosphorus', '1887-07-11'),
     ('The Demeter', 'Whitby', '1887-08-08'),
@@ -209,7 +209,7 @@ SELECT Ship.<ship[IS Visit] {
   date,
   time := (
     SELECT (
-      Insert Time {
+      INSERT Time {
         date := '13:00:00'
       }
     ) {

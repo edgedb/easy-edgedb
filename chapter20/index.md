@@ -93,7 +93,6 @@ error: possibly more than one element returned by an expression for a computable
 
 For `first_appearance` and `last_appearance` we use [`cal::local_date`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::cal::local_date) because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant.
 
-
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like [`std::to_datetime`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
@@ -327,7 +326,7 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' IF .east = true else 'W';
 }
 ```
 

@@ -143,7 +143,7 @@ Now that it's required, we can't insert a `MinorVampire` with just a name. It wi
 ```edgeql
 INSERT MinorVampire {
   name := 'Woman 1',
-  master := (SELECT Vampire Filter .name = 'Count Dracula'),
+  master := (SELECT Vampire FILTER .name = 'Count Dracula'),
 };
 ```
 
@@ -161,7 +161,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 
 (Note though the word _explicit_ there: using DDL still results in a migration, just an _implicit_ one. In other words, a migration happens without calling it a migration. It's sort of a quick and dirty way to make changes but for the most part proper migration tools with SDL schema is the preferred way to go.)
 
-Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Person` type looks like:
+Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `MinorVampire` type looks like:
 
 ```
 {
@@ -187,7 +187,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 
 You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including from the types that it extends. Here's the output:
+- The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including from the types that it extends. Here's the output:
 
 ```
 {

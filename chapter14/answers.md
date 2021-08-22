@@ -84,7 +84,7 @@ We can do it with a computable again, which we'll call `later_vampire`. Then we 
 SELECT Person {
   name,
   later_vampire := .<former_self[IS MinorVampire].name
-} FILTER exists .later_vampire;
+} FILTER EXISTS .later_vampire;
 ```
 
 That just gives us Lucy:
@@ -102,7 +102,7 @@ SELECT Person {
       name
     }
   }
-} FILTER exists .later_vampire;
+} FILTER EXISTS .later_vampire;
 ```
 
 Now we can see that `later_vampire` is of type `MinorVampire` instead of just displaying a string:

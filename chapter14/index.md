@@ -136,7 +136,7 @@ And here it is:
 
 ## Even more working with dates
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `People` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{23}`.
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{23}`.
 
 There is also a function called [`enumerate()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::enumerate) that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
@@ -212,7 +212,7 @@ By the way, we don't have any more `Crewman` types to add but if we did, then we
 
 ```
 type Crewman extending HasNumber, Person {
-  overloaded property name := 'Crewman ' ++ <str>.number; #this part is new
+  overloaded property name := 'Crewman ' ++ <str>.number; # This part is new
 }
 ```
 

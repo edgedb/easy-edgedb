@@ -202,10 +202,10 @@ Let's try it:
 SELECT City {
   name,
   modern_name,
-} FILTER .name[0]; = 'B'; # First character must be 'B'
+} FILTER .name[0] = 'B'; # First character must be 'B';
 ```
 
-That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`FILTER .name[18]; = 'B';`), we'll get this:
+That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`FILTER .name[18] = 'B';`), we'll get this:
 
 ```
 ERROR: InvalidValueError: string index 18 is out of bounds

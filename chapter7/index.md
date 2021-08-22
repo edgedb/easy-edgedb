@@ -113,13 +113,13 @@ The important part is `SET OF`: it needs a set, so something in curly brackets. 
 
 That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[2, 4]}` (instead of 2). That's not what we want.
 
-Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `weakest_door`:
+Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `castle_doors`:
 
 ```edgeql
 WITH
   jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(array_unpack(doors));
+  castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
+SELECT jonathan_strength > min(array_unpack(castle_doors));
 ```
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.

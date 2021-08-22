@@ -27,8 +27,8 @@ Let's call the function `get_two()`. It could look like this:
 ```sdl
 function get_two(one: str, two: str) -> SET OF Person
   using (
-    WITH person_1 := (SELECT Person filter .name = one LIMIT 1),
-         person_2 := (SELECT Person filter .name = two LIMIT 1),
+    WITH person_1 := (SELECT Person FILTER .name = one LIMIT 1),
+         person_2 := (SELECT Person FILTER .name = two LIMIT 1),
     SELECT {person_1, person_2}
   );
 ```
@@ -98,8 +98,8 @@ Here's one way to do it:
 ```sdl
 function two_cities(city_one: str, city_two: str) -> float64
   using (
-    WITH first_city := (SELECT City filter .name = city_one),
-         second_city := (SELECT City filter .name = city_two),
+    WITH first_city := (SELECT City FILTER .name = city_one),
+         second_city := (SELECT City FILTER .name = city_two),
     SELECT first_city.population / second_city.population
   );
 ```

@@ -143,9 +143,12 @@ Then we can `INSERT` the `MinorVampire` type at the same time as we insert the i
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
 ```
-ERROR: ConstraintViolationError: deletion of default::Vampire (cc5ee436-fa23-11ea-85e0-e78b548f5a59) is prohibited by link target policy
-
-DETAILS: Object is still referenced in link master of default::MinorVampire (cc87c78e-fa23-11ea-85e0-8f5149329e3a).
+edgedb> delete MinorVampire;
+ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
+  Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
+edgedb> delete Vampire;
+ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
+  Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
 
 So first we simply change `MinorVampire` to a type extending `Person`:
@@ -179,7 +182,7 @@ Note two things: we used `{}` after `slaves` to put everything into a set, and e
 
 Now we don't have to insert the `MinorVampire` types first and then filter: we can just put them in together with Dracula.
 
-Then when we `select Vampire` like this:
+Then when we `SELECT Vampire` like this:
 
 ```edgeql
 SELECT Vampire {
@@ -205,7 +208,7 @@ What do we do if we want the same output in json? It couldn't be easier: just ca
 
 ```edgeql
 SELECT <json>Vampire {
-      # <json> is the only difference from the SELECT above
+  # <json> is the only difference from the SELECT above
   name,
   slaves: {name}
 };

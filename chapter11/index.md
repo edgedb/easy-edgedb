@@ -19,7 +19,7 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' IF .east = true else 'W';
 }
 ```
 
@@ -132,8 +132,8 @@ So far only Jonathan and Renfield have the property `strength`, so let's put the
 
 ```edgeql
 WITH
-  renfield := (SELECT Person filter .name = 'Renfield'),
-  jonathan := (SELECT Person filter .name = 'Jonathan Harker')
+  renfield := (SELECT Person FILTER .name = 'Renfield'),
+  jonathan := (SELECT Person FILTER .name = 'Jonathan Harker')
 SELECT (
   fight(jonathan, renfield)
 );
@@ -161,8 +161,8 @@ To demonstrate, let's put three objects in for each side of our function. We'll 
 
 ```edgeql
 WITH
-  first_group := (SELECT Person FILTER .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  second_group := (SELECT Person FILTER .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+  first_group := (SELECT Person FILTER .name IN {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (SELECT Person FILTER .name IN {'Renfield', 'Mina Murray', 'The innkeeper'}),
 SELECT (
   first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
 );

@@ -30,20 +30,20 @@ It's optional because we don't always know anything people before they were made
 Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 
 ```edgeql
-UPDATE Person filter .name = 'Lucy Westenra'
+UPDATE Person FILTER .name = 'Lucy Westenra'
 SET {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. (If you are following along, just `DELETE Vampire;` and `DELETE Minorvampire;` first so we can practice doing this longer `INSERT`.)
+Then we can add Lucy to the `INSERT` for Dracula. (If you are following along, just `DELETE Vampire;` and `DELETE MinorVampire;` first so we can practice doing this longer `INSERT`.)
 
 Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
 Here's the insert:
 
 ```edgeql
-WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
+WITH lucy := (SELECT Person FILTER .name = 'Lucy Westenra' LIMIT 1)
 INSERT Vampire {
   name := 'Count Dracula',
   age := 800,
@@ -64,11 +64,11 @@ INSERT Vampire {
       strength := lucy.strength + 5,
     }),
   },
-  places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
+  places_visited := (SELECT Place FILTER .name IN {'Romania', 'Castle Dracula'})
 };
 ```
 
-And thanks to the `former_self` link, it's easy to find all the minor vampires that come from `Person` objects. Just filter by `EXISTS former_self`:
+And thanks to the `former_self` link, it's easy to find all the minor vampires that come from `Person` objects. Just filter by `EXISTS .former_self`:
 
 ```edgeql
 SELECT MinorVampire {
