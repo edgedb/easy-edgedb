@@ -10,7 +10,15 @@ We've had quite the journey so far up to the release of this book. It began in s
 
 Much of our learning material can be found in the [interactive tutorial](https://edgedb.com/tutorial), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql), but we also wanted to put something together that immerses the learner for longer - a full book. The result is Easy EdgeDB: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
 
-Easy EdgeDB is a fairly unique textbook, to say the least. Here's how it differs from what you might expect from text of its type:
+- [A new JavaScript driver](https://github.com/edgedb/edgedb-js) in Alpha 2.0 and more powerful bindings in Alpha 4.0,
+- [We took our cli and Rewrote It In Rust](https://github.com/edgedb/edgedb-cli)! Unsurprisingly, the performance improvements were substantial.
+- [Constraints were added to entire types](https://www.edgedb.com/blog/edgedb-1-0-alpha-5-luhman) and JSON casting became as easy as typing `<json>` before a query (Alpha 5.0),
+- Native [GraphQL support](https://www.edgedb.com/docs/tutorial/graphql#ref-tutorial-graphql) has been improved including multiple mutations in a single query, and an `exists` filter (Alpha 5.0),
+- [Improved UPDATE syntax](https://www.edgedb.com/blog/edgedb-1-0-alpha-6-wolf-359), enums, easier function syntax and cli improvement (Alpha 6.0).
+
+Now that we've reached beta 1.0, we're even more excited to see people give it a try. Up to now our learning and introductory material has been mostly found in the [interactive tutorial](https://edgedb.com/tutorial), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql). This time we've put something much longer together: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
+
+Easy EdgeDB is a bit of a unique book. Here's how it differs from what you might expect from text of its type:
 
 ## A story to follow
 
@@ -19,7 +27,7 @@ The book is divided into 20 chapters in which we imagine that we are creating a 
 Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons:
 
 - It's a fun read. We're excited to see you give EdgeDB a try and hope to make the introduction as painless and immersive as possible. We think that anyone who has spent an hour or so with EdgeDB will walk away excited about its possibilities, but for that to happen it's our job to make the experience a pleasant one. Bram Stoker's novel has really helped out here.
-- It's a so-called *epistolary novel*: a novel written through the letters, diaries, and communications written by the main characters. That means that each entry has a date and an author, which makes it a great fit for a database.
+- It's a so-called _epistolary novel_: a novel written through the letters, diaries, and communications written by the main characters. That means that each entry has a date and an author, which makes it a great fit for a database.
 - It's copyright free. Our book only scratches the surface of what a real database for a game based on this book would be like, but who knows? Maybe some readers will like it enough to take the concept a bit farther and make it into the real thing. And if that's the case, then an open source database software based on a book completely free of copyright is the best way to start.
 
 ## Plain English
@@ -27,7 +35,7 @@ Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons
 We want to give as many people as possible the opportunity to sit down and give EdgeDB a try, and so we've opted for a style of writing that's simple and straightforward. Not baby talk, just plain English. We have three types of people in mind here:
 
 - People unfamiliar with how to build a database but ready to understand how they work if the concepts are explained in a straightforward way,
-- People who *are* familiar with databases but maybe aren't in the mood to wade through dense verbiage for a product they've never seen before,
+- People who _are_ familiar with databases but maybe aren't in the mood to wade through dense verbiage for a product they've never seen before,
 - People with English as a second (or third, fourth...) language who would much prefer reading a book in plain English for the same reason.
 
 ## Interactivity and experimentation
@@ -40,7 +48,7 @@ Going through the book, we will learn how to use queries that are more and more 
 
 We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. To give a feel for the beauty of the original work (with a steampunk-ish vibe added for good measure) we teamed up with Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)), an illustrator of 10 years from Katowice, Poland, to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter. You'll soon become familiar with his illustrations but here is how he describes them and what inspires him:
 
->I try to take inspiration from everything that I have contact with. In my works, I like to build slightly surreal, understated/untold stories that leave the viewer room for their own interpretation. The works themselves are a loose stream of thoughts that make sense while creating, sometimes at the very end and sometimes not at all - because not everything has to make sense. My works often start with a small idea that grows into a much larger composition. I like to create works that are rich in detail, in which I sometimes hide what inspires me. They are a bit like little easter eggs for the watchful observer.
+> I try to take inspiration from everything that I have contact with. In my works, I like to build slightly surreal, understated/untold stories that leave the viewer room for their own interpretation. The works themselves are a loose stream of thoughts that make sense while creating, sometimes at the very end and sometimes not at all - because not everything has to make sense. My works often start with a small idea that grows into a much larger composition. I like to create works that are rich in detail, in which I sometimes hide what inspires me. They are a bit like little easter eggs for the watchful observer.
 
 We're pleased to have teamed up with Damian to put the final touch on a book that blends the old and the new in a form that we hope will keep you turning the page as you familiarize yourself with EdgeDB and discover what it has to offer you.
 
