@@ -41,11 +41,11 @@ So if there are no `Crewman` types, he will get the number 1. The next will get 
 
 ```
 {
-  Object {number: 1},
-  Object {number: 2},
-  Object {number: 3},
-  Object {number: 4},
-  Object {number: 5},
+  default::Crewman {number: 1},
+  default::Crewman {number: 2},
+  default::Crewman {number: 3},
+  default::Crewman {number: 4},
+  default::Crewman {number: 5},
 }
 ```
 
@@ -126,20 +126,20 @@ The result is:
 
 ```
 {
-  Object {
+  default::Ship {
     name: 'The Demeter',
     sailors: {
-      Object {name: 'Petrofsky', rank: FirstMate},
-      Object {name: 'The Second Mate', rank: SecondMate},
-      Object {name: 'The Cook', rank: Cook},
-      Object {name: 'The Captain', rank: Captain},
+      default::Sailor {name: 'The Captain', rank: Captain},
+      default::Sailor {name: 'Petrofsky', rank: FirstMate},
+      default::Sailor {name: 'The First Mate', rank: SecondMate},
+      default::Sailor {name: 'The Cook', rank: Cook},
     },
     crew: {
-      Object {number: 1},
-      Object {number: 2},
-      Object {number: 3},
-      Object {number: 4},
-      Object {number: 5},
+      default::Crewman {number: 1},
+      default::Crewman {number: 2},
+      default::Crewman {number: 3},
+      default::Crewman {number: 4},
+      default::Crewman {number: 5},
     },
   },
 }
@@ -203,19 +203,20 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 
 ```
 {
-  Object {name: 'Woman 1', age: {}, number: {}},
-  Object {name: 'The innkeeper', age: 30, number: {}},
-  Object {name: 'Mina Murray', age: {}, number: {}},
-  Object {name: {}, age: {}, number: 1},
-  Object {name: {}, age: {}, number: 2},
-   # /snip
+  # ... /snip
+  default::Crewman {name: {}, age: {}, number: 4},
+  default::Crewman {name: {}, age: {}, number: 5},
+  default::PC {name: 'Emil Sinclair', age: {}, number: {}},
+  default::NPC {name: 'The innkeeper', age: 30, number: {}},
+  default::NPC {name: 'Mina Murray', age: {}, number: {}},
+  default::NPC {name: 'Jonathan Harker', age: {}, number: {}},
 }
 ```
 
-This is pretty good, but the output doesn't show us the type for each of them. To refer to an object's own type in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
+This is pretty good, but if we send this output somewhere as JSON it won't show us the type for each of them. To refer to an object's own type in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
 
 ```edgeql
-SELECT Person {
+SELECT <json>Person {
   __type__: {
     name      # Name of the type inside module default
   },
@@ -225,15 +226,18 @@ SELECT Person {
 };
 ```
 
-Choosing the five objects from before from the output, it now looks like this:
+Choosing the six objects from before from the output, it now looks like this:
 
 ```
 {
-  Object {__type__: Object {name: 'default::MinorVampire'}, name: 'Woman 1', age: {}, number: {}},
-  Object {__type__: Object {name: 'default::NPC'}, name: 'The innkeeper', age: 30, number: {}},
-  Object {__type__: Object {name: 'default::NPC'}, name: 'Mina Murray', age: {}, number: {}},
-  Object {__type__: Object {name: 'default::Crewman'}, name: {}, age: {}, number: 1},
-  Object {__type__: Object {name: 'default::Crewman'}, name: {}, age: {}, number: 2},
+  # ... /snip
+  {\"name\": \"default::Crewman\"}}",
+  "{\"age\": null, \"name\": null, \"number\": 4, \"__type__\": {\"name\": \"default::Crewman\"}}",
+  "{\"age\": null, \"name\": null, \"number\": 5, \"__type__\": {\"name\": \"default::Crewman\"}}",
+  "{\"age\": null, \"name\": \"Emil Sinclair\", \"number\": null, \"__type__\": {\"name\": \"default::PC\"}}",
+  "{\"age\": 30, \"name\": \"The innkeeper\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
+  "{\"age\": null, \"name\": \"Mina Murray\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
+  "{\"age\": null, \"name\": \"Jonathan Harker\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
 }
 ```
 
@@ -245,7 +249,7 @@ The official name for a type that gets extended by another type is a `supertype`
 
 In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
 
-To make a query that will show this, just add a shape query with the computable `Person IS PC` and EdgeDB will tell you:
+To make a query that will show this, just add a shape query with the computed property `Person IS PC` and EdgeDB will tell you:
 
 ```edgeql
 SELECT Person {
@@ -308,22 +312,23 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
 
-  First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE as TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
+  First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE AS TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
 
   ```
   {
     'type default::Castle extending default::Place {
       required single link __type__ -> schema::Type {
-        readonly := true;
+          readonly := true;
       };
       optional single property doors -> array<std::int16>;
       required single property id -> std::uuid {
-        readonly := true;
+          readonly := true;
       };
       optional single property important_places -> array<std::str>;
       optional single property modern_name -> std::str;
       required single property name -> std::str;
-  };
+  };',
+  }
   ```
 
   You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.

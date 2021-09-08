@@ -52,10 +52,10 @@ It should give this result:
 
 ```
 {
-  Object {name: 'Munich', length_difference: 'Modern name does not exist'},
-  Object {name: 'Buda-Pesth', length_difference: '2'},
-  Object {name: 'Bistritz', length_difference: '0'},
-  Object {name: 'London', length_difference: 'Modern name does not exist'},
+  default::City {name: 'Munich', length_difference: 'Modern name does not exist'},
+  default::City {name: 'Buda-Pesth', length_difference: '2'},
+  default::City {name: 'Bistritz', length_difference: '0'},
+  default::City {name: 'London', length_difference: 'Modern name does not exist'},
 }
 ```
 

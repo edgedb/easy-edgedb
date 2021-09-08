@@ -10,7 +10,7 @@ std::to_datetime(epochseconds: int64) -> datetime
 
 And since it gives the number of seconds after the Unix Epoch (1970), it will return this:
 
-`{<datetime>'1970-01-01T00:01:00Z'}`
+`{<datetime>'1970-01-01T01:00:00Z'}`
 
 So one hour (3600 seconds) after the epoch began.
 
@@ -26,7 +26,23 @@ This one is easy with the `to_datetime()` function:
 SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT') - to_datetime(2003, 12, 25, 5, 0, 0, 'TMT');
 ```
 
-The answer is 568,000 seconds: `{568800s}`
+The answer is 158 hours: `{<duration>'158:00:00'}`
+
+So we can either multiply this by 3600 second per hour as a separate query:
+
+```edgeql
+SELECT 158 * 3600;
+```
+
+Which gets us `{568800}`;
+
+Or we can use another built-in function called `duration_to_seconds`:
+
+```edgeql
+SELECT duration_to_seconds(to_datetime(2003, 12, 31, 19, 0, 0, 'UZT') - to_datetime(2003, 12, 25, 5, 0, 0, 'TMT'));
+```
+
+Which gets us `{568800.000000n}`. It's still 568,000 seconds but using more precision.
 
 #### 4. How would you write the same query using `WITH` for each of the two times?
 
@@ -36,10 +52,10 @@ It would look something like this (depending on the name you give the variable a
 WITH
   uzbek_time := (SELECT to_datetime(2003, 12, 31, 19, 0, 0, 'UZT')),
   turkmen_time := (SELECT to_datetime(2003, 12, 25, 5, 0, 0, 'TMT')),
-SELECT uzbek_time - turkmen_time;
+SELECT duration_to_seconds(uzbek_time - turkmen_time);
 ```
 
-The output is exactly the same: `{568800s}`
+The output is exactly the same: `{568800.000000n}`
 
 #### 5. What's the best way to describe a type if you only want to see how you wrote it?
 
@@ -48,8 +64,8 @@ The best way is `DESCRIBE TYPE AS SDL`, which doesn't have all the extra info th
 ```
 {
   'type default::MinorVampire extending default::Person {
-     required single link master -> default::Vampire;
-   };',
+    required link master -> default::Vampire;
+};',
 }
 ```
 

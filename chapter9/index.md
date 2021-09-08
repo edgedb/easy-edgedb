@@ -175,20 +175,20 @@ And as we hoped, they are all connected to Lucy now.
 
 ```
 {
-  Object {
+  default::NPC {
     name: 'John Seward',
-    places_visited: {Object {name: 'London'}},
-    lover: Object {name: 'Lucy Westenra'},
+    places_visited: {default::City {name: 'London'}},
+    lover: {default::NPC {name: 'Lucy Westenra'}},
   },
-  Object {
+  default::NPC {
     name: 'Quincey Morris',
-    places_visited: {Object {name: 'London'}},
-    lover: Object {name: 'Lucy Westenra'},
+    places_visited: {default::City {name: 'London'}},
+    lover: {default::NPC {name: 'Lucy Westenra'}},
   },
-  Object {
+  default::NPC {
     name: 'Arthur Holmwood',
-    places_visited: {Object {name: 'London'}},
-    lover: Object {name: 'Lucy Westenra'},
+    places_visited: {default::City {name: 'London'}},
+    lover: {default::NPC {name: 'Lucy Westenra'}},
   },
 }
 ```
@@ -244,12 +244,12 @@ And this does indeed print her out with her three lovers.
 
 ```
 {
-  Object {
+  default::NPC {
     name: 'Lucy Westenra',
     lover: {
-      Object {name: 'John Seward'},
-      Object {name: 'Quincey Morris'},
-      Object {name: 'Arthur Holmwood'},
+      default::NPC {name: 'John Seward'},
+      default::NPC {name: 'Quincey Morris'},
+      default::NPC {name: 'Arthur Holmwood'},
     },
   },
 }

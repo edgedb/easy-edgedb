@@ -19,11 +19,11 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' if .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
-You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computable that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
+You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example:
 
@@ -31,7 +31,7 @@ The url that we are generating needs to know whether a location is east or west 
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
-(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computable: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
 
 Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
@@ -74,15 +74,17 @@ It generates a nice output that shows us everything about the event:
 
 ```
 {
-  Object {
+  default::Event {
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    start_time: <cal::local_datetime>'1857-09-11T18:00:00',
-    end_time: <cal::local_datetime>'1857-09-11T23:00:00',
-    place: {Object {__type__: Object {name: 'default::City'}, name: 'Whitby'}},
+    start_time: <cal::local_datetime>'1887-09-11T18:00:00',
+    end_time: <cal::local_datetime>'1887-09-11T23:00:00',
+    place: {
+      default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
+    },
     people: {
-      Object {name: 'John Seward'},
-      Object {name: 'Lucy Westenra'},
-      Object {name: 'Abraham Van Helsing'},
+      default::NPC {name: 'Lucy Westenra'},
+      default::NPC {name: 'John Seward'},
+      default::NPC {name: 'Abraham Van Helsing'},
     },
     exact_location: (54.4858, 0.6206),
     url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
@@ -124,7 +126,7 @@ Now let's write a function where we have two characters fight. We will make it a
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+    (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
   );
 ```
 
@@ -141,7 +143,7 @@ SELECT (
 
 It prints what we wanted to see: `{'Renfield wins!'}`
 
-It might also be a good idea to add `LIMIT 1` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one for each possible combination. The way EdgeDB handles this is through Cartesian multiplication, so let's learn about that now.
+It might also be a good idea to add `assert_single()` when doing a filter for this function. Because EdgeDB returns sets, if it gets multiple results then it will use the function against each one for each possible combination. The way EdgeDB handles this is through Cartesian multiplication, so let's learn about that now.
 
 ## Cartesian multiplication
 
@@ -157,7 +159,16 @@ This means that if we do a `SELECT` on `Person` for our `fight()` function, it w
 
 So if there are two in the first set, and three in the second, it will run the function six times.
 
-To demonstrate, let's put three objects in for each side of our function. We'll also make the output a little more clear:
+To demonstrate, let's put three objects in for each side of our function. We'll be testing our `fight` function, so we'll just give all the characters strength value 5 if they don't already have some other value:
+
+```edgeql
+UPDATE Person FILTER NOT EXISTS .strength
+SET {
+  strength := 5
+};
+```
+
+We'll also make the output a little more clear:
 
 ```edgeql
 WITH
@@ -172,15 +183,15 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 
 ```
 {
-  'Count Dracula fights against The innkeeper. The innkeeper wins!',
-  'Count Dracula fights against Mina Murray. Mina Murray wins!',
-  'Count Dracula fights against Renfield. Renfield wins!',
+  'Jonathan Harker fights against Renfield. Renfield wins!',
   'Jonathan Harker fights against The innkeeper. The innkeeper wins!',
   'Jonathan Harker fights against Mina Murray. Mina Murray wins!',
-  'Jonathan Harker fights against Renfield. Renfield wins!',
+  'Arthur Holmwood fights against Renfield. Renfield wins!',
   'Arthur Holmwood fights against The innkeeper. The innkeeper wins!',
   'Arthur Holmwood fights against Mina Murray. Mina Murray wins!',
-  'Arthur Holmwood fights against Renfield. Renfield wins!',
+  'Count Dracula fights against Renfield. Renfield wins!',
+  'Count Dracula fights against The innkeeper. The innkeeper wins!',
+  'Count Dracula fights against Mina Murray. Mina Murray wins!',
 }
 ```
 
