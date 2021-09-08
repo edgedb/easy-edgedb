@@ -126,7 +126,7 @@ Now let's write a function where we have two characters fight. We will make it a
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+    one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
   );
 ```
 

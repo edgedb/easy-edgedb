@@ -51,9 +51,12 @@ Looks like it worked.
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight. There are a lot of ways to do it, but we'll choose a simple one:
 
 ```sdl
-function fight(names: str, one: int16, two: Person) -> str
+function fight(names: str, one: int16, two: str) -> str
   using (
-    (names ++ ' win!') IF one > two.strength ELSE (two.name ++ ' wins!')
+    WITH opponent := assert_single((SELECT Person FILTER .name = two))
+    SELECT
+        names ++ ' win!' IF one > opponent.strength ELSE
+        two ++ ' wins!'
   );
 ```
 
@@ -61,7 +64,7 @@ Note that overloading only works if the function signature is different. Here ar
 
 ```sdl
 fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: Person) -> str
+fight(names: str, one: int16, two: str) -> str
 ```
 
 If we tried to overload it with an input of `(Person, Person)`, it wouldn't work because it's the same. That's because EdgeDB uses the input we give it to know which form of the function to use.
@@ -77,9 +80,7 @@ WITH
       (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength
     )
   ),
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-
-SELECT fight('Jon and Ren', jon_and_ren_strength, dracula);
+SELECT fight('Jon and Ren', jon_and_ren_strength, 'Count Dracula');
 ```
 
 So did they...
@@ -100,9 +101,7 @@ WITH
       ).strength
     )
   ),
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-
-  SELECT fight('The four people', four_people_strength, dracula);
+SELECT fight('The four people', four_people_strength, 'Count Dracula');
 ```
 
 Much better:
@@ -175,10 +174,10 @@ You can delete a function with the `DROP` keyword and the function signature. Yo
 
 ```sdl
 fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: Person) -> str
+fight(names: str, one: int16, two: str) -> str
 ```
 
-You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: Person)`. The `-> str` part isn't needed.
+You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: str)`. The `-> str` part isn't needed.
 
 ## More about Cartesian products - the coalescing operator
 

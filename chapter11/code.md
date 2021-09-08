@@ -99,7 +99,7 @@ START MIGRATION TO {
   
     function fight(one: Person, two: Person) -> str
       using (
-        (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+        one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
       );
   }
 };
