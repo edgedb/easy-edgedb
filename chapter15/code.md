@@ -2,10 +2,9 @@
 # Schema:
 START MIGRATION TO {
   module default {
-
     abstract type HasCoffins {
       required property coffins -> int16 {
-    default := 0;
+        default := 0;
       }
     }
   
@@ -100,7 +99,7 @@ START MIGRATION TO {
    scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
-    #  property rank -> Rank;
+      property rank -> Rank;
     }
 
     type Ship extending HasCoffins {
@@ -117,31 +116,30 @@ START MIGRATION TO {
       required multi link people -> Person;
       property exact_location -> tuple<float64, float64>;
       property east -> bool;
-      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
     }
   
-        function fight(one: Person, two: Person) -> str
+    function fight(one: Person, two: Person) -> str
       using (
-        SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
-    );
+        (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+      );
+
     function fight(names: str, one: int16, two: Person) -> str
       using (
-        SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
-    );
+        (names ++ ' win!') IF one > two.strength ELSE (two.name ++ ' wins!')
+      );
 
     function visited(person: str, city: str) -> bool
       using (
-        WITH person := (SELECT Person FILTER .name = person LIMIT 1),
+        WITH person := (SELECT Person FILTER .name = person),
         SELECT city IN person.places_visited.name
       );
 
     function can_enter(person_name: str, place: HasCoffins) -> str
       using (
-        WITH vampire := (SELECT Person filter .name = person_name LIMIT 1)
+        WITH vampire := assert_single((SELECT Person filter .name = person_name))
           SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
         );
-
-
   }
 };
 
@@ -149,8 +147,6 @@ POPULATE MIGRATION;
 COMMIT MIGRATION;
 
     
-
-
 # Data:
 
 INSERT City {
@@ -171,7 +167,7 @@ INSERT City {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 INSERT Country {
@@ -190,8 +186,9 @@ INSERT Country {
   name := 'Slovakia'
 };
 
-INSERT OtherPlace {
-  name := 'Castle Dracula'
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
 };
 
 INSERT City {
@@ -210,18 +207,13 @@ INSERT NPC {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
-};
-
-INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
+    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
@@ -231,22 +223,22 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 
 INSERT Sailor {
   name := 'The Captain',
-  rank := <Rank>Captain
+  rank := Rank.Captain
 };
 
 INSERT Sailor {
   name := 'Petrofsky',
-  rank := <Rank>FirstMate
+  rank := Rank.FirstMate
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := <Rank>SecondMate
+  rank := Rank.SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-  rank := <Rank>Cook
+  rank := Rank.Cook
 };
 
 FOR n IN {1, 2, 3, 4, 5}
@@ -326,28 +318,22 @@ INSERT Event {
   east := false
 };
 
-WITH random_5 := (SELECT <int16>round((random() * 5)))
 UPDATE Person
   FILTER NOT EXISTS .strength
   SET {
-    strength := random_5 
+    strength := <int16>round(random() * 5)
 };
-
-UPDATE Vampire
-FILTER .name = 'Count Dracula'
-SET {
-  strength := 20
-  };
 
 UPDATE Person filter .name = 'Lucy Westenra'
   SET {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 
-WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
+WITH lucy := assert_single((SELECT Person filter .name = 'Lucy Westenra'))
 INSERT Vampire {
   name := 'Count Dracula',
   age := 800,
+  strength := 20,
   slaves := {
     (INSERT MinorVampire {
       name := 'Woman 1',
@@ -359,7 +345,7 @@ INSERT Vampire {
      name := 'Woman 3',
   }),
     (INSERT MinorVampire {
-     name := lucy.name,
+     name := 'Lucy',
      former_self := lucy,
      first_appearance := lucy.last_appearance,
      strength := lucy.strength + 5,
@@ -382,6 +368,4 @@ UPDATE City filter .name = 'London'
   SET {
     coffins := 21
  };
-
-\set introspect-types on;
 ```

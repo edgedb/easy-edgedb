@@ -28,7 +28,7 @@ Most places will not have a special vampire coffin, so the default is 0. The `co
 
 - Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
 - Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
-- Around 1 or 2 pm, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
+- Around 1 or 2 am, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
 So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
@@ -61,12 +61,14 @@ If we want, we can now make a quick function to test whether a vampire can enter
 ```sdl
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
-    with vampire := (SELECT Person filter .name = person_name LIMIT 1)
+    with vampire := assert_single(
+        (SELECT Person filter .name = person_name)
+    )
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
   );
 ```
 
-You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It has a `LIMIT 1` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It uses `assert_single()` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
 
 - Overload the function to have two signatures, one for each type of Vampire:
 
@@ -81,7 +83,7 @@ Overloading the function is probably the easier option, because we wouldn't need
 
 One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. [The documentation](https://www.edgedb.com/docs/edgeql/overview#optional) explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `?` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
 
 `OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
 
@@ -206,14 +208,17 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
   default::Lord {
     name: 'Lord Billy',
     places_visited: {
+      default::Country {name: 'Hungary'},
+      default::Country {name: 'Romania'},
+      default::Country {name: 'France'},
+      default::Country {name: 'Slovakia'},
       default::Castle {name: 'Castle Dracula'},
       default::City {name: 'Whitby'},
       default::City {name: 'Munich'},
       default::City {name: 'Buda-Pesth'},
       default::City {name: 'Bistritz'},
+      default::City {name: 'Exeter'},
       default::City {name: 'London'},
-      default::Country {name: 'Romania'},
-      default::Country {name: 'Slovakia'},
     },
   },
 }
@@ -255,13 +260,23 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the `master` link again, the best way is to start with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `LIMIT 1` (it won't work otherwise). Here is what the type would look like now:
+To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `assert_single()` (it won't work otherwise). Here is what the type would look like now:
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := (SELECT .<slaves[IS Vampire] LIMIT 1);
+  link master := assert_single(.<slaves[IS Vampire]);
   required single property master_name -> str;
+};
+```
+
+But then again, if we want this `master_name` shortcut we can now just use the `master` link to do it. Let's change it from `required single property master_name -> str` to `property master_name := .master.name`:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  link master := assert_single(.<slaves[IS Vampire]);
+  property master_name := .master.name;
 };
 ```
 
@@ -273,11 +288,9 @@ INSERT Vampire {
   slaves := {
     (INSERT MinorVampire {
       name := 'Billy',
-      master_name := 'Kain'
     }),
     (INSERT MinorVampire {
       name := 'Bob',
-      master_name := 'Kain'
     })
   }
 };
@@ -324,7 +337,7 @@ Beautiful! All the information is right there.
 
 2. How would you let the user know that it needs to be called 'Horse'?
 
-3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+3. How would you make sure that `name` for type `NPC` is always between 5 and 30 characters in length?
 
    Try it first with `expression on`.
 

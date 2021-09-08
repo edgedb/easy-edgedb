@@ -2,17 +2,16 @@
 # Schema:
 START MIGRATION TO {
   module default {
-
     abstract type HasNameAndCoffins {
       required property coffins -> int16 {
-    default := 0;
+        default := 0;
       }
       required property name -> str {
         constraint exclusive;
         constraint max_len_value(30);
       }
     }
-  
+
     abstract type Person {
       property name -> str {
         constraint exclusive;
@@ -58,7 +57,7 @@ START MIGRATION TO {
     type MinorVampire extending Person {
       link former_self -> Person;
     }
-    
+
     abstract type Place extending HasNameAndCoffins {
       property modern_name -> str;
       property important_places -> array<str>;
@@ -79,7 +78,7 @@ START MIGRATION TO {
       multi link other_places -> OtherPlace;
       multi link castles -> Castle;
     }
-    
+
     abstract annotation warning;
 
     type OtherPlace extending Place {
@@ -103,16 +102,16 @@ START MIGRATION TO {
     abstract type HasNumber {
       required property number -> int16;
     }
-    
+
     type Crewman extending HasNumber, Person {
     }
-    
+
     alias CrewmanInBulgaria := Crewman {
       name := 'Gospodin ' ++ .name,
       current_location := (SELECT Place filter .name = 'Bulgaria'),
-    }
+    };
 
-   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+    scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
       property rank -> Rank;
@@ -131,7 +130,7 @@ START MIGRATION TO {
     property local_time := <cal::local_time>.time;
     property hour := .time[0:2];
     property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
-}
+  }
 
     type BookExcerpt {
       required property date -> cal::local_datetime;
@@ -149,85 +148,74 @@ START MIGRATION TO {
       multi link excerpt -> BookExcerpt;
       property exact_location -> tuple<float64, float64>;
       property east -> bool;
-      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ ' N ' ++ <str>.exact_location.1 ++ ' ' ++ 'E' if .east = true else 'W';
+      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
     }
 
     abstract type Currency {
-    required link owner -> Person;
+      required link owner -> Person;
 
-    required property major -> str;
-    required property major_amount -> int64 {
-        default := 0;
-        constraint min_value(0);
+      required property major -> str;
+      required property major_amount -> int64 {
+          default := 0;
+          constraint min_value(0);
+      }
+
+      property minor -> str;
+      property minor_amount -> int64 {
+          default := 0;
+          constraint min_value(0);
+      }
+      property minor_conversion -> int64;
+
+      property sub_minor -> str;
+      property sub_minor_amount -> int64 {
+          default := 0;
+          constraint min_value(0);
+      }
+      property sub_minor_conversion -> int64;
     }
 
-    property minor -> str;
-    property minor_amount -> int64 {
-        default := 0;
-        constraint min_value(0);
+    type Pound extending Currency {
+      overloaded required property major {
+          default := 'pound'
+      }
+      overloaded required property minor {
+          default := 'shilling'
+      }
+      overloaded required property minor_conversion {
+          default := 20
+      }
+      overloaded property sub_minor {
+          default := 'pence'
+      }
+      overloaded property sub_minor_conversion {
+          default := 240
+      }
     }
-    property minor_conversion -> int64;
 
-    property sub_minor -> str;
-    property sub_minor_amount -> int64 {
-        default := 0;
-        constraint min_value(0);
-    }
-    property sub_minor_conversion -> int64;
-  }
-
-  type Pound extending Currency {
-    overloaded required property major {
-        default := 'pound'
-    }
-    overloaded required property minor { 
-        default := 'shilling'
-    }
-    overloaded required property minor_conversion {
-        default := 20
-    }
-    overloaded property sub_minor { 
-        default := 'pence'
-    }
-    overloaded property sub_minor_conversion {
-        default := 240
-    }
-  }
-
-          function fight(one: Person, two: Person) -> str
+    function fight(one: Person, two: Person) -> str
       using (
-        SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
-    );
+        (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+      );
+
     function fight(names: str, one: int16, two: Person) -> str
       using (
-        SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
-    );
+        (names ++ ' win!') IF one > two.strength ELSE (two.name ++ ' wins!')
+      );
 
     function visited(person: str, city: str) -> bool
       using (
-        WITH person := (SELECT Person FILTER .name = person LIMIT 1),
+        WITH person := (SELECT Person FILTER .name = person),
         SELECT city IN person.places_visited.name
-      );
-
-
-
-    function change_coffins(place_name: str, number: int16) -> HasNameAndCoffins
-       using (
-         UPDATE HasNameAndCoffins FILTER .name = place_name
-         SET {
-           coffins := .coffins + number
-         }
       );
 
     function can_enter(person_name: str, place: str) -> str
       using (
-      with 
-        vampire := (SELECT Person FILTER .name = person_name LIMIT 1),
-        enter_place := (SELECT HasNameAndCoffins FILTER .name = place LIMIT 1)
+      with
+        vampire := assert_single((SELECT Person FILTER .name = person_name)),
+        enter_place := assert_single((SELECT HasNameAndCoffins FILTER .name = place))
         SELECT vampire.name ++ ' can enter.' IF enter_place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-        );   
-
-
+        );
   }
 };
 
@@ -235,16 +223,14 @@ POPULATE MIGRATION;
 COMMIT MIGRATION;
 
 
-
-
 # Data:
 
- FOR city_name IN {'Munich', 'London'}
-   UNION (
-   INSERT City {
-     name := city_name
-    }
-  );
+FOR city_name IN {'Munich', 'London'}
+UNION (
+  INSERT City {
+    name := city_name
+  }
+);
 
 INSERT City {
   name := 'Buda-Pesth',
@@ -260,7 +246,7 @@ INSERT City {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}
@@ -270,8 +256,9 @@ FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}
     }
   );
 
-INSERT OtherPlace {
-  name := 'Castle Dracula'
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
 };
 
 INSERT NPC {
@@ -286,18 +273,13 @@ INSERT NPC {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
-};
-
-INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
+    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
@@ -306,34 +288,35 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 };
 
 INSERT Ship {
-   name := 'The Demeter',
-   sailors := {
+  name := 'The Demeter',
+  sailors := {
     (INSERT Sailor {
-       name := 'The Captain',
-       rank := <Rank>Captain
-     }),
+      name := 'The Captain',
+      rank := Rank.Captain
+    }),
     (INSERT Sailor {
-       name := 'The First Mate',
-       rank := <Rank>FirstMate
-     }),
+      name := 'The First Mate',
+      rank := Rank.FirstMate
+    }),
     (INSERT Sailor {
-       name := 'The Second Mate',
-       rank := <Rank>SecondMate
-     }),
+      name := 'The Second Mate',
+      rank := Rank.SecondMate
+    }),
     (INSERT Sailor {
-       name := 'The Cook',
-       rank := <Rank>Cook
-     })
- },
-   crew := (
- FOR n IN {1, 2, 3, 4, 5}
-   UNION (
-   INSERT Crewman {
-   number := n,
-   first_appearance := cal::to_local_date(1887, 7, 6),
-   last_appearance := cal::to_local_date(1887, 7, 16),
-   })
- )
+      name := 'The Cook',
+      rank := Rank.Cook
+    })
+  },
+  crew := (
+    FOR n IN {1, 2, 3, 4, 5}
+    UNION (
+      INSERT Crewman {
+        number := n,
+        first_appearance := cal::to_local_date(1887, 7, 6),
+        last_appearance := cal::to_local_date(1887, 7, 16),
+      }
+    )
+  )
 };
 
 INSERT NPC {
@@ -399,40 +382,37 @@ INSERT Event {
   east := false
 };
 
-WITH random_5 := (SELECT <int16>round((random() * 5)))
 UPDATE Person
   FILTER NOT EXISTS .strength
   SET {
-    strength := random_5 
+    strength := <int16>round(random() * 5)
 };
-
-UPDATE Vampire
-FILTER .name = 'Count Dracula'
-SET {
-  strength := 20
-  };
 
 UPDATE Person filter .name = 'Lucy Westenra'
   SET {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 
-WITH lucy := (SELECT Person filter .name = 'Lucy Westenra' LIMIT 1)
+WITH lucy := assert_single((SELECT Person filter .name = 'Lucy Westenra'))
 INSERT Vampire {
   name := 'Count Dracula',
   age := 800,
+  strength := 20,
   slaves := {
     (INSERT MinorVampire {
-      name := 'Woman 1',
+     name := 'Woman 1',
+     strength := 9,
   }),
     (INSERT MinorVampire {
      name := 'Woman 2',
+     strength := 9,
   }),
     (INSERT MinorVampire {
      name := 'Woman 3',
+     strength := 9,
   }),
     (INSERT MinorVampire {
-     name := lucy.name,
+     name := 'Lucy',
      former_self := lucy,
      first_appearance := lucy.last_appearance,
      strength := lucy.strength + 5,
@@ -442,7 +422,7 @@ INSERT Vampire {
 };
 
 INSERT City {
-  name := 'Exeter', 
+  name := 'Exeter',
   population := 40000
 };
 
@@ -458,13 +438,13 @@ UPDATE City filter .name = 'London'
 
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
-  author := (SELECT Person FILTER .name = 'John Seward' LIMIT 1),
+  author := assert_single((SELECT Person FILTER .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
-  author := (SELECT Person FILTER .name = 'Jonathan Harker' LIMIT 1),
+  author := assert_single((SELECT Person FILTER .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 
@@ -474,14 +454,14 @@ SELECT (
   last_appearance := <cal::local_date>'1887-10-03'
 })
   {
-  name, 
+  name,
   last_appearance
   };
-  
+
 CREATE FUNCTION fight_2(one: Person, two: Person) -> str
   USING (
-    SELECT one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' IF one.strength > two.strength 
-      ELSE 
+    SELECT one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' IF one.strength > two.strength
+      ELSE
     one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
 );
 
@@ -495,20 +475,20 @@ INSERT Pound {
 SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
   UNION (
     INSERT Pound {
-      owner := (SELECT Person FILTER .name = character LIMIT 1),
-      major_amount := (SELECT(round(random() * 500))),
-      minor_amount := (SELECT(round(random() * 100))),
-      sub_minor_amount := (SELECT(round(random() * 500)))
+      owner := assert_single((SELECT Person FILTER .name = character)),
+      major_amount := <int64>round(random() * 500),
+      minor_amount := <int64>round(random() * 100),
+      sub_minor_amount := <int64>round(random() * 500)
   })) {
- owner: {
-   name
+  owner: {
+    name
   },
- pounds := .major_amount,
- shillings := .minor_amount,
- pence := .sub_minor_amount,
- total_pounds := (SELECT
-    (round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)))
- };
+  pounds := .major_amount,
+  shillings := .minor_amount,
+  pence := .sub_minor_amount,
+  total_pounds :=
+    round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
+};
 
 INSERT Ship {
   name := 'Czarina Catherine',
@@ -531,12 +511,12 @@ FOR visit in {
     ('The Demeter', 'Whitby', '1887-08-08'),
     ('Czarina Catherine', 'London', '1887-10-05'),
     ('Czarina Catherine', 'Galatz', '1887-10-28')}
-    UNION (
+UNION (
  INSERT Visit {
    ship := (SELECT Ship FILTER .name = visit.0),
    place := (SELECT Place FILTER .name = visit.1),
    date := <cal::local_date>visit.2
-   });
+ });
 
 UPDATE Visit FILTER .place.name = 'Galatz'
   SET {
@@ -582,10 +562,8 @@ INSERT Country {
  }
 };
 
-UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
-  SET {
-    last_appearance := <cal::local_date>'1887-11-05'
+UPDATE MinorVampire FILTER .name != 'Lucy'
+SET {
+  last_appearance := <cal::local_date>'1887-11-05'
 };
-
-\set introspect-types on;
 ```

@@ -141,7 +141,7 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
 
 ```
 {
-  Object {
+  default::Visit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
     date: <cal::local_date>'1887-10-28',
@@ -199,6 +199,11 @@ type Time {
 Now that we know that the time was one o'clock, let's put that into the query too - including the `awake` property. Now it looks like this:
 
 ```edgeql
+WITH time := (
+  INSERT Time {
+    date := '13:00:00'
+  }
+)
 SELECT Ship.<ship[IS Visit] {
   place: {
     name
@@ -207,18 +212,12 @@ SELECT Ship.<ship[IS Visit] {
     name
   },
   date,
-  time := (
-    SELECT (
-      Insert Time {
-        date := '13:00:00'
-      }
-    ) {
-      date,
-      local_time,
-      hour,
-      awake
-    }
-  ),
+  time_ := time {
+    date,
+    local_time,
+    hour,
+    awake
+  },
 } FILTER .place.name = 'Galatz';
 ```
 
@@ -230,7 +229,12 @@ Here's the output, including whether vampires are awake or asleep.
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1887-10-28',
-    time: default::Date {date: '13:00:00', local_time: <cal::local_time>'13:00:00', hour: '13', awake: 'asleep'},
+    time: default::Time {
+      date: '13:00:00',
+      local_time: <cal::local_time>'13:00:00',
+      hour: '13',
+      awake: 'asleep',
+    },
   },
 }
 ```
@@ -260,7 +264,7 @@ SET {
 };
 ```
 
-Then we'll use the reverse query again. Let's add a computable for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
+Then we'll use the reverse query again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```edgeql
 SELECT Ship.<ship[IS Visit] {
@@ -377,17 +381,17 @@ With the reverse lookup at the end we have another link between `Country` and it
 
 ```
 {
-  Object {
+  default::Region {
     name: 'Prussia',
     cities: {default::City {name: 'Berlin'}, default::City {name: 'Königsberg'}},
     country: {default::Country {name: 'Germany'}},
   },
-  Object {
+  default::Region {
     name: 'Hesse',
     cities: {default::City {name: 'Darmstadt'}, default::City {name: 'Mainz'}},
     country: {default::Country {name: 'Germany'}},
   },
-  Object {
+  default::Region {
     name: 'Saxony',
     cities: {default::City {name: 'Dresden'}, default::City {name: 'Leipzig'}},
     country: {default::Country {name: 'Germany'}},

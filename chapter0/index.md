@@ -6,9 +6,9 @@ leadImage: illustration_00.jpg
 
 Thanks for checking out our new book to learn Easy EdgeDB!
 
-We've had quite the journey so far up to the release of this book. It began in spring 2019 with the public release of [EdgeDB Alpha 1](https://www.edgedb.com/blog/edgedb-1-0-alpha-1), showing the possibilities of an open source database built on top of PostgreSQL that combines the simplicity of a NoSQL database with relational model’s powerful querying, strictness, consistency, and performance.
+We've had quite the journey so far up to the release of this book. It began in spring 2019 with the public release of [EdgeDB Alpha 1](https://www.edgedb.com/blog/edgedb-1-0-alpha-1), showing for the first time the possibilities of an open source database built on top of PostgreSQL that combines the simplicity of a NoSQL database with relational model’s powerful querying, strictness, consistency, and performance. To see what's going on since then, see [our blog](https://www.edgedb.com/blog) where we announce the latest developments in the EdgeDB ecosystem.
 
-Twenty months and five more Alpha versions later, EdgeDB has now reached beta 1.0. Here are just a few changes that happened along the way:
+Much of our learning material can be found in the [interactive tutorial](https://edgedb.com/tutorial), [documentation](https://edgedb.com/docs/) and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql), but we also wanted to put something together that immerses the learner for longer - a full book. The result is Easy EdgeDB: a book large enough (and fun enough) to make any interested beginner into a comfortable intermediate EdgeDB user by the end.
 
 - [A new JavaScript driver](https://github.com/edgedb/edgedb-js) in Alpha 2.0 and more powerful bindings in Alpha 4.0,
 - [We took our cli and Rewrote It In Rust](https://github.com/edgedb/edgedb-cli)! Unsurprisingly, the performance improvements were substantial.

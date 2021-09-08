@@ -113,26 +113,22 @@ That signature has an extra `d: int64` part for the number of decimal places we 
 All together, it looks like this:
 
 ```edgeql
-SELECT (
-  FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
   UNION (
     INSERT Pound {
-      owner := (SELECT Person FILTER .name = character LIMIT 1),
-      major_amount := (SELECT(round(random() * 500))),
-      minor_amount := (SELECT(round(random() * 100))),
-      sub_minor_amount := (SELECT(round(random() * 500)))
-    }
-  )
-) {
+      owner := assert_single((SELECT Person FILTER .name = character)),
+      major_amount := <int64>round(random() * 500),
+      minor_amount := <int64>round(random() * 100),
+      sub_minor_amount := <int64>round(random() * 500)
+  })) {
   owner: {
     name
   },
   pounds := .major_amount,
   shillings := .minor_amount,
   pence := .sub_minor_amount,
-  total_pounds := (
-    SELECT (round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2))
-  )
+  total_pounds :=
+    round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
 };
 ```
 
@@ -140,10 +136,34 @@ And then it will give a result similar to this with our collections of money, ea
 
 ```
 {
-  default::Pound {owner: default::NPC {name: 'Jonathan Harker'}, pounds: 54, shillings: 100, pence: 256, total_pounds: 60.07n},
-  default::Pound {owner: default::NPC {name: 'Mina Murray'}, pounds: 360, shillings: 77, pence: 397, total_pounds: 365.50n},
-  default::Pound {owner: default::NPC {name: 'The innkeeper'}, pounds: 87, shillings: 36, pence: 23, total_pounds: 88.90n},
-  default::Pound {owner: default::PC {name: 'Emil Sinclair'}, pounds: 427, shillings: 19, pence: 88, total_pounds: 428.32n},
+  default::Pound {
+    owner: default::NPC {name: 'Jonathan Harker'},
+    pounds: 386,
+    shillings: 80,
+    pence: 184,
+    total_pounds: 390.77n,
+  },
+  default::Pound {
+    owner: default::NPC {name: 'Mina Murray'},
+    pounds: 385,
+    shillings: 57,
+    pence: 272,
+    total_pounds: 388.98n,
+  },
+  default::Pound {
+    owner: default::NPC {name: 'The innkeeper'},
+    pounds: 374,
+    shillings: 40,
+    pence: 187,
+    total_pounds: 376.78n,
+  },
+  default::Pound {
+    owner: default::PC {name: 'Emil Sinclair'},
+    pounds: 20,
+    shillings: 86,
+    pence: 1,
+    total_pounds: 24.30n,
+  },
 }
 ```
 
@@ -259,22 +279,22 @@ UNION (
 
 INSERT Sailor {
   name := 'The Captain',
-  rank := <Rank>Captain
+  rank := Rank.Captain
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := <Rank>FirstMate
+  rank := Rank.FirstMate
 };
 
 INSERT Sailor {
   name := 'The Second Mate',
-  rank := <Rank>SecondMate
+  rank := Rank.SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-  rank := <Rank>Cook
+  rank := Rank.Cook
 };
 
 INSERT Ship {
@@ -292,19 +312,19 @@ INSERT Ship {
   sailors := {
     (INSERT Sailor {
       name := 'The Captain',
-      rank := <Rank>Captain
+      rank := Rank.Captain
     }),
     (INSERT Sailor {
       name := 'The First Mate',
-      rank := <Rank>FirstMate
+      rank := Rank.FirstMate
     }),
     (INSERT Sailor {
       name := 'The Second Mate',
-      rank := <Rank>SecondMate
+      rank := Rank.SecondMate
     }),
     (INSERT Sailor {
       name := 'The Cook',
-      rank := <Rank>Cook
+      rank := Rank.Cook
     })
   },
   crew := (

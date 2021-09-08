@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     abstract type Person {
       property name -> str {
         constraint exclusive;
@@ -78,7 +77,7 @@ START MIGRATION TO {
    scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
     type Sailor extending Person {
-    #  property rank -> Rank;
+      property rank -> Rank;
     }
 
     type Ship {
@@ -114,7 +113,7 @@ INSERT City {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 INSERT Country {
@@ -133,8 +132,9 @@ INSERT Country {
   name := 'Slovakia'
 };
 
-INSERT OtherPlace {
-  name := 'Castle Dracula'
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
 };
 
 INSERT City {
@@ -153,13 +153,13 @@ INSERT NPC {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
 };
 
 INSERT Vampire {
@@ -179,11 +179,6 @@ INSERT Vampire {
    places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
 };
 
-INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
-};
-
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
     strength := 5
@@ -191,22 +186,22 @@ UPDATE Person FILTER .name = 'Jonathan Harker'
 
 INSERT Sailor {
   name := 'The Captain',
-  rank := <Rank>Captain
+  rank := Rank.Captain
 };
 
 INSERT Sailor {
   name := 'Petrofsky',
-  rank := <Rank>FirstMate
+  rank := Rank.FirstMate
 };
 
 INSERT Sailor {
   name := 'The First Mate',
-  rank := <Rank>SecondMate
+  rank := Rank.SecondMate
 };
 
 INSERT Sailor {
   name := 'The Cook',
-  rank := <Rank>Cook
+  rank := Rank.Cook
 };
 
 FOR n IN {1, 2, 3, 4, 5}

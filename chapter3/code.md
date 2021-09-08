@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     abstract type Person {
       required property name -> str;
       multi link places_visited -> Place;
@@ -35,7 +34,6 @@ START MIGRATION TO {
     type Country extending Place;
 
     scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
-
   }
 };
 
@@ -68,7 +66,7 @@ INSERT NPC {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 INSERT Country {

@@ -86,7 +86,7 @@ We can also use this to see the duration between events. EdgeDB has a `duration`
 SELECT to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
 ```
 
-This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 2000 6:10 in Korean Standard Time. The result is: `{631180800s}`.
+This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 2000 6:10 in Korean Standard Time. The result is: `{<duration>'175328:00:00'}`.
 
 Now let's try something similar with Jonathan in Castle Dracula again, trying to escape. It's May 12 at 10:35 am. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
 
@@ -94,7 +94,7 @@ Now let's try something similar with Jonathan in Castle Dracula again, trying to
 SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST') - to_datetime(2020, 5, 12, 6, 10, 0, 'UTC');
 ```
 
-The answer is 5100 seconds: `{5100s}`.
+The answer is 1 hour and 25 minutes: `{<duration>'1:25:00'}`.
 
 To make the query easier for us to read, we can also use the `WITH` keyword to create variables. We can then use the variables in `SELECT` below. We'll make one called `jonathan_wants_to_escape` and another called `mina_has_tea`, and subtract one from another to get a `duration`. With variable names it is now a lot clearer what we are trying to do:
 
@@ -105,11 +105,11 @@ WITH
 SELECT jonathan_wants_to_escape - mina_has_tea;
 ```
 
-The output is the same: `{5100s}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
+The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
 
 ## Casting to a duration
 
-Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `SELECT <duration>'2 hours`; will return `{7200s}`, and `SELECT <duration>'2 microseconds';` will return `{2µs}`.
+Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `SELECT <duration>'2 hours';` will return `{<duration>'2:00:00'}`, and `SELECT <duration>'2 microseconds';` will return `{<duration>'0:00:00.000002'}`.
 
 You can include multiple units as well. For example:
 
@@ -117,7 +117,7 @@ You can include multiple units as well. For example:
 SELECT <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 ```
 
-This will return `{21960.688999s}`.
+This will return `{<duration>'6:06:00.688999'}`.
 
 EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. So even this horrible input will work:
 
@@ -126,7 +126,7 @@ SELECT <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
   <duration>'10 microsecond 7 minutes %%%%%%% 10 seconds 5 hour';
 ```
 
-The result: `{-14344.99401s}`.
+The result: `{<duration>'-3:59:04.99401'}`.
 
 ## Required links
 
@@ -143,14 +143,16 @@ Now that it's required, we can't insert a `MinorVampire` with just a name. It wi
 ```edgeql
 INSERT MinorVampire {
   name := 'Woman 1',
-  master := (SELECT Vampire Filter .name = 'Count Dracula'),
+  master := assert_single(
+    (SELECT Vampire Filter .name = 'Count Dracula')
+  ),
 };
 ```
 
-This works because there is only one 'Count Dracula' (remember, `required link` is short for `required single link`). If there were more than one `Vampire`, we would have to add `LIMIT 1`. Without `LIMIT 1` we would get the following error:
+You need to put the query for getting Count Dracula in parentheses as you know from earlier examples. Then you need to put all that inside the `assert_single()` function. This function makes sure that there's no more that a single element in the set it is given. This is necessary because EdgeDB doesn't know that there is only one 'Count Dracula' and we need to provide only one Vampire as the master (remember, `required link` is short for `required single link`). If we tried this without the `assert_single()` function we would get the following error:
 
 ```
-error: possibly more than one element returned by an expression for a computable link 'master' declared as 'single'
+error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
 ```
 
 ## DESCRIBE to look inside types
@@ -161,13 +163,13 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 
 (Note though the word _explicit_ there: using DDL still results in a migration, just an _implicit_ one. In other words, a migration happens without calling it a migration. It's sort of a quick and dirty way to make changes but for the most part proper migration tools with SDL schema is the preferred way to go.)
 
-Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `Person` type looks like:
+Now back to `DESCRIBE TYPE` which gives the results in DDL. Here's what our `MinorVampire` type looks like:
 
 ```
 {
   'CREATE TYPE default::MinorVampire EXTENDING default::Person {
-    CREATE REQUIRED SINGLE LINK master -> default::Vampire;
-  };',
+    CREATE REQUIRED LINK master -> default::Vampire;
+};',
 }
 ```
 
@@ -180,36 +182,35 @@ The output is almost the same too, just the SDL version of the above. It's also 
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link master -> default::Vampire;
-  };',
+    required link master -> default::Vampire;
+};',
 }
 ```
 
 You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including from the types that it extends. Here's the output:
+The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including stuff from the types that it extends. Here's the output:
 
 ```
 {
-  'type default::MinorVampire extending default::Vampire {
+  'type default::MinorVampire extending default::Person {
     required single link __type__ -> schema::Type {
         readonly := true;
     };
     optional single link lover -> default::Person;
     required single link master -> default::Vampire;
     optional multi link places_visited -> default::Place;
-    optional single property age -> std::int16;
     required single property id -> std::uuid {
         readonly := true;
     };
     required single property name -> std::str;
-  };',
+};',
 }
 ```
 
-(Note: `AS TEXT` doesn't include constraints and annotations. To see those, add `VERBOSE` at the end: `DESCRIBE TYPE MinorVampire AS TEXT VERBOSE;`. You'll learn about annotations in Chapter 14.)
+(Note: `AS TEXT` doesn't include constraints and annotations. To see those, add `VERBOSE` at the end: `DESCRIBE TYPE MinorVampire AS TEXT VERBOSE`. You'll learn about annotations in Chapter 14.)
 
-The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover`, `age` and `places_visited` for these `MinorVampire`s.
+The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
 
 And for a _really_ long output, try typing `DESCRIBE SCHEMA` or `DESCRIBE MODULE default` (with `AS SDL` or `AS TEXT` if you want). You'll get an output showing the whole schema we've built so far.
 

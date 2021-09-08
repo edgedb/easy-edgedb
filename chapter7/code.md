@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     abstract type Person {
       required property name -> str {
         constraint exclusive;
@@ -58,7 +57,6 @@ START MIGRATION TO {
       property hour := .date[0:2];
       property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
     }
-
   }
 };
 
@@ -86,7 +84,7 @@ INSERT City {
 INSERT PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := <Transport>HorseDrawnCarriage,
+  transport := Transport.HorseDrawnCarriage,
 };
 
 INSERT Country {
@@ -105,8 +103,9 @@ INSERT Country {
   name := 'Slovakia'
 };
 
-INSERT OtherPlace {
-  name := 'Castle Dracula'
+INSERT Castle {
+    name := 'Castle Dracula',
+    doors := [6, 19, 10],
 };
 
 INSERT City {
@@ -125,13 +124,13 @@ INSERT NPC {
 
 INSERT NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker' LIMIT 1),
+  lover := assert_single((SELECT DETACHED NPC Filter .name = 'Jonathan Harker')),
   places_visited := (SELECT City FILTER .name = 'London'),
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+    lover := assert_single((SELECT DETACHED Person FILTER .name = 'Mina Murray'))
 };
 
 INSERT Vampire {
@@ -149,11 +148,6 @@ INSERT Vampire {
   }),
  },
    places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
-};
-
-INSERT Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
 };
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
