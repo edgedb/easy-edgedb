@@ -232,7 +232,7 @@ SET {
 
 UPDATE NPC FILTER .name = 'Lucy Westenra'
   SET {
-    lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
+    lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
 };
 
 UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
