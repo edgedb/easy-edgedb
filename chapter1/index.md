@@ -57,15 +57,17 @@ This is similar, just properties with strings. The book Dracula was published in
 
 ## Migration
 
-We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://edgedb.com/download). First we create a database with the `CREATE DATABASE` keyword and our name for it:
+We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://edgedb.com/download). First we create a ["project"](https://www.edgedb.com/docs/quickstart#initialize-a-project) that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
+
+Sometimes it's useful to create a whole new database to try something out. You can do that with the `CREATE DATABASE` keyword and our name for it:
 
 ```edgeql
 CREATE DATABASE dracula;
 ```
 
-Then we type `\c dracula` to connect to it.
+Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
 
-Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB:
+Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's [built-in tools](https://www.edgedb.com/docs/cli/edgedb_migration/index). However, we will use a [console shortcut](https://www.edgedb.com/docs/edgeql/ddl/migrations) instead:
 
 - First you start them with `START MIGRATION TO {}`
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
@@ -185,12 +187,16 @@ And because the characters must be 1 byte, only ASCII works for this type. So th
 ```edgeql-repl
 edgedb> SELECT b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
+  ┌─ query:1:8
+  │
+1 │ SELECT b'Bistrița';
+  │        ^ error
 ```
 
 Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the unique number for each item. It will look like this:
 
 ```
-{Object {id: d2af670c-f1d6-11ea-a30f-8b40bc5413e0}}
+{default::Person {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
 ```
 
 It is also what shows up when you use `SELECT` to select a type. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
@@ -203,9 +209,9 @@ This gives us three items:
 
 ```
 {
-  Object {id: d2b64e00-f1d6-11ea-a30f-1f161d0b15ae},
-  Object {id: d2c023b2-f1d6-11ea-a30f-e3069a47b57e},
-  Object {id: d37bc838-f1d6-11ea-a30f-afb031317264},
+  default::City {id: 4ba1074e-ff3f-11eb-aeb7-cf15feb714ef},
+  default::City {id: 4bab8188-ff3f-11eb-aeb7-f7b506bd047e},
+  default::City {id: 4bacf860-ff3f-11eb-aeb7-97025b4d95af},
 }
 ```
 
@@ -222,7 +228,7 @@ Once again, you don't need the comma after `modern_name` because it's at the end
 You will remember that one of our cities (Vienna) doesn't have anything for `modern_name`. But it still shows up as an "empty set", because every value in EdgeDB is a set of elements, even if there's nothing inside. Here is the result:
 
 ```
-{Object {modern_name: {}}, Object {modern_name: 'Budapest'}, Object {modern_name: 'Bistrița'}}
+{default::City {modern_name: {}}, default::City {modern_name: 'Budapest'}, default::City {modern_name: 'Bistrița'}}
 ```
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
@@ -240,9 +246,9 @@ This gives the output:
 
 ```
 {
-  Object {name: 'Vienna', modern_name: {}},
-  Object {name: 'Bistritz', modern_name: 'Bistrița'},
-  Object {name: 'Buda-Pesth', modern_name: 'Budapest'}
+  default::City {name: 'Munich', modern_name: {}},
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
 }
 ```
 
@@ -267,9 +273,9 @@ This prints:
 
 ```
 {
-  Object {name_in_dracula: 'Munich', name_today: {}},
-  Object {name_in_dracula: 'Buda-Pesth', name_today: 'Budapest'},
-  Object {name_in_dracula: 'Bistritz', name_today: 'Bistrița'},
+  default::City {name_in_dracula: 'Munich', name_today: {}},
+  default::City {name_in_dracula: 'Buda-Pesth', name_today: 'Budapest'},
+  default::City {name_in_dracula: 'Bistritz', name_today: 'Bistrița'},
 }
 ```
 
@@ -291,13 +297,26 @@ And here is the output:
 
 ```
 {
-  Object {name_in_dracula: 'Munich', name_today: {}, oh_and_by_the_way: 'This is a city in the book Dracula'},
-  Object {name_in_dracula: 'Buda-Pesth', name_today: 'Budapest', oh_and_by_the_way: 'This is a city in the book Dracula'},
-  Object {name_in_dracula: 'Bistritz', name_today: 'Bistrița', oh_and_by_the_way: 'This is a city in the book Dracula'},
+  default::City {
+    name_in_dracula: 'Munich',
+    name_today: {},
+    oh_and_by_the_way: 'This is a city in the book Dracula',
+  },
+  default::City {
+    name_in_dracula: 'Buda-Pesth',
+    name_today: 'Budapest',
+    oh_and_by_the_way: 'This is a city in the book Dracula',
+  },
+  default::City {
+    name_in_dracula: 'Bistritz',
+    name_today: 'Bistrița',
+    oh_and_by_the_way: 'This is a city in the book Dracula',
+  },
 }
 ```
 
-Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `SELECT 'Jonathan Harker' + 8;` it will simply refuse with an error: `QueryError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'`.
+Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `SELECT 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+`.
 
 On the other hand, it can use "type inference" to guess the type, and that is what it does here: it knows that we are creating a `str`. We will look at changing types and working with different types soon.
 
@@ -331,7 +350,7 @@ SELECT Person {
 };
 ```
 
-Here is the output: `{Object {name: 'Jonathan Harker', places_visited: {}}}`
+Here is the output: `{default::Person {name: 'Jonathan Harker', places_visited: {}}}`
 
 But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
 
@@ -354,14 +373,16 @@ SELECT Person {
 Here is the output:
 
 ```
-  Object {
+{
+  default::Person {
     name: 'Jonathan Harker',
     places_visited: {
-      Object {id: 5ba2c9b2-f64d-11ea-acc7-d3a96742e345},
-      Object {id: 5bbb2368-f64d-11ea-acc7-ffb002eabe1a},
-      Object {id: 5bc2bba0-f64d-11ea-acc7-8b468bbfae39},
+      default::City {id: 4ba1074e-ff3f-11eb-aeb7-cf15feb714ef},
+      default::City {id: 4bab8188-ff3f-11eb-aeb7-f7b506bd047e},
+      default::City {id: 4bacf860-ff3f-11eb-aeb7-97025b4d95af},
     },
   },
+}
 ```
 
 Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
@@ -378,10 +399,16 @@ SELECT Person {
 Success! Now we get the output we wanted:
 
 ```
-  Object {
+{
+  default::Person {
     name: 'Jonathan Harker',
-    places_visited: {Object {name: 'Munich'}, Object {name: 'Buda-Pesth'}, Object {name: 'Bistritz'}},
+    places_visited: {
+      default::City {name: 'Munich'},
+      default::City {name: 'Buda-Pesth'},
+      default::City {name: 'Bistritz'},
+    },
   },
+}
 ```
 
 Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `FILTER`, which we will learn to use in the next chapter.

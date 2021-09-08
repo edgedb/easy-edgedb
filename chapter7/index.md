@@ -146,7 +146,7 @@ The other example is with `count()`, which also has a cast to a `<str>`:
 SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 6 more places than castles'}`.
+It prints: `{'There are 8 more places than castles'}`.
 
 In a few chapters we will learn how to create our own functions to make queries shorter.
 
@@ -157,11 +157,11 @@ Imagine we need to look up `City` types all the time, with this sort of query:
 ```edgeql
 SELECT City {
   name,
-  population
-} FILTER .name ILIKE '%a%' AND len(.name) > 5 AND .population > 6000;
+  modern_name
+} FILTER .name ILIKE '%i%' AND EXISTS (.modern_name);
 ```
 
-This works fine, returning one city: `{Object {name: 'Buda-Pesth', population: 402706}}`.
+This works fine, returning one city: `{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}`.
 
 But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again.
 
@@ -189,36 +189,33 @@ SELECT City {
 } FILTER .name = <str>$name;
 ```
 
-When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{Object {name: 'London'}}`
+When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{default::City {name: 'London'}}`
 
-Now let's take that to make a much more complicated (and useful) query, using three parameters. We'll call them `$name`, `$population`, and `$length`. Don't forget to cast them all:
+Now let's take that to make a much more complicated (and useful) query, using three parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
 
 ```edgeql
 SELECT City {
   name,
-  population,
+  modern_name
 } FILTER
     .name ILIKE '%' ++ <str>$name ++ '%'
   AND
-    .population > <int64>$population
-  AND
-    <int64>len(.name) > <int64>$length;
+    EXISTS (.modern_name) = <bool>$has_modern_name;
 ```
 
 Since there are three of them, EdgeDB will ask us to input three values. Here's one example of what it looks like:
 
 ```
-Parameter <str>$name: u
-Parameter <int64>$population: 2000
-Parameter <int64>$length: 5
+Parameter <str>$name: b
+Parameter <bool>$has_modern_name: true
 ```
 
-So that will give all `City` types with u in the name, population of more than 2000, and a name longer than 5 characters. The result:
+So that will give all `City` types with "b" in the name and that have a different modern name. The result:
 
 ```
 {
-  Object {name: 'Buda-Pesth', population: 402706},
-  Object {name: 'Munich', population: 230023},
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
 }
 ```
 

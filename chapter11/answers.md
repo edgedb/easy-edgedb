@@ -27,8 +27,8 @@ Let's call the function `get_two()`. It could look like this:
 ```sdl
 function get_two(one: str, two: str) -> SET OF Person
   using (
-    WITH person_1 := (SELECT Person FILTER .name = one LIMIT 1),
-         person_2 := (SELECT Person FILTER .name = two LIMIT 1),
+    WITH person_1 := (SELECT Person FILTER .name = one),
+         person_2 := (SELECT Person FILTER .name = two),
     SELECT {person_1, person_2}
   );
 ```
@@ -46,13 +46,13 @@ Here's the output:
 
 ```
 {
-  Object {name: 'John Seward', slaves: {}},
-  Object {
+  default::NPC {name: 'John Seward', slaves: {}},
+  default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      Object {name: 'Woman 1'},
-      Object {name: 'Woman 2'},
-      Object {name: 'Woman 3'},
+      default::MinorVampire {name: 'Woman 1'},
+      default::MinorVampire {name: 'Woman 2'},
+      default::MinorVampire {name: 'Woman 3'},
     },
   },
 }

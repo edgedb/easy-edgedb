@@ -58,7 +58,7 @@ So let's insert two book excerpts. The strings in these entries are very long (p
 ```edgeql
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
-  author := (SELECT Person FILTER .name = 'John Seward' LIMIT 1),
+  author := assert_single((SELECT Person FILTER .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 ```
@@ -66,7 +66,7 @@ INSERT BookExcerpt {
 ```edgeql
 INSERT BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
-  author := (SELECT Person FILTER .name = 'Jonathan Harker' LIMIT 1),
+  author := assert_single((SELECT Person FILTER .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 ```
@@ -89,8 +89,8 @@ Here's the JSON output with just a small part of the excerpts:
 
 ```
 {
-  "{\"date\": \"1887-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward\'s Diary.\\n 1 October, 4 a.m... -- Just as we were about to leave the house...\\\"\"}",
-  "{\"date\": \"1887-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search...\"}",
+  "{\"date\": \"1887-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward's Diary.\\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\\\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\\\"\"}",
+  "{\"date\": \"1887-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.\"}",
 }
 ```
 
@@ -106,7 +106,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' IF .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
 }
 ```
 
@@ -135,7 +135,7 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
 
 ```
 {
-  Object {
+  default::BookExcerpt {
     excerpt: '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
     length: '182 characters',
     the_date: '1887-10-01',
@@ -163,7 +163,6 @@ Some other functions for strings are:
 
 ```edgeql-repl
 edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
-
 {
   [
     'Oh,',
@@ -199,7 +198,7 @@ Now the `n`s are all gone:
   default::MinorVampire {names: ['Woma', ' 1']},
   default::MinorVampire {names: ['Woma', ' 2']},
   default::MinorVampire {names: ['Woma', ' 3']},
-  default::MinorVampire {names: ['Lucy Weste', 'ra']},
+  default::MinorVampire {names: ['Lucy']},
 }
 ```
 
@@ -216,7 +215,7 @@ let me go!', '\n');
 will split it by line and give the following array:
 
 ```
-{['Oh, hear me! ', 'hear me! ', 'Let me go! ', 'let me go! ', 'let me go!']}
+{['Oh, hear me!', 'hear me!', 'Let me go!', 'let me go!', 'let me go!']}
 ```
 
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:

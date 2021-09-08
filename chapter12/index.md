@@ -23,13 +23,10 @@ SELECT <int16>round(random() * 5);
 So now we'll use this to update our `Person` types and give them all a random strength.
 
 ```edgeql
-WITH random_5 := (SELECT <int16>round(random() * 5))
-# WITH isn't necessary - just making the query prettier
-
 UPDATE Person
-FILTER NOT EXISTS .strength
-SET {
-  strength := random_5
+  FILTER NOT EXISTS .strength
+  SET {
+    strength := <int16>round(random() * 5)
 };
 ```
 
@@ -56,7 +53,7 @@ So now let's overload the `fight()` function. Right now it only works for one `P
 ```sdl
 function fight(names: str, one: int16, two: Person) -> str
   using (
-    SELECT names ++ ' win!' IF one > two.strength ELSE two.name ++ ' wins!'
+    (names ++ ' win!') IF one > two.strength ELSE (two.name ++ ' wins!')
   );
 ```
 
@@ -125,7 +122,7 @@ Here is a simple one that tells us if a `Person` type has visited a `Place` or n
 ```sdl
 function visited(person: str, city: str) -> bool
   using (
-    WITH person := (SELECT Person FILTER .name = person LIMIT 1),
+    WITH person := (SELECT Person FILTER .name = person),
     SELECT city IN person.places_visited.name
   );
 ```
@@ -279,7 +276,7 @@ Then we'll get this result:
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
-instead of something like 'Buda-Peth, Bistritz, Munich'.
+instead of something like 'Buda-Pesth, Bistritz, Munich'.
 
 Let's experiment some more while introducing two new functions, called `array_agg` and `array_join`. Here's what they do:
 
@@ -313,7 +310,7 @@ SELECT both_places.name;
 
 Finally! The output is `{'Buda-Pesth', 'Bistritz', 'Munich'}`
 
-Now with this more robust query we can use it on anything and don't need to worry about getting {} if we choose a letter like x. Let's look at every place that contains k or e:
+Now with this more robust query we can use it on anything and don't need to worry about getting `{}` if we choose a letter like x. Let's look at every place that contains k or e:
 
 ```edgeql
 WITH has_k := (SELECT Place FILTER .name ILIKE '%k%'),
@@ -339,11 +336,7 @@ SELECT cities1 ?= cities2;
 and get the output
 
 ```
-{
-  false,
-  false,
-  false
-}
+{false, false, false}
 ```
 
 instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:

@@ -43,7 +43,9 @@ Note the first line where we create a variable called `lucy`. We then use that t
 Here's the insert:
 
 ```edgeql
-WITH lucy := (SELECT Person FILTER .name = 'Lucy Westenra' LIMIT 1)
+WITH lucy := assert_single(
+    (SELECT Person FILTER .name = 'Lucy Westenra')
+)
 INSERT Vampire {
   name := 'Count Dracula',
   age := 800,
@@ -58,7 +60,8 @@ INSERT Vampire {
       name := 'Woman 3',
     }),
     (INSERT MinorVampire {
-      name := lucy.name,
+      # We need to give a new name, so as not to clash with former_self.
+      name := 'Lucy',
       former_self := lucy,
       first_appearance := lucy.last_appearance,
       strength := lucy.strength + 5,
@@ -82,9 +85,9 @@ This gives us:
 
 ```
 {
-  Object {
-    name: 'Lucy Westenra',
-    strength: 7,
+  default::MinorVampire {
+    name: 'Lucy',
+    strength: 5,
     first_appearance: <cal::local_date>'1887-09-20',
   },
 }
@@ -97,7 +100,7 @@ Other filters such as `FILTER .name IN Person.name AND .first_appearance IN Pers
 Another operator related to types is `|`, which is used to combine them (similar to writing `OR`). This query for example pulling up all `Person` types will return true:
 
 ```
-SELECT (SELECT Person FILTER .name = 'Lucy Westenra') IS NPC | MinorVampire | Vampire;
+SELECT (SELECT Person FILTER .name LIKE 'Lucy%') IS NPC | MinorVampire | Vampire;
 ```
 
 It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
@@ -153,10 +156,10 @@ Now let's look at some tips for making queries.
 `DISTINCT` is easy: just change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
 
 ```
-{5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 7, 5}
+{5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 3, 3}
 ```
 
-Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 4, 5, 7, 10}`.
+Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 3, 4, 5, 10}`.
 
 `DISTINCT` works by item and doesn't unpack, so `SELECT DISTINCT {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
 
@@ -174,17 +177,16 @@ It shows us all the types attached to `Person` so far:
 
 ```
 {
-  Object {name: 'default::Person'},
-  Object {name: 'default::MinorVampire'},
-  Object {name: 'default::Vampire'},
-  Object {name: 'default::NPC'},
-  Object {name: 'default::PC'},
-  Object {name: 'default::Crewman'},
-  Object {name: 'default::Sailor'},
+  schema::ObjectType {name: 'default::NPC'},
+  schema::ObjectType {name: 'default::Crewman'},
+  schema::ObjectType {name: 'default::MinorVampire'},
+  schema::ObjectType {name: 'default::Vampire'},
+  schema::ObjectType {name: 'default::PC'},
+  schema::ObjectType {name: 'default::Sailor'},
 }
 ```
 
-Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy Westenra`:
+Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy`:
 
 ```edgeql
 SELECT Person {
@@ -192,37 +194,30 @@ SELECT Person {
     name
   },
   name
-} FILTER .name = 'Lucy Westenra';
+} FILTER .name LIKE 'Lucy%';
 ```
 
 This shows us the objects that match, and of course they are `NPC` and `MinorVampire`.
 
 ```
 {
-  Object {__type__: Object {name: 'default::NPC'}, name: 'Lucy Westenra'},
-  Object {__type__: Object {name: 'default::MinorVampire'}, name: 'Lucy Westenra'},
+  default::NPC {__type__: schema::ObjectType {name: 'default::NPC'}, name: 'Lucy Westenra'},
+  default::MinorVampire {__type__: schema::ObjectType {name: 'default::MinorVampire'}, name: 'Lucy'},
 }
 ```
 
-But there is a setting you can use to always see the type when you make a query: just type `\set introspect-types on`. Once you do that, you'll always see the type name instead of just `Object`. Now even a simple search like this will give us the type:
-
-```edgeql
-SELECT Person {
-  name
-} FILTER .name = 'Lucy Westenra';
-```
-
-Here's the output:
+Using `__type__` to display type information is useful when the results don't include this information, for example, when the results are in JSON format. There is a setting you can use to switch format to JSON: just type `\set output-format json-pretty`. If you do that and repeat the previous query, you'll get:
 
 ```
-{default::NPC {name: 'Lucy Westenra'}, default::MinorVampire {name: 'Lucy Westenra'}}
+{"__type__": {"name": "default::NPC"}, "name": "Lucy Westenra"}
+{"__type__": {"name": "default::MinorVampire"}, "name": "Lucy"}
 ```
 
-Because it's so convenient, from now on this book will show results as given with `\set introspect-types on`.
+To restore the default format type: `\set output-format default`. Because it's so convenient, this book will show results as given with the default format options.
 
 ## Being introspective
 
-The word `introspect` we just used in `\set introspect-types on` is also its own keyword: `INTROSPECT`. Every type has the following fields that we can access: `name`, `properties`, `links` and `target`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all four. Here are the properties and links of `Ship` again so we don't forget:
+The keyword `INTROSPECT` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all four. Here are the properties and links of `Ship` again so we don't forget:
 
 ```sdl
 type Ship {
@@ -238,7 +233,7 @@ First, here is the simplest `INTROSPECT` query:
 SELECT (INTROSPECT Ship);
 ```
 
-This query isn't very useful to us but it does show how it works: it returns `{'default::Ship'}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
+This query isn't very useful to us but it does show how it works: it returns `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
 
 Now let's put `name`, `properties` and `links` inside the introspection:
 
@@ -257,13 +252,13 @@ This gives us:
   schema::ObjectType {
     name: 'default::Ship',
     properties: {
-      schema::Property {id: 4332bd76-0134-11eb-b20a-777e9cc80030},
-      schema::Property {id: 43379841-0134-11eb-a427-dd28c7eae0ce},
+      schema::Property {id: 28e76c59-0209-11ec-adaa-85e1ecb99e47},
+      schema::Property {id: 28e94e33-0209-11ec-9818-fb533a2c495f},
     },
     links: {
-      schema::Link {id: 4339bd5f-0134-11eb-bdca-21c31be0f932},
-      schema::Link {id: 43360bf2-0134-11eb-b89c-a1211cb5d40e},
-      schema::Link {id: 43383b6f-0134-11eb-86db-17f19f35ac2f},
+      schema::Link {id: 28e87ca8-0209-11ec-9ba8-71ef0b23db38},
+      schema::Link {id: 28e8ee51-0209-11ec-b47e-8fd9b07debd3},
+      schema::Link {id: 29176353-0209-11ec-a6c5-797987ef08b5},
     },
   },
 }
@@ -308,8 +303,8 @@ With all that together, we get something readable and useful. The output looks l
       schema::Property {name: 'name', target: schema::ScalarType {name: 'std::str'}},
     },
     links: {
-      schema::Link {name: 'crew', target: schema::ObjectType {name: 'default::Crewman'}},
       schema::Link {name: '__type__', target: schema::ObjectType {name: 'schema::Type'}},
+      schema::Link {name: 'crew', target: schema::ObjectType {name: 'default::Crewman'}},
       schema::Link {name: 'sailors', target: schema::ObjectType {name: 'default::Sailor'}},
     },
   },

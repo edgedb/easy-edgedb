@@ -13,7 +13,7 @@ If you're curious about the ending to this scene, just [check out the book on Gu
 We are sure that the vampire women have been destroyed, however, so we can do one final change by giving them a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. But don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
 ```edgeql
-UPDATE MinorVampire FILTER .name != 'Lucy Westenra'
+UPDATE MinorVampire FILTER .name != 'Lucy'
 SET {
   last_appearance := <cal::local_date>'1887-11-05'
 };
@@ -29,14 +29,14 @@ Now that you've made it through 20 chapters, you should have a good understandin
 
 The first part to a schema is always the command to start the migration:
 
-- `START MIGRATION TO {};`: This is how a schema migration starts. Everything goes inside `{}` curly brackets and ends with a `;` semicolon.
+- We've used `START MIGRATION TO {};` commands, but the [`edgedb migration`](https://www.edgedb.com/docs/cli/edgedb_migration/index) tools provide better control in real projects.
 - `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`).
 
 Here's an example with `Person`, which starts like this and shows us the module it's located in:
 
 `abstract type default::Person`
 
-For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`, or even modules inside modules like `type characters::PC::Fighter` and `type characters::NPC::Barkeeper`.
+For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`.
 
 Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game
 
@@ -79,17 +79,19 @@ abstract type Person {
 }
 ```
 
-`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could give `Person` an `id` property and make that exclusive instead.
+`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are [computables](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are [computed properties](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
-Every property has a type (like `str`, `bigint`, etc.). Computables have them too but we don't need to tell EdgeDB the type because the computable itself makes the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called [concatenation](https://www.edgedb.com/docs/edgeql/funcops/string#operator::STRPLUS).
+Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called [concatenation](https://www.edgedb.com/docs/edgeql/funcops/string#operator::STRPLUS).
 
-The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link` and you will have to add `LIMIT 1` when creating a link or it will give this error:
+The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
-error: possibly more than one element returned by an expression for a computable link 'former_self' declared as 'single'
+error: possibly more than one element returned by an expression for a computed link 'former_self' declared as 'single'
 ```
+
+This could be what you want for `lover`, but it wouldn't work well for `places_visited`.
 
 For `first_appearance` and `last_appearance` we use [`cal::local_date`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::cal::local_date) because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant.
 
@@ -98,7 +100,7 @@ So for databases with users around the world, `datetime` is usually the best cho
 ```edgeql-repl
 edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
-{<datetime>'2020-10-12T06:35:05.500000000Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
+{<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
 
 A similar abstract type to `HasNameAndCoffins` is this one:
@@ -148,7 +150,7 @@ SELECT Person {
 } FILTER EXISTS .vampire_name;
 ```
 
-In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy Westenra'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
+In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
 
 Our two enums were used for the `PC` and `Sailor` types:
 
@@ -172,9 +174,9 @@ The enum `Transport` never really got used, and needs some more transportation t
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
 
-- by casting it into a `<cal::local_time>` to make the `local_time` property,
+- by casting it into a [`cal::local_time`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::cal::local_time) to make the `local_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
-- by another computable called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
+- by another computed property called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
 ```sdl
 type Visit {
@@ -263,7 +265,7 @@ type Lord extending Person {
 }
 ```
 
-This will depend on if we want to create `Lord` types with names just as a single string in `.name`, or by using `.first`, `.last`, `.title` etc. with a computable to form the full name.
+This will depend on if we want to create `Lord` types with names just as a single string in `.name`, or by using `.first`, `.last`, `.title` etc. with a computed property to form the full name.
 
 Our next types extending `Place` including `Country` and `Region` were looked at just last chapter, so we won't review them here. But `Castle` is a bit unique:
 
@@ -326,7 +328,7 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ 'E' IF .east = true else 'W';
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
 }
 ```
 
@@ -369,7 +371,7 @@ How about object types? [They look like this](https://www.edgedb.com/docs/edgeql
 
 This should be familiar to you: you need `type TypeName` to start. You can add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
 
-Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/sdl/props) and include three types: concrete, computable, and abstract. We're most familiar with concrete so let's take a look at that:
+Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/sdl/props) and include three types: concrete, computed, and abstract. We're most familiar with concrete so let's take a look at that:
 
 ```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
@@ -388,7 +390,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-DDL is something you'll see frequently in the documentation. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need.
+DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need.
 
 SDL: `function says_hi() -> str using('hi');`
 
@@ -396,41 +398,7 @@ DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
 
 And even the capitalization doesn't matter.
 
-But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. This could still be worth it if you want to make small changes or quick types though. For example, here is a Cat type that just has a name:
-
-```sdl
-type Cat {
-  property name -> str;
-  property sound := 'meow';
-};
-```
-
-When you enter `DESCRIBE TYPE Cat as SDL`, it will show something similar:
-
-```sdl
-type default::Cat {
-  optional single property cat_name -> std::str;
-};
-```
-
-It's the same declaration but includes some information we didn't need to specify:
-
-- That it's in the module default
-- That it's optional, as opposed to required,
-- That it's a single property, as opposed to multi
-
-So what does it look like as DDL? `DESCRIBE TYPE Cat` will show us:
-
-```edgeql
-CREATE TYPE default::Cat {
-  CREATE OPTIONAL SINGLE PROPERTY name -> std::str;
-};
-```
-
-Not as bad as you might have thought! The two general rules for experimenting a bit with DDL are:
-
-- You can get a lot done just by adding `CREATE` to every line, `ALTER` to change things and `DROP` to delete them,
-- Using `DESCRIBE TYPE` and `DESCRIBE TYPE AS SDL` are very useful to compare the two. If you do this with a type you created and are familiar with, you'll be able to use it as a stepping stone if you are curious about DDL.
+But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. Using [`edgedb migration`](https://www.edgedb.com/docs/cli/edgedb_migration/index) tools makes it possible to work with the schema using only SDL.
 
 ## EdgeDB lexical structure
 

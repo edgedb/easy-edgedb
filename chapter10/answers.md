@@ -29,7 +29,7 @@ ERROR: QueryError: operator 'UNION' cannot be applied to operands of type 'tuple
 A cast to `<str>{}` is an option, but we could do something more robust. First change the `{}` to an empty string, and then specify that `last_appearance` has to have a length of 10, and otherwise make it `<cal::local_date>{}`:
 
 ```edgeql
-FOR person IN {('Draula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', '')}
+FOR person IN {('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', '')}
 UNION(
   INSERT NPC {
     name := person.0,
@@ -62,7 +62,7 @@ No problem though. One way is to filter out anything with a length under 1:
 ```edgeql
 SELECT Person {
   name
-} FILTER len(.name) > 1 ORDER BY .name[-1];
+} FILTER len(.name) > 0 ORDER BY .name[-1];
 ```
 
 Or if you don't want to filter it out, you could just add a dummy character for anything without a length of at least 1:

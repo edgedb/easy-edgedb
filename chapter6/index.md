@@ -47,7 +47,9 @@ So back to Jonathan: in our database, he's been to four cities, one country, and
 ```edgeql
 INSERT NPC {
   name := 'Jonathan Harker',
-  places_visited := (SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+  places_visited := (
+    SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+  )
 };
 ```
 
@@ -66,9 +68,7 @@ SET {
 You'll know that it succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
 
 ```
-{
-  Object { id: <uuid>"6f436006-3f65-11eb-b6de-a3e7cc8efd4f" }
-}
+{default::NPC {id: ca4e21c8-014f-11ec-9658-7f88bf45dae6}}
 ```
 
 And if we had written something like `FILTER .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `FILTER .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `FILTER` there.
@@ -91,11 +91,13 @@ Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her be
 ```edgeql
 UPDATE Person FILTER .name = 'Jonathan Harker'
 SET {
-  lover := (SELECT Person FILTER .name = 'Mina Murray' LIMIT 1)
+  lover := assert_single(
+    (SELECT DETACHED Person FILTER .name = 'Mina Murray')
+  )
 };
 ```
 
-Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
+We need to use `DETACHED Person` here for the same reason we needed it when using `INSERT NPC` to create Mina Murray with her lover. We're using `UPDATE` on one `Person` and we also need to `SELECT` another `Person` as lover. Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
 
 Of course, if you use `UPDATE` without `FILTER` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
@@ -120,9 +122,9 @@ This prints:
 
 ```
 {
-  'A character from the book: Jonathan Harker, who is not Count Dracula',
   'A character from the book: The innkeeper, who is not Count Dracula',
   'A character from the book: Mina Murray, who is not Count Dracula',
+  'A character from the book: Jonathan Harker, who is not Count Dracula',
 }
 ```
 
@@ -143,10 +145,10 @@ Then we can `INSERT` the `MinorVampire` type at the same time as we insert the i
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
 ```
-edgedb> delete MinorVampire;
+edgedb> DELETE MinorVampire;
 ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
   Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
-edgedb> delete Vampire;
+edgedb> DELETE Vampire;
 ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
@@ -194,10 +196,16 @@ SELECT Vampire {
 We have a nice output that shows them all together:
 
 ```
-Object {
-  name: 'Count Dracula',
-  slaves: {Object {name: 'Woman 1'}, Object {name: 'Woman 2'}, Object {name: 'Woman 3'}},
-},
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    slaves: {
+      default::MinorVampire {name: 'Woman 1'},
+      default::MinorVampire {name: 'Woman 2'},
+      default::MinorVampire {name: 'Woman 3'},
+    },
+  },
+}
 ```
 
 This might make you wonder: what if we do want two-way links? There's actually a very convenient way to do it (it's called a **backward link**), but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
@@ -236,7 +244,7 @@ This is fine because `<json>` turns it into a JSON string, and `cal::local_date`
 SELECT <int64><json>'18870503';
 ```
 
-The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number, null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
+The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number or null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
 
 ```edgeql
 SELECT <int64><str><json>'18870503';

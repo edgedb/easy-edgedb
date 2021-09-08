@@ -27,9 +27,9 @@ Since `description` is already an option for annotations we wouldn't need to do 
 After that, we add the annotations to Goldmark and it's done:
 
 ```sdl
-type default::Goldmark extending Currency {
-  annotation std::description := 'One Mark = 100 Pfennig';
-  annotation default::note := 'Coin types: 1 Pfennig, 2 Pfennig, 5 Pfennig, 10 Pfennig, 20 Pfennig, 25 Pfennig';
+type Goldmark extending Currency {
+  annotation description := 'One Mark = 100 Pfennig';
+  annotation note := 'Coin types: 1 Pfennig, 2 Pfennig, 5 Pfennig, 10 Pfennig, 20 Pfennig, 25 Pfennig';
   overloaded required property major {
     default := 'Mark';
   };
@@ -55,10 +55,10 @@ WITH new_vampires := {
 INSERT Vampire {
   name := 'Godbrand',
   slaves := (
-    FOR new_vampire IN new_vampires
+    FOR new_vampire IN {new_vampires}
     UNION (
       INSERT MinorVampire {
-        name := new_vampire.0,
+        name := 'Undead' ++ new_vampire.0,
         first_appearance := <cal::local_date>new_vampire.2,
         former_self := (
           INSERT NPC {

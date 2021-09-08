@@ -2,7 +2,6 @@
 # Schema:
 START MIGRATION TO {
   module default {
-  
     type Person {
       required property name -> str;
       multi link places_visited -> City;
