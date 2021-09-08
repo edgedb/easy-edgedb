@@ -144,7 +144,7 @@ Now that it's required, we can't insert a `MinorVampire` with just a name. It wi
 INSERT MinorVampire {
   name := 'Woman 1',
   master := assert_single(
-    (SELECT Vampire Filter .name = 'Count Dracula')
+    (SELECT Vampire FILTER .name = 'Count Dracula')
   ),
 };
 ```
@@ -189,7 +189,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 
 You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including stuff from the types that it extends. Here's the output:
+- The third method is `DESCRIBE TYPE MinorVampire AS TEXT`. This is what we want, because it shows everything inside the type, including stuff from the types that it extends. Here's the output:
 
 ```
 {

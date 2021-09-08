@@ -33,7 +33,7 @@ SELECT (
   name := NPC.name,
   strength := NPC.strength,
   city_populations := (NPC.places_visited[IS City].name, NPC.places_visited[IS City].population),
-  age := NPC.age if EXISTS NPC.age else 0
+  age := NPC.age IF EXISTS NPC.age ELSE 0
 );
 ```
 

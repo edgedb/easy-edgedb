@@ -74,7 +74,7 @@ Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and
 
 ```edgeql
 INSERT Pound {
-  owner := (SELECT Person filter .name = 'Count Dracula'),
+  owner := (SELECT Person FILTER .name = 'Count Dracula'),
   major_amount := 2500,
   minor_amount := 50,
   sub_minor_amount := 200
@@ -184,7 +184,7 @@ type Dollar {
 The `total_money` type, by the way, will become a `float64` because of the `/ 100` part. We can confirm this with a quick query:
 
 ```edgeql
-SELECT (100 + (55 / 100)) is float64;
+SELECT (100 + (55 / 100)) IS float64;
 ```
 
 The output: `{true}`.

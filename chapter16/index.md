@@ -106,7 +106,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
 }
 ```
 
@@ -149,7 +149,7 @@ Another way to make `the_date` is with the [to_str](https://www.edgedb.com/docs/
 select BookExcerpt {
   excerpt,
   length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT to_str(.date)), #only this part is different
+  the_date := (SELECT to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
 } FILTER contains(str_lower(.excerpt), 'mina');
 ```
 
@@ -225,7 +225,7 @@ edgedb> SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-The function signature is `std::re_match(pattern: str, string: str) -> array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
+The function signature is `std::re_match_all(pattern: str, string: str) -> SET OF array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
 
 - start with a `T` or a `t`,
 - then have an `o`,

@@ -303,7 +303,7 @@ The best way is actually the easiest: just `UNION` the sets.
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER Place.name ILIKE 'm%'),
+     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
      both_places := b_places UNION m_places,
 SELECT both_places.name;
 ```

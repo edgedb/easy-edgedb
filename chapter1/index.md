@@ -364,7 +364,7 @@ INSERT Person {
 We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
 
 ```edgeql
-select Person {
+SELECT Person {
   name,
   places_visited
 };

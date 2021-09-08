@@ -62,7 +62,7 @@ If we want, we can now make a quick function to test whether a vampire can enter
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := assert_single(
-        (SELECT Person filter .name = person_name)
+        (SELECT Person FILTER .name = person_name)
     )
     SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
   );
@@ -92,7 +92,7 @@ So those are some ideas for how to set up your functions depending on how you th
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
 ```edgeql
-UPDATE City filter .name = 'London'
+UPDATE City FILTER .name = 'London'
 SET {
   coffins := 21
 };
@@ -101,7 +101,7 @@ SET {
 Now we can finally call up our function and see if it works:
 
 ```edgeql
-SELECT can_enter('Count Dracula', (SELECT City filter .name = 'London'));
+SELECT can_enter('Count Dracula', (SELECT City FILTER .name = 'London'));
 ```
 
 We get `{'Count Dracula can enter.'}`.
@@ -248,7 +248,7 @@ type Lord extending Person {
 
 ## Links in two directions
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
+Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
 
 (Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a reverse lookup, but this is how to do it)
 

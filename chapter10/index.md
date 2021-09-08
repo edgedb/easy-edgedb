@@ -122,7 +122,7 @@ In the above example we could easily just cast the last string into an integer a
 To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```edgeql
-FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+FOR data IN {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
 UNION (
   UPDATE City FILTER .name = data.0
   SET {
@@ -304,7 +304,7 @@ INSERT NPC {
 Now we can make use of these properties to liven up our conversation engine in the game. For example:
 
 ```edgeql
-WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
+WITH helsing := (SELECT NPC FILTER .name ILIKE '%helsing%')
 SELECT (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
@@ -336,7 +336,7 @@ Besides `\n` and `\t` there are quite a few other escape characters - you can se
 If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
 ```edgeql
-WITH helsing := (SELECT NPC filter .name ILIKE '%helsing%')
+WITH helsing := (SELECT NPC FILTER .name ILIKE '%helsing%')
 SELECT (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',

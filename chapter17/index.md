@@ -63,7 +63,7 @@ Renfield is no longer alive, so we need to use `UPDATE` to give him a `last_appe
 
 ```edgeql
 SELECT ( # Put the whole update inside
-  UPDATE NPC filter .name = 'Renfield'
+  UPDATE NPC FILTER .name = 'Renfield'
   SET {
     last_appearance := <cal::local_date>'1887-10-03'
   }
@@ -203,7 +203,7 @@ Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
   name := 'Gospodin ' ++ .name,
-  current_location := (SELECT Place filter .name = 'Bulgaria'),
+  current_location := (SELECT Place FILTER .name = 'Bulgaria'),
 };
 ```
 
