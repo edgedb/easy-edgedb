@@ -177,12 +177,15 @@ START MIGRATION TO {
 
     function fight(one: Person, two: Person) -> str
       using (
-        (one.name ++ ' wins!') IF one.strength > two.strength ELSE (two.name ++ ' wins!')
+        one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
       );
 
-    function fight(names: str, one: int16, two: Person) -> str
+    function fight(names: str, one: int16, two: str) -> str
       using (
-        (names ++ ' win!') IF one > two.strength ELSE (two.name ++ ' wins!')
+        WITH opponent := assert_single((SELECT Person FILTER .name = two))
+        SELECT
+            names ++ ' win!' IF one > opponent.strength ELSE
+            two ++ ' wins!'
       );
 
     function visited(person: str, city: str) -> bool

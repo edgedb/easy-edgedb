@@ -12,7 +12,7 @@ tags: Aliases, Named Tuples
 
 ## Named tuples
 
-Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, Person)` as input. Let's give it Dracula and Renfield:
+Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, int16, str)` as input. Let's give it Dracula and Renfield:
 
 ```edgeql
 WITH
@@ -309,7 +309,8 @@ So let's give this a try. We'll pretend that we are testing out our game engine.
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    SELECT one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+    one.name ++ ' wins!' IF one.strength > two.strength ELSE
+    two.name ++ ' wins!'
   );
 ```
 
@@ -318,9 +319,9 @@ But for debugging purposes it would be nice to have some more info. Let's create
 ```edgeql
 CREATE FUNCTION fight_2(one: Person, two: Person) -> str
   USING (
-    SELECT one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!'
-      IF one.strength > two.strength
-      ELSE one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
+    one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!'
+    IF one.strength > two.strength ELSE
+    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
   );
 ```
 
