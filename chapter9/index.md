@@ -298,7 +298,7 @@ Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to updat
 ```edgeql
 UPDATE NPC FILTER .name = 'Lucy Westenra'
 SET {
-  lover := (SELECT NPC FILTER .name = 'Arthur Holmwood'),
+  lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
 };
 ```
 
