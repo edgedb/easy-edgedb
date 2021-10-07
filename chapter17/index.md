@@ -259,11 +259,11 @@ And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: w
 }
 ```
 
-The [documentation on aliases](https://www.edgedb.com/docs/cheatsheet/aliases/) mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
+The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
 
 ## Creating new names for types in a query (local expression aliases)
 
-It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `WITH` and then give a new name for an existing type. (In fact, the keyword `WITH` that we have been using the whole time is defined as a "[block used to define aliases](https://www.edgedb.com/docs/edgeql/statements/with)"). Take a simple query like this that shows Count Dracula and the names of his slaves:
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `WITH` and then give a new name for an existing type. (In fact, the keyword `WITH` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`"). Take a simple query like this that shows Count Dracula and the names of his slaves:
 
 ```edgeql
 SELECT Vampire {

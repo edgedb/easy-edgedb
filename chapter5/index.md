@@ -21,9 +21,9 @@ And an actual date looks like this.
 
 The `T` inside there is just a separator, and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. [Here is its signature](https://edgedb.com/docs/edgeql/funcops/datetime/#function::std::to_datetime), which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
+One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here is its signature <docs:std::to_datetime>`, which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
 
-By the way, you'll notice one unfamiliar type inside called a [`decimal`](https://www.edgedb.com/docs/datamodel/scalars/numeric#type::std::decimal) type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=-3c8G0JMM5Q) thanks to rounding errors. This example shows it:
+By the way, you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=-3c8G0JMM5Q) thanks to rounding errors. This example shows it:
 
 ```edgeql-repl
 edgedb> SELECT 6.777777777777777; # Good so far
@@ -159,7 +159,7 @@ error: possibly more than one element returned by an expression for a link 'mast
 
 Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `DESCRIBE` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
-- `DESCRIBE TYPE MinorVampire` - this will give the [DDL (data definition language)](https://www.edgedb.com/docs/edgeql/ddl/index/) description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do an _explicit_ migration.  And if you understand SDL it will not be hard to pick up some tricks in DDL.
+- `DESCRIBE TYPE MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do an _explicit_ migration.  And if you understand SDL it will not be hard to pick up some tricks in DDL.
 
 (Note though the word _explicit_ there: using DDL still results in a migration, just an _implicit_ one. In other words, a migration happens without calling it a migration. It's sort of a quick and dirty way to make changes but for the most part proper migration tools with SDL schema is the preferred way to go.)
 

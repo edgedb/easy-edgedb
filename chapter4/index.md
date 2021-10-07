@@ -49,7 +49,7 @@ INSERT NPC {
 You'll notice two things here:
 
 - `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
-- [`assert_single()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::assert_single). This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `assert_single()` function.
+- {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `assert_single()` function.
 
 Now we want to make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a normal query:
 
@@ -130,7 +130,7 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
-You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they [don't show up in the actual database](https://www.edgedb.com/docs/datamodel/computables), and only appear when you query them. And of course you don't specify the type because the computed expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `SELECT country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
+You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computables>`, and only appear when you query them. And of course you don't specify the type because the computed expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `SELECT country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
 
 ## Ways to tell time
 
@@ -172,7 +172,7 @@ type Time {
 }
 ```
 
-`.date[0:2]` is an example of ["slicing"](https://www.edgedb.com/docs/edgeql/funcops/array#operator::ARRAYSLICE). [0:2] means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.date[0:2]` is an example of {eql:op}`"slicing" <docs:ARRAYSLICE>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
@@ -218,7 +218,7 @@ type Time {
   required property date -> str;
   property local_time := <cal::local_time>.date;
   property hour := .date[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 
+  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19
     ELSE 'awake';
 }
 ```
@@ -237,7 +237,7 @@ One more note on `ELSE`: you can keep on using `ELSE` as many times as you like 
 ```
 property awake := 'just waking up' IF <int16>.hour = 19 ELSE
                   'going to bed' IF <int16>.hour = 6 ELSE
-                  'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 
+                  'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE
                   'awake';
 ```
 

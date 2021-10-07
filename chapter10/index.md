@@ -180,7 +180,7 @@ This returns:
 
 What's `DESC`? It means descending, so largest first and then going down. If we didn't write `DESC` then it would have assumed that we wanted to sort ascending. You can also write `ASC` (to make it clear to somebody reading the code for example), but you don't need to.
 
-For some actual math, you can check out the functions in `std` [here](https://edgedb.com/docs/edgeql/funcops/set#function::std::sum) as well as the `math` module [here](https://edgedb.com/docs/edgeql/funcops/math#function::math::stddev). Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
+For some actual math, you can check out the functions in `std` {eql:func}`here <docs:std::sum>` as well as the `math` module {ref}`here <docs:ref_std_math>`. Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
 ```edgeql
 WITH cities := City.population
@@ -331,7 +331,7 @@ In a standard database with users it's much simpler: get users to enter their fi
 
 ## Other escape characters and raw strings
 
-Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list [here](https://www.edgedb.com/docs/edgeql/lexical/#strings). Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
+Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
 
 If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
@@ -366,7 +366,7 @@ Without the `$$` it will look like four separate strings with three unknown keyw
 
 ## All the scalar types
 
-You now have an understanding of all the EdgeDB scalar types. Summed up, the are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `uuid`, `json`, and `enum`. You can see the documentation for them [here](https://www.edgedb.com/docs/datamodel/scalars/index).
+You now have an understanding of all the EdgeDB scalar types. Summed up, the are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `uuid`, `json`, and `enum`. You can see the documentation for them {ref}`here <docs:ref_datamodel_scalar_types>`.
 
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 

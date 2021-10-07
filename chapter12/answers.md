@@ -73,7 +73,7 @@ The error message gives a hint:
 
 `error: function "array_join(arg0: array<std::str>)" does not exist`
 
-That means that the input that it received doesn't match any of its function signatures. And if you check [the function itself](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join), you can see why: it needs a second string:
+That means that the input that it received doesn't match any of its function signatures. And if you check {eql:func}`the function itself <docs:std::array_join>`, you can see why: it needs a second string:
 
 ```sdl
 std::array_join(array: array<str>, delimiter: str) -> str

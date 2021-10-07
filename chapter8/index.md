@@ -147,7 +147,7 @@ The result is:
 
 ## The sequence type
 
-On the subject of giving types a number, EdgeDB has a type called [sequence](https://www.edgedb.com/docs/datamodel/scalars/numeric/#type::std::sequence) that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it. Let's imagine a `Townsperson` type for a moment that uses it. Here's the wrong way to do it:
+On the subject of giving types a number, EdgeDB has a type called {eql:type}`docs:std::sequence` that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it. Let's imagine a `Townsperson` type for a moment that uses it. Here's the wrong way to do it:
 
 ```sdl
 type Townsperson extending Person {
@@ -241,7 +241,7 @@ Choosing the six objects from before from the output, it now looks like this:
 }
 ```
 
-This is officially called a [polymorphic query](https://www.edgedb.com/docs/edgeql/overview/#ref-eql-polymorphic-queries), and is one of the best reasons to use abstract types in your schema.
+This is officially called a {ref}`polymorphic query <docs:ref_eql_polymorphic_queries>`, and is one of the best reasons to use abstract types in your schema.
 
 ## Supertypes, subtypes, and generic types
 
@@ -267,7 +267,7 @@ SELECT year IS int16 OR year IS int32 OR year IS int64;
 
 Output: `{true}`.
 
-But fortunately these types all [extend from abstract types too](https://www.edgedb.com/docs/datamodel/abstract), and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
+But fortunately these types all {ref}`extend from abstract types too <docs:ref_std_abstract_types>`, and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
 
 So with that you can change the above input to `SELECT 1887 IS anyint` and get `{true}`.
 

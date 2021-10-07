@@ -35,7 +35,7 @@ type BookExcerpt {
 }
 ```
 
-The [`index on (.date)`](https://www.edgedb.com/docs/datamodel/indexes#indexes) part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match. Indexing makes a lookup by an exact match faster compared to always scanning everything.
+The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match. Indexing makes a lookup by an exact match faster compared to always scanning everything.
 
 We could do this for certain other types too - it might be good for types like `Place` and `Person`.
 
@@ -114,7 +114,7 @@ You can see that `description` is a short string that we write, while `excerpt` 
 
 ## More functions for strings
 
-The [functions for strings](https://www.edgedb.com/docs/edgeql/funcops/string) can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called [`str_lower()`](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_lower) and makes strings lowercase:
+The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```edgeql-repl
 edgedb> SELECT str_lower('RENFIELD WAS HERE');
@@ -143,7 +143,7 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
 }
 ```
 
-Another way to make `the_date` is with the [to_str](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::to_str) method, which (as you can probably guess) will turn it into a string:
+Another way to make `the_date` is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string:
 
 ```edgeql
 select BookExcerpt {
@@ -280,7 +280,7 @@ type City extending Place {
 
 4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
 
-   Hint: the [str_repeat()](https://www.edgedb.com/docs/edgeql/funcops/string#function::std::str_repeat) function could help (though there is more than one way to do it)
+   Hint: the {eql:func}`docs:std::str_repeat` function could help (though there is more than one way to do it)
 
 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 

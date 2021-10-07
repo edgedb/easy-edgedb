@@ -81,9 +81,9 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
 
-One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. [The documentation](https://www.edgedb.com/docs/edgeql/overview#optional) explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
+One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. {ref}`The documentation <docs:ref_eql_fundamentals_optional>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at [its signature](https://www.edgedb.com/docs/edgeql/funcops/set/#operator::COALESCE), you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:COALESCE>`, you can see the `OPTIONAL` in there:
 
 `OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
 
@@ -113,7 +113,7 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 ## More constraints
 
-Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are [some others](https://www.edgedb.com/docs/datamodel/constraints) that we can use as well.
+Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
 There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
 
@@ -150,11 +150,11 @@ But that will depend on how the game works.
 
 Now let's learn about perhaps the most interesting constraint in EdgeDB:
 
-## expression on: the most flexible constraint
+## `expression on`: the most flexible constraint
 
-One particularly flexible constraint is called [`expression on`](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression), which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type _as long as_ (insert expression here)".
+One particularly flexible constraint is called {eql:constraint}` ``expression on`` <docs:std::expression>`, which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type _as long as_ (insert expression here)".
 
-Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called [contains()](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) that looks like this:
+Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called {eql:func}`docs:std::contains` that looks like this:
 
 ```sdl
 std::contains(haystack: str, needle: str) -> bool
