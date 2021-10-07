@@ -14,7 +14,7 @@ But there is good news for us, because we are going to keep learning about Carte
 
 Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen.
 
-Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called `std::rand()` that gives a `float64` in between 0.0 and 1.0. There is another function called [round()](https://www.edgedb.com/docs/edgeql/funcops/generic/#function::std::round) that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
+Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
 
 ```edgeql
 SELECT <int16>round(random() * 5);
@@ -112,7 +112,7 @@ Much better:
 
 So that's how function overloading works - you can create functions with the same name as long as the signature is different.
 
-You see overloading in a lot of existing functions, such as [sum](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::sum) which takes in all numeric types and returns the sum. [std::to_datetime](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) has even more interesting overloading with all sorts of inputs to create a `datetime`.
+You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which takes in all numeric types and returns the sum. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
 `fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter.
 
@@ -146,7 +146,7 @@ SELECT(
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions [is here](https://www.edgedb.com/docs/edgeql/ddl/functions#create-function). You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without needing to do an explicit migration. For example, here's a function that just says hi:
+The documentation for creating functions {ref}`is here <docs:ref_eql_ddl_functions>`. You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without needing to do an explicit migration. For example, here's a function that just says hi:
 
 ```sdl
 function say_hi() -> str
@@ -227,7 +227,7 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 
 In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
 
-To do that we can use the so-called [coalescing operator](https://www.edgedb.com/docs/edgeql/funcops/set#operator::COALESCE), which is written `??`. The explanation for the operator is nice and simple:
+To do that we can use the so-called {eql:op}`coalescing operator <docs:COALESCE>`, which is written `??`. The explanation for the operator is nice and simple:
 
 `Evaluate to A for non-empty A, otherwise evaluate to B.`
 
@@ -279,8 +279,8 @@ instead of something like 'Buda-Pesth, Bistritz, Munich'.
 
 Let's experiment some more while introducing two new functions, called `array_agg` and `array_join`. Here's what they do:
 
-- [array_agg](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_agg), turns sets into arrays (it 'aggregates' them).
-- [array_join](https://www.edgedb.com/docs/edgeql/funcops/array#function::std::array_join) turns arrays into a single string. So let's give that a try:
+- {eql:func}`docs:std::array_agg`, turns sets into arrays (it 'aggregates' them).
+- {eql:func}`docs:std::array_join` turns arrays into a single string. So let's give that a try:
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
@@ -296,7 +296,7 @@ This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But th
 - if both sets are not empty we get a single string with commas,
 - otherwise we get a set of strings.
 
-So that's not very robust. Plus the query is kind of hard to read now. 
+So that's not very robust. Plus the query is kind of hard to read now.
 
 The best way is actually the easiest: just `UNION` the sets.
 

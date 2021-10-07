@@ -8,7 +8,7 @@ tags: Constraint Delegation, $ Parameters
 
 ## More constraints
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a [constraint](https://edgedb.com/docs/datamodel/constraints#ref-datamodel-constraints) on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
 
 ```sdl
 abstract type Person {
@@ -103,7 +103,7 @@ Here's the error:
 error: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
 ```
 
-We can [look at the function signature](https://edgedb.com/docs/edgeql/funcops/set#function::std::min) to see the problem:
+We can {eql:func}`look at the function signature <docs:std::min>` to see the problem:
 
 ```
 std::min(values: SET OF anytype) -> OPTIONAL anytype
@@ -113,7 +113,7 @@ The important part is `SET OF`: it needs a set, so something in curly brackets. 
 
 That also means that `SELECT min({[5, 6], [2, 4]});` will give us the output `{[2, 4]}` (instead of 2). That's not what we want.
 
-Instead, what we want to use is the [array_unpack()](https://edgedb.com/docs/edgeql/funcops/array#function::std::array_unpack) function which takes an array and unpacks it into a set. So we'll use that on `castle_doors`:
+Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::array_unpack>` function which takes an array and unpacks it into a set. So we'll use that on `castle_doors`:
 
 ```edgeql
 WITH

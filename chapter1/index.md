@@ -11,9 +11,9 @@ In the beginning of the book we see the main character Jonathan Harker, a young 
 
 ## Schema, object types
 
-This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is [SDL (schema definition language)](https://edgedb.com/docs/edgeql/sdl/index#ref-eql-sdl) that makes migration easy, and which we will learn in this book. So far our schema needs the following:
+This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is {ref}`SDL (schema definition language)<docs:ref_eql_sdl>` that makes migration easy, and which we will learn in this book. So far our schema needs the following:
 
-- Some kind of City or Location type. These types that we can create are called [object types](https://www.edgedb.com/docs/datamodel/objects#object-types), made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
+- Some kind of City or Location type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is now called Bistrița (it's in Romania), and Buda-Pesth is now written Budapest.
 - Some kind of Person type. We need it to have a name, and also a way to track the places that the person visited.
 
 To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
@@ -57,7 +57,7 @@ This is similar, just properties with strings. The book Dracula was published in
 
 ## Migration
 
-We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://edgedb.com/download). First we create a ["project"](https://www.edgedb.com/docs/quickstart#initialize-a-project) that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
+We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://www.edgedb.com/download). First we create a {ref}`"project" <docs:ref_quickstart_createdb>` that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
 
 Sometimes it's useful to create a whole new database to try something out. You can do that with the `CREATE DATABASE` keyword and our name for it:
 
@@ -67,7 +67,7 @@ CREATE DATABASE dracula;
 
 Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
 
-Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's [built-in tools](https://www.edgedb.com/docs/cli/edgedb_migration/index). However, we will use a [console shortcut](https://www.edgedb.com/docs/edgeql/ddl/migrations) instead:
+Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's {ref}`built-in tools <docs:ref_cli_edgedb_migration>`. However, we will use a {ref}`console shortcut <docs:ref_eql_ddl_migrations>` instead:
 
 - First you start them with `START MIGRATION TO {}`
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
@@ -76,10 +76,10 @@ Lastly, we we need to do a migration. This will give the database the structure 
 
 There are naturally a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
 
-- [Admin commands](https://www.edgedb.com/docs/cheatsheet/admin): Creating user roles, setting passwords, configuring ports, etc.
-- [CLI commands](https://www.edgedb.com/docs/cheatsheet/cli): Creating databases, roles, setting passwords for roles, connecting to databases, etc.
-- [REPL commands](https://www.edgedb.com/docs/cheatsheet/repl): Mostly shortcuts for a lot of the commands we'll be using in this book.
-- [Various commands](https://www.edgedb.com/docs/edgeql/statements/tx_rollback#rollback) about rolling back transactions, declaring savepoints, and so on.
+- {ref}`Admin commands <docs:ref_cheatsheet_admin>`: Creating user roles, setting passwords, configuring ports, etc.
+- {ref}`CLI commands <docs:ref_cheatsheet_cli>`: Creating databases, roles, setting passwords for roles, connecting to databases, etc.
+- {ref}`REPL commands <docs:ref_cheatsheet_repl>`: Mostly shortcuts for a lot of the commands we'll be using in this book.
+- {ref}`Various commands <docs:ref_eql_statements_rollback_tx>` about rolling back transactions, declaring savepoints, and so on.
 
 There are also a few places to download packages to highlight your syntax if you like. EdgeDB has these packages available for [Atom](https://atom.io/packages/edgedb), [Visual Studio Code](https://marketplace.visualstudio.com/itemdetails?itemName=magicstack.edgedb), [Sublime Text](https://packagecontrol.io/packages/EdgeDB), and [Vim](https://github.com/edgedb/edgedb-vim).
 
@@ -110,7 +110,7 @@ First we'll just select a string:
 SELECT 'Jonathan Harker\'s journey begins.';
 ```
 
-This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact [everything in EdgeDB is a set](https://www.edgedb.com/docs/edgeql/overview#everything-is-a-set) (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
+This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_fundamentals_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
 
 Next we'll use `:=` to assign a variable:
 
@@ -215,7 +215,7 @@ This gives us three items:
 }
 ```
 
-This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the [shape](https://www.edgedb.com/docs/edgeql/expressions/shapes/#ref-eql-expr-shapes) of the data we want. We'll select all `City` types and display their `modern_name` with this query:
+This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the {ref}`shape <docs:ref_eql_expr_shapes>` of the data we want. We'll select all `City` types and display their `modern_name` with this query:
 
 ```edgeql
 SELECT City {

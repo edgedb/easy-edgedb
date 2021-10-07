@@ -29,7 +29,7 @@ Now that you've made it through 20 chapters, you should have a good understandin
 
 The first part to a schema is always the command to start the migration:
 
-- We've used `START MIGRATION TO {};` commands, but the [`edgedb migration`](https://www.edgedb.com/docs/cli/edgedb_migration/index) tools provide better control in real projects.
+- We've used `START MIGRATION TO {};` commands, but the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools provide better control in real projects.
 - `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`).
 
 Here's an example with `Person`, which starts like this and shows us the module it's located in:
@@ -55,7 +55,7 @@ abstract type HasNameAndCoffins {
 }
 ```
 
-We could have gone with [`int32`, `int64` or `bigint`](https://www.edgedb.com/docs/datamodel/scalars/numeric#numerics) for the `coffins` property but we probably won't see that many coffins so `int16` is fine.
+We could have gone with {eql:type}` ``int32`` <docs:std::int32>`, {eql:type}` ``int64`` <docs:std::int64>` or {eql:type}` ``bigint`` <docs:std::bigint>` for the `coffins` property but we probably won't see that many coffins so {eql:type}` ``int16`` <docs:std::int16>` is fine.
 
 Next is `abstract type Person`. This type is by far the largest, and does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`, so they can extend from it too.
 
@@ -79,11 +79,11 @@ abstract type Person {
 }
 ```
 
-`exclusive` is probably the most common [constraint](https://www.edgedb.com/docs/datamodel/constraints#constraints), which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
+`exclusive` is probably the most common {ref}`constraint <docs:ref_datamodel_constraints>`, which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are [computed properties](https://www.edgedb.com/docs/datamodel/computables#computables). In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computables>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
-Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called [concatenation](https://www.edgedb.com/docs/edgeql/funcops/string#operator::STRPLUS).
+Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:STRPLUS>`.
 
 The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
@@ -93,9 +93,9 @@ error: possibly more than one element returned by an expression for a computed l
 
 This could be what you want for `lover`, but it wouldn't work well for `places_visited`.
 
-For `first_appearance` and `last_appearance` we use [`cal::local_date`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::cal::local_date) because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer [`std::datetime`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::std::datetime) because it is timezone aware and always ISO8601 compliant.
+For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and always ISO8601 compliant.
 
-So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like [`std::to_datetime`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::std::to_datetime) to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
+So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
 edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
@@ -174,7 +174,7 @@ The enum `Transport` never really got used, and needs some more transportation t
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
 
-- by casting it into a [`cal::local_time`](https://www.edgedb.com/docs/datamodel/scalars/datetime#type::cal::local_time) to make the `local_time` property,
+- by casting it into a {eql:type}`docs:cal::local_time` to make the `local_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computed property called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
@@ -190,7 +190,7 @@ type Visit {
 }
 ```
 
-The NPC type is where we first saw the [`overloaded`](https://www.edgedb.com/docs/edgeql/sdl/links#overloading) keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
+The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_links_overloading>` keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
 
 ```sdl
 type NPC extending Person {
@@ -222,7 +222,7 @@ INSERT City {
 };
 ```
 
-and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the [annotation](https://www.edgedb.com/docs/edgeql/sdl/annotations#annotations) shows:
+and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the {ref}`annotation <docs:ref_eql_sdl_annotations>` shows:
 
 ```sdl
 type OtherPlace extending Place {
@@ -239,7 +239,7 @@ Annotations: we used `abstract annotation` to add a new annotation:
 abstract annotation warning;
 ```
 
-because by default a type [can only have annotations](https://www.edgedb.com/docs/datamodel/annotations#ref-datamodel-annotations) called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
+because by default a type {ref}`can only have annotations <docs:ref_datamodel_annotations>` called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
@@ -253,7 +253,7 @@ type Lord extending Person {
 
 (We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc. etc.)
 
-The `Lord` type uses the function [`contains`](https://www.edgedb.com/docs/edgeql/funcops/generic#function::std::contains) which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. [Here are some more examples](https://www.edgedb.com/docs/datamodel/constraints#constraint::std::expression) from the documentation of using `constraint expression on`.
+The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
 Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
 
@@ -295,7 +295,7 @@ SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is differe
 
 And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
 
-Don't forget, we needed `array_unpack()` because the function [`any()`](https://www.edgedb.com/docs/edgeql/funcops/set#function::std::any) works on sets:
+Don't forget, we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
 
 ```sdl
 std::any(values: SET OF bool) -> bool
@@ -305,7 +305,7 @@ So this (a set) will work: `SELECT any({5, 6, 7} = 7);`
 
 But this (an array) will not: `SELECT any([5, 6, 7] = 7);`
 
-Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use [`index on`](https://www.edgedb.com/docs/edgeql/sdl/indexes#indexes) for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
+Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
 ```sdl
 type BookExcerpt {
@@ -344,7 +344,7 @@ Now that you have reached the end of the book, you will certainly start looking 
 
 This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create a type, property etc. and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
 
-For a simple example, [here is the syntax on creating a module](https://www.edgedb.com/docs/edgeql/sdl/modules):
+For a simple example, {ref}`here is the syntax on creating a module <docs:ref_eql_sdl_modules>`:
 
 ```sdl-synopsis
 module ModuleName "{"
@@ -355,7 +355,7 @@ module ModuleName "{"
 
 Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). Easy enough.
 
-How about object types? [They look like this](https://www.edgedb.com/docs/edgeql/sdl/objects):
+How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types>`:
 
 ```sdl-synopsis
 [abstract] type TypeName [extending supertype [, ...] ]
@@ -371,7 +371,7 @@ How about object types? [They look like this](https://www.edgedb.com/docs/edgeql
 
 This should be familiar to you: you need `type TypeName` to start. You can add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
 
-Meanwhile, the [properties are more complex](https://www.edgedb.com/docs/edgeql/sdl/props) and include three types: concrete, computed, and abstract. We're most familiar with concrete so let's take a look at that:
+Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and include three types: concrete, computed, and abstract. We're most familiar with concrete so let's take a look at that:
 
 ```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
@@ -398,11 +398,11 @@ DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
 
 And even the capitalization doesn't matter.
 
-But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. Using [`edgedb migration`](https://www.edgedb.com/docs/cli/edgedb_migration/index) tools makes it possible to work with the schema using only SDL.
+But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. Using {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools makes it possible to work with the schema using only SDL.
 
 ## EdgeDB lexical structure
 
-You might want to take a look at or bookmark [this page](https://www.edgedb.com/docs/edgeql/lexical/) for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. Things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
+You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexical>` for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. Things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
 
 ## Getting help
 

@@ -53,7 +53,7 @@ INSERT NPC {
 };
 ```
 
-You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a [set constructor](https://www.edgedb.com/docs/edgeql/expressions/overview/#set-constructor), by the way.)
+You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_expr_index_set_ctor>`, by the way.)
 
 Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
 
@@ -75,7 +75,7 @@ And if we had written something like `FILTER .name = 'SLLLovakia'` then it would
 
 And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
 
-With that we now know [all three operators](https://www.edgedb.com/docs/edgeql/statements/update) used after `SET`: `:=`, `+=`, and `-=`.
+With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `SET`: `:=`, `+=`, and `-=`.
 
 Let's do another update. Remember this?
 
@@ -252,7 +252,7 @@ SELECT <int64><str><json>'18870503';
 
 Now it works: we get `{18870503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
 
-The [documentation on JSON](https://www.edgedb.com/docs/datamodel/scalars/json) explains which JSON types turn into which EdgeDB types and is good to bookmark if you need to convert from JSON a lot. You can also see a list of JSON functions [here](https://www.edgedb.com/docs/edgeql/funcops/json).
+The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types turn into which EdgeDB types, lists functions for working with JSON values, and is good to bookmark if you need to convert from JSON a lot.
 
 [Here is all our code so far up to Chapter 6.](code.md)
 

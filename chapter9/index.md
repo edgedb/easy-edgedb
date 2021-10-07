@@ -36,7 +36,7 @@ SELECT <cal::local_date>'1887-07-08';
 
 But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
 
-Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter [`cal::to_local_date`](https://www.edgedb.com/docs/edgeql/funcops/datetime#function::cal::to_local_date) function. It just takes three integers.
+Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
 
 Here are its signatures (we're using the third):
 
@@ -84,7 +84,7 @@ type NPC extending Person {
 
 ## datetime_current()
 
-One convenient function is [datetime_current()](https://www.edgedb.com/docs/edgeql/funcops/datetime/#function::std::datetime_current), which gives the datetime right now. Let's try it out:
+One convenient function is {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`, which gives the datetime right now. Let's try it out:
 
 ```edgeql-repl
 edgedb> SELECT datetime_current();
@@ -206,7 +206,7 @@ UNION (
 );
 ```
 
-It's a good idea to familiarize yourself with [the order to follow](https://www.edgedb.com/docs/edgeql/statements/for#for) when you use `FOR`:
+It's a good idea to familiarize yourself with {ref}`the order to follow <docs:ref_eql_statements_for>` when you use `FOR`:
 
 ```edgeql-synopsis
 [ WITH with-item [, ...] ]

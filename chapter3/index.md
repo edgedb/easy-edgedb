@@ -97,7 +97,7 @@ Perfect.
 
 ## Adding constraints
 
-Now let's think about `age` again. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use [one of the functions](https://edgedb.com/docs/datamodel/constraints) that it can take. We will use `max_value()`.
+Now let's think about `age` again. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use {ref}`one of the functions <docs:ref_datamodel_constraints>` that it can take. We will use `max_value()`.
 
 Here's the signature for `max_value()`:
 
@@ -195,7 +195,7 @@ SELECT (DELETE Country) {
 
 The output is `{default::Country {name: 'hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
 
-(Fun fact: `DELETE` statements in EdgeDB are actually [syntactic sugar](https://www.edgedb.com/docs/edgeql/statements/delete/) for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
+(Fun fact: `DELETE` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
 
 Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
 
