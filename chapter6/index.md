@@ -53,7 +53,7 @@ INSERT NPC {
 };
 ```
 
-You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_expr_index_set_ctor>`, by the way.)
+You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
 
 Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
 

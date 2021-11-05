@@ -110,7 +110,7 @@ First we'll just select a string:
 SELECT 'Jonathan Harker\'s journey begins.';
 ```
 
-This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_fundamentals_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
+This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_everything_is_a_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
 
 Next we'll use `:=` to assign a variable:
 
@@ -215,7 +215,7 @@ This gives us three items:
 }
 ```
 
-This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the {ref}`shape <docs:ref_eql_expr_shapes>` of the data we want. We'll select all `City` types and display their `modern_name` with this query:
+This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the {ref}`shape <docs:ref_eql_shapes>` of the data we want. We'll select all `City` types and display their `modern_name` with this query:
 
 ```edgeql
 SELECT City {
