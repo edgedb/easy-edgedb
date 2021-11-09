@@ -241,7 +241,7 @@ Choosing the six objects from before from the output, it now looks like this:
 }
 ```
 
-This is officially called a {ref}`polymorphic query <docs:ref_eql_polymorphic_queries>`, and is one of the best reasons to use abstract types in your schema.
+This is officially called a {ref}`polymorphic query <docs:ref_eql_select_polymorphic>`, and is one of the best reasons to use abstract types in your schema.
 
 ## Supertypes, subtypes, and generic types
 
