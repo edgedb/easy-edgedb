@@ -55,7 +55,7 @@ WITH new_vampires := {
 INSERT Vampire {
   name := 'Godbrand',
   slaves := (
-    FOR new_vampire IN {new_vampires}
+    FOR new_vampire IN new_vampires
     UNION (
       INSERT MinorVampire {
         name := 'Undead' ++ new_vampire.0,

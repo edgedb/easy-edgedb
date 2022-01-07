@@ -211,12 +211,12 @@ It's a good idea to familiarize yourself with {ref}`the order to follow <docs:re
 ```edgeql-synopsis
 [ WITH with-item [, ...] ]
 
-FOR variable IN "{" iterator-set [, ...]  "}"
+FOR variable IN iterator-expr
 
 UNION output-expr ;
 ```
 
-The important part is the `{` and `}`, because `FOR` is used on a set. If you try with an array or other type it will generate an error.
+The important part is the *iterator-expr* which needs to be a single simple expression that gives back some kind of set. Usually, it is a just a set inside `{` and `}`. It can also be a path, such as `NPC.places_visited`, or it can be a function call, such as `array_unpack()`. More complex expression should have parentheses around it.
 
 Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
 
