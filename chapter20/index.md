@@ -83,7 +83,7 @@ abstract type Person {
 
 Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
-Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:STRPLUS>`.
+Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
 
 The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
