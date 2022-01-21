@@ -14,7 +14,8 @@ SELECT two_names FILTER len(two_names) = 2;
 The query is quite short:
 
 ```edgeql
-SELECT (Person.name, find(Person.name, 'ma'));
+with names := (select (Person.name, find(Person.name, 'ma')))
+select names.0 filter names.1 != -1;
 ```
 
 Note that the first `Person.name` and the second `Person.name` are the same, which is why no Cartesian multiplication is used. However, if you changed the second one to `DETACHED Person.name` it would, and you would get well over 100 results.
