@@ -172,7 +172,7 @@ type Time {
 }
 ```
 
-`.date[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.date[0:2]` is an example of {eql:op}`"slicing" <docs:ARRAYSLICE>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
