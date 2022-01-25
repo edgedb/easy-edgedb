@@ -227,7 +227,7 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 
 In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
 
-To do that we can use the so-called {eql:op}`coalescing operator <docs:COALESCE>`, which is written `??`. The explanation for the operator is nice and simple:
+To do that we can use the so-called {eql:op}`coalescing operator <docs:coalesce>`, which is written `??`. The explanation for the operator is nice and simple:
 
 `Evaluate to A for non-empty A, otherwise evaluate to B.`
 

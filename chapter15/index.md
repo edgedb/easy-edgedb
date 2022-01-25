@@ -83,7 +83,7 @@ Overloading the function is probably the easier option, because we wouldn't need
 
 One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:COALESCE>`, you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `OPTIONAL` in there:
 
 `OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
 
