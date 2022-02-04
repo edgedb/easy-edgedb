@@ -191,7 +191,7 @@ SELECT City {
 
 When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{default::City {name: 'London'}}`
 
-Now let's take that to make a much more complicated (and useful) query, using three parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
+Now let's take that to make a much more complicated (and useful) query, using two parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
 
 ```edgeql
 SELECT City {
@@ -203,7 +203,7 @@ SELECT City {
     EXISTS (.modern_name) = <bool>$has_modern_name;
 ```
 
-Since there are three of them, EdgeDB will ask us to input three values. Here's one example of what it looks like:
+Since there are three of them, EdgeDB will ask us to input two values. Here's one example of what it looks like:
 
 ```
 Parameter <str>$name: b

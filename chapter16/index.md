@@ -232,7 +232,7 @@ The function signature is `std::re_match_all(pattern: str, string: str) -> SET O
 - maybe have an `-` in between,
 - and end in `night`,
 
-so it gives: `{['tonight'], ['to-night']}`.
+so it gives: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`.
 
 And to match anything, you can use the wildcard character: `.`
 

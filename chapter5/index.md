@@ -149,7 +149,7 @@ INSERT MinorVampire {
 };
 ```
 
-You need to put the query for getting Count Dracula in parentheses as you know from earlier examples. Then you need to put all that inside the `assert_single()` function. This function makes sure that there's no more that a single element in the set it is given. This is necessary because EdgeDB doesn't know that there is only one 'Count Dracula' and we need to provide only one Vampire as the master (remember, `required link` is short for `required single link`). If we tried this without the `assert_single()` function we would get the following error:
+You need to put the query for getting Count Dracula in parentheses as you know from earlier examples. Then you need to put all that inside the `assert_single()` function. This function makes sure that there's no more than a single element in the set it is given. This is necessary because EdgeDB doesn't know that there is only one 'Count Dracula' and we need to provide only one Vampire as the master (remember, `required link` is short for `required single link`). If we tried this without the `assert_single()` function we would get the following error:
 
 ```
 error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
