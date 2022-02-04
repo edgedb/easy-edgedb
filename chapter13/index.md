@@ -217,7 +217,7 @@ To restore the default format type: `\set output-format default`. Because it's s
 
 ## Being introspective
 
-The keyword `INTROSPECT` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all four. Here are the properties and links of `Ship` again so we don't forget:
+The keyword `INTROSPECT` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
 
 ```sdl
 type Ship {

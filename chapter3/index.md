@@ -193,7 +193,7 @@ SELECT (DELETE Country) {
 };
 ```
 
-The output is `{default::Country {name: 'hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
+The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
 
 (Fun fact: `DELETE` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
 
