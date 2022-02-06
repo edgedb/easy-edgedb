@@ -314,8 +314,8 @@ Now with this more robust query we can use it on anything and don't need to worr
 ```edgeql
 WITH has_k := (SELECT Place FILTER .name ILIKE '%k%'),
      has_e := (SELECT Place FILTER .name ILIKE '%e%'),
-     has_both := has_k UNION has_e,
-SELECT has_both.name;
+     has_either := has_k UNION has_e,
+SELECT has_either.name;
 ```
 
 This gives us the result:
