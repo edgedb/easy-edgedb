@@ -203,7 +203,7 @@ SELECT City {
     EXISTS (.modern_name) = <bool>$has_modern_name;
 ```
 
-Since there are three of them, EdgeDB will ask us to input two values. Here's one example of what it looks like:
+Since there are two of them, EdgeDB will ask us to input two values. Here's one example of what it looks like:
 
 ```
 Parameter <str>$name: b
