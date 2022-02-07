@@ -91,10 +91,10 @@ SELECT Person {
 } FILTER len(.name) = min(len(DETACHED Person.name));
 ```
 
-We could do the same with `WITH` as well, which is maybe a bit easier to read:
+We could do the same with `WITH` as well, which is maybe a bit easier to read. This way we don't need `DETACHED` because `minimum_length` gets defined before the main `SELECT` starts:
 
 ```edgeql
-WITH minimum_length := min(len(DETACHED Person.name))
+WITH minimum_length := min(len(Person.name))
 SELECT Person {
   name,
 } FILTER len(.name) = minimum_length;
