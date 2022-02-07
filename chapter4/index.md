@@ -123,7 +123,7 @@ We can also put the computed property in the type itself. Here's the same comput
 abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
-  property lover -> Person;
+  link lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
 ```
