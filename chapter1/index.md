@@ -67,7 +67,7 @@ CREATE DATABASE dracula;
 
 Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
 
-Lastly, we we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's {ref}`built-in tools <docs:ref_cli_edgedb_migration>`. However, we will use a {ref}`console shortcut <docs:ref_eql_ddl_migrations>` instead:
+Lastly, we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's {ref}`built-in tools <docs:ref_cli_edgedb_migration>`. However, we will use a {ref}`console shortcut <docs:ref_eql_ddl_migrations>` instead:
 
 - First you start them with `START MIGRATION TO {}`
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
