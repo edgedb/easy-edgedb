@@ -233,7 +233,7 @@ You will remember that one of our cities (Vienna) doesn't have anything for `mod
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
 
-The first object is a mystery so we'll add `name` to the query so we can see that it's the city of Vienna:
+The first object is a mystery so we'll add `name` to the query so we can see that it's the city of Munich:
 
 ```edgeql
 SELECT City {
