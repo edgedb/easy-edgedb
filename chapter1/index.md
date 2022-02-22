@@ -40,7 +40,7 @@ MissingRequiredError: missing value for required property default::Person.name
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
 
-An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Vienna", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
+An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Munich", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
 
 `places_visited` is not a `required` property because we might later add minor characters that don't go anywhere. Maybe one person will be the "innkeeper_in_bistritz" or something, and we won't know or care about `places_visited` for him.
 
@@ -53,7 +53,7 @@ type City {
 }
 ```
 
-This is similar, just properties with strings. The book Dracula was published in 1897 when spelling for cities was sometimes different. All cities have a name in the book (that's why it's `required`), but some won't need a different modern name. Vienna is still Vienna, for example. We are imagining that our game will link the city names to their modern names so we can easily place them on a map.
+This is similar, just properties with strings. The book Dracula was published in 1897 when spelling for cities was sometimes different. All cities have a name in the book (that's why it's `required`), but some won't need a different modern name. Munich is still Munich, for example. We are imagining that our game will link the city names to their modern names so we can easily place them on a map.
 
 ## Migration
 
@@ -158,7 +158,7 @@ Finally, the `Person` insert would look like this:
 ```edgeql
 INSERT Person {
   name := 'Jonathan Harker',
-  places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
+  places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
 ```
 
@@ -225,10 +225,14 @@ SELECT City {
 
 Once again, you don't need the comma after `modern_name` because it's at the end of the query.
 
-You will remember that one of our cities (Vienna) doesn't have anything for `modern_name`. But it still shows up as an "empty set", because every value in EdgeDB is a set of elements, even if there's nothing inside. Here is the result:
+You will remember that one of our cities (Munich) doesn't have anything for `modern_name`. But it still shows up as an "empty set", because every value in EdgeDB is a set of elements, even if there's nothing inside. Here is the result:
 
 ```
-{default::City {modern_name: {}}, default::City {modern_name: 'Budapest'}, default::City {modern_name: 'Bistrița'}}
+{
+  default::City {modern_name: {}},
+  default::City {modern_name: 'Budapest'},
+  default::City {modern_name: 'Bistrița'},
+}
 ```
 
 So there is some object with an empty set for `modern_name`, while the other two have a name. This shows us that EdgeDB doesn't have `null` like in some languages: if nothing is there, it will return an empty set.
