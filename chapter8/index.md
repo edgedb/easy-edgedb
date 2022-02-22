@@ -337,7 +337,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   Okay, now here are two positives for objects in comparison.
 
-  Do you have a lot of duplication in property values? If so, then using `constraint exclusive` on an object type is the more efficient way to do it.
+  Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi link`, for example.
 
   Objects are easier to migrate if you need to have more than one value with each.
 
