@@ -2,7 +2,12 @@
 leadImage: illustration_00.jpg
 ---
 
-# Chapter 0 - Easy EdgeDB
+# Welcome - Easy EdgeDB
+
+```{eval-rst}
+.. note::
+  See the `chinese translation </easy-edgedb/zh>`_ of this book
+```
 
 Welcome to Easy EdgeDB! It's an interactive, illustrated textbook designed as a one-stop shop for learning EdgeDB.
 
