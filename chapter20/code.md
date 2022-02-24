@@ -93,9 +93,9 @@ START MIGRATION TO {
     scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
     type Time {
-      required property date -> str;
-      property local_time := <cal::local_time>.date;
-      property hour := .date[0:2];
+      required property clock -> str;
+      property clock_time := <cal::local_time>.clock;
+      property hour := .clock[0:2];
       property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
     }
 
@@ -122,15 +122,15 @@ START MIGRATION TO {
       multi link crew -> Crewman;
     }
 
-  type Visit {
-    link ship -> Ship;
-    link place -> Place;
-    required property date -> cal::local_date;
-    property time -> str;
-    property local_time := <cal::local_time>.time;
-    property hour := .time[0:2];
-    property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
-  }
+    type Visit {
+      link ship -> Ship;
+      link place -> Place;
+      required property date -> cal::local_date;
+      property clock -> str;
+      property clock_time := <cal::local_time>.clock;
+      property hour := .clock[0:2];
+      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+    }
 
     type BookExcerpt {
       required property date -> cal::local_datetime;
@@ -523,7 +523,7 @@ UNION (
 
 UPDATE Visit FILTER .place.name = 'Galatz'
   SET {
-    time := '13:00:00'
+    clock := '13:00:00'
 };
 
 INSERT Country {

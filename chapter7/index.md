@@ -224,11 +224,11 @@ Parameters work just as well in inserts too. Here's a `Time` insert that prompts
 ```edgeql
 SELECT(
   INSERT Time {
-    date := <str>$hour ++ <str>$minute ++ <str>$second
+    clock := <str>$hour ++ <str>$minute ++ <str>$second
   }
 ) {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
   awake
 };
@@ -242,8 +242,8 @@ Here's the output:
 ```
 {
   default::Time {
-    date: '100909',
-    local_time: <cal::local_time>'10:09:09',
+    clock: '100909',
+    clock_time: <cal::local_time>'10:09:09',
     hour: '10',
     awake: 'asleep',
   },
@@ -257,17 +257,17 @@ So what if you just want to have the _option_ of a parameter? No problem, just p
 ```edgeql
 SELECT(
   INSERT Time {
-    date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
+    clock := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
   }
 ) {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
   awake
 };
 ```
 
-Of course, the `Time` type needs the proper formatting for the `date` property so this is a bad idea. But that's how you would do it.
+Of course, the `Time` type needs the proper formatting for the `clock` property so this is a bad idea. But that's how you would do it.
 
 The opposite of `OPTIONAL` is `REQUIRED`, but it's the default so you don't need to write it.
 

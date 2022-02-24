@@ -55,9 +55,9 @@ START MIGRATION TO {
     scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
     type Time {
-      required property date -> str;
-      property local_time := <cal::local_time>.date;
-      property hour := .date[0:2];
+      required property clock -> str;
+      property clock_time := <cal::local_time>.clock;
+      property hour := .clock[0:2];
       property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
     }
 
