@@ -172,9 +172,9 @@ The enum `Transport` never really got used, and needs some more transportation t
 - `HorseDrawnCarriage` increases speed but decreases money,
 - `Train` increases speed the most but decreases money and can only follow railway lines, etc.
 
-`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `time` property that is just a string, but gets used in this way:
+`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `clock` property that is just a string, but gets used in this way:
 
-- by casting it into a {eql:type}`docs:cal::local_time` to make the `local_time` property,
+- by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computed property called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
@@ -183,9 +183,9 @@ type Visit {
   required link ship -> Ship;
   required link place -> Place;
   required property date -> cal::local_date;
-  property time -> str;
-  property local_time := <cal::local_time>.time;
-  property hour := .time[0:2];
+  property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```

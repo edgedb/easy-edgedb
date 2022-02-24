@@ -165,14 +165,14 @@ This gives us the output:
 We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that can help. It looks like this:
 
 ```sdl
-type Time {
-  required property date -> str;
-  property local_time := <cal::local_time>.date;
-  property hour := .date[0:2];
-}
+type Time { 
+  required property clock -> str; 
+  property clock_time := <cal::local_time>.clock; 
+  property hour := .clock[0:2]; 
+} 
 ```
 
-`.date[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.clock[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
@@ -193,7 +193,7 @@ Now with this `Time` type, we can get the hour by doing this:
 
 ```edgeql
 INSERT Time {
-    date := '09:55:05',
+    clock := '09:55:05',
 };
 ```
 
@@ -201,23 +201,23 @@ And then we can `SELECT` our `Time` objects and everything inside:
 
 ```edgeql
 SELECT Time {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
 };
 ```
 
 That gives us a nice output that shows everything, including the hour:
 
-`{default::Time {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`.
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
 Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
 
 ```sdl
 type Time {
-  required property date -> str;
-  property local_time := <cal::local_time>.date;
-  property hour := .date[0:2];
+  required property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19
     ELSE 'awake';
 }
@@ -230,7 +230,7 @@ So `awake` is calculated like this:
 
 Now if we `SELECT` this with all the properties, it will give us this:
 
-`{default::Time {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
 
 One more note on `ELSE`: you can keep on using `ELSE` as many times as you like in the format `(result) IF (condition) ELSE`. Here's an example:
 
@@ -247,7 +247,7 @@ Back in Chapter 3, we learned how to select while deleting at the same time. You
 
 ```edgeql
 INSERT Time {
-  date := '22:44:10'
+  clock := '22:44:10'
 };
 ```
 
@@ -258,18 +258,18 @@ So let's wrap the whole entry in `SELECT ()` so we can display its properties as
 ```edgeql
 SELECT ( # Start a selection
   INSERT Time { # Put the insert inside it
-    date := '22:44:10'
+    clock := '22:44:10'
   }
 ) # The bracket finishes the selection
   { # Now just choose the properties we want
-    date,
+    clock,
     hour,
     awake,
     double_hour := <int16>.hour * 2
   };
 ```
 
-Now the output is more meaningful to us: `{default::Time {date: '22:44:10', hour: '22', awake: 'awake', double_hour: 44}}` We know the date and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered.
+Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hour: '22', awake: 'awake', double_hour: 44}}` We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered.
 
 [Here is all our code so far up to Chapter 4.](code.md)
 
