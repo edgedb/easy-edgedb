@@ -72,7 +72,9 @@ The easiest is probably the third if you find ISO 8601 unfamiliar or you have a 
 
 Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
 
-`SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');`
+```edgeql
+SELECT to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');
+```
 
 And get the following output:
 
