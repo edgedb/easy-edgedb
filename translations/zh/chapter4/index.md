@@ -165,11 +165,11 @@ SELECT <cal::local_time>('15:44:56');
 假设我们的游戏中有一个时钟，它以 `str` 的形式给出时间，就像上面例子中的 '15:44:56'。现在让我们来创建一个 `Time` 类型，它对后续会很有帮助：
 
 ```sdl
-type Time { 
-  required property clock -> str; 
-  property clock_time := <cal::local_time>.clock; 
-  property hour := .clock[0:2]; 
-} 
+type Time {
+  required property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
+}
 ```
 
 `.clock[0:2]` 是使用“切片” {eql:op}`"slicing" <docs:arrayslice>` 的一个例子。[0:2] 表示从索引 0（第一个索引）开始，并到索引 2 _之前_ 停止，即取出索引 0 和 1。这也说明当你要将 `str` 转换为 `cal::local_time` 时，你必须要用两个数字字符来表示小时（即：09 可以，但 9 不行）。
