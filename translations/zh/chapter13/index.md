@@ -17,11 +17,11 @@ type MinorVampire extending Person {
 
 接着，按小说的描述，露西似乎带来了一个新的人类“类型”。旧的露西已经消失了，新的露西是一个名为德古拉伯爵的 `Vampire`（吸血鬼）的 `slaves`（奴隶）。
 
-因此，与其尝试更改 `NPC` 类型，不如只是为 `MinorVampire` 增加一个指向 `NPC` 的可选链接：
+因此，与其尝试更改 `NPC` 类型，不如只是为 `MinorVampire` 增加一个指向 `Person` 的可选链接：
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> NPC;
+  link former_self -> Person;
 }
 ```
 
@@ -30,7 +30,7 @@ type MinorVampire extending Person {
 另一个对 `MinorVampire` 与其前身 `NPC` 可以做的（非正式的）关联是给 `NPC` 的 `last_appearance` 和 `MinorVampire` 的 `first_appearance` 设置相同的日期。首先，我们先更新 `NPC` 露西的 `last_appearance`：
 
 ```edgeql
-UPDATE NPC FILTER .name = 'Lucy Westenra'
+UPDATE Person FILTER .name = 'Lucy Westenra'
 SET {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
@@ -71,7 +71,7 @@ INSERT Vampire {
 };
 ```
 
-多亏了 `former_self` 链接，我们很容易找到所有来自 `NPC` 对象的小吸血鬼。即只需用 `EXISTS .former_self` 进行过滤：
+多亏了 `former_self` 链接，我们很容易找到所有来自 `Person` 对象的小吸血鬼。即只需用 `EXISTS .former_self` 进行过滤：
 
 ```edgeql
 SELECT MinorVampire {
@@ -93,7 +93,7 @@ SELECT MinorVampire {
 }
 ```
 
-使用其他的过滤方式也可以，比如使用 `FILTER .name IN NPC.name AND .first_appearance IN NPC.last_appearance;` 也是可以的，但检查链接是否 `EXISTS`（存在）最简单（也最保险）。我们还可以用 `cal::local_datetime` 替代 `cal::local_date` 作为时间属性的类型，以获得更精确的时间，但是我们现在还用不着。
+使用其他的过滤方式也可以，比如使用 `FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;` 也是可以的，但检查链接是否 `EXISTS`（存在）最简单（也最保险）。我们还可以用 `cal::local_datetime` 替代 `cal::local_date` 作为时间属性的类型，以获得更精确的时间，但是我们现在还用不着。
 
 ## 类型联合运算符：|
 
@@ -133,7 +133,7 @@ type Vampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> NPC {
+  link former_self -> Person {
     on target delete restrict;
   }
 }

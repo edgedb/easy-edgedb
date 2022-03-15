@@ -123,7 +123,7 @@ SELECT Person {
 abstract type Person {
   required property name -> str;
   multi link places_visited -> City;
-  property lover -> Person;
+  link lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
 ```
@@ -165,14 +165,14 @@ SELECT <cal::local_time>('15:44:56');
 假设我们的游戏中有一个时钟，它以 `str` 的形式给出时间，就像上面例子中的 '15:44:56'。现在让我们来创建一个 `Time` 类型，它对后续会很有帮助：
 
 ```sdl
-type Time {
-  required property date -> str;
-  property local_time := <cal::local_time>.date;
-  property hour := .date[0:2];
-}
+type Time { 
+  required property clock -> str; 
+  property clock_time := <cal::local_time>.clock; 
+  property hour := .clock[0:2]; 
+} 
 ```
 
-`.date[0:2]` 是使用“切片” {eql:op}`"slicing" <docs:arrayslice>` 的一个例子。[0:2] 表示从索引 0（第一个索引）开始，并到索引 2 _之前_ 停止，即取出索引 0 和 1。这也说明当你要将 `str` 转换为 `cal::local_time` 时，你必须要用两个数字字符来表示小时（即：09 可以，但 9 不行）。
+`.clock[0:2]` 是使用“切片” {eql:op}`"slicing" <docs:arrayslice>` 的一个例子。[0:2] 表示从索引 0（第一个索引）开始，并到索引 2 _之前_ 停止，即取出索引 0 和 1。这也说明当你要将 `str` 转换为 `cal::local_time` 时，你必须要用两个数字字符来表示小时（即：09 可以，但 9 不行）。
 
 所以下面这个语句是无法正常工作的：
 
@@ -193,7 +193,7 @@ ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:0
 
 ```edgeql
 INSERT Time {
-    date := '09:55:05',
+    clock := '09:55:05',
 };
 ```
 
@@ -201,23 +201,23 @@ INSERT Time {
 
 ```edgeql
 SELECT Time {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
 };
 ```
 
 执行后，我们得到了期望的输出，它展示了所有，包括小时：
 
-`{default::Time {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09'}}`
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09'}}`
 
 最后，我们可以在 `Time` 类型中添加一些逻辑来查看吸血鬼是醒着还是睡了。这里我们可以使用一个 `enum`，但简单起见，我们将它设为一个 `str`。
 
 ```sdl
 type Time {
-  required property date -> str;
-  property local_time := <cal::local_time>.date;
-  property hour := .date[0:2];
+  required property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19
     ELSE 'awake';
 }
@@ -230,7 +230,7 @@ type Time {
 
 现在，如果我们对所有属性进行 `SELECT`，我们将得到：
 
-`{default::Time {date: '09:55:05', local_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
 
 关于 `ELSE`，这里有一个注意事项：你可以在 `(result) IF (condition) ELSE` 格式中根据需要多次使用 `ELSE`。例如：
 
@@ -247,7 +247,7 @@ property awake := 'just waking up' IF <int16>.hour = 19 ELSE
 
 ```edgeql
 INSERT Time {
-  date := '22:44:10'
+  clock := '22:44:10'
 };
 ```
 
@@ -258,18 +258,18 @@ INSERT Time {
 ```edgeql
 SELECT ( # Start a selection
   INSERT Time { # Put the insert inside it
-    date := '22:44:10'
+    clock := '22:44:10'
   }
 ) # The bracket finishes the selection
   { # Now just choose the properties we want
-    date,
+    clock,
     hour,
     awake,
     double_hour := <int16>.hour * 2
   };
 ```
 
-现在的输出结果对我们来说更有意义了，即：`{default::Time {date: '22:44:10', hour: '22', awake: 'awake', double_hour: 44}}`。我们知道了时间（date）和小时（hour），同时也了解到了吸血鬼是醒着的，我们甚至可以对我们刚刚输入的对象做些其他计算，如示例中的 `double_hour`。
+现在的输出结果对我们来说更有意义了，即：`{default::Time {clock: '22:44:10', hour: '22', awake: 'awake', double_hour: 44}}`。我们知道了时间（clock）和小时（hour），同时也了解到了吸血鬼是醒着的，我们甚至可以对我们刚刚输入的对象做些其他计算，如示例中的 `double_hour`。
 
 [→ 点击这里查看到第 4 章为止的所有代码](code.md)
 

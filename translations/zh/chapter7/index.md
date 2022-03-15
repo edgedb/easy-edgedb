@@ -224,11 +224,11 @@ Parameter <bool>$has_modern_name: true
 ```edgeql
 SELECT(
   INSERT Time {
-    date := <str>$hour ++ <str>$minute ++ <str>$second
+    clock := <str>$hour ++ <str>$minute ++ <str>$second
   }
 ) {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
   awake
 };
@@ -242,8 +242,8 @@ Parameter <str>$second: 09
 ```
 {
   default::Time {
-    date: '100909',
-    local_time: <cal::local_time>'10:09:09',
+    clock: '100909',
+    clock_time: <cal::local_time>'10:09:09',
     hour: '10',
     awake: 'asleep',
   },
@@ -257,17 +257,17 @@ Parameter <str>$second: 09
 ```edgeql
 SELECT(
   INSERT Time {
-    date := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
+    clock := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
   }
 ) {
-  date,
-  local_time,
+  clock,
+  clock_time,
   hour,
   awake
 };
 ```
 
-当然，`Time` 类型的 `date` 属性需要正确的格式，所以上面的做法不是一个好主意。这里只是为了展示一下你可以如何做。
+当然，`Time` 类型的 `clock` 属性需要正确的格式，所以上面的做法不是一个好主意。这里只是为了展示一下你可以如何做。
 
 `OPTIONAL` 的相反是 `REQUIRED`，但因为它是默认的，所以你不需要总是写明它。
 
