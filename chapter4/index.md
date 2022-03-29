@@ -101,7 +101,7 @@ This also shows why abstract types are useful. Here we did a quick search on `Pe
 
 We've got a lot of single characters, let's try selecting just one of them:
 
-```
+```edgeql
 SELECT Person {
   name,
   is_single := NOT EXISTS Person.lover,

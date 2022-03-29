@@ -126,7 +126,7 @@ error: operator '+' cannot be applied to operands of type 'std::str' and 'std::i
 
 And to fix it, just use the angle brackets:
 
-```
+```edgeql
 SELECT <int32>'9' + 9;
 ```
 

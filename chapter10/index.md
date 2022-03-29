@@ -135,7 +135,7 @@ So it sends each tuple into the `FOR` loop, filters by the string (which is `dat
 
 Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`, like this:
 
-```
+```edgeql
 WITH london := ('London', 3500000),
 SELECT <tuple<json, int32>>london;
 ```
@@ -148,7 +148,7 @@ That gives us this output:
 
 Here's another example if we need to do some math with floats on London's population:
 
-```
+```edgeql
 WITH london := <tuple<json, float64>>('London', 3500000),
   SELECT (london.0, london.1 / 9);
 ```
