@@ -129,7 +129,7 @@ SET {
 
 即使 `HasNumber` 很少被用到，它也可能在之后变得很有用。比如，对于游戏后期的类型，它可能会被用于市民或随机的 NPC：“店主 2”、“马车司机 12”等。
 
-我们的吸血鬼类型扩展自 `Person`，而 `MinorVampire` 有一个指向 `NPC` 的可选（单一）链接。这是因为一些角色最初是人类，然后“重生”成为了吸血鬼。有了这个格式，我们可以使用 `Person` 中的 `first_appearance` 和 `last_appearance` 属性让各个角色出现在或离开游戏。如果有人变成了 `MinorVampire`，我们可以将两者链接起来。
+我们的吸血鬼类型扩展自 `Person`，而 `MinorVampire` 有一个指向 `Person` 的可选（单一）链接。这是因为一些角色最初是人类，然后“重生”成为了吸血鬼。有了这个格式，我们可以使用 `Person` 中的 `first_appearance` 和 `last_appearance` 属性让各个角色出现在或离开游戏。如果有人变成了 `MinorVampire`，我们可以将两者链接起来。
 
 ```sdl
 type Vampire extending Person {
@@ -137,7 +137,7 @@ type Vampire extending Person {
 }
 
 type MinorVampire extending Person {
-  link former_self -> NPC;
+  link former_self -> Person;
 }
 ```
 
@@ -172,9 +172,9 @@ type PC extending Person {
 - 选择 `HorseDrawnCarriage` 可以提高速度但会减少金钱，
 - 选择 `Train` 提速最多，同样会减少钱，但只能沿着铁路线行驶等。
 
-`Visit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `time` 的属性，是一个字符串，并以下面的方式被使用：
+`Visit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `clock` 的属性，是一个字符串，并以下面的方式被使用：
 
-- 将其转换为 {eql:type}`docs:cal::local_time` 并赋予属性 `local_time`，
+- 将其转换为 {eql:type}`docs:cal::local_time` 并赋予属性 `clock_time`，
 - 使用切片获取它的前两个字符来并赋予属性 `hour`。因为它是一个字符串，所以即使像 `1` 这样的单个数字也需要用两位数书写，即“01”，以适应“小时数”的获取方式，
 - 由另一个名为 `awake` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
 
@@ -183,9 +183,9 @@ type Visit {
   required link ship -> Ship;
   required link place -> Place;
   required property date -> cal::local_date;
-  property time -> str;
-  property local_time := <cal::local_time>.time;
-  property hour := .time[0:2];
+  property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```

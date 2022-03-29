@@ -40,7 +40,7 @@ MissingRequiredError: missing value for required property default::Person.name
 
 `str` 是指一个字符串，可以包含在单引号内：`'Jonathan Harker'` 或双引号内：`"Jonathan Harker"`。引号前使用转义字符 `\` 可使 EdgeDB 将引号视为一个字母打印出来，如：`'Jonathan Harker\'s journal'`。
 
-`array` 是指相同类型的集合，即数组，我们这里的数组是一个 `str` 的数组。我们希望它看起来像这样：`["Bistritz", "Vienna", "Buda-Pesth"]`。这样便于我们稍后搜索并查看哪个角色访问过哪里。
+`array` 是指相同类型的集合，即数组，我们这里的数组是一个 `str` 的数组。我们希望它看起来像这样：`["Bistritz", "Munich", "Buda-Pesth"]`。这样便于我们稍后搜索并查看哪个角色访问过哪里。
 
 `places_visited` 不是一个 `required` 属性，因为我们之后可能会添加不会去任何地方的配角。比如“比斯特里察的某个客栈老板”或是其他什么人，我们并不了解或关心他的 `places_visited`。
 
@@ -53,7 +53,7 @@ type City {
 }
 ```
 
-这是类似的，只有带有字符串的属性。《德古拉》这本书出版于 1897 年，当时有些城市的名称拼写与现在有所不同。书中所有的城市都有名称（这就是为什么我们要在属性 `name` 前用 `required`），但有些城市并不需要不同的现代名称。比如，维也纳（Vienna）至今仍然拼写为维也纳（Vienna）。我们希望我们的游戏会将书中的城市名称与其现代名称关联起来，以便现在的我们可以轻松地在地图上找到它们。
+这是类似的，只有带有字符串的属性。《德古拉》这本书出版于 1897 年，当时有些城市的名称拼写与现在有所不同。书中所有的城市都有名称（这就是为什么我们要在属性 `name` 前用 `required`），但有些城市并不需要不同的现代名称。比如，慕尼黑（Munich）至今仍然拼写为慕尼黑（Munich）。我们希望我们的游戏会将书中的城市名称与其现代名称关联起来，以便现在的我们可以轻松地在地图上找到它们。
 
 ## 迁移
 
@@ -158,7 +158,7 @@ INSERT City {
 ```edgeql
 INSERT Person {
   name := 'Jonathan Harker',
-  places_visited := ["Bistritz", "Vienna", "Buda-Pesth"],
+  places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
 ```
 
@@ -225,15 +225,19 @@ SELECT City {
 
 再一次说明，你不是必须在 `modern_name` 后面使用逗号，因为它是查询的末尾。
 
-相信你还记得，书中提到的其中一个城市（维也纳 Vienna）并没有与以前不同的现代名称 `modern_name`。但是它仍会显示一个“空集”，因为在 EdgeDB 中，所有数值都是元素的集合，即使里面没有任何东西。这里是上面查询的结果：
+相信你还记得，书中提到的其中一个城市（慕尼黑 Munich）并没有与以前不同的现代名称 `modern_name`。但是它仍会显示一个“空集”，因为在 EdgeDB 中，所有数值都是元素的集合，即使里面没有任何东西。这里是上面查询的结果：
 
 ```
-{default::City {modern_name: {}}, default::City {modern_name: 'Budapest'}, default::City {modern_name: 'Bistrița'}}
+{
+  default::City {modern_name: {}},
+  default::City {modern_name: 'Budapest'},
+  default::City {modern_name: 'Bistrița'},
+}
 ```
 
 因此有对象的 `modern_name` 是空集，同时另外两个对象的 `modern_name` 都有各自的名字。这再一次向我们展示了 EdgeDB 不存在其他一些语言里的 `null`，如果什么都没有，它会返回一个空的集合。 
 
-现在第一个对象看起来是个谜（因为它不存在 `modern_name`），因此我们将在查询语句中添加 `name`，以便我们可以确认它就是城市“维也纳”（Vienna）：
+现在第一个对象看起来是个谜（因为它不存在 `modern_name`），因此我们将在查询语句中添加 `name`，以便我们可以确认它就是城市“慕尼黑”（Munich）：
 
 ```edgeql
 SELECT City {

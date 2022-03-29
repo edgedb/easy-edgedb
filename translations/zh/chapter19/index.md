@@ -189,9 +189,9 @@ SELECT Ship.<ship[IS Visit] {
 
 ```sdl
 type Time {
-  required property date -> str;
-  property local_time := <cal::local_time>.date;
-  property hour := .date[0:2];
+  required property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```
@@ -201,7 +201,7 @@ type Time {
 ```edgeql
 WITH time := (
   INSERT Time {
-    date := '13:00:00'
+    clock := '13:00:00'
   }
 )
 SELECT Ship.<ship[IS Visit] {
@@ -213,8 +213,8 @@ SELECT Ship.<ship[IS Visit] {
   },
   date,
   time_ := time {
-    date,
-    local_time,
+    clcok,
+    clock_time,
     hour,
     awake
   },
@@ -230,8 +230,8 @@ SELECT Ship.<ship[IS Visit] {
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1887-10-28',
     time_: default::Time {
-      date: '13:00:00',
-      local_time: <cal::local_time>'13:00:00',
+      clock: '13:00:00',
+      clock_time: <cal::local_time>'13:00:00',
       hour: '13',
       awake: 'asleep',
     },
@@ -248,19 +248,19 @@ type Visit {
   link ship -> Ship;
   link place -> Place;
   required property date -> cal::local_date;
-  property time -> str;
-  property local_time := <cal::local_time>.time;
-  property hour := .time[0:2];
+  property clock -> str;
+  property clock_time := <cal::local_time>.clock;
+  property hour := .clock[0:2];
   property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
 }
 ```
 
-然后更新对加拉茨（Galatz）的访问，给它一个 `time`：
+然后更新对加拉茨（Galatz）的访问，给它一个 `clock`：
 
 ```edgeql
 UPDATE Visit FILTER .place.name = 'Galatz'
 SET {
-  time := '13:00:00'
+  clock := '13:00:00'
 };
 ```
 
@@ -275,10 +275,10 @@ SELECT Ship.<ship[IS Visit] {
     name
   },
   date,
-  time,
+  clock,
   hour,
   awake,
-  when_arthur_got_the_telegram := (<cal::local_time>.time) + <duration>'2 hours, 5 minutes, 10 seconds'
+  when_arthur_got_the_telegram := (<cal::local_time>.clock) + <duration>'2 hours, 5 minutes, 10 seconds'
 } FILTER .place.name = 'Galatz';
 ```
 
@@ -290,7 +290,7 @@ SELECT Ship.<ship[IS Visit] {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1887-10-28',
-    time: '13:00:00',
+    clock: '13:00:00',
     hour: '13',
     awake: 'asleep',
     when_arthur_got_the_telegram: <cal::local_time>'15:05:10',
