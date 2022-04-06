@@ -4,12 +4,12 @@ leadImage: illustration_00.jpg
 
 # Welcome - Easy EdgeDB
 
+Welcome to Easy EdgeDB! It's an interactive, illustrated textbook designed as a one-stop shop for learning EdgeDB.
+
 ```{eval-rst}
 .. note::
   This book is also available in `Chinese </easy-edgedb/zh>`_.
 ```
-
-Welcome to Easy EdgeDB! It's an interactive, illustrated textbook designed as a one-stop shop for learning EdgeDB.
 
 We started writing this book shortly after the first alpha release of EdgeDB in Spring 2019. For the first time, we had a functional version of the thing we'd been thinking about for so long: an open-source database powered by PostgreSQL that combines the strictness of relational databases, the declarative schema of ORMs, and the painless deep querying of GraphQL—without sacrificing power, consistency, or performance. 
 
