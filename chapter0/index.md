@@ -4,7 +4,7 @@ leadImage: illustration_00.jpg
 
 # Welcome - Easy EdgeDB
 
-Welcome to Easy EdgeDB! It's an interactive, illustrated textbook designed as a one-stop shop for learning EdgeDB.
+Welcome to Easy EdgeDB! It's an illustrated textbook designed as a one-stop shop for learning EdgeDB.
 
 ```{eval-rst}
 .. note::
