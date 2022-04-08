@@ -199,7 +199,7 @@ By the way, now we could use this method to insert our five `Crewman` objects in
 FOR n IN {1, 2, 3, 4, 5}
 UNION (
   INSERT Crewman {
-    number := n
+    number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
   }
