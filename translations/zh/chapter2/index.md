@@ -126,7 +126,7 @@ error: operator '+' cannot be applied to operands of type 'std::str' and 'std::i
 
 要修复它，只需要使用 `<>` 尖括号指明要将字符串 `'9'` 转换为 `int32` 类型：
 
-```
+```edgeql
 SELECT <int32>'9' + 9;
 ```
 

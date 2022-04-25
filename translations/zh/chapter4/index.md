@@ -101,7 +101,7 @@ SELECT Person {
 
 我们得到了很多“单身狗”，现在让我们尝试只选择其中一个：
 
-```
+```edgeql
 SELECT Person {
   name,
   is_single := NOT EXISTS Person.lover,
