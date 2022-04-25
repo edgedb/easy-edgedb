@@ -144,7 +144,7 @@ type Vampire extending Person {
 - 会使事情变得复杂。假设我们声明的 `Vampire` 里包含一个指向 `MinorVampire` 的 `slaves` 链接，在我们插入 `Vampire` 时，如果我们还没有创建对应的 `MinorVampire`，那么它将是空 `{}`，则我们将不得不在创建 `MinorVampire` 后，再对 `Vampire` 进行更新；如果我们先创建的是 `MinorVampire`，且它有一个指向 `Vampire` 的 `master` 链接，而我们还没有创建 `Vampire`，那么这个 `master` 将不存在，尤其当它是个 `required link` 时，我们必须提供一个 `master`。
 - 如果这两种类型相互链接，我们将无法在需要时删除它们。删除时的错误提示如下所示：
 
-```
+```edgeql-repl
 edgedb> DELETE MinorVampire;
 ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
   Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).

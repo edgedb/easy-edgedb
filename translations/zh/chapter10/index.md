@@ -135,7 +135,7 @@ UNION (
 
 在这个部分的最后，我们再说一下关于类型的转换。我们知道我们可以用 `<>` 在标量类型间做转换，这也同样适用于标量类型的元组，且会使用与 `<>` 相同的格式，只是需要把它放在 `<tuple>` 里面，像这样：
 
-```
+```edgeql
 WITH london := ('London', 3500000),
 SELECT <tuple<json, int32>>london;
 ```
@@ -148,7 +148,7 @@ SELECT <tuple<json, int32>>london;
 
 下面是另一个例子，假设我们需要对伦敦人口进行一些浮点数的数学计算：
 
-```
+```edgeql
 WITH london := <tuple<json, float64>>('London', 3500000),
   SELECT (london.0, london.1 / 9);
 ```
