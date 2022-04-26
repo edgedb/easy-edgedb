@@ -39,7 +39,7 @@ abstract type HasCoffins {
 ```sdl
 abstract type Place extending HasCoffins {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   };
   property modern_name -> str;
   property important_places -> array<str>;
