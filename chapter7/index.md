@@ -51,6 +51,18 @@ abstract type Person {
 
 With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
+Also, the `delegated constraint` applies to `Place`, since for example `Country` can have the same name as `City`. So let's update `name` property for the `Place` type:
+
+```sdl
+abstract type Place {
+  required property name -> str {
+      delegated constraint exclusive;
+  };
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
 ## Using functions in queries
 
 Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:

@@ -39,7 +39,7 @@ With our abstract type done, we will want to have a lot of types `extending` thi
 ```sdl
 abstract type Place extending HasCoffins {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   };
   property modern_name -> str;
   property important_places -> array<str>;

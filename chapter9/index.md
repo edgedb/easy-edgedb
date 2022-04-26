@@ -96,7 +96,7 @@ This can be useful if you want a post date when you insert an object. With this 
 ```sdl
 abstract type Place {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   }
   property modern_name -> str;
   property important_places -> array<str>;
@@ -109,7 +109,7 @@ This will actually generate the date when you *query* a `Place` object, not when
 ```sdl
 abstract type Place {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   }
   property modern_name -> str;
   property important_places -> array<str>;
