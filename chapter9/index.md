@@ -349,7 +349,7 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
    ```sdl
    abstract type Person {
      required property name -> str {
-       constraint exclusive;
+       delegated constraint exclusive;
      }
      property age -> int16;
      property strength -> int16;
