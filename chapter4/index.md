@@ -12,7 +12,7 @@ First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new 
 ```sdl
 abstract type Person {
   required property name -> str;
-  multi link places_visited -> City;
+  multi link places_visited -> Place;
   link lover -> Person;
 }
 ```
@@ -122,7 +122,7 @@ We can also put the computed property in the type itself. Here's the same comput
 ```sdl
 abstract type Person {
   required property name -> str;
-  multi link places_visited -> City;
+  multi link places_visited -> Place;
   link lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
