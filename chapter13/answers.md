@@ -86,7 +86,7 @@ Now it gives this:
 Similar to how `SELECT Vampire.name` just gives all the names for the `Vampire` type (as opposed to `SELECT Vampire { name }`, you can do this:
 
 ```edgeql
-SELECT (Introspect Vampire).links { name };
+SELECT (INTROSPECT Vampire).links { name };
 ```
 
 Here's the output:

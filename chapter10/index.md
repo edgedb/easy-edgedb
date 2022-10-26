@@ -366,7 +366,7 @@ Without the `$$` it will look like four separate strings with three unknown keyw
 
 ## All the scalar types
 
-You now have an understanding of all the EdgeDB scalar types. Summed up, the are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `uuid`, `json`, and `enum`. You can see the documentation for them {ref}`here <docs:ref_datamodel_scalar_types>`.
+You now have an understanding of all the EdgeDB scalar types. Summed up, they are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `uuid`, `json`, and `enum`. You can see the documentation for them {ref}`here <docs:ref_datamodel_scalar_types>`.
 
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 

@@ -126,7 +126,7 @@ function visited(person: str, city: str) -> bool
   );
 ```
 
-Now our queries are much faster:
+Now our queries are much shorter:
 
 ```edgeql-repl
 edgedb> SELECT visited('Mina Murray', 'London');
@@ -352,7 +352,7 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
 
 ## Time to practice
 
-1. Consider these two functions. Will EdgeDB accept the second one?
+1. Consider these two functions. Will EdgeDB allow both of them to be defined at the same time?
 
    First function:
 
@@ -368,7 +368,7 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
      using(<int32>input);
    ```
 
-2. How about these two functions? Will EdgeDB accept the second one?
+2. How about these two functions? Will EdgeDB allow both of them to be defined at the same time?
 
    First function:
 
