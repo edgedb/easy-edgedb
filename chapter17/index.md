@@ -86,7 +86,7 @@ will return `{true}`.
 
 ## Putting abstract types together
 
-Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. It would be nice to have a generic to update this information. But the problem right now is this:
+Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
 
 - the `HasCoffins` type is an abstract type, with one property: `coffins`
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
