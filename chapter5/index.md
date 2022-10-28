@@ -23,7 +23,7 @@ The `T` inside there is just a separator, and the `Z` at the end stands for "zer
 
 One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here is its signature <docs:std::to_datetime>`, which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
 
-By the way, you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=-3c8G0JMM5Q) thanks to rounding errors. This example shows it:
+By the way, you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
 
 ```edgeql-repl
 edgedb> SELECT 6.777777777777777; # Good so far

@@ -366,7 +366,7 @@ SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to
 
 ## 所有标量类型
 
-你现在已经了解了 EdgeDB 的所有标量类型。总结起来有：`int16`、`int32`、`int64`、`float32`、`float64`、`bigint`、`decimal`、`sequence`、`str`、`bool`、`datetime`、 `duration`、`cal::local_datetime`、`cal::local_date`、`cal::local_time`、`uuid`、`json` 和 `enum`。你可以在 {ref}`这里 <docs:ref_datamodel_scalar_types>` 查看它们的文档。
+你现在已经了解了 EdgeDB 的所有标量类型。总结起来有：`int16`、`int32`、`int64`、`float32`、`float64`、`bigint`、`decimal`、`sequence`、`str`、`bool`、`datetime`、 `duration`、`cal::local_datetime`、`cal::local_date`、`cal::local_time`、`cal::relative_duration`, `cal::date_duration`, `uuid`、`json` 和 `enum`。你可以在 {ref}`这里 <docs:ref_datamodel_scalar_types>` 查看它们的文档。
 
 ## 关键词 UNLESS CONFLICT ON + ELSE + UPDATE
 
