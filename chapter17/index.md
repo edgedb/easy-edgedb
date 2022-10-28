@@ -102,7 +102,7 @@ abstract type HasNameAndCoffins {
     default := 0;
   }
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
     constraint max_len_value(30);
   }
 }

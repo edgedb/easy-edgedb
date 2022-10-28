@@ -7,14 +7,14 @@ START MIGRATION TO {
         default := 0;
       }
       required property name -> str {
-        constraint exclusive;
+        delegated constraint exclusive;
         constraint max_len_value(30);
       }
     }
   
     abstract type Person {
       property name -> str {
-        constraint exclusive;
+        delegated constraint exclusive;
       }
       multi link places_visited -> Place;
       multi link lover -> Person;

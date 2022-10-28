@@ -49,7 +49,7 @@ abstract type HasNameAndCoffins {
     default := 0;
   }
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
     constraint max_len_value(30);
   }
 }
@@ -66,7 +66,7 @@ abstract type Person {
   property title -> str;
   property degrees -> str;
   required property name -> str {
-    constraint exclusive
+    delegated constraint exclusive;
   }
   property age -> int16;
   property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;

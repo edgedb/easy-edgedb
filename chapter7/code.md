@@ -4,7 +4,7 @@ START MIGRATION TO {
   module default {
     abstract type Person {
       required property name -> str {
-        constraint exclusive;
+        delegated constraint exclusive;
       }
       multi link places_visited -> Place;
       link lover -> Person;

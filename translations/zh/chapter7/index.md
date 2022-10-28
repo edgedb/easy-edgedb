@@ -51,6 +51,16 @@ abstract type Person {
 
 有了它，对于扩展自 `Person` 的类型，如 `PC`、`NPC`、`Vampire` 等，分别可以拥有最多一个叫做“Jonathan Harker”的对象。
 
+```sdl
+abstract type Place {
+  required property name -> str {
+      delegated constraint exclusive;
+  };
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+```
+
 ## 在查询中使用函数
 
 现在让我们来考虑一下我们的游戏机制。书里说城堡里的门对于乔纳森来说太难打开了，但是德古拉足够强壮，可以打开所有。在真正的游戏中，它会更复杂，但我们可以尝试用一些简单的方法来模仿这个事实：

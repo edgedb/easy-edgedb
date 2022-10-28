@@ -96,7 +96,7 @@ edgedb> SELECT datetime_current();
 ```sdl
 abstract type Place {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   }
   property modern_name -> str;
   property important_places -> array<str>;
@@ -109,7 +109,7 @@ abstract type Place {
 ```sdl
 abstract type Place {
   required property name -> str {
-    constraint exclusive;
+    delegated constraint exclusive;
   }
   property modern_name -> str;
   property important_places -> array<str>;
@@ -349,7 +349,7 @@ INSERT NPC {
    ```sdl
    abstract type Person {
      required property name -> str {
-       constraint exclusive;
+       delegated constraint exclusive;
      }
      property age -> int16;
      property strength -> int16;
