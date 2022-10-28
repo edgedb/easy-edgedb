@@ -12,7 +12,7 @@ leadImage: illustration_04.jpg
 ```sdl
 abstract type Person {
   required property name -> str;
-  multi link places_visited -> City;
+  multi link places_visited -> Places;
   link lover -> Person;
 }
 ```
@@ -122,7 +122,7 @@ SELECT Person {
 ```sdl
 abstract type Person {
   required property name -> str;
-  multi link places_visited -> City;
+  multi link places_visited -> Places;
   link lover -> Person;
   property is_single := NOT EXISTS .lover;
 }
