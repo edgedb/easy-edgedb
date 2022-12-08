@@ -280,7 +280,7 @@ type City extending Place {
 
 4. How would you display the name of every `Person` in uppercase followed by a space and then the same name in lowercase?
 
-   Hint: the {eql:func}`docs:std::str_repeat` function could help (though there is more than one way to do it)
+   Hint: the {eql:func}`docs:std::str_upper` function could help (though you will also need another function)
 
 5. How would you use `re_match_all()` to display all the `Person.name`s with `Crewman` in the name? e.g. Crewman 1, Crewman 2, etc.
 

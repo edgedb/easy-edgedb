@@ -108,10 +108,10 @@ Here's the output:
 {2, 3, 3, 4}
 ```
 
-You can see that `DISTINCT` works individually on each set, so `SELECT DISTINCT {1, 2} + {1, 2};` and `SELECT {1, 2} + {1, 2};` are the same. But if you were to write `SELECT DISTINCT {2, 2}` the output would be just `{2}`.
+The `DISTINCT` operator binds stronger than `+`. So it only applies to the part of the expression before `+`, which is `{1, 2}`. This is why `SELECT DISTINCT {1, 2} + {1, 2};` and `SELECT {1, 2} + {1, 2};` are the same. But if you were to write `SELECT DISTINCT {2, 2}` the output would be just `{2}`.
 
 #### 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
 
 The output will be `{4, 4}` because `DISTINCT` only works on the first set.
 
-To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`. Or you can wrap the whole thing like this: `SELECT DISTINCT({2, 2} + {2,2})`.
+To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`. Or you can apply `DISTINCT` to the whole thing by using parentheses like this: `SELECT DISTINCT({2, 2} + {2, 2})`.

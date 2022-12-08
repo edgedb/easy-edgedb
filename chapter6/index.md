@@ -222,13 +222,27 @@ SELECT <json>Vampire {
 };
 ```
 
-The output is:
+This will transform the results into JSON. However, what the REPL will show by default looks more like this:
 
 ```
 {
   "{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
 }
 ```
+
+Let's go through the result together. The outer curly braces are just telling you that what's inside is one or more results returned by the query. Then the actual result is a string containing JSON. Because the JSON part is inside a string all the `"` there need to be escaped, so they appear as `\"`.
+
+To make REPL show JSON in a nicer format just type `\set output-format json-pretty`. Then the results will look more familiar:
+
+```json
+{
+  "name": "Count Dracula",
+  "slaves": [{"name": "Woman 1"}, {"name": "Woman 2"}, {"name": "Woman 3"}]
+}
+```
+
+To restore the default format type: `\set output-format default`.
+
 
 ## Converting back from JSON
 

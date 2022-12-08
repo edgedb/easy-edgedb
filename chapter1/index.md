@@ -74,6 +74,26 @@ Lastly, we need to do a migration. This will give the database the structure we 
 - Then you add the types we mentioned above, and finish up the block by ending with a `}`. Then outside of that, type `POPULATE MIGRATION` to add the data.
 - Finally, you type `COMMIT MIGRATION` and the migration is done.
 
+Putting all of that together we get:
+```edgeql
+START MIGRATION TO {
+  module default {
+    type Person {
+      required property name -> str;
+      multi link places_visited -> City;
+    }
+
+    type City {
+      required property name -> str;
+      property modern_name -> str;
+    }
+  }
+};
+
+POPULATE MIGRATION;
+COMMIT MIGRATION;
+```
+
 There are naturally a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
 
 - {ref}`Admin commands <docs:ref_cheatsheet_admin>`: Creating user roles, setting passwords, configuring ports, etc.
@@ -416,6 +436,8 @@ Success! Now we get the output we wanted:
 ```
 
 Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `FILTER`, which we will learn to use in the next chapter.
+
+Note that if you have inserted "Johnathan Harker" multiple times, you will have multiple `Person` objects with that name corresponding to each `INSERT` command. This is OK for now. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
 
 [Here is all our code so far up to Chapter 1.](code.md)
 
