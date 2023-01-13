@@ -54,10 +54,10 @@ So now let's overload the `fight()` function. Right now it only works for one `P
 function fight(people_names: array<str>, opponent: Person) -> str
   using (
     WITH
-        people := (SELECT Person FILTER .name IN array_unpack(people_names)),
+        people := (SELECT Person FILTER contains(people_names, .name)),
     SELECT
-        (array_join(people_names, ', ') ?? 'Fighters') ++ ' win!'
-        IF (sum(people.strength) ?? 0) > (opponent.strength ?? 0)
+        array_join(people_names, ', ') ++ ' win!'
+        IF sum(people.strength) > (opponent.strength ?? 0)
         ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
   );
 ```
