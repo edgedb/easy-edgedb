@@ -62,11 +62,12 @@ function fight(people_names: array<str>, opponent: Person) -> str
   );
 ```
 
-With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing some new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
+With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
 
-- We need to call `array_unpack` when we assign the value to `people` in our `WITH`. This converts our array to a set which is needed because `IN` only works with a set.
-- At the beginning of our `SELECT`, we call `array_join` on `people_names` so that this is displayed as a string. In order to use the coalescing operator (`??`), both operands must be of the same type. Since our alternative is the string `"Fighters"`, we need this side to be a string as well.
+- We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
 - `sum` in the next line of our `SELECT` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
+
+You may wonder why we provide a default value for the opponent name (`opponent.name ?? 'Opponent'`) but not for the names of the people in the group. This is because, if the array of names is empty, the group cannot win since no `Person` object will be returned from the query. We can't have a case where `people_names` is empty but the party won the fight, so no need for a fallback name to call the group! The `.name` property isn't required though, so since you pass in the opponent's `Person` object directly, you could pass in a powerful opponent without a name. The group is selected by their names, so there's no way to do the same for their side.
 
 Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
 
