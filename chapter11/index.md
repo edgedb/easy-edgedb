@@ -141,7 +141,7 @@ InvalidFunctionDefinitionError: return cardinality mismatch in function
 
 This happens because `name` and `strength` are not required on our `Person` type. If we pass this function at least one `Person` without a value for one of these properties, the function will return an empty set. (More on that in the next chapter.) EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
 
-We could go back and require the `name` and `strength` properties. We'd need to make sure all of our `Person` objects have values for each of them. That's a lot of hassle, and it's not something we're ready to do right now.
+We could go back and require the `name` and `strength` properties. We'd need to make sure all of our `Person` objects have values for each of them. That's a lot of trouble, and it's not something we're ready to do right now.
 
 ## Providing fallbacks with the coalescing operator
 

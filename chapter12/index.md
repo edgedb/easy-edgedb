@@ -190,7 +190,7 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
 SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
-The output is... maybe unexpected if you didn't fully comprehend the previous paragraph.
+The result may not be what you'd expect.
 
 ```
 {}
