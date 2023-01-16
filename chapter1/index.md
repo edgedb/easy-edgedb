@@ -80,7 +80,7 @@ START MIGRATION TO {
   module default {
     type Person {
       required property name -> str;
-      multi link places_visited -> City;
+      property places_visited -> array<str>;
     }
 
     type City {
