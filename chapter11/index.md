@@ -1,5 +1,5 @@
 ---
-tags: Writing Functions, Multiplication
+tags: Writing Functions, Multiplication, Coalescing
 ---
 
 # Chapter 11 - What's wrong with Lucy?
@@ -126,11 +126,53 @@ Now let's write a function where we have two characters fight. We will make it a
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+    one.name ++ ' wins!'
+    IF one.strength > two.strength
+    ELSE two.name ++ ' wins!'
   );
 ```
 
-So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other:
+The function _looks_ good, but when you try to create it, you'll get an error:
+
+```
+InvalidFunctionDefinitionError: return cardinality mismatch in function
+  declared to return exactly one value
+```
+
+This happens because `name` and `strength` are not required on our `Person` type. If we pass this function at least one `Person` without a value for one of these properties, the function will return an empty set. (More on that in the next chapter.) EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
+
+We could go back and require the `name` and `strength` properties. We'd need to make sure all of our `Person` objects have values for each of them. That's a lot of trouble, and it's not something we're ready to do right now.
+
+## Providing fallbacks with the coalescing operator
+
+The easiest way to fix our function would be to provide some sort of fallback for the properties that might not be set. If `one` doesn't have a name, we could just refer to them as `Fighter 1`. If someone doesn't have a strength, we could just default their strength to `0`.
+
+To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which is written `??`. It evaluates to whatever is on the left if that's not empty. Otherwise, it evaluates to whatever is on the right.
+
+Here is a quick example:
+
+```edgeql-repl
+edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
+```
+
+The empty set is on the left, but since it _is_ the empty set, it doesn't get the nod from the coalescing operator. Instead, this query will produce the string to the right of the coalescing operator: `{'Count Dracula is now in Whitby'}`
+
+If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
+
+Here's how we can use the coalescing operator to fix our function:
+
+```sdl
+function fight(one: Person, two: Person) -> str
+  using (
+    (one.name ?? 'Fighter 1') ++ ' wins!'
+    IF (one.strength ?? 0) > (two.strength ?? 0)
+    ELSE (two.name ?? 'Fighter 2') ++ ' wins!'
+  );
+```
+
+Now, EdgeDB has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+
+So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight` function:
 
 ```edgeql
 WITH

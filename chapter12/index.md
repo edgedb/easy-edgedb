@@ -48,39 +48,45 @@ Now let's `SELECT Person.strength;` and see if it works:
 
 Looks like it worked.
 
-So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight. There are a lot of ways to do it, but we'll choose a simple one:
+So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight.
 
 ```sdl
-function fight(names: str, one: int16, two: str) -> str
+function fight(people_names: array<str>, opponent: Person) -> str
   using (
-    WITH opponent := assert_single((SELECT Person FILTER .name = two))
+    WITH
+        people := (SELECT Person FILTER contains(people_names, .name)),
     SELECT
-        names ++ ' win!' IF one > opponent.strength ELSE
-        two ++ ' wins!'
+        array_join(people_names, ', ') ++ ' win!'
+        IF sum(people.strength) > (opponent.strength ?? 0)
+        ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
   );
 ```
+
+With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
+
+- We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
+- `sum` in the next line of our `SELECT` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
+
+You may wonder why we provide a default value for the opponent name (`opponent.name ?? 'Opponent'`) but not for the names of the people in the group. This is because, if the array of names is empty, the group cannot win since no `Person` object will be returned from the query. We can't have a case where `people_names` is empty but the party won the fight, so no need for a fallback name to call the group! The `.name` property isn't required though, so since you pass in the opponent's `Person` object directly, you could pass in a powerful opponent without a name. The group is selected by their names, so there's no way to do the same for their side.
 
 Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
 
 ```sdl
 fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: str) -> str
+fight(people_names: array<str>, opponent: Person) -> str
 ```
 
-If we tried to overload it with an input of `(Person, Person)`, it wouldn't work because it's the same. That's because EdgeDB uses the input we give it to know which form of the function to use.
+If we tried to overload our function with an input of `(Person, Person)`, it wouldn't work because that's the same as the original signature. EdgeDB uses the input we give it to know which form of the function to use, so without different signatures, it would have no way to decide between the two.
 
-So now it's the same function name, but we enter the names of the people together, their strength together, and then the `Person` they are fighting.
+The function name is the same, but to call it, we enter an array of the fighters' names and the `Person` they are fighting.
 
 Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
 
 ```edgeql
 WITH
-  jon_and_ren_strength := <int16>(
-    SELECT sum(
-      (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength
-    )
-  ),
-SELECT fight('Jon and Ren', jon_and_ren_strength, 'Count Dracula');
+  party := ['Jonathan Harker', 'Renfield'],
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+SELECT fight(party, dracula);
 ```
 
 So did they...
@@ -93,26 +99,20 @@ No, they didn't win. How about four people?
 
 ```edgeql
 WITH
-  four_people_strength := <int16>(
-    SELECT sum(
-      (
-        SELECT NPC
-        FILTER .name IN {'Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'}
-      ).strength
-    )
-  ),
-SELECT fight('The four people', four_people_strength, 'Count Dracula');
+  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'],
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+SELECT fight(party , dracula);
 ```
 
 Much better:
 
 ```
-{'The four people win!'}
+{'Renfield, The innkeeper, Arthur Holmwood, Jonathan Harker win!'}
 ```
 
-So that's how function overloading works - you can create functions with the same name as long as the signature is different.
+That's how function overloading works - you can create functions with the same name as long as the signature is different.
 
-You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which takes in all numeric types and returns the sum. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
+You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which we used earlier to get our party strength. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
 `fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter.
 
@@ -179,9 +179,11 @@ fight(names: str, one: int16, two: str) -> str
 
 You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: str)`. The `-> str` part isn't needed.
 
-## More about Cartesian products - the coalescing operator
+## More about Cartesian products and the coalescing operator
 
-Now let's learn more about Cartesian products in EdgeDB. You might be surprised to see that even a single `{}` input always results in an output of `{}`, but this is the way that Cartesian products work. Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
+Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
+
+Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
@@ -189,13 +191,13 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
 SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
-The output is....maybe unexpected if you didn't read the previous paragraph.
+The result may not be what you'd expect.
 
 ```
 {}
 ```
 
-!! It's an empty set. But a search for places that start with b gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
+Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
 
 ```edgeql
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -227,21 +229,7 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 
 In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
 
-To do that we can use the so-called {eql:op}`coalescing operator <docs:coalesce>`, which is written `??`. The explanation for the operator is nice and simple:
-
-`Evaluate to A for non-empty A, otherwise evaluate to B.`
-
-So if the item on the left is not empty it will return that, and otherwise it will return the one on the right.
-
-Here is a quick example:
-
-```edgeql-repl
-edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
-```
-
-Because we used `??` instead of `++`, the result is `{'Count Dracula is now in Whitby'}` and not `{}`.
-
-So let's get back to our original query, this time with the coalescing operator:
+To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
