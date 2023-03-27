@@ -18,7 +18,7 @@ And then to display numbers starting with 1, we just use `enumerate` again and a
 SELECT enumerate(Person).0 + 1
 ```
 
-#### 2. Using a reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
+#### 2. Using a computed backlink, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
 This is not too hard if you start it in steps, first with a filter to get all the `Place` types:
 
@@ -38,7 +38,7 @@ And here they are:
 }
 ```
 
-Now we'll add the reverse lookup to the same query, and call the computed property `visitors`:
+Now we'll add the computed backlink to the same query, and call the link `visitors`:
 
 ```edgeql
 SELECT Place {
@@ -72,9 +72,9 @@ Now we can see who visited:
 
 A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := count(.<places_visited[IS Person].name)` to it to get the number of visitors too.
 
-#### 3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
+#### 3. Using a computed backlink, how would you display all the Person types that will later become `MinorVampire`s?
 
-We can do it with a computed property again, which we'll call `later_vampire`. Then we use reverse lookup to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
+We can do it with a computed property again, which we'll call `later_vampire`. Then we use a computed backlink to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
 
 ```edgeql
 SELECT Person {

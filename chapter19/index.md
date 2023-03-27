@@ -1,5 +1,5 @@
 ---
-tags: Reverse Links, Schema Cleanup
+tags: Backlinks, Schema Cleanup
 ---
 
 # Chapter 19 - Dracula escapes
@@ -149,7 +149,7 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
 }
 ```
 
-While we're doing this, let's practice reverse lookup again on our visits. Here's one:
+While we're doing this, let's practice computed backlinks again on our visits. Here's one:
 
 ```edgeql
 SELECT Ship.<ship[IS Visit] {
@@ -363,7 +363,7 @@ INSERT Country {
 };
 ```
 
-With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. To get `Country` from `Region` we need a reverse lookup:
+With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. To get `Country` from `Region` we need to use a computed backlink:
 
 ```edgeql
 SELECT Region {
@@ -377,7 +377,7 @@ SELECT Region {
 };
 ```
 
-With the reverse lookup at the end we have another link between `Country` and its property `regions`, but now we get the `Country` as the output instead. Here's the output:
+With the backlink at the end we have another link between `Country` and its property `regions`, but now we get the `Country` as the output instead. Here's the output:
 
 ```
 {

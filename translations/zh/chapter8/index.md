@@ -333,7 +333,7 @@ INSERT Castle {
 
   你一定看到过 `readonly := true` 的类型，你创建的每个对象类型都会有它们。`__type__` 链接和 `id` 属性分别都是 16 字节。
 
-  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi link` 需要额外的“连接（join）”（链接表 + 对象表），但 `multi property` 并不需要。此外，“反向链接“（backward link 或 reverse link）（你将在第 14 章中学习到）也需要更多类似的额外工作。
+  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi link` 需要额外的“连接（join）”（链接表 + 对象表），但 `multi property` 并不需要。此外，“反向链接“（backlink）（你将在第 14 章中学习到）也需要更多类似的额外工作。
 
   现在，我们来介绍一下经过对比后，使用对象的两个好处：
 

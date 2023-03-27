@@ -248,9 +248,9 @@ type Lord extending Person {
 
 ## Links in two directions
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
+Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want.
 
-(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a reverse lookup, but this is how to do it)
+(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a backlink, but this is how to do it)
 
 First, here is the `MinorVampire` type at present:
 
@@ -296,7 +296,7 @@ INSERT Vampire {
 };
 ```
 
-Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to do a reverse lookup. Let's check:
+Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
 SELECT MinorVampire {
