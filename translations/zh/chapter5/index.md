@@ -157,6 +157,8 @@ INSERT MinorVampire {
 error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
 ```
 
+要注意：如果用`assert_single()`查询之后有两个元素以上的话就发生`CardinalityViolationError`，所以只有自信的话就可以用`assert_single()`函数。`assert_single()`就是看EdgeDB说"相信我吧，结果中确定只有一个"那样的函数。
+
 ## 关键词：DESCRIBE
 
 `MinorVampire` 类型扩展自 `Person`，`Vampire` 也是如此。类型可以继续扩展其他类型，并且可以同时扩展多个类型。你这样做的次数越多，试图在脑海中将它们组合在一起就越困难。这正是 `DESCRIBE` 可以提供帮助的地方，它可以准确地显示出任何类型的组成内容。具体有以下三种方法：
