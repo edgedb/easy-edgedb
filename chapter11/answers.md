@@ -1,44 +1,46 @@
 # Chapter 11 Questions and Answers
 
-#### 1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
+#### 1. How would you write a function called `get_lucies()` that just returns all the `Person` types matching the name 'Lucy Westenra'?
 
-It's pretty simple, just don't forget to return `NPC` (or `Person`, depending on your preference):
+It's pretty simple, just don't forget to return a `set of Person` because there might be more than one:
 
 ```sdl
-function lucy() -> NPC
+function get_lucies() -> set of Person
   using (
-    SELECT NPC FILTER .name = 'Lucy Westenra'
+    select Person filter .name = 'Lucy Westenra'
   );
 ```
 
 Then you would use it as follows:
 
 ```edgeql
-SELECT lucy() {
+select get_lucies() {
   name,
   places_visited: {name}
 };
 ```
+
+There is an exclusive constraint on the .name property for NPC, so only one NPC can have the name 'Lucy Westenra'. However, the constraint is delegated from the abstract type Person, meaning that each concrete type that extends Person will have that constraint separately. This means that you can add 'Lucy Westenra' the `Sailor` and then this function will return both the Sailor and the NPC named 'Lucy Westenra'.
 
 #### 2. How would you write a function that takes two strings and returns `Person` types with names that match it?
 
 Let's call the function `get_two()`. It could look like this:
 
 ```sdl
-function get_two(one: str, two: str) -> SET OF Person
+function get_two(one: str, two: str) -> set of Person
   using (
-    WITH person_1 := (SELECT Person FILTER .name = one),
-         person_2 := (SELECT Person FILTER .name = two),
-    SELECT {person_1, person_2}
+    with person_1 := (select Person filter .name = one),
+         person_2 := (select Person filter .name = two),
+    select {person_1, person_2}
   );
 ```
 
 Here it is used for a regular query for John Seward, Count Dracula and their slaves:
 
 ```edgeql
-SELECT get_two('John Seward', 'Count Dracula') {
+select get_two('John Seward', 'Count Dracula') {
   name,
-  [IS Vampire].slaves: {name},
+  [is Vampire].slaves: {name},
 };
 ```
 
