@@ -282,17 +282,28 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `assert_single()` (it won't work otherwise). Here is what the type would look like now:
+To add the master link again, one way to start would be with a property called `master_name` that is just a string. Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  required single property master_name -> str;
+  link master := (
+    with master_name := .master_name
+    assert_single(select Vampire filter .name = master_name));
+};
+```
+
+Note: it's a single link, so we needed to add assert_single() (it won't work otherwise). However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves - definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a reverse link.
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
   link master := assert_single(.<slaves[IS Vampire]);
-  required single property master_name -> str;
 };
 ```
 
-But then again, if we want this `master_name` shortcut we can now just use the `master` link to do it. Let's change it from `required single property master_name -> str` to `property master_name := .master.name`:
+And if we still want to have a shortcut for master_name, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
 ```sdl
 type MinorVampire extending Person {
