@@ -81,7 +81,29 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
 
-One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
+Note that you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
+
+```sdl
+function try(place: City) -> str
+  using (
+    select 'Called!'
+  );
+```
+
+If we call it with: `select try((select City FILTER .name = 'London'));`, the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
+
+However, note that the input is not optional. That means that if you run `select try((select City filter .name = 'Beijing'));`, the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
+
+```sdl
+function try(place: optional City) -> str
+  using (
+    select 'Called!'
+  );
+```
+
+In this case we are still ignoring the argument `place` (the `City' type) but making it optional lets the function select 'Called!' regardless of whether it finds an argument or not. Having a City type and not having a City type are both acceptable in this case, and the function gets called in either case.
+
+{ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
 Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `OPTIONAL` in there:
 
