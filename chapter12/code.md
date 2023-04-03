@@ -106,12 +106,12 @@ START MIGRATION TO {
 
     function fight(people_names: array<str>, opponent: Person) -> str
       using (
-        WITH
-            people := (SELECT Person FILTER contains(people_names, .name)),
-        SELECT
+        with
+            people := (select Person filter contains(people_names, .name)),
+        select
             array_join(people_names, ', ') ++ ' win!'
-            IF sum(people.strength) > (opponent.strength ?? 0)
-            ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
+            if sum(people.strength) > (opponent.strength ?? 0)
+            else (opponent.name ?? 'Opponent') ++ ' wins!'
       );
 
     function fight(names: str, one: int16, two: str) -> str
