@@ -206,8 +206,8 @@ START MIGRATION TO {
             people := (select Person filter contains(people_names, .name)),
         SELECT
             array_join(people_names, ', ') ++ ' win!'
-            IF sum(people.strength) > (opponent.strength ?? 0)
-            ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
+            if sum(people.strength) > (opponent.strength ?? 0)
+            else (opponent.name ?? 'Opponent') ++ ' wins!'
       );
 
     function visited(person: str, city: str) -> bool
