@@ -111,6 +111,6 @@ INSERT NPC {
 
 INSERT MinorVampire {
   name := 'Woman 1',
-  master := assert_single((SELECT Vampire Filter .name = 'Count Dracula')),
+  master := assert_single((select Vampire Filter .name = 'Count Dracula')),
 };
 ```
