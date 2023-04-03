@@ -359,7 +359,7 @@ Now we get:
 Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
-SELECT $$ 
+select $$ 
 "Dr. Van Helsing would like to tell "them" 
 about "vampires" and how to "kill" them, 
 but he'd sound crazy."
