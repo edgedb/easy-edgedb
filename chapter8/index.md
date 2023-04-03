@@ -333,7 +333,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
-  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backward link" or "reverse link" (you'll see those in Chapter 14) takes more work as well.
+  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
 
   Okay, now here are two positives for objects in comparison.
 

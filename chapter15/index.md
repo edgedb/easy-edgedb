@@ -81,7 +81,29 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
 
-One other area where you need to trust the user of the function is seen in the return type, which is just `-> str`. Beyond just returning a string, this return type also means that the function won't be called if the input is empty. So what if you want it to be called anyway? If you want it to be called no matter what, you can change the return type to `-> OPTIONAL str`. {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
+Note that you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
+
+```sdl
+function try(place: City) -> str
+  using (
+    select 'Called!'
+  );
+```
+
+If we call it with: `select try((select City FILTER .name = 'London'));`, the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
+
+However, note that the input is not optional. That means that if you run `select try((select City filter .name = 'Beijing'));`, the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
+
+```sdl
+function try(place: optional City) -> str
+  using (
+    select 'Called!'
+  );
+```
+
+In this case we are still ignoring the argument `place` (the `City' type) but making it optional lets the function select 'Called!' regardless of whether it finds an argument or not. Having a City type and not having a City type are both acceptable in this case, and the function gets called in either case.
+
+{ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
 Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `OPTIONAL` in there:
 
@@ -248,9 +270,9 @@ type Lord extending Person {
 
 ## Links in two directions
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use reverse links, we can put `master` back in `MinorVampire` if we want.
+Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `DELETE` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want.
 
-(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a reverse lookup, but this is how to do it)
+(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a backlink, but this is how to do it)
 
 First, here is the `MinorVampire` type at present:
 
@@ -260,17 +282,28 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the `master` link again, one way to start would be with a property called `master_name` that is just a string. Then we can use this in a reverse search to link to the `Vampire` type if the name matches. It's a single link, so we'll add `assert_single()` (it won't work otherwise). Here is what the type would look like now:
+To add the master link again, one way to start would be with a property called `master_name` that is just a string. Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  required single property master_name -> str;
+  link master := (
+    with master_name := .master_name
+    assert_single(select Vampire filter .name = master_name));
+};
+```
+
+Note: it's a single link, so we needed to add assert_single() (it won't work otherwise). However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves - definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a reverse link.
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
   link master := assert_single(.<slaves[IS Vampire]);
-  required single property master_name -> str;
 };
 ```
 
-But then again, if we want this `master_name` shortcut we can now just use the `master` link to do it. Let's change it from `required single property master_name -> str` to `property master_name := .master.name`:
+And if we still want to have a shortcut for master_name, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
 ```sdl
 type MinorVampire extending Person {
@@ -296,7 +329,7 @@ INSERT Vampire {
 };
 ```
 
-Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to do a reverse lookup. Let's check:
+Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
 SELECT MinorVampire {

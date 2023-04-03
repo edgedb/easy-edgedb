@@ -157,6 +157,8 @@ You need to put the query for getting Count Dracula in parentheses as you know f
 error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
 ```
 
+Also note that `assert_single()` will return an error (a `CardinalityViolationError`) if more than one element is returned, so make sure to only use `assert_single()` if you are sure that there is only one element. In principle it's sort of like a "trust me, there is only one element" sort of function.
+
 ## DESCRIBE to look inside types
 
 Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `DESCRIBE` can help, because it shows exactly what any type is made of. There are three ways to do it:

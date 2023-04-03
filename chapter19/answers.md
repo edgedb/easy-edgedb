@@ -2,7 +2,7 @@
 
 #### 1. How would you display all the `City` names and the names of the `Region` they are in?
 
-This is not too hard for us now, just a reverse lookup. We'll also put a filter on to only show `City` objects that are inside a `Region`:
+This is not too hard for us now, just a computed backlink. We'll also put a filter on to only show `City` objects that are inside a `Region`:
 
 ```edgeql
 SELECT City {

@@ -122,7 +122,9 @@ INSERT NPC {
 
 UPDATE Person FILTER .name = 'Jonathan Harker'
   SET {
-    lover := assert_single((SELECT DETACHED Person FILTER .name = 'Mina Murray'))
+    lover := assert_single(
+      (select detached Person filter .name = 'Mina Murray')
+    )
 };
 
 INSERT Vampire {

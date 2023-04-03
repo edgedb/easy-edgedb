@@ -195,15 +195,19 @@ START MIGRATION TO {
 
     function fight(one: Person, two: Person) -> str
       using (
-        one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+        (one.name ?? 'Fighter 1') ++ ' wins!'
+        if (one.strength ?? 0) > (two.strength ?? 0)
+        else (two.name ?? 'Fighter 2') ++ ' wins!'
       );
 
-    function fight(names: str, one: int16, two: str) -> str
+    function fight(people_names: array<str>, opponent: Person) -> str
       using (
-        WITH opponent := assert_single((SELECT Person FILTER .name = two))
+        with
+            people := (select Person filter contains(people_names, .name)),
         SELECT
-            names ++ ' win!' IF one > opponent.strength ELSE
-            two ++ ' wins!'
+            array_join(people_names, ', ') ++ ' win!'
+            if sum(people.strength) > (opponent.strength ?? 0)
+            else (opponent.name ?? 'Opponent') ++ ' wins!'
       );
 
     function visited(person: str, city: str) -> bool

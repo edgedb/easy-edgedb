@@ -1,5 +1,5 @@
 ---
-tags: Type Annotations, Reverse Links
+tags: Type Annotations, Backlinks
 ---
 
 # Chapter 14 - A ray of hope
@@ -242,7 +242,7 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
-## Reverse links
+## Backlinks
 
 Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use it can take a bit of effort, but it's well worth it.
 
@@ -285,7 +285,7 @@ SELECT MinorVampire {
 
 Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
 
-This is where reverse links come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`.
+This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`.
 
 First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
 
@@ -336,9 +336,9 @@ Here is the output:
 
 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
-2. Using reverse lookup, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
+2. Using a computed backlink, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
-3. Using reverse lookup, how would you display all the Person types that will later become `MinorVampire`s?
+3. Using a computed backlink, how would you display all the Person types that will later become `MinorVampire`s?
 
    Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 

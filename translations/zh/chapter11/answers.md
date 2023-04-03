@@ -1,44 +1,46 @@
 # Chapter 11 Questions and Answers
 
-#### 1. 编写一个名为 `lucy()` 的函数，使其只返回所有名称与“Lucy Westenra”匹配的 `NPC` 对象？
+#### 1. 编写一个名为 `get_lucies()` 的函数，使其只返回所有名称与“Lucy Westenra”匹配的 `Person` 对象？
 
-这很简单，只是别忘记返回 `NPC`（或者 `Person`，取决于你的喜好）：
+这很简单，只是别忘记返回 `set of Person`：
 
 ```sdl
-function lucy() -> NPC
+function get_lucies() -> set of Person
   using (
-    SELECT NPC FILTER .name = 'Lucy Westenra'
+    select Person filter .name = 'Lucy Westenra'
   );
 ```
 
 然后你可以按照如下方式使用它：
 
 ```edgeql
-SELECT lucy() {
+select get_lucies() {
   name,
   places_visited: {name}
 };
 ```
+
+因为在 `Person` 的 `name` 有个 `exclusive constraint`，只一个`NPC`可以有'Lucy Westenra'的名字。但是，这个constraint就是从abstract type `Person`让delegated的，就是说所有的extending Person的type可以有一个自己的'Lucy Westenra'这个名字。也就是说你可以插入一个叫'Lucy Westenra'的`Sailor`。然后用get_lucies()的话就返回两个叫Lucy Westenra的Person。
 
 #### 2. 编写一个函数：接收两个字符串，并返回所有名称可以匹配输入的两个字符串中任意一个的 `Person` 对象？
 
 让我们将函数命名为 `get_two()`。定义如下所示：
 
 ```sdl
-function get_two(one: str, two: str) -> SET OF Person
+function get_two(one: str, two: str) -> set of Person
   using (
-    WITH person_1 := (SELECT Person filter .name = one),
-         person_2 := (SELECT Person filter .name = two),
-    SELECT {person_1, person_2}
+    with person_1 := (select Person filter .name = one),
+         person_2 := (select Person filter .name = two),
+    select {person_1, person_2}
   );
 ```
 
 下面我将用该函数对 John Seward、Count Dracula 和他们奴仆的姓名进行查询：
 
 ```edgeql
-SELECT get_two('John Seward', 'Count Dracula') {
+select get_two('John Seward', 'Count Dracula') {
   name,
-  [IS Vampire].slaves: {name},
+  [is Vampire].slaves: {name},
 };
 ```
 
