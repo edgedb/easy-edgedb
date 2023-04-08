@@ -359,7 +359,11 @@ SELECT (
 最后，如果你想保有字符串完全原始的模样，你可以在其两侧使用 `$$`。里面内容将忽略所有的引号，因此你不必担心字符串会在中间断开。下面是一个包含了一堆单引号和双引号的示例：
 
 ```edgeql
-SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them, but he'd sound crazy." $$;
+select $$ 
+"Dr. Van Helsing would like to tell "them" 
+about "vampires" and how to "kill" them, 
+but he'd sound crazy."
+$$;
 ```
 
 输出是：`{' "Dr. Van Helsing would like to tell "them" about "vampires" and how to "kill" them, but he\'d sound crazy." '}`。如果没有 `$$`，看起来像是四个独立的字符串被三个未知的关键字所连接，并且会产生错误。
@@ -370,7 +374,7 @@ SELECT $$ "Dr. Van Helsing would like to tell "them" about "vampires" and how to
 
 ## 关键词 UNLESS CONFLICT ON + ELSE + UPDATE
 
-之前，我们在 `Person` 的 `name` 上设置了 `exclusive constraint`，这样游戏中就不会出现两个同名的角色了。之所以这样做，是因为我们担心有人看到了书中的一个角色并将其插入，然后其他人（协作的人）又尝试做同样的事情。因此，下面这个名为约翰尼（Johnny）的角色可以被成功插入，说明我们的数据库里暂时还没有同名的对象：
+之前，我们在 `Person` 的 `name` 上设置了 `constraint exclusive`，这样游戏中就不会出现两个同名的角色了。之所以这样做，是因为我们担心有人看到了书中的一个角色并将其插入，然后其他人（协作的人）又尝试做同样的事情。因此，下面这个名为约翰尼（Johnny）的角色可以被成功插入，说明我们的数据库里暂时还没有同名的对象：
 
 ```edgeql
 INSERT NPC {

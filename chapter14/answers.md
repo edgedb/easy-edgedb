@@ -74,7 +74,7 @@ A clear victory for London as the most visited place! If you wanted, you could a
 
 #### 3. Using a computed backlink, how would you display all the Person types that will later become `MinorVampire`s?
 
-We can do it with a computed property again, which we'll call `later_vampire`. Then we use a computed backlink to link back to the `MinorVampire` that links to `Person` via the property `former_self`:
+We can do it with a computed link again, which we'll call `later_vampire`. Then we use a computed backlink to link back to the `MinorVampire` that links to `Person` via the link `former_self`:
 
 ```edgeql
 SELECT Person {

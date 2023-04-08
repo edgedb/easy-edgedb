@@ -374,7 +374,7 @@ You now have an understanding of all the EdgeDB scalar types. Summed up, they ar
 
 ## UNLESS CONFLICT ON + ELSE + UPDATE
 
-We put an `exclusive constraint` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
+We put an `constraint exclusive` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
 
 ```edgeql
 INSERT NPC {
