@@ -1,5 +1,5 @@
 ---
-tags: Writing Functions, Multiplication
+tags: Writing Functions, Multiplication, Coalescing
 ---
 
 # 第十一章 - 露西怎么了？
@@ -126,11 +126,53 @@ function make_string(input: int64) -> str
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    one.name ++ ' wins!' IF one.strength > two.strength ELSE two.name ++ ' wins!'
+    one.name ++ ' wins!'
+    IF one.strength > two.strength
+    ELSE two.name ++ ' wins!'
   );
 ```
 
-到目前为止，只有乔纳森（Jonathan）和伦菲尔德（Renfield）拥有 `strength` 属性，我们让他们较量一番：
+这个函数“看起来”还不错，但是当你尝试创建它时，你会得到这样的错误提示：
+
+```
+InvalidFunctionDefinitionError: return cardinality mismatch in function
+  declared to return exactly one value
+```
+
+之所以会出现这个错误，是因为 `name` 和 `strength` 在 `Person` 类型中不是必须的（没有标记 required）。如果你传入的是一个没有 `name` 值或没有 `strength` 值的 `Person` 类型，这个函数将会返回空集。（对此，我们会在下一个章节有更进一步的说明。）这并不是 EdgeDB 想要的，因为我们在函数定义时告诉了 EdgeDB：这个函数会返回一个字符串。
+
+当然，我们可以返回去，在 `Person` 类型中在 `name` 和 `strength` 前加上 `required`，但我们则需要确保所有已经存在的 `Person` 对象在他们的 `name` 和 `strength` 上都有了相应的数值。可以想见，这会给我们带来很多麻烦，因此，这里我们也并不打算这样去解决这个问题。
+
+## 用合并操作符提供备选方案（fallback）
+
+解决上面所遇问题最简单的方法则是为可能未设置的属性提供某种备选方案（fallback）。比如：如果 `one` 没有名字，我们可以将它们称为 `Fighter 1`。如果某人没有力量值，我们可以将他们的力量默认为 `0`。
+
+为此，我们可以使用合并操作符 {eql:op}`coalescing operator <docs:coalesce>`，即 `??`。如果操作符左边不为空，则结果就是左边的内容。否则，结果会使用操作符右边的内容。
+
+下面是一个简单的例子：
+
+```edgeql-repl
+edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
+```
+
+`??` 的左边是空集，因为它 _是_ 空集，所以合并运算符在这里将放弃使用它，转而去查看右边的内容，因此，这个查询结果将使用合并运算符右侧生成的字符串：`{'Count Dracula is now in Whitby'}`
+
+如果运算符 `??` 两边都不是空集，则合并运算符将使用运算符左边的内容进行返回。如果两边都是空集，则会返回空集。
+
+下面就让我们使用合并运算符来修复我们在上面 `fight()` 函数中遇到的问题：
+
+```sdl
+function fight(one: Person, two: Person) -> str
+  using (
+    (one.name ?? 'Fighter 1') ++ ' wins!'
+    IF (one.strength ?? 0) > (two.strength ?? 0)
+    ELSE (two.name ?? 'Fighter 2') ++ ' wins!'
+  );
+```
+
+现在，EdgeDB 对于那些返回值可能是空集的属性提供了备选内容，即：如果 `one.name` 是空集，我们则会使用 `'Fighter 1'`。如果其中一个人的 `strength` 属性是空集，我们则会使用 `0`。同样，如果 `two.name` 是空集，我们则会使用 `'Fighter 2`。这将确保函数始终可以返回我们承诺的字符串响应。
+
+到目前为止，只有乔纳森（Jonathan）和伦菲尔德（Renfield）拥有 `strength` 属性，所以现在我们来让他们在这个新的 `fight()` 函数中较量一番：
 
 ```edgeql
 WITH

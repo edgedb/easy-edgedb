@@ -181,7 +181,7 @@ You would delete them with `DROP fight(one: Person, two: Person)` and `DROP figh
 
 ## More about Cartesian products and the coalescing operator
 
-Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
+Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
 Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
 
