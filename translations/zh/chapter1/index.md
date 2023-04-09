@@ -74,6 +74,26 @@ CREATE DATABASE dracula;
 - 然后添加我们上面提及的类型，并以 `}` 结尾来结束该表达块。然后在此之外，键入 `POPULATE MIGRATION` 以添加数据。
 - 最后，键入 `COMMIT MIGRATION`，从而完成迁移。
 
+按照上面所述，将它们放的一起，则如下所示：
+```edgeql
+START MIGRATION TO {
+  module default {
+    type Person {
+      required property name -> str;
+      property places_visited -> array<str>;
+    }
+
+    type City {
+      required property name -> str;
+      property modern_name -> str;
+    }
+  }
+};
+
+POPULATE MIGRATION;
+COMMIT MIGRATION;
+```
+
 当然，除此之外，自然还有很多其他命令，尽管我们在本书中并不需要它们，但你可以将下面的四个页面添加至书签以供今后需要时使用：
 
 - {ref}`Admin commands <docs:ref_cheatsheet_admin>`：创建用户角色，设置密码，配置端口等。
@@ -416,6 +436,8 @@ SELECT Person {
 ```
 
 当然，乔纳森·哈克（Jonathan Harker）已经成功被插入到数据库中并关联了每一个造访过的城市。现在我们只有三个 `City` 对象，所以这还没有什么问题。但是稍后我们将有更多的城市，并且不能对其他所有角色都使用 `places_visited := City`（因为他们造访过的城市列表并不一样）。为此，我们将需要用到 `FILTER`，我们将在下一章中学习如何使用它。
+
+注意：如果你在这里多次插入了“Johnathan Harker”，你将会得到多个名为“Johnathan Harker”的 `Person` 对象。你可能觉得这不太合理，但我们暂时先允许这样做，我们将会在[第七章](../chapter7/index.md)中学习如何限制数据库中不出现多个使用相同姓名的 `Person`。
 
 [→ 点击这里查看到第 1 章为止的所有代码](code.md)
 
