@@ -1,6 +1,6 @@
 # Chapter 12 Questions and Answers
 
-#### 1. 考虑下面这两个函数。EdgeDB 会接受第二个吗？
+#### 1. 考虑下面这两个函数。EdgeDB 会允许同时定义它们吗？
 
 不会接受，因为两个签名的输入部分是相同的：
 
@@ -20,7 +20,7 @@ function gives_number(input: int64) -> int32
 error: cannot create the `default::gives_number(input: std::int64)` function: a function with the same signature is already defined
 ```
 
-#### 2. 那么下面两个函数呢？EdgeDB 会接受第二个吗？
+#### 2. 那么下面两个函数呢？EdgeDB 会允许同时定义它们吗？
 
 会接受，因为可以接收的输入不同，所以它们的签名是不同的：一个接收 `int16`，另一个接收 `int32`。事实上，你可以通过使用 `DESCRIBE` 来查看它们。例如，执行 `DESCRIBE FUNCTION make64 AS TEXT`：
 

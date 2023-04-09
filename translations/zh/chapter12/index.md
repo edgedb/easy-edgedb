@@ -352,7 +352,7 @@ SELECT Vampire.lover.name ?= Crewman.name;
 
 ## 小测验
 
-1. 考虑下面这两个函数。EdgeDB 会接受第二个吗？
+1. 考虑下面这两个函数。EdgeDB 会允许同时定义它们吗？
 
    第一个函数：
 
@@ -368,7 +368,7 @@ SELECT Vampire.lover.name ?= Crewman.name;
      using(<int32>input);
    ```
 
-2. 那么下面两个函数呢？EdgeDB 会接受第二个吗？
+2. 那么下面两个函数呢？EdgeDB 会允许同时定义它们吗？
 
    第一个函数：
 

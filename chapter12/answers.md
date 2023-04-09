@@ -1,6 +1,6 @@
 # Chapter 12 Questions and Answers
 
-#### 1. Consider these two functions. Will EdgeDB accept the second one?
+#### 1. Consider these two functions. Will EdgeDB allow both of them to be defined at the same time?
 
 No, because the input signature for both of them is the same:
 
@@ -20,7 +20,7 @@ Here's the error:
 error: cannot create the `default::gives_number(input: std::int64)` function: a function with the same signature is already defined
 ```
 
-#### 2. How about these two functions? Will EdgeDB accept the second one?
+#### 2. How about these two functions? Will EdgeDB allow both of them to be defined at the same time?
 
 Yes, they have different signatures because the input is different: one takes an `int16` and the other takes an `int32`. In fact, you can see both of them by using DESCRIBE. For example, `DESCRIBE FUNCTION make64 AS TEXT` gives the following:
 
