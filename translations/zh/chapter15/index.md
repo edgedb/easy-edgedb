@@ -81,27 +81,35 @@ function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
 
 第一种方法可能是更简单的选择，因为它不需要我们进行任何显式迁移（explicit migration）。
 
-另一个你需要信任用户的地方是函数的输入不为空。因为如果用户的输入是空，则函数本身并不会被调用。例如：
+注意：另一个你需要信任用户的地方是函数的输入不为空。因为如果用户的输入是空，则函数本身并不会被调用。例如：
 
 ```sdl
 function try(place: City) -> str
   using (
-    SELECT 'Called!'
+    select 'Called!'
   );
 ```
 
-然后，我们尝试调用它：`SELECT try((SELECT City FILTER .name = 'London'));` 输出为 `Called!`，符合我们的预期；但 `SELECT try((SELECT City FILTER .name = 'Beijing'));` 的输出为 `{}`，因为我们的数据库里没有一个叫做 `Beijing` 的城市。所以如果我们希望函数无论如何都被调用，该怎么做呢？我们可以将函数的参数声明为 `OPTIONAL`：
+然后，我们尝试调用它：`select try((select City filter .name = 'London'));` 输出为 `Called!`，符合我们的预期。这个函数需要一个 `City` 类型的参数，我们传入了 London，虽然函数体内并未用到，但函数还是执行并输出了 `Called!`。
+
+但是，注意这里的输入不是可选的，这意味着如果你执行 `select try((select City filter .name = 'Beijing'));`，输出则为 `{}`，并没有执行 `select 'Called!'`，因为我们从未在数据库中插入一个叫做 `Beijing` 的城市。所以如果我们希望函数无论如何都被调用，该怎么做呢？我们可以将函数的参数声明为 `optional`：
 
 ```sdl
-function try(place: OPTIONAL City) -> str
+function try(place: optional City) -> str
   using (
-    SELECT 'Called!'
+    select 'Called!'
   );
 ```
 
-正如 {ref}`文档 <docs:ref_sdl_function_typequal>` 中所说，在这种情况下，当相应的参数为空时，函数仍然会被正常调用。这里还有一个典型的例子，就是在第 12 中提到的合并运算符 `??`。我们可以在 {eql:op}`它的签名 <docs:coalesce>` 中看到 `OPTIONAL`：
+修改后，`City` 类型的 `place` 仍然没有在函数体里被使用，但是因为我们添加了 `optional` 给这个输入参数，使他成为了可选的，因此无论这个输入是否在我们的数据库中有对应的 `City`，这个函数都会执行 `select 'Called!'`。也就是，无论你输入的是我们在数据库中可以找到的“London”，还是我们在数据库中没有插入的“Beijing”，函数都会被执行并输出 `Called!`。
 
-`OPTIONAL anytype ?? SET OF anytype -> SET OF anytype`
+正如 {ref}`文档 <docs:ref_sdl_function_typequal>` 中所说：“在这种情况下，当相应的参数为空时，函数仍然会被正常调用。”
+
+这里还有一个典型的例子，就是在第 12 中提到的合并运算符 `??`。我们可以在 {eql:op}`它的签名 <docs:coalesce>` 中看到 `optional`：
+
+`optional anytype ?? set of anytype -> set of anytype`
+
+以上就是一些关于如何设置函数的想法，当然它取决于你认为人们会如何使用它们。
 
 现在，让我们来给往伦敦（London）放置一些棺材。按照原著所述，我们的英雄们在当天晚上摧毁了卡法克斯（Carfax）里的 29 具棺材，也就是说在伦敦还有 21 具棺材不知所踪。
 
@@ -262,7 +270,7 @@ type Lord extending Person {
 
 ## 双向关联
 
-回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `link master`。我们删除 `link master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `DELETE` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
+回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `link master`。我们删除 `link master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `delete` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
 
 （注意：我们不会真的修改 `MinorVampire` 类型，这里是为了说明如何重新添加 `master` 到 `MinorVampire`）
 
@@ -285,8 +293,8 @@ type MinorVampire extending Person {
   link former_self -> Person;
   required single property master_name -> str;
   link master := (
-    WITH master_name := .master_name
-    assert_single(SELECT Vampire FILTER .name = master_name));
+    with master_name := .master_name
+    assert_single(select Vampire filter .name = master_name));
 };
 ```
 
@@ -295,11 +303,11 @@ type MinorVampire extending Person {
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[IS Vampire]);
+  link master := assert_single(.<slaves[is Vampire]);
 };
 ```
 
-如果我们仍然需要访问 `master_name` 的快捷方式，我们可以在上面的花括号中追加 `property master_name := .master.name;`：
+如果我们仍然需要访问 `master_name` 的快捷方式，我们可以在上面的花括号 `{}` 中追加 `property master_name := .master.name;`：
 
 ```sdl
 type MinorVampire extending Person {
@@ -325,7 +333,7 @@ INSERT Vampire {
 };
 ```
 
-如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到”Kain“，而不必再进行额外的反向查找。现在，让我们马上试一下：
+如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
 
 ```edgeql
 SELECT MinorVampire {

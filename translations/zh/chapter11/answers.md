@@ -2,7 +2,7 @@
 
 #### 1. 编写一个名为 `get_lucies()` 的函数，使其只返回所有名称与“Lucy Westenra”匹配的 `Person` 对象？
 
-这很简单，只是别忘记返回 `set of Person`：
+这很简单，只是别忘记返回一个 `set of Person`，因为可能不止有一个叫做“Lucy Westenra”的 `Person`：
 
 ```sdl
 function get_lucies() -> set of Person
@@ -20,7 +20,7 @@ select get_lucies() {
 };
 ```
 
-因为在 `Person` 的 `name` 有个 `exclusive constraint`，只一个`NPC`可以有'Lucy Westenra'的名字。但是，这个constraint就是从abstract type `Person`让delegated的，就是说所有的extending Person的type可以有一个自己的'Lucy Westenra'这个名字。也就是说你可以插入一个叫'Lucy Westenra'的`Sailor`。然后用get_lucies()的话就返回两个叫Lucy Westenra的Person。
+因为我们在 `Person` 的 `name` 设置了 `constraint exclusive`，因此任何扩展自 `Person` 的类型都不可以拥有同样的名称。但是，因为我们在 `constraint` 前面还添加关键词 `delegated`，这将“委托（delegates）”（传递）约束给子类型，因此排他性检查将分别会针对 `PC`、`NPC`、`Vampire` 等进行（而不在他们彼此之间进行检查），所以只有一个 `NPC` 可以叫做“Lucy Westenra”。这也意味着，你同样可以在插入一个叫做“Lucy Westenra”的 `Sailor`。当你再次调用 get_lucies() 的时候，就会返回两个叫做“Lucy Westenra”的人，她们分别是 `NPC` 露西和 `Sailor` 露西。
 
 #### 2. 编写一个函数：接收两个字符串，并返回所有名称可以匹配输入的两个字符串中任意一个的 `Person` 对象？
 

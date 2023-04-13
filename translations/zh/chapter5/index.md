@@ -157,7 +157,7 @@ INSERT MinorVampire {
 error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
 ```
 
-要注意：如果用`assert_single()`查询之后有两个元素以上的话就发生`CardinalityViolationError`，所以只有自信的话就可以用`assert_single()`函数。`assert_single()`就是看EdgeDB说"相信我吧，结果中确定只有一个"那样的函数。
+要注意：用 `assert_single()` 查询时，如果返回了两个或两个以上元素的话，则会出现 `CardinalityViolationError`。因此最好在你确认只会返回一个元素时才使用 `assert_single()` 函数。
 
 ## 关键词：DESCRIBE
 

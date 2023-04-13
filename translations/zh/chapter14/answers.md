@@ -18,7 +18,7 @@ SELECT enumerate(Person).0;
 SELECT enumerate(Person).0 + 1
 ```
 
-#### 2. 使用反向查找，如何显示 1）所有名称中带有 `o` 的 `Place` 的对象（及他们的名称）；2）访问过这些地方的人物的名字？
+#### 2. 使用一个可计算的反向链接，如何显示 1）所有名称中带有 `o` 的 `Place` 的对象（及他们的名称）；2）访问过这些地方的人物的名字？
 
 如果你一步一步开始，则并不太难。首先用一个过滤器来获取所有名字满足条件的 `Place` 对象：
 
@@ -38,7 +38,7 @@ SELECT Place {
 }
 ```
 
-然后，我们将反向查找添加到同一个查询，并赋值给计算属性 `visitors`：
+然后，我们将可计算的反向链接添加到同一个查询，并赋值给计算属性 `visitors`：
 
 ```edgeql
 SELECT Place {
@@ -72,9 +72,9 @@ SELECT Place {
 
 伦敦作为访问量最大的地方明显胜出！如果你想，你也可以添加一个 `visitor_numbers := count(.<places_visited[IS Person].name)` 来获取访问者的数量。
 
-#### 3. 使用反向查找，如何显示所有后来成为了 `MinorVampire` 的 `Person` 对象？
+#### 3. 使用一个可计算的反向链接，如何显示所有后来成为了 `MinorVampire` 的 `Person` 对象？
 
-我们可以再次通过使用一个计算（computed）属性来做到这一点，我们将其称为 `later_vampire`。然后我们使用反向查找链接回 `MinorVampire`，即通过属性 `former_self` 链接到 `Person` 的 `MinorVampire`：
+我们可以再次通过使用一个计算（computed）链接来做到这一点，我们将其称为 `later_vampire`。然后我们使用一个可计算的反向链接指回 `MinorVampire`，即通过链接 `former_self` 链接到 `Person` 的 `MinorVampire`：
 
 ```edgeql
 SELECT Person {
