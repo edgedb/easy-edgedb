@@ -23,7 +23,7 @@ leadImage: illustration_05.jpg
 
 获取 `datetime` 的另一种方法是使用 `to_datetime()` 函数。{eql:func}`这里 <docs:std::to_datetime>` 是它的函数签名，里面有六种方法可以通过使用此函数生成 `datetime`，具体使用哪个取决于你想要如何生成。EdgeDB 将根据你提供的输入得知你选择了六种方法中的哪一种。
 
-顺便说一下，你可能会留意到一个不太熟悉的、名为 {eql:type}` ``decimal`` <docs:std::decimal>` 的类型。这是一个具有“任意精度”的浮点数，这意味着你可以根据需要在小数点后给出任意数量的数字。计算机上的浮点类型会由于舍入错误，在一段时间后 [变得不精确](https://www.youtube.com/watch?v=-3c8G0JMM5Q)。比如下面的例子：
+顺便说一下，你可能会留意到一个不太熟悉的、名为 {eql:type}` ``decimal`` <docs:std::decimal>` 的类型。这是一个具有“任意精度”的浮点数，这意味着你可以根据需要在小数点后给出任意数量的数字。计算机上的浮点类型会由于舍入错误，在一段时间后 [变得不精确](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile)。比如下面的例子：
 
 ```edgeql-repl
 edgedb> SELECT 6.777777777777777; # Good so far

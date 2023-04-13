@@ -48,39 +48,45 @@ SET {
 
 看起来它奏效了！
 
-现在，让我们来对函数 `fight()` 进行重载。目前 `fight()` 只适用于一个 `Person` 对战另一个 `Person`，但在书中所有角色将聚集在一起并试图合力击败德古拉。因此，我们需要重载该函数，以便支持多个角色并肩战斗的情形。这里有很多方法可以做到，但我们会选择一个简单的：
+现在，让我们来对函数 `fight()` 进行重载。目前 `fight()` 只适用于一个 `Person` 对战另一个 `Person`，但在书中所有角色将聚集在一起并试图合力击败德古拉。因此，我们需要重载该函数，以便支持多个角色并肩战斗的情形。
 
 ```sdl
-function fight(names: str, one: int16, two: str) -> str
+function fight(people_names: array<str>, opponent: Person) -> str
   using (
-    WITH opponent := assert_single((SELECT Person FILTER .name = two))
+    WITH
+        people := (SELECT Person FILTER contains(people_names, .name)),
     SELECT
-        names ++ ' win!' IF one > opponent.strength ELSE
-        two ++ ' wins!'
+        array_join(people_names, ', ') ++ ' win!'
+        IF sum(people.strength) > (opponent.strength ?? 0)
+        ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
   );
 ```
 
-第一参数是用于接收并肩作战的人们的名字，第二个是用于接收他们的力量总和，第三个参数是用于接收人们要一起对抗的角色。这里需要注意，重载只在函数签名不同的情况下有效。下面是 `fight()` 函数现有的两个签名，我们可以对比一下：
+有了这个重载，我们现在可以接受两个参数：一个是一组战士的名字，另一个是一个 `Person` 对象，即战士们的对手。你会看到这里使用了几个新的标准库函数，我们稍后会对这些函数进行深入的研究。现在，我们需要先了解的以下的一些基础知识：
+
+- 我们在函数里调用了 `contains`，并传递战士名称的数组和 `.name` 属性。这样我们则可以过滤出所有具有与数组中的任何一个战士一样名字的 `Person` 对象。
+- `SELECT` 中的 `sum` 可以获取一个集合中的所有值并将它们进行相加。通过它我们可以得到所有战士的总力量值，从而来与对手的力量进行比较。
+
+你可能好奇我们为什么为对手的名字 (`opponent.name ?? 'Opponent'`) 提供默认值，却没有为数组中每个战士的名字提供默认值。首先，如果姓名数组为空，则该组战士无法获胜，因为查询不会返回任何 `Person` 对象（people 为空）。所以不可能出现 `people_names` 为空但他们却赢得了战斗的情况，因此我们不需要为他们添加后备名称！然而对于对手的名字，情况则不一样，由于 `.name` 属性在 `Person` 类型中不是必需的，因此你很可能传入了一个没有名字的强大对手。其次，函数的第一个参数传入的就是一组选中的战士姓名，如果有就是有，不在需要什么备选姓名。
+
+这里需要注意，重载只在函数签名不同的情况下有效。下面是 `fight()` 函数现有的两个签名，我们可以对比一下：
 
 ```sdl
 fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: str) -> str
+fight(people_names: array<str>, opponent: Person) -> str
 ```
 
-如果我们试图用 `(Person, Person)` 作为输入重载 `fight()`，则重载并不会生效，因为两个签名是相同的。EdgeDB 是通过我们的输入来判断该调用哪种形式的函数的。
+如果我们试图用 `(Person, Person)` 作为输入重载 `fight()`，则重载并不会生效，因为两个签名是相同的。EdgeDB 是通过我们的输入来判断该调用哪种形式的函数的。所以如果没有不同的签名，EdgeDB 就无法在两者之间做出选择。
 
-所以，现在虽然是调用了同名函数，但我们的输入是并肩作战的人们的名字，及他们的力量和，然后是他们正在共同对抗的 `Person`。
+虽然两个函数的名称还是相同，但想要调用第二个函数，我们只需要确保输入一组战士的名字和他们正在对抗的 `Person` 即可。
 
 现在乔纳森（Jonathan）和伦菲尔德（Renfield）将要尝试一起对抗德古拉（Dracula）。祝他们好运！
 
 ```edgeql
 WITH
-  jon_and_ren_strength := <int16>(
-    SELECT sum(
-      (SELECT NPC FILTER .name IN {'Jonathan Harker', 'Renfield'}).strength
-    )
-  ),
-SELECT fight('Jon and Ren', jon_and_ren_strength, 'Count Dracula');
+  party := ['Jonathan Harker', 'Renfield'],
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+SELECT fight(party, dracula);
 ```
 
 结果还是德古拉赢了：
@@ -93,26 +99,20 @@ SELECT fight('Jon and Ren', jon_and_ren_strength, 'Count Dracula');
 
 ```edgeql
 WITH
-  four_people_strength := <int16>(
-    SELECT sum(
-      (
-        SELECT NPC
-        FILTER .name IN {'Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'}
-      ).strength
-    )
-  ),
-SELECT fight('The four people', four_people_strength, 'Count Dracula');
+  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'],
+  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
+SELECT fight(party , dracula);
 ```
 
 翻转了！
 
 ```
-{'The four people win!'}
+{'Renfield, The innkeeper, Arthur Holmwood, Jonathan Harker win!'}
 ```
 
 这就是函数重载的工作原理——只要签名不同，你就可以创建具有相同名称的函数。
 
-你也会在许多现有函数中看到重载的应用，例如 {eql:func}`docs:std::sum` 可以接收所有数字类型并返回其总和。{eql:func}`docs:std::to_datetime` 有着更有意思的重载，它支持各种输入来创建一个 `datetime`。
+你也会在许多现有函数中看到重载的应用，例如我们之前用来计算战士组力量总和的 {eql:func}`docs:std::sum`。此外还有更有意思的 {eql:func}`docs:std::to_datetime`，通过重载它支持各种输入来创建一个 `datetime`。
 
 `fight()` 制作起来很有趣，但这种函数更适合在游戏中使用。因此，现在让我们来创建一个我们实际上更可能会用到的函数。由于 EdgeQL 是一种查询语言，所以最有用的函数通常是使查询变得更短的函数。
 
@@ -181,7 +181,9 @@ fight(names: str, one: int16, two: str) -> str
 
 ## 更多关于笛卡尔积
 
-现在让我们来更多地了解 EdgeDB 中的笛卡尔乘积。你可能会惊讶地发现，即使只有一个输入为 `{}`，也总是会导致输出 `{}`，但这就是笛卡尔乘积的工作方式。请记住，`{}` 的长度为 0，任何乘以 0 的值也是 0。例如，让我们尝试将以 b 开头的地名和以 f 开头的地名加在一起。
+现在让我们来更多地了解 EdgeDB 中的笛卡尔乘积。你可能还记得上一章中我们提到，即使只有一个输入为 `{}`，也会导致输出为 `{}`，这就是为什么我们不得不使用上一章中的合并运算符来修改我们的 `fight()` 函数。现在，让我们更深入地研究一下为什么会这样。
+
+请记住，`{}` 的长度为 0，任何乘以 0 的值也是 0。例如，让我们尝试将以 b 开头的地名和以 f 开头的地名加在一起。
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
@@ -189,13 +191,13 @@ WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
 SELECT b_places.name ++ ' ' ++ f_places.name;
 ```
 
-输出是……，如果你没有阅读上一段，结果可能会令你感到出乎意料：
+结果可能不是你所期待的：
 
 ```
 {}
 ```
 
-是的！是一个空集。虽然我们并没有以 f 开头的地方，但是搜索以 b 开头的地方，我们明明会得到 `{'Buda-Pesth', 'Bistritz'}`。那么让我们直接用 `++` 连接 `{'Buda-Pesth', 'Bistritz'}` 和 `{}`，看看是否会是同样的效果。
+蛤？是一个空集！虽然我们并没有以 f 开头的地方，但是搜索以“b”开头的地方，我们明明会得到 `{'Buda-Pesth', 'Bistritz'}`。那么让我们直接用 `++` 连接 `{'Buda-Pesth', 'Bistritz'}` 和 `{}`，看看是否会是同样的效果。
 
 ```edgeql
 SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -227,21 +229,7 @@ edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 
 换言之，将 `{'Buda-Peth', 'Bistritz'}` 与另一个集合相加时，如何在另一个集合是空时返回原本的 `{'Buda-Peth', 'Bistritz'}`？
 
-为此，我们可以使用合并操作符 {eql:op}`coalescing operator <docs:coalesce>`，写为 `??`。所以对于 `A ?? B` 可以很好地、简单地解释为：
-
-`Evaluate to A for non-empty A, otherwise evaluate to B.`
-
-即如果左侧（A）的项目不为空，它将返回该项目，否则将返回右侧（B）的项目。
-
-这是一个快速示例：
-
-```edgeql-repl
-edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
-```
-
-因为我们使用了 `??` 而不是 `++`，所以结果是 `{'Count Dracula is now in Whitby'}` 而不是 `{}`。
-
-让我们回到最初的查询，这次使用合并运算符（coalescing operator）：
+为此，我们可以再次使用合并操作符 {eql:op}`coalescing operator <docs:coalesce>`：
 
 ```edgeql
 WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
@@ -352,7 +340,7 @@ SELECT Vampire.lover.name ?= Crewman.name;
 
 ## 小测验
 
-1. 考虑下面这两个函数。EdgeDB 会接受第二个吗？
+1. 考虑下面这两个函数。EdgeDB 会允许同时定义它们吗？
 
    第一个函数：
 
@@ -368,7 +356,7 @@ SELECT Vampire.lover.name ?= Crewman.name;
      using(<int32>input);
    ```
 
-2. 那么下面两个函数呢？EdgeDB 会接受第二个吗？
+2. 那么下面两个函数呢？EdgeDB 会允许同时定义它们吗？
 
    第一个函数：
 

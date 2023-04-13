@@ -1,6 +1,6 @@
 # Chapter 8 Questions and Answers
 
-#### 1. How would you select all the `Place` types and their names, plus the `door` property if it's a `Castle`?
+#### 1. How would you select all the `Place` types and their names, plus the `doors` property if it's a `Castle`?
 
 Like this:
 

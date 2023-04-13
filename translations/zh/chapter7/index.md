@@ -51,6 +51,8 @@ abstract type Person {
 
 有了它，对于扩展自 `Person` 的类型，如 `PC`、`NPC`、`Vampire` 等，分别可以拥有最多一个叫做“Jonathan Harker”的对象。
 
+同样，我们也可以将 `delegated constraint` 应用到 `Place`，比如我们允许某个 `Country` 可以和某个 `City` 同名，那么我们就可以将 `Place` 类型里的 `name` 进行如下的更新：
+
 ```sdl
 abstract type Place {
   required property name -> str {

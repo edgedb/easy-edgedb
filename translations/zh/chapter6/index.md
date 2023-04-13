@@ -222,13 +222,26 @@ SELECT <json>Vampire {
 };
 ```
 
-输出结果为:
+这样做我将会得到转为 JSON 的结果。然而，REPL（read-eval-print loop，读取-求值-输出循环）在默认情况下显示出的内容看起来更像是这样：
 
 ```
 {
   "{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
 }
 ```
+
+现在让我们一起过一下这个结果。最外层的花括号只是告诉你里面是查询返回的一个或多个结果，而实际的结果是一个 JSON 字符串。因为 JSON 部分在字符串中，所以所有的 `"` 都需要转义，写为 `\"`。
+
+要让 REPL 以更友好的格式显示 JSON，只需输入 `\set output-format json-pretty`。这样结果看起来会是我们更加熟悉的样式：
+
+```json
+{
+  "name": "Count Dracula",
+  "slaves": [{"name": "Woman 1"}, {"name": "Woman 2"}, {"name": "Woman 3"}]
+}
+```
+
+如果你要回复默认的格式，输入 `\set output-format default` 即可。
 
 ## 从 JSON 转换回来
 

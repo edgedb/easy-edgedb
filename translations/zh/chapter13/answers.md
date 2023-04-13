@@ -108,10 +108,10 @@ SELECT (Introspect Vampire).links { name };
 {2, 3, 3, 4}
 ```
 
-你可以看到 `DISTINCT` 是独立作用于一个集合的（所以这里只是作用在了第一个上），所以 `SELECT DISTINCT {1, 2} + {1, 2};` 和 `SELECT {1, 2} + {1, 2};` 是相同的。如果你要写 `SELECT DISTINCT {2, 2}`，输出将只是 `{2}`。
+因为 `DISTINCT` 的绑定强度大于 `+`，所以它会只作用于 `+` 之前的表达式，也就是 `{1, 2}`。这也是为什么 `SELECT DISTINCT {1, 2} + {1, 2};` 和 `SELECT {1, 2} + {1, 2};` 的输出会是相同的。而对于 `SELECT DISTINCT {2, 2}`，则只是输出 `{2}`。
 
 #### 5. `SELECT DISTINCT {2, 2} + {2, 2};` 的输出会是什么？
 
 输出将为 `{4, 4}`，因为 `DISTINCT` 仅作用于第一个集合。
 
-要想输出为 `{4}`，你可以重复使用 `DISTINCT`：即 `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`。或者你可以像这样包装整个运算：`SELECT DISTINCT({2, 2} + {2,2})`。
+要想输出为 `{4}`，你可以重复使用 `DISTINCT`：即 `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`。或者你可以像这样用小括号使 `DISTINCT` 作用在整个表达式上：`SELECT DISTINCT({2, 2} + {2, 2})`。

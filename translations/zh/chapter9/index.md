@@ -69,7 +69,7 @@ INSERT NPC {
 };
 ```
 
-嗯，看起来每当我们添加一个角色，我们都要为插入 'London' 而写很多代码。我们还剩下三个角色，他们也都来自伦敦。为了节省一些工作，我们可以将伦敦设为 `NPC` 的 `places_visited` 的默认值。为此，我们需要做两件事：用 `default` 声明默认值，以及使用关键字 `overloaded` 进行重载。`overloaded` 这个词表明我们使用 `placed_visited` 的方式将不同于我们扩展的 `Person` 类型。
+嗯，看起来每当我们添加一个角色，我们都要为插入 'London' 而写很多代码。我们还剩下三个角色，他们也都来自伦敦。为了节省一些工作，我们可以将伦敦设为 `NPC` 的 `places_visited` 的默认值。为此，我们需要做两件事：用 `default` 声明默认值，以及使用关键字 `overloaded` 进行重载。`overloaded` 这个词表明我们使用 `places_visited` 的方式将不同于我们扩展的 `Person` 类型。
 
 添加了 `default` 和 `overloaded` 后，`NPC` 的定义如下所示：
 

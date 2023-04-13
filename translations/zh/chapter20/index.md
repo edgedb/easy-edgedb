@@ -8,7 +8,7 @@ tags: Ddl, Sdl, Edgedb Community
 
 > 米娜（Mina）现在几乎已经是一只吸血鬼了，她说无论什么时候，她都能感觉到德古拉（Dracula）。范海辛（Van Helsing）带着米娜一起抵达了德古拉城堡，并让她在外面等候。范海辛进到城堡里，摧毁了吸血鬼女人和德古拉的棺材。与此同时，其他人正从南方赶来，也将抵达德古拉城堡。德古拉的“朋友们”把他放在棺材里，并用一辆马车正以最快的速度将他运回城堡。太阳快落山了，天空下起了雪，人们必须尽快抓到德古拉。他们不停追赶，越来越接近，终于抢到了棺材。他们拔出钉子打开了棺材，看到德古拉正躺在里面。乔纳森立即拔出他的刀。但就在这时，太阳下山了。德古拉微笑着睁开了眼睛，然后……
 
-如果你对最终的结局感到好奇，可以查看 [这里](http://www.gutenberg.org/files/345/345-h/345-h.htm#CHAPTER_XIX) 并搜索“the look of hate in them turned to triumph”。
+如果你对最终的结局感到好奇，可以查看 [这里](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) 并搜索“the look of hate in them turned to triumph”。
 
 然而，我们可以确信的是女吸血鬼们已经被摧毁了，因此我们可以通过给她们一个 `last_appearance` 对她们做最后的变更。范海辛在 11 月 5 日摧毁了她们，因此我们将插入该日期。但不要忘记过滤掉露西——她并不属于居住在城堡里的三个女 `MinorVampire`。
 

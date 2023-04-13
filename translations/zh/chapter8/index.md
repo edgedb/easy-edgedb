@@ -349,7 +349,7 @@ INSERT Castle {
 
 ## 小测验
 
-1. 如何选择出所有 `Place` 和他们的名字，如果当它是个 `Castle` 时，同时显示属性 `door`？
+1. 如何选择出所有 `Place` 和他们的名字，如果当它是个 `Castle` 时，同时显示属性 `doors`？
 
 2. 如何在选择 `Place` 时，用 `city_name` 显示当它是个 `City` 时的 `name`，并用 `country_name` 显示当它是个 `Country` 时的 `country_name`？
 

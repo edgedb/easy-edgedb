@@ -1,6 +1,6 @@
 # Chapter 8 Questions and Answers
 
-#### 1. 如何选择出所有 `Place` 和他们的名字，如果当它是个 `Castle` 时，同时显示属性 `door`？
+#### 1. 如何选择出所有 `Place` 和他们的名字，如果当它是个 `Castle` 时，同时显示属性 `doors`？
 
 答案如下：
 

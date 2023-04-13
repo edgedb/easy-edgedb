@@ -172,7 +172,7 @@ function fight(one: Person, two: Person) -> str
 
 Now, EdgeDB has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
 
-So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight` function:
+So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight()` function:
 
 ```edgeql
 WITH
