@@ -137,7 +137,7 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
 
 ```sdl
 type PC extending Person {
