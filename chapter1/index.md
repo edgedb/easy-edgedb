@@ -59,24 +59,24 @@ This is similar, just properties with strings. The book Dracula was published in
 
 We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://www.edgedb.com/download). First we create a {ref}`"project" <docs:ref_quickstart_createdb>` that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
 
-Sometimes it's useful to create a whole new database to try something out. You can do that with the `CREATE DATABASE` keyword and our name for it:
+Sometimes it's useful to create a whole new database to try something out. You can do that with the `create database` keyword and our name for it:
 
 ```edgeql
-CREATE DATABASE dracula;
+create database dracula;
 ```
 
 Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
 
 Lastly, we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's {ref}`built-in tools <docs:ref_cli_edgedb_migration>`. However, we will use a {ref}`console shortcut <docs:ref_eql_ddl_migrations>` instead:
 
-- First you start them with `START MIGRATION TO {}`
+- First you start them with `start migration to {}`
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
-- Then you add the types we mentioned above, and finish up the block by ending with a `}`. Then outside of that, type `POPULATE MIGRATION` to add the data.
-- Finally, you type `COMMIT MIGRATION` and the migration is done.
+- Then you add the types we mentioned above, and finish up the block by ending with a `}`. Then outside of that, type `populate migration` to add the data.
+- Finally, you type `commit migration` and the migration is done.
 
 Putting all of that together we get:
 ```edgeql
-START MIGRATION TO {
+start migration to {
   module default {
     type Person {
       required property name -> str;
@@ -90,11 +90,11 @@ START MIGRATION TO {
   }
 };
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+populate migration;
+commit migration;
 ```
 
-There are naturally a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
+There are a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
 
 - {ref}`Admin commands <docs:ref_cheatsheet_admin>`: Creating user roles, setting passwords, configuring ports, etc.
 - {ref}`CLI commands <docs:ref_cheatsheet_cli>`: Creating databases, roles, setting passwords for roles, connecting to databases, etc.
@@ -120,14 +120,14 @@ Here are three operators in EdgeDB that have the `=` sign:
 - `=` is used to check equality (not `==`),
 - `!=` is the opposite of `=`.
 
-Let's try them out with `SELECT`. `SELECT` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it.
+Let's try them out with `select`. `select` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it.
 
-By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same. But using capital letters is the normal practice for databases so we'll continue to use them that way.
+By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same.
 
 First we'll just select a string:
 
 ```edgeql
-SELECT 'Jonathan Harker\'s journey begins.';
+select 'Jonathan Harker\'s journey begins.';
 ```
 
 This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_everything_is_a_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
@@ -135,37 +135,37 @@ This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did yo
 Next we'll use `:=` to assign a variable:
 
 ```edgeql
-SELECT jonathans_name := 'Jonathan Harker';
+select jonathans_name := 'Jonathan Harker';
 ```
 
 This just returns what we gave it: `{'Jonathan Harker'}`. But this time it's a string that we assigned called `jonathans_name` that is being returned.
 
-Now let's do something with this variable. We can use the keyword `WITH` to use this variable and then compare it to `'Count Dracula'`:
+Now let's do something with this variable. We can use the keyword `select` to use this variable and then compare it to `'Count Dracula'`:
 
 ```edgeql
-WITH jonathans_name := 'Jonathan Harker',
-SELECT jonathans_name != 'Count Dracula';
+select jonathans_name := 'Jonathan Harker',
+select jonathans_name != 'Count Dracula';
 ```
 
-The output is `{true}`. Of course, you can just write `SELECT 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
+The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
 
 ## Inserting objects
 
-Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `INSERT`.
+Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `insert`.
 
-Don't forget to separate each property by a comma, and finish the `INSERT` with a semicolon. EdgeDB also prefers two spaces for indentation.
+Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. EdgeDB also prefers two spaces for indentation.
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița'
 };
@@ -176,7 +176,7 @@ Note that a comma at the end is optional - you can put it in or leave it out. He
 Finally, the `Person` insert would look like this:
 
 ```edgeql
-INSERT Person {
+insert Person {
   name := 'Jonathan Harker',
   places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
@@ -189,7 +189,7 @@ But hold on a second. That insert won't link it to any of the `City` inserts tha
 
 So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to something called `multi link` to the `City` type. This will actually join them together.
 
-But first let's look a bit closer at what happens when we use `INSERT`.
+But first let's look a bit closer at what happens when we use `insert`.
 
 As you can see, `str`s are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
 
@@ -198,31 +198,31 @@ EdgeDB also has a byte literal type that gives you the bytes of a string. This i
 You create byte literals by adding a `b` in front of the string:
 
 ```edgeql-repl
-edgedb> SELECT b'Bistritz';
+edgedb> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
 ```edgeql-repl
-edgedb> SELECT b'Bistrița';
+edgedb> select b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
   ┌─ query:1:8
   │
-1 │ SELECT b'Bistrița';
+1 │ select b'Bistrița';
   │        ^ error
 ```
 
-Every time you `INSERT` an item, EdgeDB gives you a `uuid` back. That's the unique number for each item. It will look like this:
+Every time you `insert` an item, EdgeDB gives you a `uuid` back. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
 
 ```
 {default::Person {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
 ```
 
-It is also what shows up when you use `SELECT` to select a type. Just typing `SELECT` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
+It is also what shows up when you use `select` to select a type. Just typing `select` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
 
 ```edgeql
-SELECT City;
+select City;
 ```
 
 This gives us three items:
@@ -238,7 +238,7 @@ This gives us three items:
 This only tells us that there are three objects of type `City`. To see inside them, we can add property or link names to the query. This is called describing the {ref}`shape <docs:ref_eql_shapes>` of the data we want. We'll select all `City` types and display their `modern_name` with this query:
 
 ```edgeql
-SELECT City {
+select City {
   modern_name,
 };
 ```
@@ -260,7 +260,7 @@ So there is some object with an empty set for `modern_name`, while the other two
 The first object is a mystery so we'll add `name` to the query so we can see that it's the city of Munich:
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name
 };
@@ -276,7 +276,7 @@ This gives the output:
 }
 ```
 
-If you just want to return a single part of a type without the object structure, you can use `.` after the type name. For example, `SELECT City.modern_name` will give this output:
+If you just want to return a single part of a type without the object structure, you can use `.` after the type name. For example, `select City.modern_name` will give this output:
 
 ```
 {'Budapest', 'Bistrița'}
@@ -287,7 +287,7 @@ This type of expression is called a _path expression_ or a _path_, because it is
 You can also change property names like `modern_name` to any other name if you want by using `:=` after the name you want. Those names you choose become the variable names that are displayed. For example:
 
 ```edgeql
-SELECT City {
+select City {
   name_in_dracula := .name,
   name_today := .modern_name,
 };
@@ -310,7 +310,7 @@ By the way, `.name` is short for `City.name`. You can also write `City.name` eac
 So if you can make a quick `name_in_dracula` property from `.name`, can we make other things too? Indeed we can. For the moment we'll just keep it simple but here is one example:
 
 ```edgeql
-SELECT City {
+select City {
   name_in_dracula := .name,
   name_today := .modern_name,
   oh_and_by_the_way := 'This is a city in the book Dracula'
@@ -339,7 +339,7 @@ And here is the output:
 }
 ```
 
-Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `SELECT 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `select 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
 `.
 
 On the other hand, it can use "type inference" to guess the type, and that is what it does here: it knows that we are creating a `str`. We will look at changing types and working with different types soon.
@@ -360,7 +360,7 @@ We wrote `multi` in front of `link` because one `Person` should be able to link 
 Now when we insert Jonathan Harker, he will be connected to the type `City`. Don't forget that `places_visited` is not `required`, so we can still insert with just his name to create him:
 
 ```edgeql
-INSERT Person {
+insert Person {
   name := 'Jonathan Harker',
 };
 ```
@@ -368,7 +368,7 @@ INSERT Person {
 But this would only create a `Person` type connected to the `City` type but with nothing in it. Let's see what's inside:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   places_visited
 };
@@ -376,10 +376,10 @@ SELECT Person {
 
 Here is the output: `{default::Person {name: 'Jonathan Harker', places_visited: {}}}`
 
-But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `INSERT` to `places_visited := City`:
+But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `insert` to `places_visited := City`:
 
 ```edgeql
-INSERT Person {
+insert Person {
   name := 'Jonathan Harker',
   places_visited := City,
 };
@@ -388,7 +388,7 @@ INSERT Person {
 We haven't filtered anything, so it will put all the `City` types in there. Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   places_visited
 };
@@ -412,7 +412,7 @@ Here is the output:
 Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   places_visited: {
     name
@@ -435,9 +435,9 @@ Success! Now we get the output we wanted:
 }
 ```
 
-Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `FILTER`, which we will learn to use in the next chapter.
+Of course, Jonathan Harker has been inserted with a connection to every city in the database. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
 
-Note that if you have inserted "Johnathan Harker" multiple times, you will have multiple `Person` objects with that name corresponding to each `INSERT` command. This is OK for now. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
+Note that if you have inserted "Johnathan Harker" multiple times, you will have multiple `Person` objects with that name corresponding to each `insert` command. This is OK for now. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
 
 [Here is all our code so far up to Chapter 1.](code.md)
 
@@ -448,8 +448,8 @@ Note that if you have inserted "Johnathan Harker" multiple times, you will have 
 1. Entering the code below returns an error. Try adding one character to make it return `{true}`.
 
    ```edgeql
-   WITH my_name = 'Timothy',
-   SELECT my_name != 'Benjamin';
+   select my_name = 'Timothy',
+   select my_name != 'Benjamin';
    ```
 
 2. Try inserting a `City` called Constantinople, but now known as İstanbul.
