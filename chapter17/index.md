@@ -189,7 +189,7 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 ## Aliases: creating subtypes when you need them
 
-We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts: `Person`, `HasNameAndCoffins`, etc. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes. Aliases also make subtypes, except they use `:=` instead of `extending` and draw from full types.
+We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts, such as `Person` and `HasNameAndCoffins`. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes. Aliases also make subtypes, except they use `:=` instead of `extending` and draw from full types.
 
 Let's make an alias for our schema too. Looking at the Demeter again, the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
 

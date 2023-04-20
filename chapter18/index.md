@@ -44,7 +44,7 @@ abstract type Currency {
 }
 ```
 
-You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. In modern times that includes Japanese yen, Korean won, etc. that are just a single money unit and a number.
+You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. Two examples from modern times are the Japanese yen and Korean won that are just a single money unit and a number.
 
 We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. And complicated things like credit and negative money we can probably just ignore for now.
 

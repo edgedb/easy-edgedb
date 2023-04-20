@@ -172,10 +172,10 @@ The output is this:
 }
 ```
 
-Let's filter the cities now. One flexible way to search is with `LIKE` or `ILIKE` to match on parts of a string.
+Let's filter the cities now. One flexible way to search is with `like` or `ilike` to match on parts of a string.
 
-- `LIKE` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
-- `ILIKE` is not case-sensitive (the I in ILIKE means **insensitive**), so "Bistritz" matches "BiStRitz", "bisTRITz", etc.
+- `like` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
+- `ilike` is not case-sensitive (the i in ilike means **insensitive**), so "Bistritz" matches both "BiStRitz" and "bisTRITz".
 
 You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
 
@@ -237,7 +237,7 @@ You can also slice a string to get a piece of it. Because 'Jonathan' starts at z
 
 It's 8 characters long, so it fits entirely between 0 and 8. If you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friend to tell them that you're 'at their house': you're not telling them that you're inside it.
 
-Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1` (= 7), etc.
+Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7.
 
 So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `LIKE` or `ILIKE` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
 

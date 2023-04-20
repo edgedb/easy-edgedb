@@ -113,9 +113,9 @@ This prints:
 {default::Vampire {name: 'Count Dracula', is_single: true}}
 ```
 
-Notice that we use use `LIMIT 1` instead of `assert_single()` because we want just one result, but we don't care that there are more that fit our `FILTER`. Using `assert_single()` would cause the database give us an error in case of multiple results. And of course `LIMIT 2`, `LIMIT 3` etc. will work just fine if we want to get a certain maximum number of objects.
+Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, but we don't care that there are more that fit our `FILTER`. Using `assert_single()` would cause the database give us an error in case of multiple results. And of course `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
 
-It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `LIMIT 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
+It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
 
 We can also put the computed property in the type itself. Here's the same computed property except now it's inside the `Person` type:
 

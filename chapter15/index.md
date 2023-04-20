@@ -34,7 +34,7 @@ So the part between 8 pm and 1 am is when the vampire is free to move away, and 
 
 With a more complex game we could imagine that vampire terrorism is worse in the winter (activity radius = about 150 km), but we won't get into those details.
 
-With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City`, `OtherPlace`, etc.:
+With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City` and `OtherPlace`:
 
 ```sdl
 abstract type Place extending HasCoffins {
@@ -158,7 +158,7 @@ property title -> str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, etc. etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Mr., Ph.D., etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 

@@ -264,7 +264,7 @@ This gives us:
 }
 ```
 
-Just like using `SELECT` on a type, if the output contains another type, property etc. we will just get an id. We will have to specify what we want there as well.
+Just like using `select` on a type, we will only get an id even if the output contains items such as other properties and links. So we will have to specify what we want to see there as well.
 
 So let's add some more to the query to get the information we want:
 

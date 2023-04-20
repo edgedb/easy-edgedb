@@ -47,7 +47,7 @@ INSERT Event {
 };
 ```
 
-With all this information we can now find events by description, character, location, etc.
+With all this information we can now find events by description, character, location, and so on.
 
 Now let's do a query for all events with the word `garlic flowers` in them:
 

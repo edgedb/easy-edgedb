@@ -81,7 +81,7 @@ abstract type Person {
 
 `exclusive` is probably the most common {ref}`constraint <docs:ref_datamodel_constraints>`, which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
 Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
 
@@ -168,9 +168,9 @@ type PC extending Person {
 
 The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
 
-- choosing `Feet` gives the character a certain speed and costs nothing,
+- Choosing `Feet` gives the character a certain speed and costs nothing,
 - `HorseDrawnCarriage` increases speed but decreases money,
-- `Train` increases speed the most but decreases money and can only follow railway lines, etc.
+- `Train` increases speed the most but decreases money and can only follow railway lines.
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `clock` property that is just a string, but gets used in this way:
 
@@ -251,7 +251,7 @@ type Lord extending Person {
 };
 ```
 
-(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc. etc.)
+(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc.)
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
@@ -342,7 +342,7 @@ Now that you have reached the end of the book, you will certainly start looking 
 
 ### Syntax
 
-This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create a type, property etc. and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
+This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create one of these items and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
 
 For a simple example, {ref}`here is the syntax on creating a module <docs:ref_eql_sdl_modules>`:
 

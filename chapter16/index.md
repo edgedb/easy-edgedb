@@ -10,7 +10,7 @@ tags: Indexing, String Functions
 
 ## `index on` for quicker lookups
 
-We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original book Dracula is all organized into letters, diaries, etc. that begin with the date and sometimes the time. They all start out in this sort of way:
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original book Dracula is made up of letters, diaries, newspaper reports and similar writings that begin with the date and sometimes the time. They all start out in this sort of way:
 
 ```
 Dr. Seward’s Diary.
