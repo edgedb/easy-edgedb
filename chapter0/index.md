@@ -29,10 +29,10 @@ Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons
 
 ## Plain English
 
-We want to give as many people as possible the opportunity to sit down and give EdgeDB a try, and so we've opted for a style of writing that's simple and straightforward. Not baby talk, just plain English. We have three types of people in mind here:
+We want to give as many people as possible the opportunity to sit down and give EdgeDB a try, and so we've opted for a style of writing that's simple and straightforward. We have three types of people in mind here:
 
-* People unfamiliar with how to build a database but ready to understand how they work if the concepts are explained in a straightforward way, 
-* People who _are_ familiar with databases but maybe aren't in the mood to wade through dense verbiage for a product they've never seen before, 
+* People unfamiliar with databases but ready to understand how they work if the concepts are explained in a straightforward way, 
+* People who _are_ familiar with databases but don't want to wade through dense verbiage to learn a new database and query language, 
 * People with English as a second (or third, fourth...) language who would much prefer reading a book in plain English for the same reason.
 
 ## Interactivity and experimentation
