@@ -31,7 +31,7 @@ insert City {
 
 ## Enums, scalar types, and extending
 
-We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The variants of the enum should be written in UpperCamelCase.
+We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
 
 Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
 
@@ -43,7 +43,7 @@ scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-To choose between the variants (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Transport.Feet`, `Transport.Train`, or `Transport.HorseDrawnCarriage`.
+To choose between the values (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Transport.Feet`, `Transport.Train`, or `Transport.HorseDrawnCarriage`.
 
 This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need a `PC` type and an `NPC` type, but our `Person` type should stay too - we can use it a base type for both. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` for the other `PC` and `NPC` types.
 
@@ -89,7 +89,7 @@ insert PC {
 
 Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time.
 
-Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants.
+Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the values.
 
 ## Casting 
 
