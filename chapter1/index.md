@@ -467,7 +467,7 @@ Note that if you have inserted "Johnathan Harker" multiple times, you will have 
 1. Entering the code below returns an error. Try adding one character to make it return `{true}`.
 
    ```edgeql
-   select my_name = 'Timothy',
+   with my_name = 'Timothy',
    select my_name != 'Benjamin';
    ```
 
