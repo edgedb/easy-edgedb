@@ -67,7 +67,9 @@ insert Country {
 
 ## Capturing a select expression
 
-With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `filter` when we select it. When doing this, we put the `select` inside `()` brackets. The brackets (parentheses) are necessary to capture the result of the query using `select`, that we then use to do something. In other words, the brackets delimit (set the boundaries for) the `select` query so that its result can be used as a whole. EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
+With these countries added, we are now ready to insert Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: the `City` types London and Bistritz, the `Country` type Hungary, and any other types we decide to add later that will extend `Place`.
+
+We only know that Dracula has been in Romania, so his `places_visited` will be pretty easy: just select all the `Place` types and filter on `.name = 'Romania '`. When doing this, we put the `select` inside `()` brackets (parentheses). The parentheses are used to capture the result of the `select` query. In other words, the parentheses delimit (set the boundaries for) the `select` query which is then assigned to `places_visited`.
 
 ```edgeql
 insert Vampire {
