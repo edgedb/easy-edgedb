@@ -169,7 +169,7 @@ insert City {
 };
 ```
 
-Note that a comma at the end is optional - you can put it in or leave it out. Here we put a comma at the end sometimes and left it out at other times to show this.
+Note that a comma after the last item is optional - you can put it in or leave it out. Here we put a comma at the end sometimes and left it out at other times to show this.
 
 Finally, the `Person` insert would look like this:
 
