@@ -1,6 +1,6 @@
 ```
 # Schema:
-START MIGRATION TO {
+start migration to {
   module default {
     abstract type Person {
       required property name -> str;
@@ -24,33 +24,33 @@ START MIGRATION TO {
   }
 };
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+populate migration;
+commit migration;
 
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,

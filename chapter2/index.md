@@ -22,7 +22,7 @@ type City {
 Now our original insert for Bistritz will look like this:
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
@@ -63,31 +63,31 @@ type NPC extending Person {
 }
 ```
 
-Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't insert it directly anymore. It will give us this error if we try to do something like `INSERT Person {name := 'Mr. HasAName'};`:
+Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't insert it directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:
 
 ```
 error: cannot insert into abstract object type 'default::Person'
   ┌─ query:1:8
   │
-1 │ INSERT Person {name := 'Mr. HasAName'};
+1 │ insert Person {name := 'Mr. HasAName'};
   │        ^^^^^^ error
 ```
 
 No problem - just change `Person` to `NPC` and it will work.
 
-Also, `SELECT` on an abstract type is just fine - it will select all the types that extend from it.
+Also, `select` on an abstract type is just fine - it will select all the types that extend from it.
 
 Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
 
 ```edgeql
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 ```
 
-Entering `places_visited := City` is short for `places_visited := (SELECT City)` - you don't have to type `SELECT` every time.
+Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time.
 
 Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the variants.
 
@@ -96,21 +96,21 @@ Note that we didn't just write `HorseDrawnCarriage`, because we have to choose t
 Casting means to quickly change one type into another, Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. For example:
 
 ```edgeql
-SELECT 9 + 9.9;
+select 9 + 9.9;
 ```
 
 EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
 
 ```edgeql
-SELECT (9 + 9.9) IS float64;
+select (9 + 9.9) is float64;
 ```
 
-This will give `true`, while `SELECT (9 + 9.9) IS float32;` gives `false`.
+This will give `true`, while `select (9 + 9.9) is float32;` gives `false`.
 
 When you need to do the cast yourself, you can indicate the type using `<>` angle brackets. For example, this will generate an error:
 
 ```edgeql
-SELECT '9' + 9;
+select '9' + 9;
 ```
 
 EdgeDB tells us the exact problem here:
@@ -119,7 +119,7 @@ EdgeDB tells us the exact problem here:
 error: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
   ┌─ query:1:8
   │
-1 │ SELECT '9' + 9;
+1 │ select '9' + 9;
   │        ^^^^^^^ Consider using an explicit type cast or a conversion function.
 
 ```
@@ -127,7 +127,7 @@ error: operator '+' cannot be applied to operands of type 'std::str' and 'std::i
 And to fix it, just use the angle brackets:
 
 ```edgeql
-SELECT <int32>'9' + 9;
+select <int32>'9' + 9;
 ```
 
 And you will get `18`, a 32-bit integer.
@@ -135,7 +135,7 @@ And you will get `18`, a 32-bit integer.
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
 
 ```edgeql
-SELECT <str><int64><str><int32>50 IS str;
+select <str><int64><str><int32>50 is str;
 ```
 
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
@@ -146,16 +146,16 @@ Also note that casting is only for scalar types: user-created object types like 
 
 ## Filter
 
-Finally, let's learn how to `FILTER` before we're done Chapter 2. You can use `FILTER` after the curly brackets in `SELECT` to only show certain results. Let's `FILTER` to only show `Person` types that have the name 'Emil Sinclair':
+Finally, let's learn how to `filter` before we're done Chapter 2. You can use `filter` after the curly brackets in `select` to only show certain results. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   places_visited: {name},
-} FILTER .name = 'Emil Sinclair';
+} filter .name = 'Emil Sinclair';
 ```
 
-`FILTER .name` is short for `FILTER Person.name`. You can write `FILTER Person.name` too if you want - it's the same thing.
+`filter .name` is short for `filter Person.name`. You can write `filter Person.name` too if you want - it's the same thing.
 
 The output is this:
 
@@ -179,18 +179,18 @@ Let's filter the cities now. One flexible way to search is with `like` or `ilike
 
 You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
 
-- `LIKE Bistr%` matches "**Bistr**itz" (but not "bistritz"),
-- `ILIKE '%IsTRiT%'` matches "B**istrit**z",
-- `LIKE %athan Harker` matches "Jon**athan Harker**",
-- `ILIKE %n h%` matches "Jonatha**n H**arker".
+- `like Bistr%` matches "**Bistr**itz" (but not "bistritz"),
+- `ilike '%IsTRiT%'` matches "B**istrit**z",
+- `like %athan Harker` matches "Jon**athan Harker**",
+- `ilike %n h%` matches "Jonatha**n H**arker".
 
-Let's `FILTER` to get all the cities that start with a capital B. That means we'll need `LIKE` because it's case-sensitive:
+Let's `filter` to get all the cities that start with a capital B. That means we'll need `like` because it's case-sensitive:
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name,
-} FILTER .name LIKE 'B%';
+} filter .name like 'B%';
 ```
 
 Here is the result:
@@ -214,13 +214,13 @@ So `'Jonathan'[0]` is 'J' and `'Jonathan'[4]` is 't'.
 Let's try it:
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name,
-} FILTER .name[0] = 'B'; # First character must be 'B'
+} filter .name[0] = 'B'; # First character must be 'B'
 ```
 
-That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`FILTER .name[18] = 'B';`), we'll get this:
+That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`filter .name[18] = 'B';`), we'll get this:
 
 ```
 ERROR: InvalidValueError: string index 18 is out of bounds
@@ -239,7 +239,7 @@ It's 8 characters long, so it fits entirely between 0 and 8. If you take a "slic
 
 Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7.
 
-So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `LIKE` or `ILIKE` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `LIKE` and `ILIKE` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
+So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `like` and `ilike` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
 
 - "no data" in Edgedb is shown as an empty set: `{}`
 - `""` (an empty string) is actually data.
@@ -252,7 +252,7 @@ Finally, did you notice that we wrote a comment with `#` just now? Comments in E
 So this:
 
 ```edgeql
-SELECT 1887#0503 is the first day of the book Dracula when...
+select 1887#0503 is the first day of the book Dracula when...
 ;
 ```
 
@@ -264,7 +264,7 @@ returns `{1887}`.
 
 ## Time to practice
 
-1. Change the following `SELECT` to display `{100}` by casting: `SELECT '99' + '1'`;
+1. Change the following `select` to display `{100}` by casting: `select '99' + '1'`;
 2. Select all the `City` types that start with 'Mu' (case sensitive).
 3. Select the third letter (i.e. index number 2) of the name of every `NPC`.
 4. Imagine an abstract type called `HasAString`:
@@ -280,7 +280,7 @@ returns `{1887}`.
 5. This query only shows the id numbers of the places visited. How do you show their name?
 
    ```edgeql
-   SELECT Person {
+   select Person {
      places_visited
    };
    ```
