@@ -31,7 +31,7 @@ insert City {
 
 ## Enums, scalar types, and extending
 
-We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about making one choice between options. The variants of the enum should be written in UpperCamelCase.
+We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The variants of the enum should be written in UpperCamelCase.
 
 Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
 
