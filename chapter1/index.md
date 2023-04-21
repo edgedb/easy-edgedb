@@ -114,25 +114,23 @@ type City {
 
 ## Selecting
 
-Here are three operators in EdgeDB that have the `=` sign:
+`select` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. Keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same.
+
+Let's give `select` a try with something really easy: just selecting a string.
+
+```edgeql
+select 'Jonathan Harker begins his journey.';
+```
+
+This returns `{'Jonathan Harker begins his journey.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_everything_is_a_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`. The advantage here is that sets always behave the same way even when they are empty, instead of [all the unwelcome surprises](https://www.edgedb.com/blog/we-can-do-better-than-sql#null-a-bag-of-surprises) that come with using null.
+
+For the next `select` queries, we will use some more operators that use the `=` sign:
 
 - `:=` is used to declare,
 - `=` is used to check equality (not `==`),
 - `!=` is the opposite of `=`.
 
-Let's try them out with `select`. `select` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it.
-
-By the way, keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same.
-
-First we'll just select a string:
-
-```edgeql
-select 'Jonathan Harker\'s journey begins.';
-```
-
-This returns `{'Jonathan Harker\'s journey begins.'}`, no surprise there. Did you notice that it's returned inside a `{}`? The `{}` means that it's a set, and in fact {ref}`everything in EdgeDB is a set <docs:ref_eql_everything_is_a_set>` (make sure to remember that). It's also why EdgeDB doesn't have null: where you would have null in other languages, EdgeDB just gives you an empty set: `{}`.
-
-Next we'll use `:=` to assign a variable:
+Let's use `:=` to assign a variable:
 
 ```edgeql
 select jonathans_name := 'Jonathan Harker';
@@ -147,7 +145,7 @@ select jonathans_name := 'Jonathan Harker',
 select jonathans_name != 'Count Dracula';
 ```
 
-The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will actually do something with the variables we assign with `:=`.
+The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will do more complex operations with the variables that we assign with `:=`.
 
 ## Inserting objects
 
