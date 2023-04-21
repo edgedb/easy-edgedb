@@ -185,11 +185,11 @@ But hold on a second. That insert won't link it to any of the `City` inserts tha
 - We have a `Person` type and a `City` type,
 - The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
-So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to something called `multi link` to the `City` type. This will actually join them together.
+So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
 
 But first let's look a bit closer at what happens when we use `insert`.
 
-As you can see, `str`s are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
+As you can see, strings (`str`) are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
 
 EdgeDB also has a byte literal type that gives you the bytes of a string. This is mainly for raw data that humans don't need to view such when saving to files. They must be characters that are 1 byte long.
 
@@ -337,10 +337,31 @@ And here is the output:
 }
 ```
 
-Also note that `oh_and_by_the_way` is of type `str` even though we didn't have to tell it. EdgeDB is strongly typed: everything needs a type and it will not try to mix them together. So if you write `select 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
-`.
+This brings up an interesting discussion about type safety. EdgeDB is strongly typed, meaning that everything needs a type and it will not try to mix different types together. So if you write `select 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'. But we didn't declare a type for `oh_and_by_the_way`, so how did EdgeDB know that it was a `str`?
 
-On the other hand, it can use "type inference" to guess the type, and that is what it does here: it knows that we are creating a `str`. We will look at changing types and working with different types soon.
+EdgeDB uses what is known as "type inference" to guess the type, meaning that it can usually figure out the type itself. That is what happens here: EdgeDB knows that we are creating a `str` because we enclosed it in quotes. In other words, the type is still a concrete `str` even if we didn't specify that it was.
+
+In fact, we can prove that these types are concrete right away: let's just ask EdgeDB.
+
+```edgeql
+select 'Jonathan Harker' is str;
+```
+
+This returns `{true}`. Let's try another:
+
+```edgeql
+select 8 is int64;
+```
+
+This returns `{true}`. Let's try one more!
+
+```edgeql
+select 8 is int32;
+```
+
+This time it returns `{false}`. As you can see, EdgeDB is selecting a concrete type every time even if we don't specify a type.
+
+There is a way to change one type to another that we will learn in the next chapter.
 
 ## Links
 
