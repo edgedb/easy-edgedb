@@ -146,7 +146,7 @@ Also note that casting is only for scalar types: user-created object types like 
 
 ## Filter
 
-Finally, let's learn how to `filter` before we're done Chapter 2. You can use `filter` after the curly brackets in `select` to only show certain results. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
+Let's learn how to `filter` before we're done Chapter 2. You can use `filter` after the curly brackets in `select` to only show certain results. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
 
 ```edgeql
 select Person {
@@ -247,7 +247,7 @@ So what if you want to make sure that you won't get an error with an index numbe
 Keeping that in mind helps you understand the behaviour between the two.
 
 
-Finally, did you notice that we wrote a comment with `#` just now? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
+Did you notice in that previous select query, we used `#` to add a comment? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
 
 So this:
 
