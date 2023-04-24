@@ -57,6 +57,11 @@ This is similar, just properties with strings. The book Dracula was published in
 
 ## Migration
 
+```{eval-rst}
+.. note::
+  Easy EdgeDB's instructions on migrations were written in 2020 and are somewhat out of date - they work, but are less convenient than the current options. As of May 2023 the preferred (and easiest) way to do a migration is by using the CLI commands [here](https://www.edgedb.com/docs/intro/quickstart#run-a-migration). Easy EdgeDB's chapters will be updated with the easier migration tools very soon!
+```
+
 We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://www.edgedb.com/download). First we create a {ref}`"project" <docs:ref_quickstart_createdb>` that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
 
 Sometimes it's useful to create a whole new database to try something out. You can do that with the `create database` keyword and our name for it:
@@ -67,7 +72,7 @@ create database dracula;
 
 Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
 
-Lastly, we need to do a migration. This will give the database the structure we need to start interacting with it. Migrations are not difficult with EdgeDB's {ref}`built-in tools <docs:ref_cli_edgedb_migration>`. However, we will use a {ref}`console shortcut <docs:ref_eql_ddl_migrations>` instead:
+Lastly, we need to do a migration. This will give the database the structure we need to start interacting with it.
 
 - First you start them with `start migration to {}`
 - Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
