@@ -1,6 +1,6 @@
 ```
 # Schema:
-START MIGRATION TO {
+start migration to {
   module default {
     abstract type Person {
       required property name -> str;
@@ -45,65 +45,65 @@ START MIGRATION TO {
   }
 };
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+populate migration;
+commit migration;
 
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
 
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 
-INSERT NPC {
+insert NPC {
   name := 'The innkeeper',
   age := 30,
 };
 
-INSERT City {
+insert City {
     name := 'London',
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
   lover := assert_single(
-    (SELECT DETACHED NPC Filter .name = 'Jonathan Harker')
+    (insert detached NPC Filter .name = 'Jonathan Harker')
   ),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  places_visited := (insert City filter .name = 'London'),
 };
 
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
-  places_visited := (SELECT Place FILTER .name = 'Romania'),
+  places_visited := (insert Place filter .name = 'Romania'),
 };
 ```

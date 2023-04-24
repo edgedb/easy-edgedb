@@ -22,39 +22,39 @@ With this we can link the two of them together. We will assume that a person can
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
 ```edgeql
-INSERT City {
+insert City {
     name := 'London',
 };
 ```
 
-To give her the city of London, we can just do a quick `SELECT City FILTER .name = 'London'`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
+To give her the city of London, we can just do a quick `select City filter .name = 'London'`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
 
-## DETACHED, EXISTS, and LIMIT
+## Using the keywords detached, exists, and limit
 
 For `lover` it is the same process but a bit more complicated:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
   lover := assert_single(
     (
-      SELECT DETACHED NPC
-      FILTER .name = 'Jonathan Harker'
+      select detached NPC
+      filter .name = 'Jonathan Harker'
     )
   ),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  places_visited := (select City filter .name = 'London'),
 };
 ```
 
 You'll notice two things here:
 
-- `DETACHED`. This is because we are inside of an `INSERT` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `DETACHED` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
+- `detached`. This is because we are inside of an `insert` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
 - {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `assert_single()` function.
 
 Now we want to make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a normal query:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   lover: {
     name
@@ -76,12 +76,12 @@ This gives us:
 
 Okay, so Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
 
-Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computed property to the query, using `EXISTS`. `EXISTS` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
+Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computed property to the query, using `exists`. `exists` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  is_single := NOT EXISTS Person.lover,
+  is_single := detached exists Person.lover,
 };
 ```
 
@@ -102,10 +102,10 @@ This also shows why abstract types are useful. Here we did a quick search on `Pe
 We've got a lot of single characters, let's try selecting just one of them:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  is_single := NOT EXISTS Person.lover,
-} FILTER .is_single LIMIT 1;
+  is_single := detached exists Person.lover,
+} filter .is_single limit 1;
 ```
 
 This prints:
@@ -113,7 +113,7 @@ This prints:
 {default::Vampire {name: 'Count Dracula', is_single: true}}
 ```
 
-Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, but we don't care that there are more that fit our `FILTER`. Using `assert_single()` would cause the database give us an error in case of multiple results. And of course `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
+Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, but we don't care that there are more that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. And of course `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
 
 It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
 
@@ -124,13 +124,13 @@ abstract type Person {
   required property name -> str;
   multi link places_visited -> Place;
   link lover -> Person;
-  property is_single := NOT EXISTS .lover;
+  property is_single := detached exists .lover;
 }
 ```
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
-You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. And of course you don't specify the type because the computed expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `SELECT country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
+You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. And of course you don't specify the type because the computed expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
 
 ## Ways to tell time
 
@@ -153,7 +153,7 @@ We'll start with `cal::local_time` first.
 `cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
 ```edgeql
-SELECT <cal::local_time>('15:44:56');
+select <cal::local_time>('15:44:56');
 ```
 
 This gives us the output:
@@ -177,7 +177,7 @@ type Time {
 So this won't work:
 
 ```edgeql
-SELECT <cal::local_time>'9:55:05';
+select <cal::local_time>'9:55:05';
 ```
 
 It gives this error:
@@ -192,15 +192,15 @@ Because of that, we are sure that slicing from index 0 to 2 will give us two num
 Now with this `Time` type, we can get the hour by doing this:
 
 ```edgeql
-INSERT Time {
+insert Time {
     clock := '09:55:05',
 };
 ```
 
-And then we can `SELECT` our `Time` objects and everything inside:
+And then we can `select` our `Time` objects and everything inside:
 
 ```edgeql
-SELECT Time {
+select Time {
   clock,
   clock_time,
   hour,
@@ -228,7 +228,7 @@ So `awake` is calculated like this:
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
-Now if we `SELECT` this with all the properties, it will give us this:
+Now if we `select` this with all the properties, it will give us this:
 
 `{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
 
@@ -241,23 +241,23 @@ property awake := 'just waking up' IF <int16>.hour = 19 ELSE
                   'awake';
 ```
 
-## SELECT while you INSERT
+## Selecting what you just inserted
 
-Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `INSERT` by enclosing it in brackets and then selecting that, same as with any other `SELECT`. Because when we insert a new `Time`, all we get is a `uuid`:
+Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `insert` by enclosing it in brackets and then selecting that, same as with any other `select`. Because when we insert a new `Time`, all we get is a `uuid`:
 
 ```edgeql
-INSERT Time {
+insert Time {
   clock := '22:44:10'
 };
 ```
 
 The output is just something like this: `{default::Time {id: 3f6951c6-ff48-11eb-915e-3fd1092b2757}}`
 
-So let's wrap the whole entry in `SELECT ()` so we can display its properties as we insert it. Because it's enclosed in brackets, EdgeDB will do that operation first, and then give it for us to select and do a normal query. Besides the properties to display, we can also add a computed property while we are at it. Let's give it a try:
+So let's wrap the whole entry in `select ()` so we can display its properties as we insert it. Because it's enclosed in brackets, EdgeDB will do that operation first, and then give it for us to select and do a normal query. Besides the properties to display, we can also add a computed property while we are at it. Let's give it a try:
 
 ```edgeql
-SELECT ( # Start a selection
-  INSERT Time { # Put the insert inside it
+select ( # Start a selection
+  insert Time { # Put the insert inside it
     clock := '22:44:10'
   }
 ) # The bracket finishes the selection
@@ -280,10 +280,10 @@ Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hou
 1. This insert is not working.
 
    ```edgeql
-   INSERT NPC {
+   insert NPC {
      name := 'I Love Mina',
      lover := assert_single(
-       (SELECT NPC FILTER .name LIKE '%Mina%')
+       (select NPC filter .name LIKE '%Mina%')
      )
    };
    ```
@@ -301,7 +301,7 @@ Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hou
 4. Imagine that you have the following `cal::local_time` type:
 
    ```edgeql
-   SELECT has_nine_in_it := <cal::local_time>'09:09:09';
+   select has_nine_in_it := <cal::local_time>'09:09:09';
    ```
 
    This displays `{<cal::local_time>'09:09:09'}` but instead you want to display {true} if it has a 9 and {false} otherwise. How could you do that?
@@ -309,13 +309,13 @@ Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hou
 5. We are inserting a character called The Innkeeper's Son:
 
    ```edgeql
-   INSERT NPC {
+   insert NPC {
      name := "The Innkeeper's Son",
      age := 10
    };
    ```
 
-   How would you `SELECT` this insert at the same time to display the `name`, `age`, and `age_ten_years_later` that is made from `age` plus 10?
+   How would you `select` this insert at the same time to display the `name`, `age`, and `age_ten_years_later` that is made from `age` plus 10?
 
 [See the answers here.](answers.md)
 
