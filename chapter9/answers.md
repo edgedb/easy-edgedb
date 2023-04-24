@@ -5,9 +5,9 @@
 It needs to be a set instead of an array, so change the brackets to `{}` instead:
 
 ```edgeql
-FOR castle IN {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
-UNION (
-  INSERT Castle {
+FOR castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
+union (
+  insert Castle {
     name := castle
   }
 );
@@ -18,10 +18,10 @@ UNION (
 It looks like this:
 
 ```edgeql
-SELECT (
-  FOR castle IN {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
-  UNION (
-    INSERT Castle {
+select (
+  for castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
+  union (
+    insert Castle {
       name := castle
     }
   )
@@ -46,19 +46,19 @@ type Vampire extending Person {
 You would give them each a `last_appearance` like this:
 
 ```edgeql
-UPDATE Person
-SET {
+update Person
+set {
   last_appearance := <cal::local_date>'1887-09-11'
 };
 ```
 
 #### 5. All the `Person` characters that have an `e` or an `a` in their name have been brought back to life. How would you update to do this?
 
-You can just `UPDATE` by using `LIKE` on a set instead of a single letter:
+You can just `update` by using `like` on a set instead of a single letter:
 
 ```edgeql
-UPDATE Person FILTER .name LIKE {'%a%', '%e%'}
-SET {
+update Person filter .name like {'%a%', '%e%'}
+set {
   last_appearance := {}
 };
 ```
@@ -66,9 +66,9 @@ SET {
 And if you wanted to display the results at the same time to make sure, it would look like this:
 
 ```edgeql
-SELECT (
-  UPDATE Person FILTER .name ILIKE {'%a%', '%e%'}
-  SET {
+select (
+  update Person filter .name ilike {'%a%', '%e%'}
+  set {
     last_appearance := {}
   }
 ) {

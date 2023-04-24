@@ -1,6 +1,6 @@
 ```
 # Schema:
-START MIGRATION TO {
+start migration to {
   module default {
     abstract type Person {
       property name -> str {
@@ -23,7 +23,7 @@ START MIGRATION TO {
         constraint max_value(120)
     }
       overloaded multi link places_visited -> Place {
-        default := (SELECT City filter .name = 'London');
+        default := (select City filter .name = 'London');
       }
     }
 
@@ -58,7 +58,7 @@ START MIGRATION TO {
       required property clock -> str;
       property clock_time := <cal::local_time>.clock;
       property hour := .clock[0:2];
-      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+      property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
     }
 
     abstract type HasNumber {
@@ -82,165 +82,165 @@ START MIGRATION TO {
   }
 };
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+populate migration;
+commit migration;
 
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
 
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 
-INSERT Country {
+insert Country {
   name := 'France'
 };
 
-INSERT Country {
+insert Country {
   name := 'Slovakia'
 };
 
-INSERT Castle {
+insert Castle {
     name := 'Castle Dracula',
     doors := [6, 19, 10],
 };
 
-INSERT City {
+insert City {
     name := 'London',
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
-  places_visited := (SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+  places_visited := (select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
 };
 
-INSERT NPC {
+insert NPC {
   name := 'The innkeeper',
   age := 30,
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  lover := (select detached NPC Filter .name = 'Jonathan Harker'),
+  places_visited := (select City filter .name = 'London'),
 };
 
-UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
-    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
+update Person filter .name = 'Jonathan Harker'
+  set {
+    lover := (select detached Person filter .name = 'Mina Murray')
 };
 
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 2',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 3',
   }),
  },
-   places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
+   places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
 };
 
-UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
+update Person filter .name = 'Jonathan Harker'
+  set {
     strength := 5
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := Rank.Captain
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'Petrofsky',
   rank := Rank.FirstMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The First Mate',
   rank := Rank.SecondMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := Rank.Cook
 };
 
-FOR n IN {1, 2, 3, 4, 5}
-  UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+  union (
+  insert Crewman {
   number := n,
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16),
 });
 
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Lucy Westenra',
-  places_visited := (SELECT City FILTER .name = 'London')
+  places_visited := (select City filter .name = 'London')
 };
 
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
-  UNION (
-    INSERT NPC {
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+  union (
+    insert NPC {
     name := character_name,
-    lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
+    lover := (select Person filter .name = 'Lucy Westenra'),
 });
 
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
+update NPC filter .name = 'Lucy Westenra'
+set {
   lover := (
-    SELECT Person FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+    select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-  SET {
-    lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
+update NPC filter .name = 'Lucy Westenra'
+  set {
+    lover := (select detached NPC filter .name = 'Arthur Holmwood'),
 };
 
-UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
-  SET {
+update NPC filter .name in {'John Seward', 'Quincey Morris'}
+  set {
     lover := {} # 😢
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
   strength := 10,
