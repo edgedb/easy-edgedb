@@ -79,7 +79,7 @@ insert Country {
 
 insert Vampire {
   name := 'Count Dracula',
-  places_visited := (SELECT Place FILTER .name = 'Romania'),
+  places_visited := (select Place filter .name = 'Romania'),
 };
 
 insert NPC {
