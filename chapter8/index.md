@@ -32,12 +32,12 @@ type Crewman extending HasNumber, Person {
 Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
 
 ```edgeql
-INSERT Crewman {
-  number := count(DETACHED Crewman) + 1
+insert Crewman {
+  number := count(detached Crewman) + 1
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `SELECT Crewman {number};` to see the result. It gives us:
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `select Crewman {number};` to see the result. It gives us:
 
 ```
 {
@@ -76,31 +76,31 @@ type Ship {
 Now to insert the sailors we just give them each a name and choose a rank from the enum:
 
 ```edgeql
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := 'Captain'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'Petrofsky',
   rank := 'FirstMate'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Second Mate',
   rank := 'SecondMate'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := 'Cook'
 };
 ```
 
-Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `FILTER` anywhere.
+Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `filter` anywhere.
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
@@ -110,7 +110,7 @@ INSERT Ship {
 Then we can look up the `Ship` to make sure that the whole crew is there:
 
 ```edgeql
-SELECT Ship {
+select Ship {
   name,
   sailors: {
     name,
@@ -165,16 +165,16 @@ type Townsperson extending Person {
 }
 ```
 
-The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `UPDATE` and `SET` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
+The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1). So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `update` and `set` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
 
-## Using IS to query multiple types
+## Using the 'is' keyword to query multiple types
 
 So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`.
 
 But this gives us a problem if we want to query them all at the same time. They all extend `Person`, but `Person` doesn't have all of their links and properties. So this query won't work:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   age,
   number,
@@ -183,19 +183,19 @@ SELECT Person {
 
 The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`.
 
-Luckily there is an easy fix for this: we can use `IS` inside square brackets to specify the type. Here's how it works:
+Luckily there is an easy fix for this: we can use `is` inside square brackets to specify the type. Here's how it works:
 
 - `.name`: this stays the same, because `Person` has this property
-- `.age`: this belongs to the `NPC` type, so change it to `[IS NPC].age`
-- `.number`: this belongs to the `Crewman` type, so change it to `[IS Crewman].number`
+- `.age`: this belongs to the `NPC` type, so change it to `[is NPC].age`
+- `.number`: this belongs to the `Crewman` type, so change it to `[is Crewman].number`
 
 Now it will work:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  [IS NPC].age,
-  [IS Crewman].number,
+  [is NPC].age,
+  [is Crewman].number,
 };
 ```
 
@@ -216,13 +216,13 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 This is pretty good, but if we send this output somewhere as JSON it won't show us the type for each of them. To refer to an object's own type in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
 
 ```edgeql
-SELECT <json>Person {
+select <json>Person {
   __type__: {
     name      # Name of the type inside module default
   },
   name, # Person.name
-  [IS NPC].age,
-  [IS Crewman].number,
+  [is NPC].age,
+  [is Crewman].number,
 };
 ```
 
@@ -231,6 +231,7 @@ Choosing the six objects from before from the output, it now looks like this:
 ```
 {
   # ... /snip
+  {
   {\"name\": \"default::Crewman\"}}",
   "{\"age\": null, \"name\": null, \"number\": 4, \"__type__\": {\"name\": \"default::Crewman\"}}",
   "{\"age\": null, \"name\": null, \"number\": 5, \"__type__\": {\"name\": \"default::Crewman\"}}",
@@ -245,31 +246,31 @@ This is officially called a {ref}`polymorphic query <docs:ref_eql_select_polymor
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype IS supertype` will return `{true}`. And of course, `supertype IS subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And of course, `supertype is subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
 
-In our schema, that means that `SELECT PC IS Person` returns `{true}`, while `SELECT Person IS PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
+In our schema, that means that `select PC is Person` returns `{true}`, while `select Person is PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
 
-To make a query that will show this, just add a shape query with the computed property `Person IS PC` and EdgeDB will tell you:
+To make a query that will show this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
 
 ```edgeql
-SELECT Person {
+select Person {
     name,
-    is_PC := Person IS PC,
+    is_PC := Person is PC,
 };
 ```
 
 Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
 
 ```edgeql
-WITH year := 1887,
-SELECT year IS int16 OR year IS int32 OR year IS int64;
+with year := 1887,
+select year is int16 or year is int32 or year is int64;
 ```
 
 Output: `{true}`.
 
 But fortunately these types all {ref}`extend from abstract types too <docs:ref_std_abstract_types>`, and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
 
-So with that you can change the above input to `SELECT 1887 IS anyint` and get `{true}`.
+So with that you can change the above input to `select 1887 is anyint` and get `{true}`.
 
 ## Multi in other places
 
@@ -292,7 +293,7 @@ type Castle extending Place {
 With that, you would insert using `{}` instead of square brackets for an array:
 
 ```edgeql
-INSERT Castle {
+insert Castle {
   name := 'Castle Dracula',
   doors := {6, 19, 10},
 };
@@ -312,7 +313,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
 
-  First negative for objects: objects are always larger, and here's why. Remember `DESCRIBE TYPE AS TEXT`? Let's look at one of our types with that again. Here's the `Castle` type:
+  First negative for objects: objects are always larger, and here's why. Remember `describe type as text`? Let's look at one of our types with that again. Here's the `Castle` type:
 
   ```
   {
@@ -360,10 +361,10 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 5. What needs to be fixed in this query? Hint: two things definitely need to be fixed, while one more should probably be changed to make it more readable.
 
    ```edgeql
-   SELECT Place {
+   select Place {
      __type__,
      name
-     [IS Castle]doors
+     [is Castle]doors
    };
    ```
 
