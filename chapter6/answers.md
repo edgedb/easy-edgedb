@@ -7,7 +7,7 @@ You can do it with concatenation using `++`:
 ```edgeql
 select NPC {
   name,
-  greeting := "Pleased to meet you, I'm " ++ .name
+  greeting := "Pleased to meet you. I'm " ++ .name ++ '.'
 };
 ```
 

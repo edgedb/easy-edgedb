@@ -48,7 +48,7 @@ So back to Jonathan: in our database, he's been to four cities, one country, and
 insert NPC {
   name := 'Jonathan Harker',
   places_visited := (
-    select Place filter .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
   )
 };
 ```
@@ -274,7 +274,7 @@ The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types t
 
 ## Time to practice
 
-1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
+1. This select is incomplete. How would you complete it so that it says "Pleased to meet you. I'm " and then the NPC's name followed by a period?
 
    ```edgeql
    select NPC {
