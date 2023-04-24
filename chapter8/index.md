@@ -7,7 +7,6 @@ tags: Multiple Inheritance, Polymorphism
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
 > A boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him. Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
-
 > Meanwhile, Mina and her friend Lucy are in Whitby on vacation...
 
 ## Multiple inheritance
@@ -299,7 +298,7 @@ insert Castle {
 };
 ```
 
-The next question of course is which is best to use: `multi property`, `array`, or an object type via a link. The answer is...it depends. But here are some good rules of thumb to help you decide which to choose.
+The next question of course is which is best to use: `multi property`, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
 
 - `multi property` vs. arrays:
 
@@ -309,7 +308,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   If order is important, than an array may be better. It's easier to keep the original order of items in an array.
 
-- `multi property` vs. objects
+- `multi property` vs. objects (via `link`)
 
   Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
 
@@ -340,7 +339,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi link`, for example.
 
-  Objects are easier to migrate if you need to have more than one value with each.
+  Using objects with an `exclusive` constraint is more efficient when there is a lot of property value duplication.
 
 So hopefully that explanation should help. You can see that you have a lot of choice, so remembering the points above should help you make a decision. Most of the time, you'll probably have a sense for which one you want.
 
