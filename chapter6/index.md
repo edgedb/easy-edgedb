@@ -130,7 +130,7 @@ This prints:
 
 (The concatenation operator works on arrays too, putting them into a single array. So `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
 
-Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `multi link`:
+Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. In the book, any person that Dracula bites becomes his slave - once they die, they become another vampire that lives forever that Dracula can control with his mind (that's what makes the book scary). That means we need a `multi link`:
 
 ```sdl
 type Vampire extending Person {
