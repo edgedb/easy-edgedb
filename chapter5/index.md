@@ -70,15 +70,15 @@ std::to_datetime(epochseconds: int64) -> datetime
 
 The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp.
 
-Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time). We'll use `to_datetime()` to generate this. We won't worry about the year, because the story takes place in the same year - we'll just use 2020 for convenience. We type this:
+Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
 
 ```edgeql
-select to_datetime(2020, 5, 12, 10, 35, 0, 'EEST');
+select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST');
 ```
 
 And get the following output:
 
-`{<datetime>'2020-05-12T07:35:00Z'}`
+`{<datetime>'1893-05-12T07:35:00Z'}`
 
 The `07:35:00` part shows that it was automatically converted to UTC, which is London where Mina lives.
 
@@ -93,7 +93,7 @@ This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 200
 Now let's try something similar with Jonathan in Castle Dracula again, trying to escape. It's May 12 at 10:35 am. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
 
 ```edgeql
-select to_datetime(2020, 5, 12, 10, 35, 0, 'EEST') - to_datetime(2020, 5, 12, 6, 10, 0, 'UTC');
+select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST') - to_datetime(1893, 5, 12, 6, 10, 0, 'UTC');
 ```
 
 The answer is 1 hour and 25 minutes: `{<duration>'1:25:00'}`.
@@ -102,8 +102,8 @@ To make the query easier for us to read, we can also use the `with` keyword to c
 
 ```edgeql
 with
-  jonathan_wants_to_escape := to_datetime(2020, 5, 12, 10, 35, 0, 'EEST'),
-  mina_has_tea := to_datetime(2020, 5, 12, 6, 10, 0, 'UTC'),
+  jonathan_wants_to_escape := to_datetime(1893, 5, 12, 10, 35, 0, 'EEST'),
+  mina_has_tea := to_datetime(1893, 5, 12, 6, 10, 0, 'UTC'),
 select jonathan_wants_to_escape - mina_has_tea;
 ```
 
@@ -228,7 +228,7 @@ So if `type` comes after `describe` for types and `module` after `describe` for 
 
 1. What do you think `select to_datetime(3600);` will return, and why?
 
-   Hint: check the function signatures above and see which one EdgeDB will pick when you enter 3600.
+   Hint: check the function signatures above (or [in the docs](https://www.edgedb.com/docs/stdlib/datetime#function::std::to_datetime)) and see which one EdgeDB will pick when you enter 3600.
 
 2. Will `select <int16>9 + 1.06n is decimal;` work? And if it does, will it return `{true}`?
 
