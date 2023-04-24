@@ -34,7 +34,7 @@ abstract type Place {
 
 ## Passing constraints with delegated
 
-Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making any real `PC` types. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
+Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making any real `PC` type objects. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
 
 Fortunately there's an easy way to get around this: the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. So the type is exactly the same except for this keyword:
 
@@ -136,7 +136,7 @@ select jonathan_strength > min(array_unpack(castle_doors));
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
 
-Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` types:
+Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` type objects:
 
 ```edgeql
 select (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
@@ -164,7 +164,7 @@ In a few chapters we will learn how to create our own functions to make queries 
 
 ## Using $ to set parameters
 
-Imagine we need to look up `City` types all the time, with this sort of query:
+Imagine we need to look up `City` type objects all the time, with this sort of query:
 
 ```edgeql
 select City {
@@ -222,7 +222,7 @@ Parameter <str>$name: b
 Parameter <bool>$has_modern_name: true
 ```
 
-So that will give all `City` types with "b" in the name and that have a different modern name. The result:
+So that will give all `City` type objects with "b" in the name and that have a different modern name. The result:
 
 ```
 {
@@ -299,7 +299,7 @@ The `update` keyword that we learned last chapter can also take parameters, so t
 
 4. How would you insert an NPC with the name 'NPC number 8' if for example there are already seven other NPCs?
 
-5. How would you select only the `Person` types that have the shortest names?
+5. How would you select only the `Person` type objects that have the shortest names?
 
 [See the answers here.](answers.md)
 

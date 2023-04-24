@@ -71,7 +71,7 @@ insert NPC {
 
 `select count(NPC)` on its own gives the number, but we are inserting an `NPC` at the same time so we need `detached` to select the `NPC` type in general.
 
-#### 5. How would you select only the `Person` types that have the shortest names?
+#### 5. How would you select only the `Person` type objects that have the shortest names?
 
 First, here's how **not** to do it:
 
