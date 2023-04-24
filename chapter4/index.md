@@ -17,7 +17,7 @@ abstract type Person {
 }
 ```
 
-With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link` but we can just write `link`.
+With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link`. But `link` is the short form of `single link` so we can just write `link`.
 
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
@@ -49,7 +49,7 @@ insert NPC {
 You'll notice two things here:
 
 - `detached`. This is because we are inside of an `insert` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
-- {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use `assert_single()` function.
+- {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
 
 Now we want to make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a normal query:
 
@@ -76,7 +76,7 @@ This gives us:
 
 Okay, so Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
 
-Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can add a computed property to the query, using `exists`. `exists` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
+Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can put a computed property in the query, using `exists`. We'll call it `is_single`, but since it's not in the schema for the `Person` type we could call it anything we like here. The keyword `exists` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
 
 ```edgeql
 select Person {
@@ -108,12 +108,13 @@ select Person {
 } filter .is_single limit 1;
 ```
 
-This prints:
+If the first `Person` type returned from the database is Count Dracula, then we will see the following output:
+
 ```
 {default::Vampire {name: 'Count Dracula', is_single: true}}
 ```
 
-Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, but we don't care that there are more that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. And of course `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
+Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, even if there are more that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. Similarly, `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
 
 It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
 
@@ -130,18 +131,18 @@ abstract type Person {
 
 We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
 
-You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. And of course you don't specify the type because the computed expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
+You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. Computed links also don't specify the type because the expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
 
 ## Ways to tell time
 
 We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
 
-The part of Romania where Jonathan Harker is has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple we will just use 7 am and 7 pm to decide if it's day or night.
+The part of Romania that Jonathan Harker is visiting has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple we will just use 7 am and 7 pm to decide if it's day or night.
 
-EdgeDB uses two major types for time.
+EdgeDB uses two major types for time:
 
 - `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
-- `cal::local_datetime`, which doesn't worry about timezone.
+- `cal::local_datetime`, which doesn't worry about the timezone.
 
 There are two others that are almost the same as `cal::local_datetime`:
 
@@ -218,8 +219,8 @@ type Time {
   required property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19
-    ELSE 'awake';
+  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
+    else 'awake';
 }
 ```
 
@@ -232,12 +233,12 @@ Now if we `select` this with all the properties, it will give us this:
 
 `{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
 
-One more note on `ELSE`: you can keep on using `ELSE` as many times as you like in the format `(result) IF (condition) ELSE`. Here's an example:
+One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
 
 ```
-property awake := 'just waking up' IF <int16>.hour = 19 ELSE
-                  'going to bed' IF <int16>.hour = 6 ELSE
-                  'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE
+property awake := 'just waking up' if <int16>.hour = 19 else
+                  'going to bed' if <int16>.hour = 6 else
+                  'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else
                   'awake';
 ```
 
@@ -283,7 +284,7 @@ Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hou
    insert NPC {
      name := 'I Love Mina',
      lover := assert_single(
-       (select NPC filter .name LIKE '%Mina%')
+       (select NPC filter .name like '%Mina%')
      )
    };
    ```
