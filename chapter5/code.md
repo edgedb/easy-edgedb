@@ -1,6 +1,6 @@
 ```
 # Schema:
-START MIGRATION TO {
+start migration to {
   module default {
     abstract type Person {
       required property name -> str;
@@ -44,72 +44,72 @@ START MIGRATION TO {
       required property clock -> str;
       property clock_time := <cal::local_time>.clock;
       property hour := .clock[0:2];
-      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+      property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
     }
   }
 };
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+populate migration;
+commit migration;
 
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
 
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
-  places_visited := (SELECT Place FILTER .name = 'Romania'),
+  places_visited := (select Place filter .name = 'Romania'),
 };
 
-INSERT NPC {
+insert NPC {
   name := 'The innkeeper',
   age := 30,
 };
 
-INSERT City {
+insert City {
     name := 'London',
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
-  lover := assert_single((SELECT DETACHED NPC Filter .name = 'Jonathan Harker')),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  lover := assert_single((select detached NPC filter .name = 'Jonathan Harker')),
+  places_visited := (select City filter .name = 'London'),
 };
 
-INSERT MinorVampire {
+insert MinorVampire {
   name := 'Woman 1',
   master := assert_single((select Vampire Filter .name = 'Count Dracula')),
 };
