@@ -40,7 +40,7 @@ start migration to {
       required property clock -> str;
       property clock_time := <cal::local_time>.clock;
       property hour := .clock[0:2];
-      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+      property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
     }
   }
 };
