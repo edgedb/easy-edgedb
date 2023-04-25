@@ -150,7 +150,7 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 union (
   insert NPC {
     name := character_name,
-    lover := (select Person filter .name = 'Lucy Westenra'),
+    lovers := (select Person filter .name = 'Lucy Westenra'),
   }
 );
 ```
@@ -223,7 +223,7 @@ Now it's time to update Lucy with three lovers. Lucy has already ruined our plan
 ```edgeql
 update NPC filter .name = 'Lucy Westenra'
 set {
-  lover := (
+  lovers := (
     select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
@@ -293,25 +293,26 @@ Okay, let's read the rest of the introduction for this chapter. It continues to 
 
 > ...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately the three men become friends with each other. Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax not far outside London. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
-Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
-
-```edgeql
-update NPC filter .name = 'Lucy Westenra'
-set {
-  lover := (select detached NPC filter .name = 'Arthur Holmwood'),
-};
-```
-
-And then remove her from the other two. We'll just give them a sad empty set.
+Oops! Looks like Lucy doesn't have three lovers anymore.  We will have to remove her as a lover from the other two gentlemen. We'll just give them a sad empty set.
 
 ```edgeql
 update NPC filter .name in {'John Seward', 'Quincey Morris'}
 set {
-  lover := {} # 😢
+  lovers := {} # 😢
 };
 ```
 
-Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `` for:
+That makes it easy to update Lucy's `lovers` link, since we know she now only shows up inside the `lovers` for Jonathan Harker.
+
+```edgeql
+update NPC filter .name = 'Lucy Westenra'
+set {
+lovers := (
+select Person filter NPC in .lovers
+)};
+```
+
+Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `filter` for:
 
 ```edgeql
 insert NPC {
@@ -354,7 +355,7 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
      property age -> int16;
      property strength -> int16;
      multi link places_visited -> Place;
-     multi link lover -> Person;
+     multi link lovers -> Person;
      property first_appearance -> cal::local_date;
      property last_appearance -> cal::local_date;
    }
