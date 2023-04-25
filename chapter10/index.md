@@ -150,10 +150,10 @@ Here's another example if we need to do some math with floats on London's popula
 
 ```edgeql
 with london := <tuple<json, float64>>('London', 3500000),
-  select (london.0, london.1 / 9);
+  select (london.0, london.1 / 23);
 ```
 
-The output is `{("\"London\"", 388888.8888888889)}`.
+The output is `{("\"London\"", 152173.91304347827)}`.
 
 ## Ordering results and using math
 
