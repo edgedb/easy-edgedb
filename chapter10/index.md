@@ -331,7 +331,7 @@ In a standard database with users it's much simpler: get users to enter their fi
 
 ## Other escape characters and raw strings
 
-Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
+Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:grammar_token_edgeql_str_escapes>`. Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
 
 If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
