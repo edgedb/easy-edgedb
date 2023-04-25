@@ -159,7 +159,7 @@ error: possibly more than one element returned by an expression for a link 'mast
 
 Also note that `assert_single()` will return an error (a `CardinalityViolationError`) if more than one element is returned, so make sure to only use `assert_single()` if you are sure that there is only one element. In principle it's sort of like a "trust me, there is only one element" sort of function.
 
-## DESCRIBE to look inside types
+## Using the 'describe' keyword to look inside types
 
 Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
@@ -177,7 +177,7 @@ Now back to `describe type` which gives the results in DDL. Here's what our `Min
 }
 ```
 
-The `CREATE` keyword shows that it's a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
+The `create` keyword shows that it's a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
 
 - `describe type MinorVampire as sdl` - same thing, but in SDL.
 
