@@ -7,7 +7,7 @@ start migration to {
         delegated constraint exclusive;
       }
       multi link places_visited -> Place;
-      multi link lover -> Person;
+      multi link lovers -> Person;
       property strength -> int16;
       property first_appearance -> cal::local_date;
       property last_appearance -> cal::local_date;
@@ -146,13 +146,13 @@ insert NPC {
 
 insert NPC {
   name := 'Mina Murray',
-  lover := (select detached NPC Filter .name = 'Jonathan Harker'),
+  lovers := (select detached NPC filter .name = 'Jonathan Harker'),
   places_visited := (select City filter .name = 'London'),
 };
 
 update Person filter .name = 'Jonathan Harker'
   set {
-    lover := (select detached Person filter .name = 'Mina Murray')
+    lovers := (select detached Person filter .name = 'Mina Murray')
 };
 
 insert Vampire {
@@ -220,24 +220,24 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   union (
     insert NPC {
     name := character_name,
-    lover := (select Person filter .name = 'Lucy Westenra'),
+    lovers := (select Person filter .name = 'Lucy Westenra'),
 });
 
 update NPC filter .name = 'Lucy Westenra'
 set {
-  lover := (
+  lovers := (
     select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 
 update NPC filter .name = 'Lucy Westenra'
   set {
-    lover := (select detached NPC filter .name = 'Arthur Holmwood'),
+    lovers := (select detached NPC filter .name = 'Arthur Holmwood'),
 };
 
 update NPC filter .name in {'John Seward', 'Quincey Morris'}
   set {
-    lover := {} # 😢
+    lovers := {} # 😢
 };
 
 insert NPC {
