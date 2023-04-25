@@ -234,7 +234,7 @@ So that will give all `City` type objects with "b" in the name and that have a d
 Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
 ```edgeql
-select(
+select (
   insert Time {
     clock := <str>$hour ++ <str>$minute ++ <str>$second
   }
@@ -267,7 +267,7 @@ Note that the cast means you can just type 10, not '10'.
 So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
 
 ```edgeql
-select(
+select (
   insert Time {
     clock := <optional str>$hour ++ <optional str>$minute ++ <optional str>$second
   }

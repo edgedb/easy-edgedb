@@ -5,7 +5,7 @@
 It needs to be a set instead of an array, so change the brackets to `{}` instead:
 
 ```edgeql
-FOR castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
+for castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
 union (
   insert Castle {
     name := castle
