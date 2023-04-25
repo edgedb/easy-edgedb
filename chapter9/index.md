@@ -16,6 +16,16 @@ This is a good time to add two new properties to the `Person` type to indicate w
 
 For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
+Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
+
+Here are its signatures (we're using the third):
+
+```
+cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
+cal::to_local_date(dt: datetime, zone: str) -> local_date
+cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
+```
+
 Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
 
 ```edgeql
@@ -26,7 +36,7 @@ insert Crewman {
 };
 ```
 
-And since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if being super precise doesn't matter).
+And since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise).
 
 Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
 
@@ -35,16 +45,6 @@ select <cal::local_date>'1887-07-08';
 ```
 
 But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
-
-Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
-
-Here are its signatures (we're using the third):
-
-```
-cal::to_local_date(s: str, fmt: OPTIONAL str = {}) -> local_date
-cal::to_local_date(dt: datetime, zone: str) -> local_date
-cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
-```
 
 Now we update the `Crewman` objects and give them all the same date to keep things simple:
 
