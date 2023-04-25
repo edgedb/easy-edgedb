@@ -60,7 +60,7 @@ edgedb> select 9223372036854775808n;
 Now that we know all the numeric types, let's get back to the six signatures for the `std::to_datetime` function:
 
 ```
-std::to_datetime(s: str, fmt: OPTIONAL str = {}) -> datetime
+std::to_datetime(s: str, fmt: optional str = {}) -> datetime
 std::to_datetime(local: cal::local_datetime, zone: str) -> datetime
 std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime
 std::to_datetime(epochseconds: decimal) -> datetime
