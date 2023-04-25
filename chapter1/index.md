@@ -119,7 +119,7 @@ type City {
 
 ## Selecting
 
-`select` is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. Keywords in EdgeDB are case insensitive, so `SELECT`, `select` and `SeLeCT` are all the same.
+The `select` keyword is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. Keywords in EdgeDB are case insensitive, so `select`, `SELECT` and `SeLeCT` are all the same.
 
 Let's give `select` a try with something really easy: just selecting a string.
 
