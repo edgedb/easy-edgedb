@@ -60,6 +60,8 @@ Looks like it worked.
 
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight.
 
+(Note: the array_join function in the signature joins an array of strings into a single string)
+
 ```sdl
 function fight(people_names: array<str>, opponent: Person) -> str
   using (
@@ -242,39 +244,28 @@ Then we'll get this result:
 
 instead of something like 'Buda-Pesth, Bistritz, Munich'.
 
-Let's experiment some more while introducing two new functions, called `array_agg` and `array_join`. Here's what they do:
-
-- {eql:func}`docs:std::array_agg`, turns sets into arrays (it 'aggregates' them).
-- {eql:func}`docs:std::array_join` turns arrays into a single string. So let's give that a try:
+One way to join the two together without thinking about Cartesian multiplication is to turn them into an array. The {eql:func}`docs:std::array_agg` function will do this: it 'aggregates' them.
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
      m_places := (select Place filter .name ilike 'm%'),
-select array_join(array_agg(b_places.name), ', ') ++ ', ' ++
-  array_join(array_agg(m_places.name), ', ')
-  if exists b_places.name and exists m_places.name
-  else b_places.name ?? m_places.name;
+select array_agg(b_places.name) ++
+  array_agg(m_places.name);
 ```
 
-This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But there's a small problem:
+Using this gives us an output of `{['Buda-Pesth', 'Bistritz', 'Munich']}`.
 
-- if both sets are not empty we get a single string with commas,
-- otherwise we get a set of strings.
-
-So that's not very robust. Plus the query is kind of hard to read now.
-
-The best way is actually the easiest: just `union` the sets.
+But if we just want to stick with a set, there is an even easier way: just `union` the sets.
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
-     m_places := (select Place filter .name ilike 'm%'),
-     both_places := b_places union m_places,
-select both_places.name;
+  m_places := (select Place filter .name ilike 'm%'),
+  select b_places.name union m_places.name;
 ```
 
-Finally! The output is `{'Buda-Pesth', 'Bistritz', 'Munich'}`
+And that will give us an output of `{'Buda-Pesth', 'Bistritz', 'Munich'}`.
 
-Now with this more robust query we can use it on anything and don't need to worry about getting `{}` if we choose a letter like x. Let's look at every place that contains k or e:
+With this, we don't need to worry about getting `{}` if we choose a letter like x. Let's look at every place that contains k or e:
 
 ```edgeql
 with has_k := (select Place filter .name ilike '%k%'),
