@@ -9,7 +9,7 @@ tags: Type Annotations, Backlinks
 So we have a new city called Exeter, and adding it is of course easy:
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Exeter',
   population := 40000
 };
@@ -30,10 +30,10 @@ type City extending Place {
 }
 ```
 
-Now we can do an `INTROSPECT` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
+Now we can do an `introspect` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
 
 ```edgeql
-SELECT (INTROSPECT City) {
+select (introspect City) {
   name,
   properties: {name},
   annotations: {name}
@@ -63,7 +63,7 @@ Ah, of course: the `annotations: {name}` part returns the name of the _type_, wh
 This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
 
 ```edgeql
-SELECT (INTROSPECT City) {
+select (introspect City) {
   name,
   properties: {name},
   annotations: {
@@ -114,7 +114,7 @@ type OtherPlace extending Place {
 Now let's do an introspect query on just its name and annotations:
 
 ```edgeql
-SELECT (INTROSPECT OtherPlace) {
+select (introspect OtherPlace) {
   name,
   annotations: {name, @value}
 };
@@ -136,15 +136,15 @@ And here it is:
 
 ## Even more working with dates
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `SELECT count(Person)`, which gives `{24}`.
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`, which gives `{24}`.
 
 There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
 First a simple example of how to use `enumerate()`:
 
 ```edgeql
-WITH three_things := {'first', 'second', 'third'},
-SELECT enumerate(three_things);
+with three_things := {'first', 'second', 'third'},
+select enumerate(three_things);
 ```
 
 The output is:
@@ -153,7 +153,7 @@ The output is:
 {(0, 'first'), (1, 'second'), (2, 'third')}
 ```
 
-So now let's use it with `SELECT enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
+So now let's use it with `select enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
 
 ```
 {
@@ -182,10 +182,10 @@ So now let's use it with `SELECT enumerate(Person.name);` to make sure that we h
 There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
 
 ```edgeql
-WITH
-  a := array_agg((SELECT enumerate(Person.name))),
-  b:= array_agg((SELECT enumerate(Crewman.number))),
-SELECT (a, b);
+with
+  a := array_agg((select enumerate(Person.name))),
+  b:= array_agg((select enumerate(Crewman.number))),
+select (a, b);
 ```
 
 (`array_agg()` is to avoid multiplying sets by sets, as we saw in Chapter 12)
@@ -213,8 +213,8 @@ But the result is less than satisfying:
 The `Crewman` types are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   name := 'Crewman ' ++ <str>.number
 };
 ```
@@ -222,9 +222,9 @@ SET {
 So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
 
 ```edgeql
-WITH p := (SELECT Person),
+with p := (select Person),
      date := <cal::local_date>'1887-08-16',
-SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
+select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
 Here is the output:
@@ -249,7 +249,7 @@ Finally, let's look at how to follow links in reverse direction, one of EdgeDB's
 We know how to get Count Dracula's `slaves` by name with something like this:
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   name,
   slaves: {
     name
@@ -273,10 +273,10 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite? Namely, starting from `SELECT MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
+But what if we are doing the opposite? Namely, starting from `select MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   # master... how do we get this?
   # There's no link to Vampire inside MinorVampire...
@@ -285,12 +285,12 @@ SELECT MinorVampire {
 
 Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
 
-This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[IS Vampire]`.
+This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[is Vampire]`.
 
 First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
 
 ```edgeql
-SELECT MinorVampire.<slaves[IS Vampire] {
+select MinorVampire.<slaves[is Vampire] {
   name,
   age
 };
@@ -298,7 +298,7 @@ SELECT MinorVampire.<slaves[IS Vampire] {
 
 Because it goes in reverse order, it is selecting `Vampire` that has `.slaves` that are of type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[IS Vampire] {name, age}` as "Select the name and age of the Vampire type with slaves that are of type MinorVampire" - from right to left.
+You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Select the name and age of the Vampire type with slaves that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -306,16 +306,16 @@ Here is the output:
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
-So far that's the same as just `SELECT Vampire: {name, age}`. But it becomes very useful in our query before, where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
+So far that's the same as just `select Vampire: {name, age}`. But it becomes very useful in our query before, where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
-  master := .<slaves[IS Vampire] {name},
+  master := .<slaves[is Vampire] {name},
 };
 ```
 
-You could read `.<slaves[IS Vampire] {name}` as "the name of the `Vampire` type that links back to `MinorVampire` through `.slaves`".
+You could read `.<slaves[is Vampire] {name}` as "the name of the `Vampire` type that links back to `MinorVampire` through `.slaves`".
 
 Here is the output:
 

@@ -15,10 +15,10 @@ tags: Aliases, Named Tuples
 Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, int16, str)` as input. Let's give it Dracula and Renfield:
 
 ```edgeql
-WITH
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-  renfield := (SELECT Person FILTER .name = 'Renfield'),
-SELECT fight(dracula, renfield);
+with
+  dracula := (select Person filter .name = 'Count Dracula'),
+  renfield := (select Person filter .name = 'Renfield'),
+select fight(dracula, renfield);
 ```
 
 The output is of course `{'Count Dracula wins!'}`. No surprise there.
@@ -26,31 +26,31 @@ The output is of course `{'Count Dracula wins!'}`. No surprise there.
 One other way to do the same query is with a single tuple. Then we can give it to the function with `.0` for Dracula and `.1` for Renfield:
 
 ```edgeql
-WITH fighters := (
-    (SELECT Person FILTER .name = 'Count Dracula'),
-    (SELECT Person FILTER .name = 'Renfield')
+with fighters := (
+    (select Person filter .name = 'Count Dracula'),
+    (select Person filter .name = 'Renfield')
   ),
-SELECT fight(fighters.0, fighters.1);
+select fight(fighters.0, fighters.1);
 ```
 
 That's not bad, but there is a way to make it clearer: we can give names to the items in the tuple instead of using `.0` and `.1`. It looks like a regular computed link or property, using `:=`:
 
 ```edgeql
-WITH fighters := (
-    dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-    renfield := (SELECT Person FILTER .name = 'Renfield')
+with fighters := (
+    dracula := (select Person filter .name = 'Count Dracula'),
+    renfield := (select Person filter .name = 'Renfield')
   ),
-SELECT fight(fighters.dracula, fighters.renfield);
+select fight(fighters.dracula, fighters.renfield);
 ```
 
 Here's one more example of a named tuple:
 
 ```edgeql
-WITH minor_vampires := (
-    women := (SELECT MinorVampire FILTER .name LIKE '%Woman%'),
-    lucy := (SELECT MinorVampire FILTER .name LIKE '%Lucy%')
+with minor_vampires := (
+    women := (select MinorVampire filter .name like '%Woman%'),
+    lucy := (select MinorVampire filter .name like '%Lucy%')
   ),
-SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
+select (minor_vampires.women.name, minor_vampires.lucy.name);
 ```
 
 The output is:
@@ -59,12 +59,12 @@ The output is:
 {('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
 ```
 
-Renfield is no longer alive, so we need to use `UPDATE` to give him a `last_appearance`. Let's do a fancy one again where we `SELECT` the update we just made and display that information:
+Renfield is no longer alive, so we need to use `update` to give him a `last_appearance`. Let's do a fancy one again where we `select` the update we just made and display that information:
 
 ```edgeql
-SELECT ( # Put the whole update inside
-  UPDATE NPC FILTER .name = 'Renfield'
-  SET {
+select ( # Put the whole update inside
+  update NPC filter .name = 'Renfield'
+  set {
     last_appearance := <cal::local_date>'1887-10-03'
   }
 ) # then use it to call up name and last_appearance
@@ -79,7 +79,7 @@ This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_da
 One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this:
 
 ```edgeql
-SELECT ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
+select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
 
 will return `{true}`.
@@ -132,9 +132,9 @@ Finally, we can change our `can_enter()` function. This one needed a `HasCoffins
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
+        (select Person filter .name = person_name)
     ),
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -145,12 +145,12 @@ function can_enter(person_name: str, place: str) -> str
   using (
     with
       vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
+        (select Person filter .name = person_name)
       ),
       enter_place := assert_single(
-        (SELECT HasNameAndCoffins FILTER .name = place)
+        (select HasNameAndCoffins filter .name = place)
       )
-    SELECT vampire.name ++ ' can enter.' IF enter_place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -159,8 +159,8 @@ And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count 
 Finally, we can make our generic update for changing the number of coffins. It's easy:
 
 ```sdl
-UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
-SET {
+update HasNameAndCoffins filter .name = <str>$place_name
+set {
   coffins := .coffins + <int16>$number
 }
 ```
@@ -168,8 +168,8 @@ SET {
 Now let's give the ship `The Demeter` some coffins.
 
 ```edgeql-repl
-edgedb> UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
-....... SET {
+edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+....... set {
 .......   coffins := .coffins + <int16>$number
 ....... };
 Parameter <str>$place_name: The Demeter
@@ -179,7 +179,7 @@ Parameter <int16>$number: 10
 Then we'll make sure that it got them:
 
 ```edgeql
-SELECT Ship {
+select Ship {
   name,
   coffins,
 };
@@ -203,11 +203,11 @@ Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
   name := 'Gospodin ' ++ .name,
-  current_location := (SELECT Place FILTER .name = 'Bulgaria'),
+  current_location := (select Place filter .name = 'Bulgaria'),
 };
 ```
 
-You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. For the same reason, you can't do an `INSERT CrewmanInBulgaria`, because there is no such type. It gives this error:
+You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. For the same reason, you can't do an `insert CrewmanInBulgaria`, because there is no such type. It gives this error:
 
 ```
 error: cannot insert into expression alias 'default::CrewmanInBulgaria'
@@ -216,7 +216,7 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's add Bulgaria now,
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'Bulgaria'
 };
 ```
@@ -224,7 +224,7 @@ INSERT Country {
 And then select this alias to see what we get:
 
 ```edgeql
-SELECT CrewmanInBulgaria {
+select CrewmanInBulgaria {
   name,
   current_location: {
     name
@@ -263,10 +263,10 @@ The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` mentions that 
 
 ## Creating new names for types in a query (local expression aliases)
 
-It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `WITH` and then give a new name for an existing type. (In fact, the keyword `WITH` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`"). Take a simple query like this that shows Count Dracula and the names of his slaves:
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `with` and then give a new name for an existing type. (In fact, the keyword `with` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`"). Take a simple query like this that shows Count Dracula and the names of his slaves:
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   name,
   slaves: {
     name
@@ -274,11 +274,11 @@ SELECT Vampire {
 };
 ```
 
-If we wanted to use `WITH` to create a new type that is identical to `Vampire`, we would just do this.
+If we wanted to use `with` to create a new type that is identical to `Vampire`, we would just do this.
 
 ```edgeql
-WITH Drac := Vampire,
-SELECT Drac {
+with Drac := Vampire,
+select Drac {
   name,
   slaves: {
     name
@@ -302,14 +302,14 @@ So far this is nothing special, because the output is the same:
 }
 ```
 
-But where it becomes useful is when using this new type to perform operations or comparisons on the type it is created from. It's the same as `DETACHED`, but we give it a name and have some more flexibility to use it.
+But where it becomes useful is when using this new type to perform operations or comparisons on the type it is created from. It's the same as `detached`, but we give it a name and have some more flexibility to use it.
 
 So let's give this a try. We'll pretend that we are testing out our game engine. Right now our `fight()` function is ridiculously simple, but let's pretend that it's complicated and needs a lot of testing. Here's the variant we would use:
 
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    one.name ++ ' wins!' IF one.strength > two.strength ELSE
+    one.name ++ ' wins!' if one.strength > two.strength else
     two.name ++ ' wins!'
   );
 ```
@@ -317,10 +317,10 @@ function fight(one: Person, two: Person) -> str
 But for debugging purposes it would be nice to have some more info. Let's create the same function but call it `fight_2()` and add some more information on who is fighting who.
 
 ```edgeql
-CREATE FUNCTION fight_2(one: Person, two: Person) -> str
-  USING (
+create function fight_2(one: Person, two: Person) -> str
+  using (
     one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!'
-    IF one.strength > two.strength ELSE
+    if one.strength > two.strength else
     one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
   );
 ```
@@ -328,8 +328,8 @@ CREATE FUNCTION fight_2(one: Person, two: Person) -> str
 So let's make our `MinorVampire` types fight each other and see what output we get. We have four of them (the three vampire women plus Lucy). Let's make sure that all vampires have strength 9 unless otherwise specified:
 
 ```edgeql
-UPDATE MinorVampire FILTER NOT EXISTS .strength
-SET {
+update MinorVampire filter not exists .strength
+set {
   strength := 9
 };
 ```
@@ -337,7 +337,7 @@ SET {
 First let's just put the `MinorVampire` type into the function and see what we get. Try to imagine what the output will be.
 
 ```edgeql
-SELECT fight_2(MinorVampire, MinorVampire);
+select fight_2(MinorVampire, MinorVampire);
 ```
 
 So the output for this is...
@@ -356,14 +356,14 @@ So the output for this is...
 The function only gets used four times because a set with only a single object goes in every time...and each `MinorVampire` is fighting itself. That's probably not what we wanted. Now let's try our local type alias again.
 
 ```edgeql
-WITH M := MinorVampire,
-SELECT fight_2(M, MinorVampire);
+with M := MinorVampire,
+select fight_2(M, MinorVampire);
 ```
 
 By the way, so far this is exactly the same as:
 
 ```edgeql
-SELECT fight_2(MinorVampire, DETACHED MinorVampire);
+select fight_2(MinorVampire, detached MinorVampire);
 ```
 
 The output is too long now:
@@ -392,8 +392,8 @@ The output is too long now:
 We succeeded at getting each `MinorVampire` type to fight the other one, but there are still `MinorVampire`s fighting themselves (Lucy vs. Lucy, Woman 1 vs. Woman 1, etc.). This is where the convenience of the local type alias comes in: we can filter on it, for example. Now we'll filter to only use `fight_2()` with objects that are not identical to each other:
 
 ```edgeql
-WITH M := MinorVampire,
-SELECT fight_2(M, MinorVampire) FILTER M != MinorVampire;
+with M := MinorVampire,
+select fight_2(M, MinorVampire) filter M != MinorVampire;
 ```
 
 And now we finally have every combination of `MinorVampire` fighting the other one, with no duplicates.
@@ -417,17 +417,17 @@ And now we finally have every combination of `MinorVampire` fighting the other o
 
 Perfect!
 
-With just `DETACHED` this wouldn't work: `SELECT fight_2(MinorVampire, DETACHED MinorVampire) FILTER MinorVampire != DETACHED MinorVampire;` won't do it because the first `DETACHED MinorVampire` isn't a variable name. Without that name to access, the next `DETACHED MinorVampire` is just a new `DETACHED MinorVampire` with no relation to the other one.
+With just `detached` this wouldn't work: `select fight_2(MinorVampire, detached MinorVampire) filter MinorVampire != detached MinorVampire;` won't do it because the first `detached MinorVampire` isn't a variable name. Without that name to access, the next `detached MinorVampire` is just a new `detached MinorVampire` with no relation to the other one.
 
-So how about adding links and properties in the same way that we did to our `CrewmanInBulgaria` alias? We can do that too by using `SELECT` and then adding any new links and properties you want inside `{}`. Here's a simple example:
+So how about adding links and properties in the same way that we did to our `CrewmanInBulgaria` alias? We can do that too by using `select` and then adding any new links and properties you want inside `{}`. Here's a simple example:
 
 ```edgeql
-WITH NPCExtraInfo := (
-    SELECT NPC {
+with NPCExtraInfo := (
+    select NPC {
       would_win_against_dracula := .strength > Vampire.strength
     }
   )
-SELECT NPCExtraInfo {
+select NPCExtraInfo {
   name,
   would_win_against_dracula
 };
@@ -452,13 +452,13 @@ And here's the result. Looks like nobody wins:
 Let's create a quick type alias where Dracula has achieved all his goals and now rules London. We'll create a quick new type called `DraculaKingOfLondon` with a better name, and a link to `subjects` (= people under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
 
 ```edgeql
-WITH DraculaKingOfLondon := (
-    SELECT Vampire {
+with DraculaKingOfLondon := (
+    select Vampire {
       name := .name ++ ', King of London',
-      subjects := (SELECT Person FILTER 'London' in .places_visited.name),
+      subjects := (select Person filter 'London' in .places_visited.name),
     }
   )
-SELECT DraculaKingOfLondon {
+select DraculaKingOfLondon {
   name,
   subjects: {name},
   number_of_subjects := count(.subjects)

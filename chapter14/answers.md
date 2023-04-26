@@ -5,7 +5,7 @@
 One way to do it is with `enumerate()`. This is easy if we are just starting from 0, since `enumerate()` gives a tuple with two items. The first one is an `int64` so we select that:
 
 ```edgeql
-SELECT enumerate(Person).0;
+select enumerate(Person).0;
 ```
 
 That will display: `{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}`
@@ -15,7 +15,7 @@ Warning: selecting `.1` will produce a bunch of objects without the details.
 And then to display numbers starting with 1, we just use `enumerate` again and add 1 to it:
 
 ```edgeql
-SELECT enumerate(Person).0 + 1
+select enumerate(Person).0 + 1
 ```
 
 #### 2. Using a computed backlink, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
@@ -23,9 +23,9 @@ SELECT enumerate(Person).0 + 1
 This is not too hard if you start it in steps, first with a filter to get all the `Place` types:
 
 ```edgeql
-SELECT Place {
+select Place {
   name
-} FILTER .name LIKE '%o%';
+} filter .name like '%o%';
 ```
 
 And here they are:
@@ -41,10 +41,10 @@ And here they are:
 Now we'll add the computed backlink to the same query, and call the link `visitors`:
 
 ```edgeql
-SELECT Place {
+select Place {
   name,
-  visitors := .<places_visited[IS Person].name
-} FILTER .name LIKE '%o%';
+  visitors := .<places_visited[is Person].name
+} filter .name like '%o%';
 ```
 
 Now we can see who visited:
@@ -70,17 +70,17 @@ Now we can see who visited:
 }
 ```
 
-A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := count(.<places_visited[IS Person].name)` to it to get the number of visitors too.
+A clear victory for London as the most visited place! If you wanted, you could also add a `visitor_numbers := count(.<places_visited[is Person].name)` to it to get the number of visitors too.
 
 #### 3. Using a computed backlink, how would you display all the Person types that will later become `MinorVampire`s?
 
 We can do it with a computed link again, which we'll call `later_vampire`. Then we use a computed backlink to link back to the `MinorVampire` that links to `Person` via the link `former_self`:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  later_vampire := .<former_self[IS MinorVampire].name
-} FILTER EXISTS .later_vampire;
+  later_vampire := .<former_self[is MinorVampire].name
+} filter exists .later_vampire;
 ```
 
 That just gives us Lucy:
@@ -90,15 +90,15 @@ That just gives us Lucy:
 This is not bad, but we can probably do better - `later_vampire` here isn't telling us anything about the type. Let's add some type info:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  later_vampire := .<former_self[IS MinorVampire] {
+  later_vampire := .<former_self[is MinorVampire] {
     name,
     __type__: {
       name
     }
   }
-} FILTER EXISTS .later_vampire;
+} filter exists .later_vampire;
 ```
 
 Now we can see that `later_vampire` is of type `MinorVampire` instead of just displaying a string:
@@ -139,7 +139,7 @@ type MinorVampire extending Person {
 It would look like this:
 
 ```edgeql
-SELECT (INTROSPECT MinorVampire) {
+select (introspect MinorVampire) {
   name,
   annotations: {
     name,

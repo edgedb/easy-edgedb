@@ -2,14 +2,14 @@
 
 #### 1. How would you display every NPC's name, strength, population of cities visited, and age (displaying 0 if age = `{}`)? Try it on a single line.
 
-This can be done on a single line but remember that we need an `[IS City]` because `places_visited` links to `Place` and only `City` has population. It looks like this:
+This can be done on a single line but remember that we need an `[is City]` because `places_visited` links to `Place` and only `City` has population. It looks like this:
 
 ```edgeql
-SELECT (
+select (
   NPC.name,
   NPC.strength,
-  (NPC.places_visited[IS City].name, NPC.places_visited[IS City].population),
-  NPC.age IF EXISTS NPC.age ELSE 0
+  (NPC.places_visited[is City].name, NPC.places_visited[is City].population),
+  NPC.age if exists NPC.age else 0
 );
 ```
 
@@ -29,11 +29,11 @@ The query for 1. gives us results like this:
 The answer of course is named tuples:
 
 ```edgeql
-SELECT (
+select (
   name := NPC.name,
   strength := NPC.strength,
-  city_populations := (NPC.places_visited[IS City].name, NPC.places_visited[IS City].population),
-  age := NPC.age IF EXISTS NPC.age ELSE 0
+  city_populations := (NPC.places_visited[is City].name, NPC.places_visited[is City].population),
+  age := NPC.age if exists NPC.age else 0
 );
 ```
 

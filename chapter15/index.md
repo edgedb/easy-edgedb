@@ -62,9 +62,9 @@ If we want, we can now make a quick function to test whether a vampire can enter
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
+        (select Person filter .name = person_name)
     )
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -105,7 +105,7 @@ In this case we are still ignoring the argument `place` (the `City` type) but ma
 
 {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
 
 `optional anytype ?? set of anytype -> set of anytype`
 
@@ -114,8 +114,8 @@ So those are some ideas for how to set up your functions depending on how you th
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
 ```edgeql
-UPDATE City FILTER .name = 'London'
-SET {
+update City filter .name = 'London'
+set {
   coffins := 21
 };
 ```
@@ -123,14 +123,14 @@ SET {
 Now we can finally call up our function and see if it works:
 
 ```edgeql
-SELECT can_enter('Count Dracula', (SELECT City FILTER .name = 'London'));
+select can_enter('Count Dracula', (select City filter .name = 'London'));
 ```
 
 We get `{'Count Dracula can enter.'}`.
 
 Some other possible ideas for improvement later on for `can_enter()` are:
 
-- Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
+- Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `select` the type and then display its name, giving a result like "Count Dracula can enter London."
 - Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like `vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`.
 
 ## More constraints
@@ -199,7 +199,7 @@ type Lord extending Person {
 Now when we try to insert a `Lord` without it, it won't work:
 
 ```edgeql
-INSERT Lord {
+insert Lord {
   name := 'Billy'
   # Other stuff..
 };
@@ -207,13 +207,13 @@ INSERT Lord {
 
 But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
 
-While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
+While we're at it, let's practice doing a `select` and `insert` at the same time so we see the output of our `insert` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
 
 ```edgeql
-SELECT (
-  INSERT Lord {
+select (
+  insert Lord {
     name := 'Lord Billy',
-    places_visited := (SELECT Place),
+    places_visited := (select Place),
   }
 ) {
   name,
@@ -308,7 +308,7 @@ And if we still want to have a shortcut for `master_name`, we can just add `prop
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[IS Vampire]);
+  link master := assert_single(.<slaves[is Vampire]);
   property master_name := .master.name;
 };
 ```
@@ -316,13 +316,13 @@ type MinorVampire extending Person {
 Now let's test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Kain',
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Billy',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Bob',
     })
   }
@@ -332,13 +332,13 @@ INSERT Vampire {
 Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   master_name,
   master: {
     name
   }
-} FILTER .name IN {'Billy', 'Bob'};
+} filter .name in {'Billy', 'Bob'};
 ```
 
 And the result:

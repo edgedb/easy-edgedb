@@ -56,17 +56,17 @@ Indexes are automatically created in these two cases so you don't need to use in
 So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'John Seward')),
+  author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 ```
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'Jonathan Harker')),
+  author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 ```
@@ -74,14 +74,14 @@ INSERT BookExcerpt {
 Then later on we could do this sort of query to get all the entries in order and displayed as JSON.
 
 ```edgeql
-SELECT <json>(
-  SELECT BookExcerpt {
+select <json>(
+  select BookExcerpt {
     date,
     author: {
       name
     },
     excerpt
-  } ORDER BY .date
+  } order by .date
 );
 ```
 
@@ -106,7 +106,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
@@ -117,7 +117,7 @@ You can see that `description` is a short string that we write, while `excerpt` 
 The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```edgeql-repl
-edgedb> SELECT str_lower('RENFIELD WAS HERE');
+edgedb> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
@@ -126,9 +126,9 @@ Here it is in a longer query:
 ```edgeql
 select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT (<str>.date)[0:10]),
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select (<str>.date)[0:10]),
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 It uses `len()` which is then cast to a string, and `str_lower()` to compare against `.excerpt()` by making it lowercase first. It also slices the `cal::local_datetime` into a string so it can just print indexes 0 to 10. Here is the output:
@@ -148,21 +148,21 @@ Another way to make `the_date` is with the {eql:func}`docs:std::to_str` method, 
 ```edgeql
 select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 Some other functions for strings are:
 
 - `find()` This gives the index of the first match it finds, and returns `-1` if it can't find anything:
 
-`SELECT find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
+`select find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
 
 - `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
 
 ```edgeql-repl
-edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -186,8 +186,8 @@ edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!
 But this works too:
 
 ```edgeql
-SELECT MinorVampire {
-  names := (SELECT str_split(.name, 'n'))
+select MinorVampire {
+  names := (select str_split(.name, 'n'))
 };
 ```
 
@@ -205,7 +205,7 @@ Now the `n`s are all gone:
 You can also split by `\n` to split by new line. You can't see it but from the point of view of the computer every new line has a `\n` in it. So this:
 
 ```edgeql
-SELECT str_split('Oh, hear me!
+select str_split('Oh, hear me!
 hear me!
 Let me go!
 let me go!
@@ -221,11 +221,11 @@ will split it by line and give the following array:
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
 
 ```edgeql-repl
-edgedb> SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-The function signature is `std::re_match_all(pattern: str, string: str) -> SET OF array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
+The function signature is `std::re_match_all(pattern: str, string: str) -> set of array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
 
 - start with a `T` or a `t`,
 - then have an `o`,
