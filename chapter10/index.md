@@ -384,7 +384,7 @@ insert NPC {
 
 But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
 
-But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do. `unless conflict on` is probably easier to explain through an example. Here's one that shows what we can do to either insert a `City` with its population, and to `update` the population if it already exists in the database.
+But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do. `unless conflict on` is probably easier to explain through an example. Here's an example to show how you might try to insert a `City` with its population, using `unless conflict on` to instead `update` the population if the city's name already exists.
 
 Munich had a population of 230,023 in 1880, and five years later it was 261,023. So let's imagine we are updating the `City` data and some cities might exist, while others might not. The `insert` will look like this:
 
