@@ -19,7 +19,7 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
@@ -36,12 +36,12 @@ Luckily for us, the events in the book all take place in the north part of the p
 Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```edgeql
-INSERT Event {
+insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
   start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
   end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
-  place := (SELECT Place FILTER .name = 'Whitby'),
-  people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
+  place := (select Place filter .name = 'Whitby'),
+  people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
   east := false
 };
@@ -52,7 +52,7 @@ With all this information we can now find events by description, character, loca
 Now let's do a query for all events with the word `garlic flowers` in them:
 
 ```edgeql
-SELECT Event {
+select Event {
   description,
   start_time,
   end_time,
@@ -67,7 +67,7 @@ SELECT Event {
   },
   exact_location,
   url
-} FILTER .description ILIKE '%garlic flowers%';
+} filter .description ilike '%garlic flowers%';
 ```
 
 It generates a nice output that shows us everything about the event:
@@ -127,8 +127,8 @@ Now let's write a function where we have two characters fight. We will make it a
 function fight(one: Person, two: Person) -> str
   using (
     one.name ++ ' wins!'
-    IF one.strength > two.strength
-    ELSE two.name ++ ' wins!'
+    if one.strength > two.strength
+    else two.name ++ ' wins!'
   );
 ```
 
@@ -152,7 +152,7 @@ To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which i
 Here is a quick example:
 
 ```edgeql-repl
-edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
+edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 The empty set is on the left, but since it _is_ the empty set, it doesn't get the nod from the coalescing operator. Instead, this query will produce the string to the right of the coalescing operator: `{'Count Dracula is now in Whitby'}`
@@ -165,8 +165,8 @@ Here's how we can use the coalescing operator to fix our function:
 function fight(one: Person, two: Person) -> str
   using (
     (one.name ?? 'Fighter 1') ++ ' wins!'
-    IF (one.strength ?? 0) > (two.strength ?? 0)
-    ELSE (two.name ?? 'Fighter 2') ++ ' wins!'
+    if (one.strength ?? 0) > (two.strength ?? 0)
+    else (two.name ?? 'Fighter 2') ++ ' wins!'
   );
 ```
 
@@ -175,10 +175,10 @@ Now, EdgeDB has fallbacks in the event one of those values is an empty set. If `
 So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight()` function:
 
 ```edgeql
-WITH
-  renfield := (SELECT Person FILTER .name = 'Renfield'),
-  jonathan := (SELECT Person FILTER .name = 'Jonathan Harker')
-SELECT (
+with
+  renfield := (select Person filter .name = 'Renfield'),
+  jonathan := (select Person filter .name = 'Jonathan Harker')
+select (
   fight(jonathan, renfield)
 );
 ```
@@ -195,7 +195,7 @@ Cartesian multiplication sounds intimidating but it really just means "join ever
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
 
-This means that if we do a `SELECT` on `Person` for our `fight()` function, it will run the function following this formula:
+This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
 - `{the number of items in the first set}` \* `{the number of items in the second set}`
 
@@ -204,8 +204,8 @@ So if there are two in the first set, and three in the second, it will run the f
 To demonstrate, let's put three objects in for each side of our function. We'll be testing our `fight` function, so we'll just give all the characters strength value 5 if they don't already have some other value:
 
 ```edgeql
-UPDATE Person FILTER NOT EXISTS .strength
-SET {
+update Person filter not exists .strength
+set {
   strength := 5
 };
 ```
@@ -213,10 +213,10 @@ SET {
 We'll also make the output a little more clear:
 
 ```edgeql
-WITH
-  first_group := (SELECT Person FILTER .name IN {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  second_group := (SELECT Person FILTER .name IN {'Renfield', 'Mina Murray', 'The innkeeper'}),
-SELECT (
+with
+  first_group := (select Person filter .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (select Person filter .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+select (
   first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
 );
 ```
@@ -237,7 +237,7 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 }
 ```
 
-And if you take out the filter and just write `SELECT Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
+And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
 
 `` ... (further results hidden `\set limit 100`)``
 
@@ -251,17 +251,17 @@ And if you take out the filter and just write `SELECT Person` for the function, 
 
 2. How would you write a function that takes two strings and returns `Person` objects with names that match each string?
 
-   Hint: try using `SET OF Person` as the return type.
+   Hint: try using `set of Person` as the return type.
 
 3. What will the output of this be?
 
    ```edgeql
-   SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+   select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
    ```
 
 4. How would you make a function that tells you how many times larger one city is than another?
 
-5. Will `SELECT (City.population + City.population)` and `SELECT ((SELECT City.population) + (SELECT City.population))` produce different results?
+5. Will `select (City.population + City.population)` and `select ((select City.population) + (select City.population))` produce different results?
 
 [See the answers here.](answers.md)
 
