@@ -19,7 +19,8 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' 
+  ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
@@ -191,7 +192,7 @@ It might also be a good idea to add `assert_single()` when doing a filter for th
 
 Cartesian multiplication sounds intimidating but it really just means "join every item in one set to every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
-![](cartesian_product.svg)
+![A chart displaying the Cartesian product of 1, 2, 3 multiplied by x, y, and z](cartesian_product.svg)
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
 
