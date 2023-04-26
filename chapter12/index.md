@@ -156,39 +156,6 @@ select (
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
 
-The documentation for creating functions {ref}`is here <docs:ref_eql_ddl_functions>`. You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `create` that DDL needs. In other words, just add `create` to make a function without needing to do an explicit migration. For example, here's a function that just says hi:
-
-```sdl
-function say_hi() -> str
-  using ('hi');
-```
-
-If you want to create it right now, just do this:
-
-```edgeql
-create function say_hi() -> str
-  using ('hi');
-```
-
-(or with uppercase letters, it doesn't matter)
-
-You'll see more or less the same thing when you ask to `describe function say_hi`:
-
-```
-{'create function default::say_hi() ->  std::str using (\'hi\');'}
-```
-
-## Deleting (dropping) functions
-
-You can delete a function with the `drop` keyword and the function signature. You only have to specify the input though, because the input is all that EdgeDB looks at when identifying a function. So in the case of our two `fight()` functions:
-
-```sdl
-fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: str) -> str
-```
-
-You would delete them with `drop fight(one: Person, two: Person)` and `drop fight(names: str, one: int16, two: str)`. The `-> str` part isn't needed.
-
 ## More about Cartesian products and the coalescing operator
 
 Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
