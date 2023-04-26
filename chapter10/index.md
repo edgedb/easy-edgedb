@@ -384,9 +384,21 @@ insert NPC {
 
 But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
 
-But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do. `unless conflict on` is probably easier to explain through an example. Here's an example to show how you might try to insert a `City` with its population, using `unless conflict on` to instead `update` the population if the city's name already exists.
+But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 
-Munich had a population of 230,023 in 1880, and five years later it was 261,023. So let's imagine we are updating the `City` data and some cities might exist, while others might not. The `insert` will look like this:
+`unless conflict on` is easiest to explain through an example. Let's imagine that we have already populated our database with city data for the year 1880, but then came across some data for 1885 instead which is closer to the setting in the book. (Larger cities have better items, more NPCs and quests to do in our game, so having an accurate population is important.) We can't just use `insert` everywhere, because cities like Munich are already in the database. So this would just generate an error:
+
+```edgeql
+# Munich had a population of 230,023 in 1880 and 261,023 in 1885
+insert City {
+  name := 'Munich',
+  population := 261023
+}
+```
+
+However, we can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
+
+Here is how we would do it for Munich:
 
 ```edgeql
 insert City {
@@ -401,28 +413,7 @@ else (
 );
 ```
 
-Let's look at it step by step:
-
-First a normal insert:
-
-```edgeql
-insert City {
-  name := 'Munich'
-}
-```
-
-But there might be a `City` there already so it might not work, so we add `unless conflict on .name`. Then follow it with an `else` to give instructions on what to do.
-
-But here's the important part: we don't write `else insert`, because we are already in the middle of an `insert`. What we write instead is `update` for the type we are inserting, so `update City`. We are basically taking the failed data from the insert and updating it to try again. So we'll do this instead:
-
-```edgeql
-else (
-  update City
-  set {
-    population := 261023
-  }
-);
-```
+Here we tell EdgeDB to keep an eye out for any conflicts by using `unless conflict on .name`, followed by `else` to give instructions on what to do to the existing object in the database. Also note that we don't write `else insert`, because the conflict means that we are unable to do an `insert`. What we write instead is `update` for the conflicting object that is already in the database: `update City`.
 
 With this, we are guaranteed to get a `City` object called Munich with a population of 261,023, whether it already exists in the database or not.
 
