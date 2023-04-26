@@ -22,7 +22,7 @@ error: cannot create the `default::gives_number(input: std::int64)` function: a 
 
 #### 2. How about these two functions? Will EdgeDB allow both of them to be defined at the same time?
 
-Yes, they have different signatures because the input is different: one takes an `int16` and the other takes an `int32`. In fact, you can see both of them by using DESCRIBE. For example, `DESCRIBE FUNCTION make64 AS TEXT` gives the following:
+Yes, they have different signatures because the input is different: one takes an `int16` and the other takes an `int32`. In fact, you can see both of them by using `describe`. For example, `describe function make64 as text` gives the following:
 
 ```
 {
@@ -31,43 +31,43 @@ Yes, they have different signatures because the input is different: one takes an
 }
 ```
 
-Note however that `SELECT make64(8);` will actually produce an error! The error is:
+Note however that `select make64(8);` will actually produce an error! The error is:
 
 ```
 error: function "make64(arg0: std::int64)" does not exist
   ┌─ query:1:8
   │
-1 │ SELECT make64(8);
+1 │ select make64(8);
   │        ^^^^^^^^^ Did you want one of the following functions instead:
 default::make64(input: std::int16)
 default::make64(input: std::int32)
 ```
 
-That's because `SELECT make64(8)` is giving it an `int64`, and it doesn't have a signature for that. You would need to cast with `SELECT make64(<int32>8);` (or `<int16>`) to make it work.
+That's because `select make64(8)` is giving it an `int64`, and it doesn't have a signature for that. You would need to cast with `select make64(<int32>8);` (or `<int16>`) to make it work.
 
-#### 3. Will `SELECT {} ?? {3, 4} ?? {5, 6};` work?
+#### 3. Will `select {} ?? {3, 4} ?? {5, 6};` work?
 
 No, because EdgeDB doesn't know what type `{}` is. But if you cast the `{}` to an `int64`:
 
 ```edgeql
-SELECT <int64>{} ?? {3, 4} ?? {5, 6};
+select <int64>{} ?? {3, 4} ?? {5, 6};
 ```
 
 Then it will give the output `{3, 4}`.
 
-#### 4. Will `SELECT <int64>{} ?? <int64>{} ?? {1, 2}` work?
+#### 4. Will `select <int64>{} ?? <int64>{} ?? {1, 2}` work?
 
 Yes, with the output `{1, 2}`. If you continue to use `??`, it will keep going until it hits something that is not empty.
 
 Knowing that, you can probably guess the output of this:
 
 ```edgeql
-SELECT <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
+select <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
 ```
 
 The output is `{1}`, the first not empty set that it sees.
 
-#### 5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
+#### 5. Trying to make a single string of everyone's name with `select array_join(array_agg(Person.name));` isn't working. What's the problem?
 
 The error message gives a hint:
 
@@ -79,4 +79,4 @@ That means that the input that it received doesn't match any of its function sig
 std::array_join(array: array<str>, delimiter: str) -> str
 ```
 
-So we can just change it to `SELECT array_join(array_agg(Person.name), ' ');` or `SELECT array_join(array_agg(Person.name), ' is awesome ');` or anything else with a second string and it works.
+So we can just change it to `select array_join(array_agg(Person.name), ' ');` or `select array_join(array_agg(Person.name), ' is awesome ');` or anything else with a second string and it works.
