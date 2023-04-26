@@ -30,36 +30,36 @@ It's optional because we don't always know anything about people before they wer
 Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 
 ```edgeql
-UPDATE Person FILTER .name = 'Lucy Westenra'
-SET {
+update Person filter .name = 'Lucy Westenra'
+set {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 ```
 
-Then we can add Lucy to the `INSERT` for Dracula. (If you are following along, just `DELETE Vampire;` and `DELETE MinorVampire;` first so we can practice doing this longer `INSERT`.)
+Then we can add Lucy to the `insert` for Dracula. (If you are following along, just `delete Vampire;` and `delete MinorVampire;` first so we can practice doing this longer `insert`.)
 
 Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
 Here's the insert:
 
 ```edgeql
-WITH lucy := assert_single(
-    (SELECT Person FILTER .name = 'Lucy Westenra')
+with lucy := assert_single(
+    (select Person filter .name = 'Lucy Westenra')
 )
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 2',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 3',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       # We need to give a new name, so as not to clash with former_self.
       name := 'Lucy',
       former_self := lucy,
@@ -67,18 +67,18 @@ INSERT Vampire {
       strength := lucy.strength + 5,
     }),
   },
-  places_visited := (SELECT Place FILTER .name IN {'Romania', 'Castle Dracula'})
+  places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
 };
 ```
 
-And thanks to the `former_self` link, it's easy to find all the minor vampires that come from `Person` objects. Just filter by `EXISTS .former_self`:
+And thanks to the `former_self` link, it's easy to find all the minor vampires that come from `Person` objects. Just filter by `exists .former_self`:
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   strength,
   first_appearance,
-} FILTER EXISTS .former_self;
+} filter exists .former_self;
 ```
 
 This gives us:
@@ -93,14 +93,14 @@ This gives us:
 }
 ```
 
-Other filters such as `FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;` are possible too but checking if the link `EXISTS` is easiest. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
+Other filters such as `filter .name in Person.name and .first_appearance in Person.last_appearance;` are possible too but checking if the link `exists` is easiest. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
 ## The type union operator: |
 
-Another operator related to types is `|`, which is used to combine them (similar to writing `OR`). This query for example pulling up all `Person` types will return true:
+Another operator related to types is `|`, which is used to combine them (similar to writing `or`). This query for example pulling up all `Person` types will return true:
 
 ```
-SELECT (SELECT Person FILTER .name LIKE 'Lucy%') IS NPC | MinorVampire | Vampire;
+select (select Person filter .name like 'Lucy%') is NPC | MinorVampire | Vampire;
 ```
 
 It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
@@ -151,24 +151,24 @@ So if you wanted to have all the `MinorVampire` types automatically deleted when
 
 Now let's look at some tips for making queries.
 
-## Using DISTINCT
+## Using the 'distinct' keyword
 
-`DISTINCT` is easy: just change `SELECT` to `SELECT DISTINCT` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `SELECT Person.strength;`. It looks something like this:
+Using `distinct` is easy: just change `select` to `select distinct` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `select Person.strength;`. It looks something like this:
 
 ```
 {5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 3, 3}
 ```
 
-Change it to `SELECT DISTINCT Person.strength;` and the output will now be `{2, 3, 4, 5, 10}`.
+Change it to `select distinct Person.strength;` and the output will now be `{2, 3, 4, 5, 10}`.
 
-`DISTINCT` works by item and doesn't unpack, so `SELECT DISTINCT {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
+`distinct` works by item and doesn't unpack, so `select distinct {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
 
 ## Getting `__type__` all the time
 
-We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `SELECT Person.name`, we can get all the type names like this:
+We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names like this:
 
 ```edgeql
-SELECT Person.__type__ {
+select Person.__type__ {
   name
 };
 ```
@@ -189,12 +189,12 @@ It shows us all the types attached to `Person` so far:
 Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy`:
 
 ```edgeql
-SELECT Person {
+select Person {
   __type__: {
     name
   },
   name
-} FILTER .name LIKE 'Lucy%';
+} filter .name like 'Lucy%';
 ```
 
 This shows us the objects that match, and of course they are `NPC` and `MinorVampire`.
@@ -217,7 +217,7 @@ To restore the default format type: `\set output-format default`. Because it's s
 
 ## Being introspective
 
-The keyword `INTROSPECT` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `INTROSPECT` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
+The keyword `introspect` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
 
 ```sdl
 type Ship {
@@ -227,18 +227,18 @@ type Ship {
 }
 ```
 
-First, here is the simplest `INTROSPECT` query:
+First, here is the simplest `introspect` query:
 
 ```edgeql
-SELECT (INTROSPECT Ship);
+select (introspect Ship);
 ```
 
-This query isn't very useful to us but it does show how it works: it returns `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`. Note that `INTROSPECT` and the type go inside brackets; it's sort of a `SELECT` expression for types that you then select again to capture.
+This query isn't very useful to us but it does show how it works: it returns `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`. Note that `introspect` and the type go inside brackets; it's sort of a `select` expression for types that you then select again to capture.
 
 Now let's put `name`, `properties` and `links` inside the introspection:
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties,
   links,
@@ -269,7 +269,7 @@ Just like using `select` on a type, we will only get an id even if the output co
 So let's add some more to the query to get the information we want:
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {
     name,
@@ -316,7 +316,7 @@ This type of query seems complex but it is just built on top of adding things li
 Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way, which looks much simpler now:
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {name, target: {name}},
   links: {name, target: {name}},
@@ -334,7 +334,7 @@ SELECT (INTROSPECT Ship) {
 2. How readable is this introspect query?
 
    ```edgeql
-   SELECT (INTROSPECT Ship) {
+   select (introspect Ship) {
      name,
      properties,
      links
@@ -343,11 +343,11 @@ SELECT (INTROSPECT Ship) {
 
 3. What would be the shortest way to see what links from the `Vampire` type?
 
-4. What do you think the output of `SELECT DISTINCT {1, 2} + {1, 2};` will be?
+4. What do you think the output of `select distinct {1, 2} + {1, 2};` will be?
 
    Hint: don't forget the Cartesian multiplication.
 
-5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
+5. What do you think the output of `select distinct {2, 2} + {2, 2};` will be?
 
 [See the answers here.](answers.md)
 
