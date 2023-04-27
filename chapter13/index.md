@@ -148,13 +148,28 @@ then you wouldn't be able to delete Lucy the `NPC` once she was connected to Luc
 
 - `deferred restrict`: forbids you from deleting the target object, unless it is no longer a target object by the end of a transaction. So this option is like `restrict` but with a bit more flexibility.
 
-So if you wanted to have all the `MinorVampire` types automatically deleted when their `Vampire` dies, you would add a link from `MinorVampire` to the `Vampire` type. Then you would add `on target delete delete source` to this: `Vampire` is the target of the link, and `MinorVampire` is the source that gets deleted.
+So if you wanted to have all the `MinorVampire` types automatically deleted when their `Vampire` dies, you would add a link from `MinorVampire` to the `Vampire` type. Then you would add `on target delete delete source`. `Vampire` is the target of the link, and `MinorVampire` is the source that gets deleted. It would look like this in the schema:
+
+```edgeql
+type MinorVampire extending Person {
+  link former_self -> Person;
+  link master -> Vampire {
+    on target delete delete source
+  }
+}
+```
+
+The EdgeDB documentation notes that you should be careful with using this! Using `delete source` can result in quite a few automatic deletions, so be sure to double check which types are linking and being linked to.
+
+```
+If a link uses the `delete source` policy, then deleting a target of the link will also delete the object that links to it (the source). This behavior can be used to implement cascading deletes; be careful with this power!
+```
 
 Now let's look at some tips for making queries.
 
 ## Using the 'distinct' keyword
 
-Using `distinct` is easy: just change `select` to `select distinct` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `select Person.strength;`. It looks something like this:
+Using `distinct` is easy: just change `select` to `select distinct` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `select Person.strength;`. The output will vary because it comes from the `random` function, but it will look something like this:
 
 ```
 {5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 3, 3}
