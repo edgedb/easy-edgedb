@@ -19,7 +19,7 @@ That's the population of Exeter at the time, and it doesn't have a `modern_name`
 
 ## Adding annotations to types and using @
 
-Now that we know how to do introspection queries, we can start to give our types `annotations`. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
+Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
 
 Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `description` for this:
 
@@ -136,7 +136,7 @@ And here it is:
 
 ## Even more working with dates
 
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`, which gives `{24}`.
+A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
 
 There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
@@ -153,7 +153,7 @@ The output is:
 {(0, 'first'), (1, 'second'), (2, 'third')}
 ```
 
-So now let's use it with `select enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
+Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
 
 ```
 {
@@ -306,7 +306,7 @@ Here is the output:
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
-So far that's the same as just `select Vampire: {name, age}`. But it becomes very useful in our query before, where we wanted to access multiple types. Now we can select all the `MinorVampire` types and their master:
+So far that's the same as just `select Vampire: {name, age}`. But it becomes very useful in our query before, where we wanted to access multiple types. Now we can select all the `MinorVampire` objects and their master:
 
 ```edgeql
 select MinorVampire {
@@ -334,11 +334,11 @@ Here is the output:
 
 ## Time to practice
 
-1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
+1. How would you display just the numbers for all the `Person` objects? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
 
-2. Using a computed backlink, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
+2. Using a computed backlink, how would you display 1) all the `Place` objects (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
-3. Using a computed backlink, how would you display all the Person types that will later become `MinorVampire`s?
+3. Using a computed backlink, how would you display all the Person objects that will later become `MinorVampire`s?
 
    Hint: Remember, `MinorVampire` has a link back to the vampire's former self.
 
