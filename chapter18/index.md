@@ -73,8 +73,8 @@ type Pound extending Currency {
 Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1887.
 
 ```edgeql
-INSERT Pound {
-  owner := (SELECT Person FILTER .name = 'Count Dracula'),
+insert Pound {
+  owner := (select Person filter .name = 'Count Dracula'),
   major_amount := 2500,
   minor_amount := 50,
   sub_minor_amount := 200
@@ -84,7 +84,7 @@ INSERT Pound {
 Then we can use the conversion rates to display the total amount he owns in pounds:
 
 ```edgeql
-SELECT Currency {
+select Currency {
   owner: {name},
   total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
 };
@@ -96,7 +96,7 @@ He has this many:
 {default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}
 ```
 
-We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give a few of them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
+We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give a few of them a random amount of money, and also `select` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
 
 Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but using the last signature:
 
@@ -113,10 +113,10 @@ That signature has an extra `d: int64` part for the number of decimal places we 
 All together, it looks like this:
 
 ```edgeql
-SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
-  UNION (
-    INSERT Pound {
-      owner := assert_single((SELECT Person FILTER .name = character)),
+select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+  union (
+    insert Pound {
+      owner := assert_single((select Person filter .name = character)),
       major_amount := <int64>round(random() * 500),
       minor_amount := <int64>round(random() * 100),
       sub_minor_amount := <int64>round(random() * 500)
@@ -184,16 +184,16 @@ type Dollar {
 The `total_money` type, by the way, will become a `float64` because of the `/ 100` part. We can confirm this with a quick query:
 
 ```edgeql
-SELECT (100 + (55 / 100)) IS float64;
+select (100 + (55 / 100)) is float64;
 ```
 
 The output: `{true}`.
 
-We can see the same when we make an insert and use `SELECT` to check the `total_money` property:
+We can see the same when we make an insert and use `select` to check the `total_money` property:
 
 ```edgeql
-SELECT(
-  INSERT Dollar {
+select (
+  insert Dollar {
     dollars := 100,
     cents := 55
   }
@@ -215,21 +215,21 @@ We are nearing the end of the book, and should probably start to clean up the sc
 First, we have two inserts here where we could only have one.
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'London',
 };
 ```
 
-We'll change that to an insert with a `FOR` loop:
+We'll change that to an insert with a `for` loop:
 
 ```edgeql
-FOR city_name IN {'Munich', 'London'}
-UNION (
-  INSERT City {
+for city_name in {'Munich', 'London'}
+union (
+  insert City {
     name := city_name
   }
 );
@@ -238,9 +238,9 @@ UNION (
 Then we'll do the same for the four `Country` types that we inserted (Hungary, Romania, France, Slovakia). Now they are a single insert:
 
 ```edgeql
-FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia'}
-UNION (
-  INSERT Country {
+for country_name in {'Hungary', 'Romania', 'France', 'Slovakia'}
+union (
+  insert Country {
     name := country_name
   }
 );
@@ -249,13 +249,13 @@ UNION (
 The other `City` inserts are a bit different: some have `modern_name` and others have `population`. In a real game we would insert them all in this sort of form, all at once:
 
 ```edgeql
-FOR city IN {
+for city in {
     ('City 1\'s name', 'City 1\'s modern name', 800),
     ('City 2\'s name', 'City 2\'s modern name', 900),
     ('City 3\'s name', 'City 3\'s modern name', 455),
   }
-UNION (
-  INSERT City {
+union (
+  insert City {
     name := city.0,
     modern_name := city.1,
     population := city.2
@@ -268,36 +268,36 @@ And we would do the same with all the `NPC` types, their `first_appearance` data
 We can also turn the inserts for the `Ship` type into a single one. Right now it looks like this:
 
 ```edgeql
-FOR n IN {1, 2, 3, 4, 5}
-UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+union (
+  insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
   }
 );
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := Rank.Captain
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The First Mate',
   rank := Rank.FirstMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Second Mate',
   rank := Rank.SecondMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := Rank.Cook
 };
 
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
@@ -307,30 +307,30 @@ INSERT Ship {
 Let's put that all together:
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := {
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Captain',
       rank := Rank.Captain
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The First Mate',
       rank := Rank.FirstMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Second Mate',
       rank := Rank.SecondMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Cook',
       rank := Rank.Cook
     })
   },
   crew := (
-    FOR n IN {1, 2, 3, 4, 5}
-    UNION (
-      INSERT Crewman {
+    for n in {1, 2, 3, 4, 5}
+    union (
+      insert Crewman {
         number := n,
         first_appearance := cal::to_local_date(1887, 7, 6),
         last_appearance := cal::to_local_date(1887, 7, 16),

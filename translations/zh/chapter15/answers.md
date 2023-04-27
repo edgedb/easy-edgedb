@@ -34,7 +34,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -44,13 +44,13 @@ type NPC extending Person {
 ```sdl
 type NPC extending Person {
   overloaded property name {
-    constraint expression on (len(__subject__) > 4 AND len(__subject__) < 31)
+    constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
   overloaded property age {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -62,21 +62,21 @@ type NPC extending Person {
 方法如下所示：
 
 ```sdl
-function display_coffins() -> SET OF HasCoffins
+function display_coffins() -> set of HasCoffins
   using(
-    SELECT HasCoffins FILTER .coffins > 0
+    select HasCoffins filter .coffins > 0
   );
 ```
 
 请注意，`HasCoffins` 没有像 `name` 这样的属性，所以使用它进行查询时，应该像下面这样编写：
 
 ```edgeql
-SELECT display_coffins() {
-  [IS City].name,
-  [IS City].population,
+select display_coffins() {
+  [is City].name,
+  [is City].population,
 };
 ```
 
 #### 5. 如何在不碰架构（schema）的情况下（不做”显式迁移“）创建上一题中的函数？
 
-很简单，只需在它的最前面加上 `CREATE`！
+很简单，只需在它的最前面加上 `create`！

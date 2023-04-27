@@ -22,7 +22,7 @@ type City {
 现在，我们来为比斯特里茨（Bistritz）插入一条数据：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
@@ -63,31 +63,31 @@ type NPC extending Person {
 }
 ```
 
-现在书中的角色都将是 `NPC`（非玩家角色）类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 现在是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `INSERT Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
+现在书中的角色都将是 `NPC`（非玩家角色）类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 现在是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
 
 ```
 error: cannot insert into abstract object type 'default::Person'
   ┌─ query:1:8
   │
-1 │ INSERT Person {name := 'Mr. HasAName'};
+1 │ insert Person {name := 'Mr. HasAName'};
   │        ^^^^^^ error
 ```
 
 但只要你将 `Person` 改为 `NPC`，它就可以工作了。
 
-此外，`SELECT` 一个抽象类型是没有问题的，它会选择出所有从该抽象类型扩展出来的类型。
+此外，`select` 一个抽象类型是没有问题的，它会选择出所有从该抽象类型扩展出来的类型。
 
 现在让我们也来操作一下玩家角色。我们创建一个名叫 Emil Sinclair 的人，他开始乘坐马车旅行。我们也将 `City` 直接赋值给他的 `places_visited`，于是他也拥有了那三个乔纳森造访过的城市。
 
 ```edgeql
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 ```
 
-`places_visited := City` 是对 `places_visited := (SELECT City)` 的简写，你不是必须每次都输入 `SELECT` 部分。
+`places_visited := City` 是对 `places_visited := (select City)` 的简写，你不是必须每次都输入 `select` 部分。
 
 请注意，我们并没有只写 `HorseDrawnCarriage`，我们必须写明枚举类型 `Transport` 并选择其中一个枚举值。
 
@@ -96,21 +96,21 @@ INSERT PC {
 Casting 是指快速将一种类型转换为另一种类型，它在 EdgeDB 中被大量使用，因为 EdgeDB 对类型很严格，并拒绝对两种不同的类型进行操作。但为了方便，很多类型转换都是自动完成的。例如：
 
 ```edgeql
-SELECT 9 + 9.9;
+select 9 + 9.9;
 ```
 
 EdgeDB 不会在此处生成错误，只会返回一个 `float64` 类型的正确输出 `18.9`。你可以通过下面语句进一步印证：
 
 ```edgeql
-SELECT (9 + 9.9) IS float64;
+select (9 + 9.9) is float64;
 ```
 
-执行后返回 `true`；如果执行 `SELECT (9 + 9.9) IS float32;` 将返回 `false`。
+执行后返回 `true`；如果执行 `select (9 + 9.9) is float32;` 将返回 `false`。
 
 当你需要自己进行类型转换时，你可以使用 `<>` 尖括号指明“转向”的类型。例如，执行下面的语句将产生一个错误：
 
 ```edgeql
-SELECT '9' + 9;
+select '9' + 9;
 ```
 
 EdgeDB 在这里会告诉我们确切的问题是：
@@ -119,7 +119,7 @@ EdgeDB 在这里会告诉我们确切的问题是：
 error: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
   ┌─ query:1:8
   │
-1 │ SELECT '9' + 9;
+1 │ select '9' + 9;
   │        ^^^^^^^ Consider using an explicit type cast or a conversion function.
 
 ```
@@ -127,7 +127,7 @@ error: operator '+' cannot be applied to operands of type 'std::str' and 'std::i
 要修复它，只需要使用 `<>` 尖括号指明要将字符串 `'9'` 转换为 `int32` 类型：
 
 ```edgeql
-SELECT <int32>'9' + 9;
+select <int32>'9' + 9;
 ```
 
 然后你会得到 `18`，一个 32 位整数。
@@ -135,7 +135,7 @@ SELECT <int32>'9' + 9;
 如果需要，你可以一次性转换多次。下面这个例子并非常规做法，这里只是为了展示：如果你愿意，你可以如何一遍又一遍地进行类型转换：
 
 ```edgeql
-SELECT <str><int64><str><int32>50 IS str;
+select <str><int64><str><int32>50 is str;
 ```
 
 执行后会返回 `{true}`，因为我们所做的只是询问它是否是一个 `str`，且它确实是。
@@ -146,16 +146,16 @@ SELECT <str><int64><str><int32>50 IS str;
 
 ## 过滤器
 
-最后，在我们结束第 2 章前，让我们来一起学习下如何使用 `FILTER`。你可以在 `SELECT` 的花括号后面使用 `FILTER` 来控制只显示某些结果。现在，让我们试着用 `FILTER` 来过滤并显示名为”Emil Sinclair“的 `Person` 对象：
+最后，在我们结束第 2 章前，让我们来一起学习下如何使用 `filter`。你可以在 `select` 的花括号后面使用 `filter` 来控制只显示某些结果。现在，让我们试着用 `filter` 来过滤并显示名为”Emil Sinclair“的 `Person` 对象：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   places_visited: {name},
-} FILTER .name = 'Emil Sinclair';
+} filter .name = 'Emil Sinclair';
 ```
 
-`FILTER .name` 是 `FILTER Person.name` 的缩写。如果你愿意，你也可以写成 `FILTER Person.name`，它们是一样的。
+`filter .name` 是 `filter Person.name` 的缩写。如果你愿意，你也可以写成 `filter Person.name`，它们是一样的。
 
 输出结果如下：
 
@@ -172,25 +172,25 @@ SELECT Person {
 }
 ```
 
-现在让我们来试着过滤城市。这里有一种灵活的搜索方式，是使用 `LIKE` 或 `ILIKE` 来匹配字符串的一部分。
+现在让我们来试着过滤城市。这里有一种灵活的搜索方式，是使用 `like` 或 `ilike` 来匹配字符串的一部分。
 
-- `LIKE` 是区分大小写的：“Bistritz”可以匹配“Bistritz”，但和“bistritz”并不匹配。
-- `ILIKE` 是不区分大小写的（ILIKE 中的 I 是指**不敏感（insensitive）**），所以“Bistritz”可以匹配“BiStRitz”，也可以匹配“bisTRITz”。
+- `like` 是区分大小写的：“Bistritz”可以匹配“Bistritz”，但和“bistritz”并不匹配。
+- `ilike` 是不区分大小写的（ilike 中的 I 是指**不敏感（insensitive）**），所以“Bistritz”可以匹配“BiStRitz”，也可以匹配“bisTRITz”。
 
 你也可以通过添加 `%` 在你想匹配部分的左侧或右侧以示意匹配规则。以下是匹配**粗体**部分的一些示例：
 
-- `LIKE Bistr%` 可以匹配到“**Bistr**itz”（但不匹配“bistritz”，因为 `LIKE`），
-- `ILIKE '%IsTRiT%'` 可以匹配到“B**istrit**z”，
-- `LIKE %athan Harker` 可以匹配到 “Jon**athan Harker**”，
-- `ILIKE %n h%` 可以匹配到“Jonatha**n H**arker”。
+- `like Bistr%` 可以匹配到“**Bistr**itz”（但不匹配“bistritz”，因为 `like`），
+- `ilike '%IsTRiT%'` 可以匹配到“B**istrit**z”，
+- `like %athan Harker` 可以匹配到 “Jon**athan Harker**”，
+- `ilike %n h%` 可以匹配到“Jonatha**n H**arker”。
 
-现在，让我们用 `FILTER` 过滤出所有首字母是大写字母 B 的城市。这意味着我们需要使用 `LIKE`，因为它是对大小写敏感的：
+现在，让我们用 `filter` 过滤出所有首字母是大写字母 B 的城市。这意味着我们需要使用 `like`，因为它是对大小写敏感的：
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name,
-} FILTER .name LIKE 'B%';
+} filter .name like 'B%';
 ```
 
 输出结果为：
@@ -214,13 +214,13 @@ J o n a t h a n
 现在，让我们试一下这个：
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name,
-} FILTER .name[0] = 'B'; # First character must be 'B'
+} filter .name[0] = 'B'; # First character must be 'B'
 ```
 
-同样，我们会得到我们想要的结果。不过要小心：如果你将数字设置得太高（超过字符串本身的长度），那么它会尝试在字符串之外进行搜索，这会带来错误。比如，如果我们将 0 更改为 18 (`FILTER .name[18] = 'B';`)，我们将得到：
+同样，我们会得到我们想要的结果。不过要小心：如果你将数字设置得太高（超过字符串本身的长度），那么它会尝试在字符串之外进行搜索，这会带来错误。比如，如果我们将 0 更改为 18 (`filter .name[18] = 'B';`)，我们将得到：
 
 ```
 ERROR: InvalidValueError: string index 18 is out of bounds
@@ -239,7 +239,7 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 
 负的索引值从“Jonathan”的末尾开始计数，即从 8 开始，所以 -1 对应的是 `8 - 1` (= 7)，以此类推。
 
-那么，如果你想确保不会因索引号数字过高而引发错误，该怎么办？使用 `LIKE` 或 `ILIKE`，因为即使操作于空参数，它也只是会返回一个空集：`{}` 而不会是错误。因此，如果属性中有可能包含太短的数据，`LIKE` 和 `ILIKE` 比使用索引更保险。这里还需要强调下：
+那么，如果你想确保不会因索引号数字过高而引发错误，该怎么办？使用 `like` 或 `ilike`，因为即使操作于空参数，它也只是会返回一个空集：`{}` 而不会是错误。因此，如果属性中有可能包含太短的数据，`like` 和 `ilike` 比使用索引更保险。这里还需要强调下：
 
 - 在 Edgedb 中，“无数据”会被显示为空集：`{}`；
 - `""`（一个空字符串）实际上也是数据。
@@ -252,7 +252,7 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 因此语句：
 
 ```edgeql
-SELECT 1887#0503 is the first day of the book Dracula when...
+select 1887#0503 is the first day of the book Dracula when...
 ;
 ```
 
@@ -264,7 +264,7 @@ SELECT 1887#0503 is the first day of the book Dracula when...
 
 ## 小测验
 
-1. 使用类型转换修改语句 `SELECT '99' + '1'`，使其输出结果为 `{100}`；
+1. 使用类型转换修改语句 `select '99' + '1'`，使其输出结果为 `{100}`；
 2. 选择出所有以“Mu”开头的 `City`（需要区分大小写）；
 3. 选择出所有 `NPC` 名字的第三个字母（即索引号为 2）；
 4. 假设有一个抽象类型叫做 `HasAString`:
@@ -280,7 +280,7 @@ SELECT 1887#0503 is the first day of the book Dracula when...
 5. 下面的查询仅会显示造访过的地方的 id。请问如何显示它们的名字？
 
    ```edgeql
-   SELECT Person {
+   select Person {
      places_visited
    };
    ```

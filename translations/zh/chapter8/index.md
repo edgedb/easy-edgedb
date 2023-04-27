@@ -32,12 +32,12 @@ type Crewman extending HasNumber, Person {
 现在我们有了 `Crewman` 并且不需要为他们赋予名字，只需要给他们一个编号，而函数 `count()` 可以使我们对船员的插入变得很容易。我们只需要重复执行五次下面的语句：
 
 ```edgeql
-INSERT Crewman {
-  number := count(DETACHED Crewman) + 1
+insert Crewman {
+  number := count(detached Crewman) + 1
 };
 ```
 
-即，如果还没有任何 `Crewman` 类型的对象，新插入的第一个船员将获得编号 1，下一个将获得编号 2，依此类推。所以操作五次后，我们可以通过 `SELECT Crewman {number};` 来查看结果了。我们将得到：
+即，如果还没有任何 `Crewman` 类型的对象，新插入的第一个船员将获得编号 1，下一个将获得编号 2，依此类推。所以操作五次后，我们可以通过 `select Crewman {number};` 来查看结果了。我们将得到：
 
 ```
 {
@@ -76,41 +76,41 @@ type Ship {
 接下来，让我们来插入水手的信息，我们只需给他们一个名字并从枚举中选择一个等级：
 
 ```edgeql
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := 'Captain'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'Petrofsky',
   rank := 'FirstMate'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Second Mate',
   rank := 'SecondMate'
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := 'Cook'
 };
 ```
 
-插入 `Ship` 很容易，因为现在所有 `Sailor` 和 `Crewman` 都是这艘船的一部分——我们不需要使用任何 `FILTER`：
+插入 `Ship` 很容易，因为现在所有 `Sailor` 和 `Crewman` 都是这艘船的一部分——我们不需要使用任何 `filter`：
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
 };
 ```
 
-然后，我们可以通过 `SELECT Ship` 来证实是否全部船员都已经“上船”：
+然后，我们可以通过 `select Ship` 来证实是否全部船员都已经“上船”：
 
 ```edgeql
-SELECT Ship {
+select Ship {
   name,
   sailors: {
     name,
@@ -165,16 +165,16 @@ type Townsperson extending Person {
 }
 ```
 
-删除已经插入的项目（对象），对 `sequence` 类型的数字继续加 1 并不产生影响。比如，如果你插入五个 `Townsperson` 对象，它们的数字 `number` 将是从 1 到 5。然后，如果此时将它们全部删除，然后又插入了一个 `Townsperson`，那么这个数字将会继续增加至 6（而不是重新回到 1）。所以对于 `Crewman` 类型的创建，使用 `sequence` 也是一个很好的选择，它非常方便，并且没有重复的可能，每次插入时数字都会自行加 1。当然，如果你非要这么做，你也 _可以_ 通过使用 `UPDATE` 和 `SET` 生成重复的数字（EdgeDB 不会阻止你），但即便如此，当你进行下一次插入时它仍然会跟踪使用仍在计数的下一个数字。
+删除已经插入的项目（对象），对 `sequence` 类型的数字继续加 1 并不产生影响。比如，如果你插入五个 `Townsperson` 对象，它们的数字 `number` 将是从 1 到 5。然后，如果此时将它们全部删除，然后又插入了一个 `Townsperson`，那么这个数字将会继续增加至 6（而不是重新回到 1）。所以对于 `Crewman` 类型的创建，使用 `sequence` 也是一个很好的选择，它非常方便，并且没有重复的可能，每次插入时数字都会自行加 1。当然，如果你非要这么做，你也 _可以_ 通过使用 `update` 和 `set` 生成重复的数字（EdgeDB 不会阻止你），但即便如此，当你进行下一次插入时它仍然会跟踪使用仍在计数的下一个数字。
 
-## 使用 IS 查询多类型
+## 使用 is 查询多类型
 
 现在我们已经有相当多的类型扩展自 `Person` 类型，其中很多都有自己的属性。`Crewman` 类型有属性 `number`，同时 `NPC` 类型有一个叫做 `age` 的属性。
 
 如果我们想同时查询它们，该怎么办呢？他们都扩展自 `Person`，但 `Person` 本身并没有这些子类型的所有链接和属性。因此，下面这个查询并不会起作用：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   age,
   number,
@@ -186,16 +186,16 @@ SELECT Person {
 幸运的是，EdgeDB 提供了一个简单的解决方法：我们可以在方括号内使用 `IS` 来指定类型。具体做法是：
 
 - `.name`：可以保持不变，因为 `Person` 有这个属性；
-- `.age`：属于 `NPC` 类型，所以将其更改为 `[IS NPC].age`；
-- `.number`：属于 `Crewman` 类型，因此将其更改为 `[IS Crewman].number`。
+- `.age`：属于 `NPC` 类型，所以将其更改为 `[is NPC].age`；
+- `.number`：属于 `Crewman` 类型，因此将其更改为 `[is Crewman].number`。
 
 这样便可以正常工作了：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  [IS NPC].age,
-  [IS Crewman].number,
+  [is NPC].age,
+  [is Crewman].number,
 };
 ```
 
@@ -216,13 +216,13 @@ SELECT Person {
 现在看起来还不错，但是如果我们将此输出作为 JSON 发送到某个地方，它不会向我们显示这些对象分别是什么类型。那么，要在 EdgeDB 的查询中引用对象本身的类型信息，你可以使用 `__type__`。只调用 `__type__` 则只能得到一个 `uuid`，所以我们需要添加 `{name}` 来表明我们想要的是类型的名称。如果你想在查询中显示对象的类型，则可以访问这个字段，因为所有类型都有 `name` 这个字段。
 
 ```edgeql
-SELECT <json>Person {
+select <json>Person {
   __type__: {
     name # Name of the type inside module default
   },
   name, # Person.name
-  [IS NPC].age,
-  [IS Crewman].number,
+  [is NPC].age,
+  [is Crewman].number,
 };
 ```
 
@@ -245,31 +245,31 @@ SELECT <json>Person {
 
 ## 超类型、子类型及泛型类型
 
-我们将那些被其他类型扩展的类型称为 `supertype`（超类型）。扩展出的类型是它们的 `subtypes`（子类型）。因为继承一个类型会得到它的所有特性，所以`subtype IS supertype` 将返回 `{true}`。反之，`supertype IS subtype` 将返回 `{false}`，因为超类型不继承其子类型的特性。
+我们将那些被其他类型扩展的类型称为 `supertype`（超类型）。扩展出的类型是它们的 `subtypes`（子类型）。因为继承一个类型会得到它的所有特性，所以`subtype is supertype` 将返回 `{true}`。反之，`supertype is subtype` 将返回 `{false}`，因为超类型不继承其子类型的特性。
 
-在我们的架构中，这意味着 `SELECT PC IS Person` 返回 `{true}`，而 `SELECT Person IS PC` 将返回 `{true}` 或 `{false}`，具体取决于所选对象是否是 `PC`。
+在我们的架构中，这意味着 `select PC is Person` 返回 `{true}`，而 `select Person is PC` 将返回 `{true}` 或 `{false}`，具体取决于所选对象是否是 `PC`。
 
-想要对这一信息进行确认，只需增加一个计算（computed）属性来查询 `Person IS PC`，具体操作如下所示：
+想要对这一信息进行确认，只需增加一个计算（computed）属性来查询 `Person is PC`，具体操作如下所示：
 
 ```edgeql
-SELECT Person {
+select Person {
     name,
-    is_PC := Person IS PC,
+    is_PC := Person is PC,
 };
 ```
 
 那么对于更简单的标量类型会怎样？我们知道 EdgeDB 在整数、浮点数等不同类型方面是非常精确的，但是如果你只是想知道一个数字是否是整数呢？我们同样可以使用 `IS`，但看起来有点冗余：
 
 ```edgeql
-WITH year := 1887,
-SELECT year IS int16 OR year IS int32 OR year IS int64;
+with year := 1887,
+select year is int16 or year is int32 or year is int64;
 ```
 
 输出结果是：`{true}`.
 
 幸运的是，`int16` 这些类型都是从 {ref}`抽象类型 <docs:ref_std_abstract_types>` 扩展出来的，我们可以使用这些抽象类型，它们都以 `any` 开头，包括 `anytype`，`anyscalar`，`anyenum`，`anytuple`，`anyint`，`anyfloat`，`anyreal`。唯一可能让你不确定的是 `anyreal`：它意味着任何实数，包括整型和浮点型，以及 `decimal` 类型。
 
-因此，你可以将上述输入简化为 `SELECT 1887 IS anyint` 并获得 `{true}`。
+因此，你可以将上述输入简化为 `select 1887 is anyint` 并获得 `{true}`。
 
 ## Multi 的使用
 
@@ -292,7 +292,7 @@ type Castle extending Place {
 这样一来，当你进行插入，对 `doors` 进行赋值时，你需要使用的是 `{}`，而不是使用方括号的数组：
 
 ```edgeql
-INSERT Castle {
+insert Castle {
   name := 'Castle Dracula',
   doors := {6, 19, 10},
 };
@@ -312,7 +312,7 @@ INSERT Castle {
 
   我们先来看使用 `multi property` 更好的两个方面，即使用对象的劣势，然后再说使用对象的好处。
 
-  首先，对象的第一个负面问题是：对象总是很大。还记得 `DESCRIBE TYPE AS TEXT` 吗？让我们用它来看看我们之前创建的 `Castle` 类型：
+  首先，对象的第一个负面问题是：对象总是很大。还记得 `describe type as text` 吗？让我们用它来看看我们之前创建的 `Castle` 类型：
 
   ```
   {
@@ -360,10 +360,10 @@ INSERT Castle {
 5. 下面这个查询需要修复什么？提示：有两个地方是必须要修复的，还有一个地方可以修改得更具有可读性。
 
    ```edgeql
-   SELECT Place {
+   select Place {
      __type__,
      name
-     [IS Castle]doors
+     [is Castle]doors
    };
    ```
 

@@ -78,10 +78,10 @@ type Castle extending Place {
 }
 ```
 
-然后我们假设这里有三个主要的门用来出入德古拉城堡，所以我们按如下方式 `INSERT` 它们：
+然后我们假设这里有三个主要的门用来出入德古拉城堡，所以我们按如下方式 `insert` 它们：
 
 ```edgeql
-INSERT Castle {
+insert Castle {
   name := 'Castle Dracula',
   doors := [6, 19, 10],
 };
@@ -89,11 +89,11 @@ INSERT Castle {
 
 然后我们再添加一个 `property strength -> int16;` 到 `Person` 类型。这个属性将不是必需的，因为我们并不知道本书中所有人的力量……当然，如果游戏需要我们可以在之后将其设置为 `required`。
 
-现在我们给乔纳森（Jonathan）一个等于 5 的力量值。像之前一样，使用 `UPDATE` 和 `SET` 进行更新：
+现在我们给乔纳森（Jonathan）一个等于 5 的力量值。像之前一样，使用 `update` 和 `set` 进行更新：
 
 ```edgeql
-UPDATE Person FILTER .name = 'Jonathan Harker'
-SET {
+update Person filter .name = 'Jonathan Harker'
+set {
   strength := 5
 };
 ```
@@ -103,10 +103,10 @@ SET {
 幸运的是，有一个叫做 `min()` 的函数可以给出一个集合中的最小值，因此我们可以利用它。如果乔纳森的力量大于拥有最小力量的门的数值，他则可以逃脱。下面的查询看起来应该可以工作，但实则不然：
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(castle_doors);
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
+select jonathan_strength > min(castle_doors);
 ```
 
 这里会报错：
@@ -118,20 +118,20 @@ error: operator '>' cannot be applied to operands of type 'std::int16' and 'arra
 我们可以通过查看 {eql:func}`min() <docs:std::min>` 函数的签名来发现问题：
 
 ```
-std::min(values: SET OF anytype) -> OPTIONAL anytype
+std::min(values: set of anytype) -> optional anytype
 ```
 
-重要的部分是 `SET OF`：它需要的是一个集合，所以我们需要用大括号括起来。但我们不能只在数组前后放置大括号，因为这样它就会变成一个数组的集合（比如 {[5, 6], [7]}）。所以 `SELECT min({[5, 6]});` 会返回 `{[5, 6]}`，而不是 `{5}`，因为 `{[5, 6]}` 里只有一个数组，所以 `{}` 里最小的数组只能是 `[5, 6]`。
+重要的部分是 `set of`：它需要的是一个集合，所以我们需要用大括号括起来。但我们不能只在数组前后放置大括号，因为这样它就会变成一个数组的集合（比如 {[5, 6], [7]}）。所以 `select min({[5, 6]});` 会返回 `{[5, 6]}`，而不是 `{5}`，因为 `{[5, 6]}` 里只有一个数组，所以 `{}` 里最小的数组只能是 `[5, 6]`。
 
-这也意味着 `SELECT min({[5, 6], [2, 4]});` 将会返回 `{[2, 4]}`（而不是 2）。这不是我们想要的，所以不能简单地改为 `SELECT jonathan_strength > min({castle_doors});`。
+这也意味着 `select min({[5, 6], [2, 4]});` 将会返回 `{[2, 4]}`（而不是 2）。这不是我们想要的，所以不能简单地改为 `select jonathan_strength > min({castle_doors});`。
 
 实际上，我们想要使用的是 {eql:func}` ``array_unpack()`` <docs:std::array_unpack>` 函数，它接受一个数组并可以将其解包为一个集合。所以我们将对 `castle_doors` 使用该函数：
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  castle_doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(array_unpack(castle_doors));
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
+select jonathan_strength > min(array_unpack(castle_doors));
 ```
 
 于是，我们将得到 `{false}`。很好！现在我们成功展示了乔纳森不能打开任何门的事实。他将不得不从窗户爬出去。
@@ -139,7 +139,7 @@ SELECT jonathan_strength > min(array_unpack(castle_doors));
 除了 `min()`，当然还有 `max()`。`len()` 和 `count()` 等也都很有用：`len()` 可以给出一个对象的长度，`count()` 可以给出它们的数量。下面是一个使用 `len()` 获取所有 `NPC` 对象名称长度的示例：
 
 ```edgeql
-SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
+select (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
 ```
 
 别忘了我们需要做一个 `<str>` 的类型转换，因为 `len()` 返回的是一个整数，且 EdgeDB 无法级联 `++` 一个字符串和一个整数。结果如下：
@@ -155,7 +155,7 @@ SELECT (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
 另一个使用 `count()` 的例子也需要做 `<str>` 的类型转换：
 
 ```edgeql
-SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more places than castles';
+select 'There are ' ++ <str>(select count(Place) - count(Castle)) ++ ' more places than castles';
 ```
 
 结果是：`{'There are 8 more places than castles'}`
@@ -167,10 +167,10 @@ SELECT 'There are ' ++ <str>(SELECT count(Place) - count(Castle)) ++ ' more plac
 假设我们经常需要使用下面的查询语句来查找满足条件的 `City` 对象：
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name
-} FILTER .name ILIKE '%i%' AND EXISTS (.modern_name);
+} filter .name ilike '%i%' and exists (.modern_name);
 ```
 
 上面语句可以正常工作并返回一个城市：`{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}`。
@@ -180,25 +180,25 @@ SELECT City {
 这正是介绍如何用 `$` 向查询添加参数的好时机。我们可以给参数起一个名字，EdgeDB 会在每次查询中询问我们要给它什么数值。现在让我们从一些非常简单的事情开始：
 
 ```edgeql
-SELECT City {
+select City {
   name
-} FILTER .name = 'London';
+} filter .name = 'London';
 ```
 
 现在让我们把 `'London'` 改为 `$name`。注意：这照样不会工作，猜猜为什么？
 
 ```edgeql
-SELECT City {
+select City {
   name
-} FILTER .name = $name;
+} filter .name = $name;
 ```
 
 问题在于 `$name` 可以是任何，EdgeDB 不知道它将是什么类型。错误提示为：`error: missing a type cast before the parameter`。所以，因为它是一个字符串，我们将使用 `<str>` 进行转换：
 
 ```edgeql
-SELECT City {
+select City {
   name
-} FILTER .name = <str>$name;
+} filter .name = <str>$name;
 ```
 
 执行后，我们会收到一个提示 `Parameter <str>$name:`，要求我们输入数值。输入 `London`，不需要引号，因为 EdgeDB 已经知道它是一个字符串了。于是得到结果：`{default::City {name: 'London'}}`。
@@ -206,13 +206,13 @@ SELECT City {
 现在让我们使用两个参数来创建一个更复杂（和有用）的查询。我们将它们称为 `$name` 和 `$has_modern_name`。不要忘记对它们进行类型转换：
 
 ```edgeql
-SELECT City {
+select City {
   name,
   modern_name
-} FILTER
-    .name ILIKE '%' ++ <str>$name ++ '%'
-  AND
-    EXISTS (.modern_name) = <bool>$has_modern_name;
+} filter
+    .name ilike '%' ++ <str>$name ++ '%'
+  and
+    exists (.modern_name) = <bool>$has_modern_name;
 ```
 
 由于有两个参数，EdgeDB 会要求我们输入两个值。下面是一个示例：
@@ -234,8 +234,8 @@ Parameter <bool>$has_modern_name: true
 参数在插入语句中也同样有效。下面是一个 `Time` 插入，提示用户输入小时、分钟和秒：
 
 ```edgeql
-SELECT(
-  INSERT Time {
+select (
+  insert Time {
     clock := <str>$hour ++ <str>$minute ++ <str>$second
   }
 ) {
@@ -264,12 +264,12 @@ Parameter <str>$second: 09
 
 请注意，类型转换意味着你可以只是输入 `10`，而不用输入 `'10'`。
 
-那么，如果你希望参数是 _可选的_ 呢？没问题，只需将 `OPTIONAL` 放在类型名称之前（置入 `<>` 括号内）。因此，如果你希望所有内容都是可选的，则上面的插入语句将变更为：
+那么，如果你希望参数是 _可选的_ 呢？没问题，只需将 `optional` 放在类型名称之前（置入 `<>` 括号内）。因此，如果你希望所有内容都是可选的，则上面的插入语句将变更为：
 
 ```edgeql
-SELECT(
-  INSERT Time {
-    clock := <OPTIONAL str>$hour ++ <OPTIONAL str>$minute ++ <OPTIONAL str>$second
+select (
+  insert Time {
+    clock := <optional str>$hour ++ <optional str>$minute ++ <optional str>$second
   }
 ) {
   clock,
@@ -281,9 +281,9 @@ SELECT(
 
 当然，`Time` 类型的 `clock` 属性需要正确的格式，所以上面的做法不是一个好主意。这里只是为了展示一下你可以如何做。
 
-`OPTIONAL` 的相反是 `REQUIRED`，但因为它是默认的，所以你不需要总是写明它。
+`optional` 的相反是 `REQUIRED`，但因为它是默认的，所以你不需要总是写明它。
 
-我们在之前的章节里学到的关键字 `UPDATE` 也可以使用参数，所以总共有四个关键字我们可以使用参数，它们是：`SELECT`、`INSERT`、`UPDATE` 和 `DELETE`。
+我们在之前的章节里学到的关键字 `update` 也可以使用参数，所以总共有四个关键字我们可以使用参数，它们是：`select`、`insert`、`update` 和 `delete`。
 
 [→ 点击这里查看到第 7 章为止的所有代码](code.md)
 

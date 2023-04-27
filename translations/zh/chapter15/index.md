@@ -62,9 +62,9 @@ type Ship extending HasCoffins {
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := assert_single(
-        (SELECT Person filter .name = person_name)
+        (select Person filter .name = person_name)
     )
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -114,8 +114,8 @@ function try(place: optional City) -> str
 现在，让我们来给往伦敦（London）放置一些棺材。按照原著所述，我们的英雄们在当天晚上摧毁了卡法克斯（Carfax）里的 29 具棺材，也就是说在伦敦还有 21 具棺材不知所踪。
 
 ```edgeql
-UPDATE City FILTER .name = 'London'
-SET {
+update City filter .name = 'London'
+set {
   coffins := 21
 };
 ```
@@ -123,14 +123,14 @@ SET {
 现在，我们终于有机会调用我们刚刚创建的函数，并看看它是否有效了：
 
 ```edgeql
-SELECT can_enter('Count Dracula', (SELECT City FILTER .name = 'London'));
+select can_enter('Count Dracula', (select City filter .name = 'London'));
 ```
 
 得到：`{'Count Dracula can enter.'}`
 
 当然，可能你还会有一些其他改进 `can_enter()` 的想法，比如：
 
-- 将属性 `name` 从 `Place` 和 `Ship` 移到 `HasCoffins`。函数的第二个参数改为接收一个字符串（即地点名称），函数签名为 `function can_enter(person_name: str, place_name: str) -> str`，函数体中通过该地点的名称字符串 `SELECT` 到对应的地点对象，然后再使用其属性 `coffins`，给出类似 `{'Count Dracula can enter London.'}` 的结果。
+- 将属性 `name` 从 `Place` 和 `Ship` 移到 `HasCoffins`。函数的第二个参数改为接收一个字符串（即地点名称），函数签名为 `function can_enter(person_name: str, place_name: str) -> str`，函数体中通过该地点的名称字符串 `select` 到对应的地点对象，然后再使用其属性 `coffins`，给出类似 `{'Count Dracula can enter London.'}` 的结果。
 - 给函数加一个日期类型的输入，以便我们可以先检查这个吸血鬼是否已经死了。例如，如果我们输入一个露西死后的日期，它只会显示类似 `vampire.name ++ ' is already dead on ' ++ <str>vampire.last_appearance ++ ' and cannot enter ' ++ city.name`。
 
 ## 更多约束
@@ -199,7 +199,7 @@ type Lord extending Person {
 现在，当我们尝试插入一个名字中没有“Lord”的 `Lord` 对象时，将无法成功：
 
 ```edgeql
-INSERT Lord {
+insert Lord {
   name := 'Billy'
   # Other stuff..
 };
@@ -207,13 +207,13 @@ INSERT Lord {
 
 但是如果 `name` 是“Lord Billy”（或“Lord” + 任何东西），它就会正常工作。
 
-在此期间，让我们再来练习一下 `SELECT` 和 `INSERT` 的同时执行，以便我们立即看到 `INSERT` 的结果。我们把 `Billy` 改为 `Lord Billy`，且比利勋爵（Lord Billy）十分富有，到访过我们数据库中的所有地方。
+在此期间，让我们再来练习一下 `select` 和 `insert` 的同时执行，以便我们立即看到 `insert` 的结果。我们把 `Billy` 改为 `Lord Billy`，且比利勋爵（Lord Billy）十分富有，到访过我们数据库中的所有地方。
 
 ```edgeql
-SELECT (
-  INSERT Lord {
+select (
+  insert Lord {
     name := 'Lord Billy',
-    places_visited := (SELECT Place),
+    places_visited := (select Place),
   }
 ) {
   name,
@@ -320,13 +320,13 @@ type MinorVampire extending Person {
 现在让我们来验证一下上面的方法是否工作。首先，创建一个名为“Kain”的吸血鬼，并同时插入被他控制的两个 `MinorVampire` 奴隶，他们分别叫做“Billy”和“Bob”。
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Kain',
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Billy',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Bob',
     })
   }
@@ -336,13 +336,13 @@ INSERT Vampire {
 如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   master_name,
   master: {
     name
   }
-} FILTER .name IN {'Billy', 'Bob'};
+} filter .name in {'Billy', 'Bob'};
 ```
 
 结果是：

@@ -15,10 +15,10 @@ tags: Aliases, Named Tuples
 还记得我们在第 12 章中创建的 `fight()` 函数吗？它被重载后可以接受 `(Person, Person)` 或 `(str, int16, str)` 作为输入。现在让我们将德古拉（Dracula）和伦菲尔德（Renfield）输入进去：
 
 ```edgeql
-WITH
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-  renfield := (SELECT Person FILTER .name = 'Renfield'),
-SELECT fight(dracula, renfield);
+with
+  dracula := (select Person filter .name = 'Count Dracula'),
+  renfield := (select Person filter .name = 'Renfield'),
+select fight(dracula, renfield);
 ```
 
 毫无疑问，结果当然会是 `{'Count Dracula wins!'}`。
@@ -26,31 +26,31 @@ SELECT fight(dracula, renfield);
 执行同样查询的另一种方法是使用单个元组。然后我们可以将指向德古拉的 `.0` 和指向伦菲尔德的 `.1` 输入给函数，如下所示：
 
 ```edgeql
-WITH fighters := (
-    (SELECT Person FILTER .name = 'Count Dracula'),
-    (SELECT Person FILTER .name = 'Renfield')
+with fighters := (
+    (select Person filter .name = 'Count Dracula'),
+    (select Person filter .name = 'Renfield')
   ),
-SELECT fight(fighters.0, fighters.1);
+select fight(fighters.0, fighters.1);
 ```
 
 看起来还不错，但有一种方法可以使它更清楚：我们可以为元组中的项目命名，来替代使用 `.0` 和 `.1`。“命名”的语句看起来像是给变量赋值一个普通的计算（computed）链接或属性，同样使用 `:=`：
 
 ```edgeql
-WITH fighters := (
-    dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-    renfield := (SELECT Person FILTER .name = 'Renfield')
+with fighters := (
+    dracula := (select Person filter .name = 'Count Dracula'),
+    renfield := (select Person filter .name = 'Renfield')
   ),
-SELECT fight(fighters.dracula, fighters.renfield);
+select fight(fighters.dracula, fighters.renfield);
 ```
 
 下面是命名元组的另一个示例：
 
 ```edgeql
-WITH minor_vampires := (
-    women := (SELECT MinorVampire FILTER .name LIKE '%Woman%'),
-    lucy := (SELECT MinorVampire FILTER .name LIKE '%Lucy%')
+with minor_vampires := (
+    women := (select MinorVampire filter .name like '%Woman%'),
+    lucy := (select MinorVampire filter .name like '%Lucy%')
   ),
-SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
+select (minor_vampires.women.name, minor_vampires.lucy.name);
 ```
 
 输出是（别忘了笛卡尔乘法）：
@@ -59,12 +59,12 @@ SELECT (minor_vampires.women.name, minor_vampires.lucy.name);
 {('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
 ```
 
-伦菲尔德已经不在人世了，所以我们需要使用 `UPDATE` 给他的 `last_appearance` 更新一个日期。让我们再来体验一次在更新的同时，使用 `SELECT` 显示“更新”结果的奇妙：
+伦菲尔德已经不在人世了，所以我们需要使用 `update` 给他的 `last_appearance` 更新一个日期。让我们再来体验一次在更新的同时，使用 `select` 显示“更新”结果的奇妙：
 
 ```edgeql
-SELECT ( # Put the whole update inside
-  UPDATE NPC FILTER .name = 'Renfield'
-  SET {
+select ( # Put the whole update inside
+  update NPC filter .name = 'Renfield'
+  set {
     last_appearance := <cal::local_date>'1887-10-03'
   }
 ) # then use it to call up name and last_appearance
@@ -79,7 +79,7 @@ SELECT ( # Put the whole update inside
 最后要提的是：在元组中命名一个项目对项目本身是没有任何影响的。所以：
 
 ```edgeql
-SELECT ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
+select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
 
 返回 `{true}`。
@@ -132,9 +132,9 @@ abstract type Place extending HasNameAndCoffins {
 function can_enter(person_name: str, place: HasCoffins) -> str
   using (
     with vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
+        (select Person filter .name = person_name)
     ),
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -145,12 +145,12 @@ function can_enter(person_name: str, place: str) -> str
   using (
     with
       vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
+        (select Person filter .name = person_name)
       ),
       enter_place := assert_single(
-        (SELECT HasNameAndCoffins FILTER .name = place)
+        (select HasNameAndCoffins filter .name = place)
       )
-    SELECT vampire.name ++ ' can enter.' IF enter_place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -159,8 +159,8 @@ function can_enter(person_name: str, place: str) -> str
 最后，我们可以通过通用更新来更改棺材的数量。这很容易：
 
 ```sdl
-UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
-SET {
+update HasNameAndCoffins filter .name = <str>$place_name
+set {
   coffins := .coffins + <int16>$number
 }
 ```
@@ -168,8 +168,8 @@ SET {
 现在，让我们用上面的方法给 `The Demeter`（德古拉前往伦敦时乘坐的船）上放一些棺材：
 
 ```edgeql-repl
-edgedb> UPDATE HasNameAndCoffins FILTER .name = <str>$place_name
-....... SET {
+edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+....... set {
 .......   coffins := .coffins + <int16>$number
 ....... };
 Parameter <str>$place_name: The Demeter
@@ -179,7 +179,7 @@ Parameter <int16>$number: 10
 然后让我们通过查询来检查其执行结果：
 
 ```edgeql
-SELECT Ship {
+select Ship {
   name,
   coffins,
 };
@@ -203,11 +203,11 @@ type Crewman extending HasNumber, Person {
 ```sdl
 alias CrewmanInBulgaria := Crewman {
   name := 'Gospodin ' ++ .name,
-  current_location := (SELECT Place FILTER .name = 'Bulgaria'),
+  current_location := (select Place filter .name = 'Bulgaria'),
 };
 ```
 
-你可能马上注意到了别名（alias）里面的 `name` 和 `current_location` 被逗号隔开了，而不是分号。它表明这不是在“真的”创建新类型：它只是在现有的 `Crewman` 类型之上创建了一个 [_shape_](https://www.edgedb.com/docs/edgeql/select#shapes)。出于同样的原因，你不能执行 `INSERT CrewmanInBulgaria`，因为这样的类型并不真实存在，错误提示为：
+你可能马上注意到了别名（alias）里面的 `name` 和 `current_location` 被逗号隔开了，而不是分号。它表明这不是在“真的”创建新类型：它只是在现有的 `Crewman` 类型之上创建了一个 [_shape_](https://www.edgedb.com/docs/edgeql/select#shapes)。出于同样的原因，你不能执行 `insert CrewmanInBulgaria`，因为这样的类型并不真实存在，错误提示为：
 
 ```
 error: cannot insert into expression alias 'default::CrewmanInBulgaria'
@@ -216,7 +216,7 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 所以，所有的插入仍然是通过 `Crewman` 类型完成的。但是因为别名（alias）是一个子类型（subtype）和一个形状（shape），所以我们可以像选择其他任何类型一样选择它。现在，我们先来添加保加利亚：
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'Bulgaria'
 };
 ```
@@ -224,7 +224,7 @@ INSERT Country {
 然后，选择这个新创建的别名看看我们能得到什么：
 
 ```edgeql
-SELECT CrewmanInBulgaria {
+select CrewmanInBulgaria {
   name,
   current_location: {
     name
@@ -263,10 +263,10 @@ SELECT CrewmanInBulgaria {
 
 ## 本地类型别名
 
-当我们在编写 `alias CrewmanInBulgaria := Crewman` 时，我们只是使用了 `:=` 来声明我们的别名。那么我们是否可以在查询中做类似的事情呢？答案是肯定的：我们可以通过使用 `WITH` 为现有类型指定一个新名称。（实际上，我们一直在使用的关键字 `WITH` 就是表达一个“{ref}`用于定义别名的块 <docs:ref_eql_with>`”）。以下面这个简单的查询为例，它显示了德古拉伯爵和他的奴隶们的名字：
+当我们在编写 `alias CrewmanInBulgaria := Crewman` 时，我们只是使用了 `:=` 来声明我们的别名。那么我们是否可以在查询中做类似的事情呢？答案是肯定的：我们可以通过使用 `with` 为现有类型指定一个新名称。（实际上，我们一直在使用的关键字 `with` 就是表达一个“{ref}`用于定义别名的块 <docs:ref_eql_with>`”）。以下面这个简单的查询为例，它显示了德古拉伯爵和他的奴隶们的名字：
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   name,
   slaves: {
     name
@@ -274,11 +274,11 @@ SELECT Vampire {
 };
 ```
 
-如果我们想使用 `WITH` 创建一个与 `Vampire` 相同的新类型，我们可以这样做：
+如果我们想使用 `with` 创建一个与 `Vampire` 相同的新类型，我们可以这样做：
 
 ```edgeql
-WITH Drac := Vampire,
-SELECT Drac {
+with Drac := Vampire,
+select Drac {
   name,
   slaves: {
     name
@@ -302,14 +302,14 @@ SELECT Drac {
 }
 ```
 
-但当我们要使用这种新类型对创建它的类型进行操作或比较时，这个别名则变得十分有用。它的作用与 `DETACHED` 相同，但因为我们给它起了一个名字，所以使用起来更加灵活易读。
+但当我们要使用这种新类型对创建它的类型进行操作或比较时，这个别名则变得十分有用。它的作用与 `detached` 相同，但因为我们给它起了一个名字，所以使用起来更加灵活易读。
 
 现在，让我们来试一下。假设我们正在测试我们的游戏引擎，需要对函数 `fight()` 进行大量的测试。`fight()` 当前的定义很简单（实际中可能会很复杂）：
 
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    one.name ++ ' wins!' IF one.strength > two.strength ELSE
+    one.name ++ ' wins!' if one.strength > two.strength else
     two.name ++ ' wins!'
   );
 ```
@@ -317,10 +317,10 @@ function fight(one: Person, two: Person) -> str
 出于调试目的，最好能显示出更多详细的信息。因此，我们创建了类似的、名为 `fight_2()` 的函数，并添加了更多关于谁与谁战斗的具体信息。
 
 ```edgeql
-CREATE FUNCTION fight_2(one: Person, two: Person) -> str
-  USING (
+create function fight_2(one: Person, two: Person) -> str
+  using (
     one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!'
-    IF one.strength > two.strength ELSE
+    if one.strength > two.strength else
     one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
   );
 ```
@@ -328,8 +328,8 @@ CREATE FUNCTION fight_2(one: Person, two: Person) -> str
 然后，我们打算让 `MinorVampire` 们互相争斗，看看会得到怎样的结果。我们有四个 `MinorVampire`（三个无名的女吸血鬼加上露西）。这里我们现将所有小鬼的力量值设置为 9：
 
 ```edgeql
-UPDATE MinorVampire FILTER NOT EXISTS .strength
-SET {
+update MinorVampire filter not exists .strength
+set {
   strength := 9
 };
 ```
@@ -337,7 +337,7 @@ SET {
 现在，让我们将她们（`MinorVampire`）输入函数，试想一下输出会是什么？
 
 ```edgeql
-SELECT fight_2(MinorVampire, MinorVampire);
+select fight_2(MinorVampire, MinorVampire);
 ```
 
 输出是……
@@ -356,14 +356,14 @@ SELECT fight_2(MinorVampire, MinorVampire);
 该函数只被使用了四次，因为每次只有一个对象的集合进入到函数……每个 `MinorVampire` 都在和她自己战斗。这不是我们想要的。现在让我们用本地类型的别名再来尝试一下：
 
 ```edgeql
-WITH M := MinorVampire,
-SELECT fight_2(M, MinorVampire);
+with M := MinorVampire,
+select fight_2(M, MinorVampire);
 ```
 
 顺便说一句，这实际上与下面这句完全相同：
 
 ```edgeql
-SELECT fight_2(MinorVampire, DETACHED MinorVampire);
+select fight_2(MinorVampire, detached MinorVampire);
 ```
 
 现在，输出变多了：
@@ -392,8 +392,8 @@ SELECT fight_2(MinorVampire, DETACHED MinorVampire);
 我们成功地让每个 `MinorVampire` 都与其他 `MinorVampire` 进行了战斗，但仍然有 `MinorVampire` 和自己战斗（露西对露西，女人 1 对女人 1，等等）的情况。该问题的解决，正是体现本地类型别名的便利之处：例如，我们可以对其进行过滤，只允许彼此不同的对象使用 `fight_2()`：
 
 ```edgeql
-WITH M := MinorVampire,
-SELECT fight_2(M, MinorVampire) FILTER M != MinorVampire;
+with M := MinorVampire,
+select fight_2(M, MinorVampire) filter M != MinorVampire;
 ```
 
 现在我们终于让每个 `MinorVampire` 都与其他 `MinorVampire` 进行了战斗，且没有重复。
@@ -417,17 +417,17 @@ SELECT fight_2(M, MinorVampire) FILTER M != MinorVampire;
 
 完美！
 
-注意：这里仅使用 `DETACHED` 是行不通的：`SELECT Fight_2(MinorVampire, DETACHED MinorVampire) FILTER MinorVampire != DETACHED MinorVampire;` 是解决不了问题的，因为第一个 `DETACHED MinorVampire` 不是变量名。如果没有一个名称用来访问，下一个 `DETACHED MinorVampire` 只会是一个新的 `DETACHED MinorVampire`，与前一个没有关系。
+注意：这里仅使用 `detached` 是行不通的：`select Fight_2(MinorVampire, detached MinorVampire) filter MinorVampire != detached MinorVampire;` 是解决不了问题的，因为第一个 `detached MinorVampire` 不是变量名。如果没有一个名称用来访问，下一个 `detached MinorVampire` 只会是一个新的 `detached MinorVampire`，与前一个没有关系。
 
-那么我们是否可以像创建 `CrewmanInBulgaria` 别名时所做的一样，用 `WITH` 同样做到创建一个别名并未其添加所需类型的链接和属性呢？答案是可以的。我们可以使用 `SELECT` 并在其后面的 `{}` 中添加任何你想要的新链接和属性来做到这一点。下面是一个简单的例子：
+那么我们是否可以像创建 `CrewmanInBulgaria` 别名时所做的一样，用 `with` 同样做到创建一个别名并未其添加所需类型的链接和属性呢？答案是可以的。我们可以使用 `select` 并在其后面的 `{}` 中添加任何你想要的新链接和属性来做到这一点。下面是一个简单的例子：
 
 ```edgeql
-WITH NPCExtraInfo := (
-    SELECT NPC {
+with NPCExtraInfo := (
+    select NPC {
       would_win_against_dracula := .strength > Vampire.strength
     }
   )
-SELECT NPCExtraInfo {
+select NPCExtraInfo {
   name,
   would_win_against_dracula
 };
@@ -452,13 +452,13 @@ SELECT NPCExtraInfo {
 现在假设德古拉已经实现了他的所有目标，统治了伦敦。我们将为其创建一个叫做 `DraculaKingOfLondon` 的新的快速类型（别名），包含一个更完善的名字以及一个指向 `subjects`（= 被统治的人）的链接，该链接指向所有去过伦敦的 `Person`。然后我们来选择（查询）这个新类型，并计算有多少个 `subjects` 已被德古拉统治。具体操作如下所示：
 
 ```edgeql
-WITH DraculaKingOfLondon := (
-    SELECT Vampire {
+with DraculaKingOfLondon := (
+    select Vampire {
       name := .name ++ ', King of London',
-      subjects := (SELECT Person FILTER 'London' in .places_visited.name),
+      subjects := (select Person filter 'London' in .places_visited.name),
     }
   )
-SELECT DraculaKingOfLondon {
+select DraculaKingOfLondon {
   name,
   subjects: {name},
   number_of_subjects := count(.subjects)

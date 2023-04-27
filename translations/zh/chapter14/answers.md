@@ -5,7 +5,7 @@
 一种方法是使用 `enumerate()`。如果我们只是从 0 开始显示，就容易。`enumerate()` 会为输入集合中的每个元素都输出一个包含两个项目的元组。第一个则是 `int64` 类型的索引，所以我们选择使用 `enumerate()`：
 
 ```edgeql
-SELECT enumerate(Person).0;
+select enumerate(Person).0;
 ```
 
 结果显示出：`{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}`
@@ -15,7 +15,7 @@ SELECT enumerate(Person).0;
 回到问题本身，如果要显示从 1 开始的数字，我们只需在使用 `enumerate` 时加 1：
 
 ```edgeql
-SELECT enumerate(Person).0 + 1
+select enumerate(Person).0 + 1
 ```
 
 #### 2. 使用一个可计算的反向链接，如何显示 1）所有名称中带有 `o` 的 `Place` 的对象（及他们的名称）；2）访问过这些地方的人物的名字？
@@ -23,9 +23,9 @@ SELECT enumerate(Person).0 + 1
 如果你一步一步开始，则并不太难。首先用一个过滤器来获取所有名字满足条件的 `Place` 对象：
 
 ```edgeql
-SELECT Place {
+select Place {
   name
-} FILTER .name LIKE '%o%';
+} filter .name like '%o%';
 ```
 
 结果是：
@@ -41,10 +41,10 @@ SELECT Place {
 然后，我们将可计算的反向链接添加到同一个查询，并赋值给计算属性 `visitors`：
 
 ```edgeql
-SELECT Place {
+select Place {
   name,
-  visitors := .<places_visited[IS Person].name
-} FILTER .name LIKE '%o%';
+  visitors := .<places_visited[is Person].name
+} filter .name like '%o%';
 ```
 
 于是，我们就可以看到都有谁分别到访过这些地方了：
@@ -70,17 +70,17 @@ SELECT Place {
 }
 ```
 
-伦敦作为访问量最大的地方明显胜出！如果你想，你也可以添加一个 `visitor_numbers := count(.<places_visited[IS Person].name)` 来获取访问者的数量。
+伦敦作为访问量最大的地方明显胜出！如果你想，你也可以添加一个 `visitor_numbers := count(.<places_visited[is Person].name)` 来获取访问者的数量。
 
 #### 3. 使用一个可计算的反向链接，如何显示所有后来成为了 `MinorVampire` 的 `Person` 对象？
 
 我们可以再次通过使用一个计算（computed）链接来做到这一点，我们将其称为 `later_vampire`。然后我们使用一个可计算的反向链接指回 `MinorVampire`，即通过链接 `former_self` 链接到 `Person` 的 `MinorVampire`：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  later_vampire := .<former_self[IS MinorVampire].name
-} FILTER EXISTS .later_vampire;
+  later_vampire := .<former_self[is MinorVampire].name
+} filter exists .later_vampire;
 ```
 
 结果中只有露西：
@@ -90,15 +90,15 @@ SELECT Person {
 看起来还不错，但我们还可以做得更好——这里的 `later_vampire` 没有告诉我们关于它的类型。那么，让我们为其添加一些类型信息：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  later_vampire := .<former_self[IS MinorVampire] {
+  later_vampire := .<former_self[is MinorVampire] {
     name,
     __type__: {
       name
     }
   }
-} FILTER EXISTS .later_vampire;
+} filter exists .later_vampire;
 ```
 
 现在，我们可以从结果中同时看到 `later_vampire` 的类型是 `MinorVampire`：
@@ -139,7 +139,7 @@ type MinorVampire extending Person {
 如下所示：
 
 ```edgeql
-SELECT (INTROSPECT MinorVampire) {
+select (introspect MinorVampire) {
   name,
   annotations: {
     name,

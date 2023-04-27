@@ -50,7 +50,7 @@ type Visit {
 这里，让我们先来创建一下新出现的 `Ship` 和两个新的地点 `City`，以便我们可以链接它们。我们知道这艘船的名字，且上面有一个棺材：德古拉的最后一具棺材。但是我们不知道船员的情况，所以我们只需插入以下信息：
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'Czarina Catherine',
   coffins := 1,
 };
@@ -59,9 +59,9 @@ INSERT Ship {
 然后，我们需要创建瓦尔纳（Varna）和加拉茨（Galatz）两个城市：
 
 ```edgeql
-FOR city IN {'Varna', 'Galatz'}
-UNION (
-  INSERT City {
+for city in {'Varna', 'Galatz'}
+union (
+  insert City {
     name := city
   }
 );
@@ -70,7 +70,7 @@ UNION (
 德米特号（the Demeter）船长的日记中还提及了很多其他的地方，我们来看看都有哪些：德米特号曾穿过博斯普鲁斯海峡（Bosphorus），是连接着黑海和爱琴海，将欧洲和亚洲隔开的土耳其海峡，因此它不是一个城市。我们可以使用 `OtherPlace` 类型，这也是我们在第 14 章中添加了一些注解的类型。还记得如何显示注解吗？如下所示：
 
 ```edgeql
-SELECT (INTROSPECT OtherPlace) {
+select (introspect OtherPlace) {
   name,
   annotations: {
     @value
@@ -99,7 +99,7 @@ SELECT (INTROSPECT OtherPlace) {
 嗯，博斯普鲁斯海峡（Bosphorus）不是一座城堡，也不是一个有建筑物的地方，所以使用 `OhterPlace` 很合适。后面我们将会创建一个 `Region` 类型，以便我们可以有一个 `Country` -> `Region` -> `City` 的布局。在这种情况下，`OtherPlace` 可能会在 `Country` 或 `Region` 中被链接。但目前，我们先只是添加它，暂不需要链接到任何其他类型：
 
 ```edgeql
-INSERT OtherPlace {
+insert OtherPlace {
   name := 'Bosphorus'
 };
 ```
@@ -107,17 +107,17 @@ INSERT OtherPlace {
 这很简单。现在我们可以输入船舶的访问记录了。
 
 ```edgeql
-FOR visit IN {
+for visit in {
     ('The Demeter', 'Varna', '1887-07-06'),
     ('The Demeter', 'Bosphorus', '1887-07-11'),
     ('The Demeter', 'Whitby', '1887-08-08'),
     ('Czarina Catherine', 'London', '1887-10-05'),
     ('Czarina Catherine', 'Galatz', '1887-10-28')
   }
-UNION (
-  INSERT Visit {
-    ship := (SELECT Ship FILTER .name = visit.0),
-    place := (SELECT Place FILTER .name = visit.1),
+union (
+  insert Visit {
+    ship := (select Ship filter .name = visit.0),
+    place := (select Place filter .name = visit.1),
     date := <cal::local_date>visit.2
   }
 );
@@ -126,7 +126,7 @@ UNION (
 有了这些数据，我们在游戏中可以随时查看特定日期下各城市的船只停泊情况了。例如，假设一个角色进入了加拉茨（Galatz）。如果日期是 1887 年 10 月 28 日，我们则可以通过下面的语句查看当地是否有船只停靠：
 
 ```edgeql
-SELECT Visit {
+select Visit {
   ship: {
     name
   },
@@ -134,7 +134,7 @@ SELECT Visit {
     name
   },
   date
-} FILTER .place.name = 'Galatz' AND .date = <cal::local_date>'1887-10-28';
+} filter .place.name = 'Galatz' and .date = <cal::local_date>'1887-10-28';
 ```
 
 看起来镇上确实有一艘船！正是沙皇凯瑟琳（Czarina Catherine）。
@@ -152,7 +152,7 @@ SELECT Visit {
 现在，让我们在船只的访问中再次练习一下可计算的反向链接。比如：
 
 ```edgeql
-SELECT Ship.<ship[IS Visit] {
+select Ship.<ship[is Visit] {
   place: {
     name
   },
@@ -160,10 +160,10 @@ SELECT Ship.<ship[IS Visit] {
     name
   },
   date
-} FILTER .place.name = 'Galatz';
+} filter .place.name = 'Galatz';
 ```
 
-`Ship.<ship[IS Visit]` 是指所有通过链接 `ship` 指向了某个 `Ship` 类型对象的 `Visit`。因为我们选择的是 `Visit` 而不是 `Ship`，所以我们的过滤器此时是作用在 `Visit` 的 `.place.name` 上，而不是 `Ship` 的属性上。
+`Ship.<ship[is Visit]` 是指所有通过链接 `ship` 指向了某个 `Ship` 类型对象的 `Visit`。因为我们选择的是 `Visit` 而不是 `Ship`，所以我们的过滤器此时是作用在 `Visit` 的 `.place.name` 上，而不是 `Ship` 的属性上。
 
 这是输出：
 
@@ -192,19 +192,19 @@ type Time {
   required property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
 电报里提到的抵达时间是下午 1 点钟，让我们将该信息也放入到查询中，并获取包括 `awake` 属性在内的时间信息。如下所示：
 
 ```edgeql
-WITH time := (
-  INSERT Time {
+with time := (
+  insert Time {
     clock := '13:00:00'
   }
 )
-SELECT Ship.<ship[IS Visit] {
+select Ship.<ship[is Visit] {
   place: {
     name
   },
@@ -218,7 +218,7 @@ SELECT Ship.<ship[IS Visit] {
     hour,
     awake
   },
-} FILTER .place.name = 'Galatz';
+} filter .place.name = 'Galatz';
 ```
 
 输出如下所示，包括了吸血鬼是醒着还是睡着。
@@ -251,15 +251,15 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
 然后更新对加拉茨（Galatz）的访问，给它一个 `clock`：
 
 ```edgeql
-UPDATE Visit FILTER .place.name = 'Galatz'
-SET {
+update visit filter .place.name = 'Galatz'
+set {
   clock := '13:00:00'
 };
 ```
@@ -267,7 +267,7 @@ SET {
 然后，我们将再次使用反向查询来完成同上面一样的对 `Visit` 的查询。同时，我们再添加一个计算（computed）属性给到 `when_arthur_got_the_telegram` 以增加一些趣味性：假设亚瑟（Arthur）花了两小时五分十秒才收到电报。我们将 `time` 字符串转换为 `cal::local_time`，然后再为其加上一个 `duration`，即可得到 `when_arthur_got_the_telegram`。
 
 ```edgeql
-SELECT Ship.<ship[IS Visit] {
+select Ship.<ship[is Visit] {
   place: {
     name
   },
@@ -279,7 +279,7 @@ SELECT Ship.<ship[IS Visit] {
   hour,
   awake,
   when_arthur_got_the_telegram := (<cal::local_time>.clock) + <duration>'2 hours, 5 minutes, 10 seconds'
-} FILTER .place.name = 'Galatz';
+} filter .place.name = 'Galatz';
 ```
 
 现在，我们如愿得到了之前 `Time` 类型可以给到我们的所有输出，以及我们关于亚瑟（Arthur）何时收到电报的额外信息：
@@ -323,38 +323,38 @@ type Region extending Place {
 插入语句如下所示：
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'Germany',
   regions := {
-    (INSERT Region {
+    (insert Region {
       name := 'Prussia',
       cities := {
-        (INSERT City {
+        (insert City {
           name := 'Berlin'
         }),
-        (INSERT City {
+        (insert City {
           name := 'Königsberg'
         }),
       }
     }),
-    (INSERT Region {
+    (insert Region {
       name := 'Hesse',
       cities := {
-        (INSERT City {
+        (insert City {
           name := 'Darmstadt'
         }),
-        (INSERT City {
+        (insert City {
           name := 'Mainz'
         }),
       }
     }),
-    (INSERT Region {
+    (insert Region {
       name := 'Saxony',
       cities := {
-        (INSERT City {
+        (insert City {
           name := 'Dresden'
         }),
-        (INSERT City {
+        (insert City {
           name := 'Leipzig'
         }),
       }
@@ -366,12 +366,12 @@ INSERT Country {
 搭建了这个漂亮的结构后，我们可以做一些额外的事情，比如选择一个 `Region` 并查看其中的城市，以及它所属的国家。要从 `Region` 获取 `Country`，我们需要使用可计算的反向链接：
 
 ```edgeql
-SELECT Region {
+select Region {
   name,
   cities: {
     name
   },
-  country := .<regions[IS Country] {
+  country := .<regions[is Country] {
     name
   }
 };

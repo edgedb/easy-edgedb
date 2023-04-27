@@ -13,8 +13,8 @@ If you're curious about the ending to this scene, just [check out the book on Gu
 We are sure that the vampire women have been destroyed, however, so we can do one final change by giving them a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. But don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
 ```edgeql
-UPDATE MinorVampire FILTER .name != 'Lucy'
-SET {
+update MinorVampire filter .name != 'Lucy'
+set {
   last_appearance := <cal::local_date>'1887-11-05'
 };
 ```
@@ -29,8 +29,8 @@ Now that you've made it through 20 chapters, you should have a good understandin
 
 The first part to a schema is always the command to start the migration:
 
-- We've used `START MIGRATION TO {};` commands, but the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools provide better control in real projects.
-- `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`).
+- We've used `start migration to {};` commands, but the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools provide better control in real projects.
+- `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `describe type as sdl` (or `as text`).
 
 Here's an example with `Person`, which starts like this and shows us the module it's located in:
 
@@ -69,11 +69,11 @@ abstract type Person {
     delegated constraint exclusive;
   }
   property age -> int16;
-  property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
-  property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+  property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   property strength -> int16;
   multi link places_visited -> Place;
-  multi link lover -> Person;
+  multi link lovers -> Person;
   property first_appearance -> cal::local_date;
   property last_appearance -> cal::local_date;
 }
@@ -98,7 +98,7 @@ For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_d
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
-edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -121,8 +121,8 @@ type Crewman extending HasNumber, Person {
 This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   name := 'Crewman ' ++ <str>.number
 };
 ```
@@ -144,10 +144,10 @@ type MinorVampire extending Person {
 With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  vampire_name := .<former_self[IS MinorVampire].name
-} FILTER EXISTS .vampire_name;
+  vampire_name := .<former_self[is MinorVampire].name
+} filter exists .vampire_name;
 ```
 
 In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
@@ -186,7 +186,7 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
@@ -198,7 +198,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -215,7 +215,7 @@ abstract type Place extending HasNameAndCoffins {
 The `important_places` property only got used once in this insert:
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
@@ -278,19 +278,19 @@ type Castle extending Place {
 Back in Chapter 7, we used this in a query to see if Jonathan could break any of the doors and escape the castle. The idea was simple: Jonathan would try to open every door, and if he had more strength then any one of them then he could escape the castle.
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(array_unpack(doors));
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select jonathan_strength > min(array_unpack(doors));
 ```
 
 However, later on we learned the `any()` function so let's see how we could use it here. With `any()`, we could change the query to this:
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
 And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
@@ -298,12 +298,12 @@ And of course, we could also create a function to do the same now that we know h
 Don't forget, we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
 
 ```sdl
-std::any(values: SET OF bool) -> bool
+std::any(values: set of bool) -> bool
 ```
 
-So this (a set) will work: `SELECT any({5, 6, 7} = 7);`
+So this (a set) will work: `select any({5, 6, 7} = 7);`
 
-But this (an array) will not: `SELECT any([5, 6, 7] = 7);`
+But this (an array) will not: `select any([5, 6, 7] = 7);`
 
 Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
@@ -328,7 +328,7 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
@@ -390,15 +390,15 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need.
+DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `create` to make a function whenever you need.
 
 SDL: `function says_hi() -> str using('hi');`
 
-DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
+DDL: `create function says_hi() -> str using('hi')`
 
 And even the capitalization doesn't matter.
 
-But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. Using {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools makes it possible to work with the schema using only SDL.
+But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Using {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools makes it possible to work with the schema using only SDL.
 
 ## EdgeDB lexical structure
 

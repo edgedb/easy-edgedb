@@ -19,7 +19,7 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
 }
 ```
 
@@ -36,12 +36,12 @@ type Event {
 现在，让我们来插入本章中的一个事件。它发生在 9 月 11 日晚上，当时范海辛医生（Dr. Van Helsing）正试图帮助露西（Lucy）。你可以看到 `description` 属性只是我们编写的一个字符串，以便于之后进行搜索。它可长可短，这取决于你，我们甚至可以把书中的某些部分粘贴进去。
 
 ```edgeql
-INSERT Event {
+insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
   start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
   end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
-  place := (SELECT Place FILTER .name = 'Whitby'),
-  people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
+  place := (select Place filter .name = 'Whitby'),
+  people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
   east := false
 };
@@ -52,7 +52,7 @@ INSERT Event {
 现在让我们查询所有描述中包含 `garlic flowers` 一词的事件：
 
 ```edgeql
-SELECT Event {
+select Event {
   description,
   start_time,
   end_time,
@@ -67,7 +67,7 @@ SELECT Event {
   },
   exact_location,
   url
-} FILTER .description ILIKE '%garlic flowers%';
+} filter .description ilike '%garlic flowers%';
 ```
 
 这生成了一个不错的输出，向我们展示了结果事件的所有信息： 
@@ -127,8 +127,8 @@ function make_string(input: int64) -> str
 function fight(one: Person, two: Person) -> str
   using (
     one.name ++ ' wins!'
-    IF one.strength > two.strength
-    ELSE two.name ++ ' wins!'
+    if one.strength > two.strength
+    else two.name ++ ' wins!'
   );
 ```
 
@@ -152,7 +152,7 @@ InvalidFunctionDefinitionError: return cardinality mismatch in function
 下面是一个简单的例子：
 
 ```edgeql-repl
-edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
+edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 `??` 的左边是空集，因为它 _是_ 空集，所以合并运算符在这里将放弃使用它，转而去查看右边的内容，因此，这个查询结果将使用合并运算符右侧生成的字符串：`{'Count Dracula is now in Whitby'}`
@@ -165,8 +165,8 @@ edgedb> SELECT <str>{} ?? 'Count Dracula is now in Whitby';
 function fight(one: Person, two: Person) -> str
   using (
     (one.name ?? 'Fighter 1') ++ ' wins!'
-    IF (one.strength ?? 0) > (two.strength ?? 0)
-    ELSE (two.name ?? 'Fighter 2') ++ ' wins!'
+    if (one.strength ?? 0) > (two.strength ?? 0)
+    else (two.name ?? 'Fighter 2') ++ ' wins!'
   );
 ```
 
@@ -175,10 +175,10 @@ function fight(one: Person, two: Person) -> str
 到目前为止，只有乔纳森（Jonathan）和伦菲尔德（Renfield）拥有 `strength` 属性，所以现在我们来让他们在这个新的 `fight()` 函数中较量一番：
 
 ```edgeql
-WITH
-  renfield := (SELECT Person FILTER .name = 'Renfield'),
-  jonathan := (SELECT Person FILTER .name = 'Jonathan Harker')
-SELECT (
+with
+  renfield := (select Person filter .name = 'Renfield'),
+  jonathan := (select Person filter .name = 'Jonathan Harker')
+select (
   fight(jonathan, renfield)
 );
 ```
@@ -195,7 +195,7 @@ SELECT (
 
 来源：[维基百科的用户“quartl”](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
 
-这意味着如果我们对 `Person` 进行 `SELECT` 后并传给函数 `fight()`，EdgeDB 将按照下面的公式运行函数：
+这意味着如果我们对 `Person` 进行 `select` 后并传给函数 `fight()`，EdgeDB 将按照下面的公式运行函数：
 
 - `{the number of items in the first set}` \* `{the number of items in the second set}`
 
@@ -204,8 +204,8 @@ SELECT (
 为了演示，我们将给函数的两个输入都传入三个对象，以此来测试我们的 `flight()` 函数。这里，对于那些还没有力量值的其他角色，我们暂时将其力量值均设置为 5：
 
 ```edgeql
-UPDATE Person FILTER NOT EXISTS .strength
-SET {
+update Person filter not exists .strength
+set {
   strength := 5
 };
 ```
@@ -213,10 +213,10 @@ SET {
 此外，我们还将运用 `++` 使得输出结果更加清晰可读：
 
 ```edgeql
-WITH
-  first_group := (SELECT Person FILTER .name IN {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  second_group := (SELECT Person FILTER .name IN {'Renfield', 'Mina Murray', 'The innkeeper'}),
-SELECT (
+with
+  first_group := (select Person filter .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (select Person filter .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+select (
   first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
 );
 ```
@@ -237,7 +237,7 @@ SELECT (
 }
 ```
 
-如果你去掉过滤器，只用 `SELECT Person`，你会得到超过 100 个结果。而 EdgeDB 默认只显示前 100 个，在显示 100 个结果后会显示：
+如果你去掉过滤器，只用 `select Person`，你会得到超过 100 个结果。而 EdgeDB 默认只显示前 100 个，在显示 100 个结果后会显示：
 
 `` ... (further results hidden `\set limit 100`)``
 
@@ -251,17 +251,17 @@ SELECT (
 
 2. 编写一个函数：接收两个字符串，并返回所有名称可以匹配输入的两个字符串中任意一个的 `Person` 对象？
 
-   提示：尝试使用 `SET OF Person` 作为返回类型。
+   提示：尝试使用 `set of Person` 作为返回类型。
 
 3. 下面的语句将会输出什么？
 
    ```edgeql
-   SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+   select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
    ```
 
 4. 如何制作一个函数来计算一个城市比另一个城市大多少倍？
 
-5. `SELECT (City.population + City.population)` 和 `SELECT ((SELECT City.population) + (SELECT City.population))` 会产生不同的结果吗？
+5. `select (City.population + City.population)` 和 `select ((select City.population) + (select City.population))` 会产生不同的结果吗？
 
 [点击这里查看答案](answers.md)
 

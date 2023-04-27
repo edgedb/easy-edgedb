@@ -73,8 +73,8 @@ type Pound extending Currency {
 现在，让我们来给德古拉分配一些钱：2500 英镑、50 先令和 200 便士。在 1887 年这也许是一大笔钱了。
 
 ```edgeql
-INSERT Pound {
-  owner := (SELECT Person FILTER .name = 'Count Dracula'),
+insert Pound {
+  owner := (select Person filter .name = 'Count Dracula'),
   major_amount := 2500,
   minor_amount := 50,
   sub_minor_amount := 200
@@ -84,7 +84,7 @@ INSERT Pound {
 然后我们可以通过使用转换率进行计算，并以“镑”为单位显示他所拥有的总金额：
 
 ```edgeql
-SELECT Currency {
+select Currency {
   owner: {name},
   total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
 };
@@ -96,7 +96,7 @@ SELECT Currency {
 {default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}
 ```
 
-我们从之前的章节中已经了解到亚瑟（Arthur）现在是戈达尔明勋爵（Lord Godalming）了，他同样拥有一大笔财富，至于其他人，我们并不确定。现在让我们给这些人分配一些随机数量的钱，同时 `SELECT` 它以显示随机到的结果。对于随机数，我们将使用我们之前用于 `strength` 的方法：`round()` 一个 `random()` 数并乘以最大值。
+我们从之前的章节中已经了解到亚瑟（Arthur）现在是戈达尔明勋爵（Lord Godalming）了，他同样拥有一大笔财富，至于其他人，我们并不确定。现在让我们给这些人分配一些随机数量的钱，同时 `select` 它以显示随机到的结果。对于随机数，我们将使用我们之前用于 `strength` 的方法：`round()` 一个 `random()` 数并乘以最大值。
 
 但我们希望在显示每个人的金钱总数时，可以将其转换为 `decimal` 类型。这样我们就可以控制其显示为 555.76 而不是 555.76545256。为此，我们仍然使用 `round()` 函数，但使用其最后一个签名：
 
@@ -113,10 +113,10 @@ std::round(value: decimal, d: int64) -> decimal
 总之，代码如下所示：
 
 ```edgeql
-SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
-  UNION (
-    INSERT Pound {
-      owner := assert_single((SELECT Person FILTER .name = character)),
+select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+  union (
+    insert Pound {
+      owner := assert_single((select Person filter .name = character)),
       major_amount := <int64>round(random() * 500),
       minor_amount := <int64>round(random() * 100),
       sub_minor_amount := <int64>round(random() * 500)
@@ -184,16 +184,16 @@ type Dollar {
 顺便说一下，由于 `/ 100` 部分，`total_money` 的类型将变为 `float64`。我们可使用下面的语句进行快速的验证：
 
 ```edgeql
-SELECT (100 + (55 / 100)) IS float64;
+select (100 + (55 / 100)) is float64;
 ```
 
 结果是：`{true}`。
 
-当我们进行插入并使用 `SELECT` 检查 `total_money` 属性时，我们可以看到相同的效果：
+当我们进行插入并使用 `select` 检查 `total_money` 属性时，我们可以看到相同的效果：
 
 ```edgeql
-SELECT(
-  INSERT Dollar {
+select (
+  insert Dollar {
     dollars := 100,
     cents := 55
   }
@@ -215,21 +215,21 @@ SELECT(
 首先，原有架构里有两条对 `City` 的插入：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'London',
 };
 ```
 
-现在，我们将其改为使用 `FOR` 循环的一次性插入：
+现在，我们将其改为使用 `for` 循环的一次性插入：
 
 ```edgeql
-FOR city_name IN {'Munich', 'London'}
-UNION (
-  INSERT City {
+for city_name in {'Munich', 'London'}
+union (
+  insert City {
     name := city_name
   }
 );
@@ -238,9 +238,9 @@ UNION (
 然后，我们将对插入的四个 `Country` 对象（匈牙利、罗马尼亚、法国、斯洛伐克）执行相同的操作。如下所示：
 
 ```edgeql
-FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia'}
-UNION (
-  INSERT Country {
+for country_name in {'Hungary', 'Romania', 'France', 'Slovakia'}
+union (
+  insert Country {
     name := country_name
   }
 );
@@ -249,13 +249,13 @@ UNION (
 其他 `City` 的插入有点不同：一些有 `modern_name`，一些有 `population`。在真正的游戏中，我们会以下面这种形式（使用元组）一次性将它们全部插入：
 
 ```edgeql
-FOR city IN {
+for city in {
     ('City 1\'s name', 'City 1\'s modern name', 800),
     ('City 2\'s name', 'City 2\'s modern name', 900),
     ('City 3\'s name', 'City 3\'s modern name', 455),
   }
-UNION (
-  INSERT City {
+union (
+  insert City {
     name := city.0,
     modern_name := city.1,
     population := city.2
@@ -268,36 +268,36 @@ UNION (
 我们还可以进一步整合下面的语句：
 
 ```edgeql
-FOR n IN {1, 2, 3, 4, 5}
-UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+union (
+  insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
   }
 );
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := Rank.Captain
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The First Mate',
   rank := Rank.FirstMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Second Mate',
   rank := Rank.SecondMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := Rank.Cook
 };
 
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
@@ -307,30 +307,30 @@ INSERT Ship {
 都放入 `Ship` 的插入当中：
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := {
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Captain',
       rank := Rank.Captain
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The First Mate',
       rank := Rank.FirstMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Second Mate',
       rank := Rank.SecondMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Cook',
       rank := Rank.Cook
     })
   },
   crew := (
-    FOR n IN {1, 2, 3, 4, 5}
-    UNION (
-      INSERT Crewman {
+    for n in {1, 2, 3, 4, 5}
+    union (
+      insert Crewman {
         number := n,
         first_appearance := cal::to_local_date(1887, 7, 6),
         last_appearance := cal::to_local_date(1887, 7, 16),
