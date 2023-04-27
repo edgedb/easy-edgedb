@@ -8,7 +8,7 @@ tags: Expression On, Error Messages
 
 ## More abstract types
 
-This chapter they learned something about vampires: they need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
+Our heroes learned something about vampires in this chapter: vampires need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
 
 - Each place in the world either has coffins or doesn't have them,
 - Has coffins = vampires can enter and terrorize the people,
@@ -26,13 +26,13 @@ abstract type HasCoffins {
 
 Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
-- Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
-- Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
+- Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize.
+- Feel a sense of freedom because the night has just begun, and start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
 - Around 1 or 2 am, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
 So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
-With a more complex game we could imagine that vampire terrorism is worse in the winter (activity radius = about 150 km), but we won't get into those details.
+If we were building a more complex game, vampire terrorism on humans would be worse in the winter, when the activity radius might increase to about 150km due to longer nights... but we won't get that detailed here.
 
 With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City` and `OtherPlace`:
 
