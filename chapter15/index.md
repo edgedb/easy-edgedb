@@ -382,7 +382,7 @@ Beautiful! All the information is right there.
 
    Try it first with `expression on`.
 
-4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
+4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
 
 5. How would you make it without touching the schema?
 
