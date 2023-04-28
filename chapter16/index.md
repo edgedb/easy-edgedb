@@ -276,7 +276,7 @@ type City extending Place {
 
 ## Time to practice
 
-1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
+1. How would you write a query to show all the `Person` names split into an array of two strings if they have two names and ignored if they don't have exactly two names?
 
 2. How would you display all the `Person` names and where the string 'ma' is in their name?
 
