@@ -10,7 +10,7 @@ tags: Indexing, String Functions
 
 ## `index on` for quicker lookups
 
-We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original book Dracula is made up of letters, diaries, newspaper reports and similar writings that begin with the date and sometimes the time. They all start out in this sort of way:
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original text of Dracula is organized into letters, diary entries, newspaper reports, etc. that begin with the date and sometimes the time. They tend to start out like this:
 
 ```
 Dr. Seward’s Diary.
@@ -24,7 +24,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (excerpt = part of a book).
+This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
 
 ```sdl
 type BookExcerpt {
@@ -39,12 +39,15 @@ The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and m
 
 We could do this for certain other types too - it might be good for types like `Place` and `Person`.
 
-Note: `index` is good in limited quantities, but you don't want to index everything. Here is why:
+```{eval-rst}
+.. note::
+`index` is good in limited quantities, but you don't want to index everything. Here is why:
 
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
 
-This is probably not surprising, because you can see that `index` is a choice that the user needs to make. If using `index` was the best idea in every case, then EdgeDB would just do it automatically.
+If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so.
+```
 
 Finally, here are two times when you don't need to create an `index`:
 
@@ -191,7 +194,7 @@ select MinorVampire {
 };
 ```
 
-Now the `n`s are all gone:
+Now, the names have been split into arrays at each instance of `n`:
 
 ```
 {
@@ -202,7 +205,7 @@ Now the `n`s are all gone:
 }
 ```
 
-You can also split by `\n` to split by new line. You can't see it but from the point of view of the computer every new line has a `\n` in it. So this:
+You can also split by `\n` to split by new line. You can’t see it as a human but from the point of view of the computer every new line has a `\n` in it. Take this for example:
 
 ```edgeql
 select str_split('Oh, hear me!
@@ -212,7 +215,7 @@ let me go!
 let me go!', '\n');
 ```
 
-will split it by line and give the following array:
+The output is an array of the text split by line:
 
 ```
 {['Oh, hear me!', 'hear me!', 'Let me go!', 'let me go!', 'let me go!']}
@@ -232,9 +235,14 @@ The function signature is `std::re_match_all(pattern: str, string: str) -> set o
 - maybe have an `-` in between,
 - and end in `night`,
 
-so it gives: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`.
+Here is the output: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`
 
 And to match anything, you can use the wildcard character: `.`
+
+```edgeql-repl
+edgedb> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
+{['Noo,'], ['door']}
+```
 
 ## Two more notes on `index on`
 
