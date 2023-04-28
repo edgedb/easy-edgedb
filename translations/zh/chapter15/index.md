@@ -302,7 +302,7 @@ type MinorVampire extending Person {
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[is Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
 

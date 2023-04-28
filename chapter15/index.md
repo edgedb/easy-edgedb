@@ -269,9 +269,7 @@ type Lord extending Person {
 
 ## Links in two directions
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want.
-
-(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a backlink, but this is how to do it.)
+Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
@@ -281,7 +279,16 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the master link again, one way to start would be with a property called `master_name` that is just a string. Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
+To add the master link again, one way to start would be with a property called `master_name` that is just a string:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  required single property master_name -> str;
+};
+```
+
+Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
 
 ```sdl
 type MinorVampire extending Person {
@@ -293,21 +300,23 @@ type MinorVampire extending Person {
 };
 ```
 
-Note: it's a single link, so we needed to add `assert_single()`. (It won't work otherwise.) However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a reverse link.
+Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink.
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[is Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
+
+Note that we have written `single link`, because backlinks are assumed to be `multi` by default. This makes sense, because we have less control over what objects link back to any certain object - there could be quite a few of them. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
 
 And if we still want to have a shortcut for `master_name`, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[is Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
   property master_name := .master.name;
 };
 ```

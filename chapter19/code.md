@@ -56,7 +56,9 @@ start migration to {
 
     type MinorVampire extending Person {
       link former_self -> Person;
-    }
+      single link master := assert_single(.<slaves[is Vampire]);
+      property master_name := .master.name;
+    };
     
     abstract type Place extending HasNameAndCoffins {
       property modern_name -> str;
