@@ -78,7 +78,7 @@ function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
 function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> optional str`
+- Create an abstract type (like `type AnyVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str`
 
 Let's learn a bit more about the `optional` keyword. Without it, you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
 

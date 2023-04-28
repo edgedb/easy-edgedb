@@ -76,7 +76,7 @@ function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
 function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- 或是创建一个抽象类型，如 `abstract type IsVampire`，再让 `Vampire` 和 `MinorVampire` 都扩展自 `IsVampire`。最后给 `can_enter` 增加新的函数签名：`function can_enter(vampire: IsVampire, place: HasCoffins) -> optional str`。
+- 或是创建一个抽象类型，如 `abstract type AnyVampire`，再让 `Vampire` 和 `MinorVampire` 都扩展自 `AnyVampire`。最后给 `can_enter` 增加新的函数签名：`function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str`。
 
 第一种方法可能是更简单的选择，因为它不需要我们进行任何显式迁移（explicit migration）。
 
