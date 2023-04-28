@@ -94,7 +94,7 @@ start migration to {
       required multi link people -> Person;
       property exact_location -> tuple<float64, float64>;
       property east -> bool;
-      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
+      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
     }
   
     function fight(one: Person, two: Person) -> str

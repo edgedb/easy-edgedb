@@ -19,7 +19,7 @@ type Event {
   required multi link people -> Person;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -31,7 +31,7 @@ type Event {
 
 对我们来说，幸运的是书中的事件都发生在地球的北部。所以 `N` 总是会在那里。但有时他们在格林威治东部，有时在西部。为了说明是东方还是西方，我们可以使用一个简单的 `bool`。然后在 `url` 属性中，我们将所有相关属性放在一起以创建链接，如果 `east` 为 `true`，则以 `'E'` 结束，否则以 `'W'` 结束。
 
-（当然，如果我们接收的经度是简单的正负数（+ 表示东，- 表示西），那么 `east` 也可以是一个计算（computed）属性：`property Eastern := true if exact_location.0 > 0 else false`。但是对于我们的架构，我们会假设我们可以从某个地方以类似 `[50.6, 70.1, true]` 的这种格式获取到位置信息，然后直接赋予 `exact_location` 和 `east`）
+（当然，如果我们接收的经度是简单的正负数（+ 表示东，- 表示西），那么 `east` 也可以是一个计算（computed）属性：`property east := true if exact_location.0 > 0 else false`。但是对于我们的架构，我们会假设我们可以从某个地方以类似 `[50.6, 70.1, true]` 的这种格式获取到位置信息，然后直接赋予 `exact_location` 和 `east`）
 
 现在，让我们来插入本章中的一个事件。它发生在 9 月 11 日晚上，当时范海辛医生（Dr. Van Helsing）正试图帮助露西（Lucy）。你可以看到 `description` 属性只是我们编写的一个字符串，以便于之后进行搜索。它可长可短，这取决于你，我们甚至可以把书中的某些部分粘贴进去。
 
