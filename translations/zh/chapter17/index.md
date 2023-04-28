@@ -129,19 +129,18 @@ abstract type Place extending HasNameAndCoffins {
 最后，我们来更改我们的 `can_enter()` 函数。之前它需要一个 `HasCoffins` 类型作为其中一个输入参数：
 
 ```sdl
-function can_enter(person_name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := assert_single(
-        (select Person filter .name = person_name)
-    ),
-    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
-  );
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
 ```
 
 但现在 `HasNameAndCoffins` 包含了 `name`，所以我们可以通过输入地点的字符串名称来替代之前的参数，将函数更改为：
 
 ```sdl
-function can_enter(person_name: str, place: str) -> str
+function can_enter(person_name: str, place: str) -> optional str
   using (
     with
       vampire := assert_single(

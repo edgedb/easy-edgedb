@@ -216,7 +216,7 @@ start migration to {
         select city in person.places_visited.name
       );
 
-    function can_enter(person_name: str, place: str) -> str
+    function can_enter(person_name: str, place: str) -> optional str
       using (
       with
         vampire := assert_single((select Person filter .name = person_name)),

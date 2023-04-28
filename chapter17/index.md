@@ -129,19 +129,18 @@ abstract type Place extending HasNameAndCoffins {
 Finally, we can change our `can_enter()` function. This one needed a `HasCoffins` type before:
 
 ```sdl
-function can_enter(person_name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := assert_single(
-        (select Person filter .name = person_name)
-    ),
-    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
-  );
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
 ```
 
 But now that `HasNameAndCoffins` holds `name`, the user can now just enter a string. We'll change it to this:
 
 ```sdl
-function can_enter(person_name: str, place: str) -> str
+function can_enter(person_name: str, place: str) -> optional str
   using (
     with
       vampire := assert_single(

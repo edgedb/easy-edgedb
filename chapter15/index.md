@@ -59,29 +59,28 @@ type Ship extending HasCoffins {
 If we want, we can now make a quick function to test whether a vampire can enter a place:
 
 ```sdl
-function can_enter(person_name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := assert_single(
-        (select Person filter .name = person_name)
-    )
-    select vampire.name ++ ' can enter.' if place.coffins > 0 else vampire.name ++ ' cannot enter.'
-  );
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
 ```
 
-You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It uses `assert_single()` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
+
+If we can't trust the user of the function to always enter a `Vampire` or `MinorVampire` object, there are some options:
 
 - Overload the function to have two signatures, one for each type of Vampire:
 
 ```sdl
-function can_enter(vampire: Vampire, place: HasCoffins) -> str
-function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
+function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
+function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> str`
+- Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> optional str`
 
-Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
-
-Note that you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
+Let's learn a bit more about the `optional` keyword. Without it, you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
 
 ```sdl
 function try(place: City) -> str
@@ -92,7 +91,7 @@ function try(place: City) -> str
 
 If we call it with: `select try((select City filter .name = 'London'));`, the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
 
-However, note that the input is not optional. That means that if you run `select try((select City filter .name = 'Beijing'));`, the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
+So far so good, but the input is not optional so what happens if we type `select try((select City filter .name = 'Beijing'));` instead? Now the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
 
 ```sdl
 function try(place: optional City) -> str
