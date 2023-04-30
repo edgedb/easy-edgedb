@@ -1,68 +1,63 @@
 ```
 # Schema:
-start migration to {
-  module default {
-    abstract type Person {
-      required property name -> str {
-        delegated constraint exclusive;
-      }
-      multi link places_visited -> Place;
-      link lover -> Person;
-      property strength -> int16;
+
+module default {
+  abstract type Person {
+    required property name -> str {
+      delegated constraint exclusive;
     }
-
-    type PC extending Person {
-      required property transport -> Transport;
-    }
-
-    scalar type HumanAge extending int16 {
-      constraint max_value(120);
-    }
-
-    type NPC extending Person {
-      property age -> HumanAge;
-    }
-
-    type Vampire extending Person {
-      property age -> int16;
-      multi link slaves -> MinorVampire;
-    }
-
-    type MinorVampire extending Person {
-    }
-    
-    abstract type Place {
-      required property name -> str {
-        constraint exclusive;
-      }
-      property modern_name -> str;
-      property important_places -> array<str>;
-    }
-
-    type City extending Place;
-
-    type Country extending Place;
-
-    type OtherPlace extending Place;
-
-    type Castle extending Place {
-      property doors -> array<int16>;
-    }
-
-    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
-
-    type Time {
-      required property clock -> str;
-      property clock_time := <cal::local_time>.clock;
-      property hour := .clock[0:2];
-      property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-    }
+    multi link places_visited -> Place;
+    link lover -> Person;
+    property strength -> int16;
   }
-};
 
-populate migration;
-commit migration;
+  type PC extending Person {
+    required property transport -> Transport;
+  }
 
+  scalar type HumanAge extending int16 {
+    constraint max_value(120);
+  }
+
+  type NPC extending Person {
+    property age -> HumanAge;
+  }
+
+  type Vampire extending Person {
+    property age -> int16;
+    multi link slaves -> MinorVampire;
+  }
+
+  type MinorVampire extending Person {
+  }
+  
+  abstract type Place {
+    required property name -> str {
+      constraint exclusive;
+    }
+    property modern_name -> str;
+    property important_places -> array<str>;
+  }
+
+  type City extending Place;
+
+  type Country extending Place;
+
+  type OtherPlace extending Place;
+
+  type Castle extending Place {
+    property doors -> array<int16>;
+  }
+
+  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+
+  type Time {
+    required property clock -> str;
+    property clock_time := <cal::local_time>.clock;
+    property hour := .clock[0:2];
+    property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  }
+}
 
 # Data:
 

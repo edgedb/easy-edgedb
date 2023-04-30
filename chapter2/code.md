@@ -1,31 +1,27 @@
 ```
 # Schema:
-start migration to {
-  module default {
-    abstract type Person {
-      required property name -> str;
-      multi link places_visited -> City;
-    }
 
-    type PC extending Person {
-      required property transport -> Transport;
-    }
-
-    type NPC extending Person {
-    }
-    
-    type City {
-      required property name -> str;
-      property modern_name -> str;
-      property important_places -> array<str>;
-    }
-
-    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+module default {
+  abstract type Person {
+    required property name -> str;
+    multi link places_visited -> City;
   }
-};
 
-populate migration;
-commit migration;
+  type PC extending Person {
+    required property transport -> Transport;
+  }
+
+  type NPC extending Person {
+  }
+  
+  type City {
+    required property name -> str;
+    property modern_name -> str;
+    property important_places -> array<str>;
+  }
+
+  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+}
 
 
 # Data:

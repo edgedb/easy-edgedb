@@ -1,90 +1,85 @@
 ```
 # Schema:
-start migration to {
-  module default {
-    abstract type Person {
-      property name -> str {
-        delegated constraint exclusive;
-      }
-      multi link places_visited -> Place;
-      multi link lovers -> Person;
-      property strength -> int16;
-      property first_appearance -> cal::local_date;
-      property last_appearance -> cal::local_date;
-      property age -> int16;
+
+module default {
+  abstract type Person {
+    property name -> str {
+      delegated constraint exclusive;
     }
+    multi link places_visited -> Place;
+    multi link lovers -> Person;
+    property strength -> int16;
+    property first_appearance -> cal::local_date;
+    property last_appearance -> cal::local_date;
+    property age -> int16;
+  }
 
-    type PC extending Person {
-      required property transport -> Transport;
-    }
+  type PC extending Person {
+    required property transport -> Transport;
+  }
 
-    type NPC extending Person {
-      overloaded property age {
-        constraint max_value(120)
-    }
-      overloaded multi link places_visited -> Place {
-        default := (select City filter .name = 'London');
-      }
-    }
-
-    type Vampire extending Person {
-      multi link slaves -> MinorVampire;
-    }
-
-    type MinorVampire extending Person {
-    }
-    
-    abstract type Place {
-      required property name -> str {
-        delegated constraint exclusive;
-      }
-      property modern_name -> str;
-      property important_places -> array<str>;
-    }
-
-    type City extending Place;
-
-    type Country extending Place;
-
-    type OtherPlace extending Place;
-
-    type Castle extending Place {
-      property doors -> array<int16>;
-    }
-
-    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
-
-    type Time {
-      required property clock -> str;
-      property clock_time := <cal::local_time>.clock;
-      property hour := .clock[0:2];
-      property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-    }
-
-    abstract type HasNumber {
-      required property number -> int16;
-    }
-    
-    type Crewman extending HasNumber, Person {
-    }
-
-   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
-
-    type Sailor extending Person {
-      property rank -> Rank;
-    }
-
-    type Ship {
-      required property name -> str;
-      multi link sailors -> Sailor;
-      multi link crew -> Crewman;
+  type NPC extending Person {
+    overloaded property age {
+      constraint max_value(120)
+  }
+    overloaded multi link places_visited -> Place {
+      default := (select City filter .name = 'London');
     }
   }
-};
 
-populate migration;
-commit migration;
+  type Vampire extending Person {
+    multi link slaves -> MinorVampire;
+  }
 
+  type MinorVampire extending Person {
+  }
+  
+  abstract type Place {
+    required property name -> str {
+      delegated constraint exclusive;
+    }
+    property modern_name -> str;
+    property important_places -> array<str>;
+  }
+
+  type City extending Place;
+
+  type Country extending Place;
+
+  type OtherPlace extending Place;
+
+  type Castle extending Place {
+    property doors -> array<int16>;
+  }
+
+  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+
+  type Time {
+    required property clock -> str;
+    property clock_time := <cal::local_time>.clock;
+    property hour := .clock[0:2];
+    property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  }
+
+  abstract type HasNumber {
+    required property number -> int16;
+  }
+  
+  type Crewman extending HasNumber, Person {
+  }
+
+  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
+  type Sailor extending Person {
+    property rank -> Rank;
+  }
+
+  type Ship {
+    required property name -> str;
+    multi link sailors -> Sailor;
+    multi link crew -> Crewman;
+  }
+}
 
 # Data:
 
