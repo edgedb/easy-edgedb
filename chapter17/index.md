@@ -157,7 +157,7 @@ And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count 
 
 Finally, we can make our generic update for changing the number of coffins. It's easy:
 
-```sdl
+```edgeql
 update HasNameAndCoffins filter .name = <str>$place_name
 set {
   coffins := .coffins + <int16>$number
@@ -188,7 +188,23 @@ We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got it
 
 ## Aliases: creating subtypes when you need them
 
-We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts, such as `Person` and `HasNameAndCoffins`. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes. Aliases also make subtypes, except they use `:=` instead of `extending` and draw from full types.
+We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts, such as `Person` and `HasNameAndCoffins`. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes.
+
+Aliases will first look similar to extending an abstract type. Let's first compare the syntax between `extending` and using an alias so that you will be able to spot the difference:
+
+```sdl
+type Vampire extending Person {
+    # Properties and links
+}
+
+alias AliasPerson := Person {
+    # Computables, etc.
+};
+```
+
+The first difference is that an alias uses `:=` instead of `extending`. In other words, an alias is a computed expression. Also note that `alias Vampire` ends in a semicolon - again, because it is an expression. And since aliases are expressions and not standalone types, they can't be inserted into a database. Instead, they point to data - usually a type that exists in the database - and can give it an extra shape on top of the original. You can query an alias, but you can't insert one.
+
+One other difference is that `extending` can only be used on an `abstract type`, while an alias can be used on just about anything.
 
 Let's make an alias for our schema too. Looking at the Demeter again, the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
 
@@ -197,7 +213,7 @@ type Crewman extending HasNumber, Person {
 }
 ```
 
-Imagine that for some reason we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game needs to reflect that. Our Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. Everything else about the type should be the same, which allows us to use an alias rather than extending. Let's also add a `current_location` computed link that makes a link to the `Place` object with the name Bulgaria. Here's how to do that:
+Imagine that for some reason we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game needs to reflect that. A Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. Everything else about the type should be the same, which allows us to use an alias rather than extending. Let's also add a `current_location` computed link that makes a link to the `Place` object with the name Bulgaria. Here's how to do that:
 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
