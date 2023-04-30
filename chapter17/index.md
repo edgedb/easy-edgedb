@@ -197,7 +197,7 @@ type Crewman extending HasNumber, Person {
 }
 ```
 
-Imagine that for some reason we would like a `CrewmanInBulgaria` alias as well, because Bulgarians call each other 'Gospodin' instead of Mr. and our game needs to reflect that. Our Crewman types will get called "Gospodin (name)" whenever they are there. Let's also add a `current_location` computed link that makes a link to `Place` types with the name Bulgaria. Here's how to do that:
+Imagine that for some reason we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game needs to reflect that. Our Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. Everything else about the type should be the same, which allows us to use an alias rather than extending. Let's also add a `current_location` computed link that makes a link to the `Place` object with the name Bulgaria. Here's how to do that:
 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
