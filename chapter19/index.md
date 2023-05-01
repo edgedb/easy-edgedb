@@ -267,19 +267,17 @@ set {
 Then we'll use the reverse query again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```edgeql
+with duration := <duration>'2 hours, 5 minutes, 10 seconds',
 select Ship.<ship[is Visit] {
-  place: {
-    name
-  },
-  ship: {
-    name
-  },
+  place: {name},
+  ship: {name},
   date,
   clock,
+  when_arthur_got_the_telegram := <cal::local_time>.clock + duration,
   hour,
-  awake,
-  when_arthur_got_the_telegram := (<cal::local_time>.clock) + <duration>'2 hours, 5 minutes, 10 seconds'
+  awake
 } filter .place.name = 'Galatz';
+  
 ```
 
 And now we get all the output that the `Time` type gave us before, plus our extra info about when Arthur got the telegram:
