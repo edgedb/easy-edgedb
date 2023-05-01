@@ -4,7 +4,7 @@ tags: Backlinks, Schema Cleanup
 
 # Chapter 19 - Dracula escapes
 
-> Van Helsing hypnotises Mina, who is now half vampire and can feel Dracula. He asks her questions:
+> Van Helsing hypnotizes Mina, who is now half vampire and can feel Dracula. He asks her questions:
 >
 > “Where are you now?”
 >
@@ -22,7 +22,7 @@ tags: Backlinks, Schema Cleanup
 >
 > “Oh, yes!”
 >
-> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sharpens his knife, and looks like a different person now. All he wants to do is kill Dracula and save his wife. But where is the ship? Every day they wait...and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
+> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
