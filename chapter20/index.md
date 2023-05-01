@@ -190,7 +190,7 @@ type Visit {
 }
 ```
 
-The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_links_overloading>` keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
+The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_links_overloading>` keyword, which lets us use properties, links, functions etc. in different ways than in the type's parent type. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
 
 ```sdl
 type NPC extending Person {
@@ -332,13 +332,13 @@ type Event {
 }
 ```
 
-This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property is for users of the database with descriptions like `'The Demeter arrives at Whitby, crashing on the beach'` that are used to find events when we need to.
+This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property makes it easy for usersof the database to find events. It might contain something like `'The Demeter arrives at Whitby, crashing on the beach'`.
 
 The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
 
 ## Navigating EdgeDB documentation
 
-Now that you have reached the end of the book, you will certainly start looking at the EdgeDB documentation. We'll close the book out with some tips to do so, so that it feels familiar and easy to look through.
+Now that you have reached the end of the book, you'll be referencing our documentation to refresh what you know and to learn more. We'll close the book out with some tips to do so, so that it feels familiar and easy to look through.
 
 ### Syntax
 
@@ -353,7 +353,7 @@ module ModuleName "{"
 "}"
 ```
 
-Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). Easy enough.
+Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). The `[]` square brackets in documentation are used to show optional input. In other words, the minimum needed to make a module with a name and `{}` and nothing else inside. Easy enough.
 
 How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types>`:
 
