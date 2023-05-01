@@ -334,7 +334,7 @@ set {
 };
 ```
 
-First let's just put the `MinorVampire` type into the function and see what we get. Try to imagine what the output will be.
+First let's just put the `MinorVampire` type into the function and see what we get. What do you think the output will be?
 
 ```edgeql
 select fight_2(MinorVampire, MinorVampire);
