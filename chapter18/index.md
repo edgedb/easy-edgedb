@@ -90,7 +90,7 @@ select Currency {
 };
 ```
 
-He has this many:
+Based on the results of the query, he has about 2503 pounds:
 
 ```
 {default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}
@@ -204,13 +204,13 @@ select (
 
 Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
 
-Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
+Dollars won't be used in this game, but if they were, we'd create it with `type Dollar extending Currency`.
 
-One final note: our `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
+One final note: the dollar's `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
 
 ## Cleaning up the schema
 
-We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
+We've come a long way since first setting up our database and doing our early object inserts. Let's look back and see how things might change if we were starting again, knowing what we now know.
 
 First, we have two inserts here where we could only have one.
 
