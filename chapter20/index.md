@@ -404,11 +404,11 @@ But for types, DDL requires a lot more typing, using keywords like `create`, `se
 
 ## EdgeDB lexical structure
 
-You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexical>` for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. Things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
+You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexical>` for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. This includes things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
 
 ## Getting help
 
-Help is always just a message away. The best way to get help is to start a discussion on [our discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on this very page.
+Help is always just a message away. The most active place to discuss EdgeDB and get help is [our Discord server](https://discord.gg/edgedb), while the [discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub is another good place to start a conversation. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on [its dedicated GitHub repo](https://github.com/edgedb/easy-edgedb/).
 
 ## And now it's time to say goodbye
 
