@@ -258,7 +258,7 @@ type Visit {
 Then update the visit to Galatz to give it a `clock`:
 
 ```edgeql
-update visit filter .place.name = 'Galatz'
+update Visit filter .place.name = 'Galatz'
 set {
   clock := '13:00:00'
 };

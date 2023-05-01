@@ -523,7 +523,7 @@ union (
    date := <cal::local_date>visit.2
  });
 
-update visit filter .place.name = 'Galatz'
+update Visit filter .place.name = 'Galatz'
   set {
     clock := '13:00:00'
 };
