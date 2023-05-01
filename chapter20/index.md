@@ -353,7 +353,7 @@ module ModuleName "{"
 "}"
 ```
 
-Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). The `[]` square brackets in documentation are used to show optional input. In other words, the minimum needed to make a module with a name and `{}` and nothing else inside. Easy enough.
+Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). The `[]` square brackets in documentation are used to show optional input. In other words, a module can contain schema declarations or not. Easy enough.
 
 How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types>`:
 
@@ -369,7 +369,7 @@ How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types
   "}" ]
 ```
 
-This should be familiar to you: you need `type TypeName` to start. You can add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
+This should be familiar to you: you need `type TypeName` to start. You can optionally add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
 
 Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and include three types: concrete, computed, and abstract. We're most familiar with concrete so let's take a look at that:
 
@@ -385,6 +385,8 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
       ...
     "}" ]
 ```
+
+The `{ | }` in documentation is used to show the possible options available to you. So `[{required | optional}]` means that you don't need to write either required or optional (because both are inside `[]` square brackets), but if you choose to use it, you must choose either `required` or `optional`, not both.
 
 You can think of the syntax as a helpful guide to keep your declarations in the right order.
 
