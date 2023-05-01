@@ -400,7 +400,7 @@ DDL: `create function says_hi() -> str using('hi')`
 
 And even the capitalization doesn't matter.
 
-But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Using {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools makes it possible to work with the schema using only SDL.
+But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Throughout this book, we have used the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools that make it possible to work with the schema using only SDL.
 
 ## EdgeDB lexical structure
 
