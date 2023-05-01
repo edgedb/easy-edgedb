@@ -412,7 +412,7 @@ Help is always just a message away. The most active place to discuss EdgeDB and 
 
 ## And now it's time to say goodbye
 
-We hope you enjoyed learning EdgeDB through a story, and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on the forums! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
+We hope you enjoyed learning EdgeDB through a story and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on our Discord! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
 
 > The Road goes ever on and on
 > Down from the door where it began.
