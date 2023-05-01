@@ -46,7 +46,7 @@ abstract type Currency {
 
 You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. Two examples from modern times are the Japanese yen and Korean won that are just a single money unit and a number.
 
-We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. And complicated things like credit and negative money we can probably just ignore for now.
+We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. Money can be negative in real life, but we don't need to think about complicated subjects like credit and negative money in our game.
 
 Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds. Here's the `Pound` type:
 
