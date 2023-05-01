@@ -6,7 +6,7 @@ tags: Ddl, Sdl, Edgedb Community
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
 
-> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and the need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
+> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) and search for "the look of hate in them turned to triumph".
 
@@ -27,10 +27,10 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
 
-The first part to a schema is always the command to start the migration:
+First let's start with the schema in general.
 
-- We've used `start migration to {};` commands, but the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools provide better control in real projects.
-- `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `describe type as sdl` (or `as text`).
+- To migrate a schema, just use the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools. A simple `edgedb migration create` and `edgedb migrate` is all you need to migrate your schema to a new one.
+- `module default {}`: We only used one module (namespace) for our schema, but you can make more modules if you like. You can see the module when you use `describe type as sdl` (or `as text`).
 
 Here's an example with `Person`, which starts like this and shows us the module it's located in:
 
