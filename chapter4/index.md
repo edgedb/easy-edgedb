@@ -219,24 +219,24 @@ type Time {
   required property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
     else 'awake';
 }
 ```
 
-So `awake` is calculated like this:
+So `sleep_state` is calculated like this:
 
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it gives us a string saying either 'asleep' or 'awake' depending on that.
 
 Now if we `select` this with all the properties, it will give us this:
 
-`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', awake: 'asleep'}}`
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', sleep_state: 'asleep'}}`
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
 
 ```
-property awake := 'just waking up' if <int16>.hour = 19 else
+property sleep_state := 'just waking up' if <int16>.hour = 19 else
                   'going to bed' if <int16>.hour = 6 else
                   'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else
                   'awake';
@@ -265,12 +265,12 @@ select ( # Start a selection
   { # Now just choose the properties we want
     clock,
     hour,
-    awake,
+    sleep_state,
     double_hour := <int16>.hour * 2
   };
 ```
 
-Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hour: '22', awake: 'awake', double_hour: 44}}` We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered.
+Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hour: '22', sleep_state: 'awake', double_hour: 44}}` We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered.
 
 [Here is all our code so far up to Chapter 4.](code.md)
 

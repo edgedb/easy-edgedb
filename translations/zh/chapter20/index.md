@@ -176,7 +176,7 @@ type PC extending Person {
 
 - 将其转换为 {eql:type}`docs:cal::local_time` 并赋予属性 `clock_time`，
 - 使用切片获取它的前两个字符来并赋予属性 `hour`。因为它是一个字符串，所以即使像 `1` 这样的单个数字也需要用两位数书写，即“01”，以适应“小时数”的获取方式，
-- 由另一个名为 `awake` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
+- 由另一个名为 `sleep_state` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
 
 ```sdl
 type Visit {
@@ -186,7 +186,7 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 

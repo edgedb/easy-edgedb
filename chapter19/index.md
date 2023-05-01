@@ -192,11 +192,11 @@ type Time {
   required property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
-Now that we know that the time was one o'clock, let's put that into the query too - including the `awake` property. Now it looks like this:
+Now that we know that the time was one o'clock, let's put that into the query too - including the `sleep_state` property. Now it looks like this:
 
 ```edgeql
 with time := (
@@ -233,7 +233,7 @@ Here's the output, including whether vampires are awake or asleep.
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
       hour: '13',
-      awake: 'asleep',
+      sleep_state: 'asleep',
     },
   },
 }
@@ -251,7 +251,7 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
@@ -275,7 +275,7 @@ select Ship.<ship[is Visit] {
   clock,
   when_arthur_got_the_telegram := <cal::local_time>.clock + duration,
   hour,
-  awake
+  sleep_state
 } filter .place.name = 'Galatz';
   
 ```
@@ -290,7 +290,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
     date: <cal::local_date>'1887-10-28',
     clock: '13:00:00',
     hour: '13',
-    awake: 'asleep',
+    sleep_state: 'asleep',
     when_arthur_got_the_telegram: <cal::local_time>'15:05:10',
   },
 }

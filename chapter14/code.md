@@ -71,7 +71,7 @@ module default {
     required property clock -> str;
     property clock_time := <cal::local_time>.clock;
     property hour := .clock[0:2];
-    property awake := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
   }
 
   abstract type HasNumber {
