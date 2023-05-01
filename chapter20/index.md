@@ -150,7 +150,7 @@ select Person {
 } filter exists .vampire_name;
 ```
 
-In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
+In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted, we could extend the game back before the events of the book and link the vampire women to an `NPC` type. That would become their `former_self`.
 
 Our two enums were used for the `PC` and `Sailor` types:
 
