@@ -109,9 +109,10 @@ module default {
   }
   
   alias CrewmanInBulgaria := Crewman {
-    name := 'Gospodin ' ++ .name,
-    current_location := (select Place filter .name = 'Bulgaria'),
-  };
+      name := 'Gospodin ' ++ .name,
+      strength := .strength + <int16>1,
+      original_name := .name,
+    };
 
   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 

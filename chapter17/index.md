@@ -202,79 +202,64 @@ alias AliasPerson := Person {
 };
 ```
 
-The first difference is that an alias uses `:=` instead of `extending`. In other words, an alias is a computed expression. Also note that `alias Vampire` ends in a semicolon - again, because it is an expression. And since aliases are expressions and not standalone types, they can't be inserted into a database. Instead, they point to data - usually a type that exists in the database - and can give it an extra shape on top of the original. You can query an alias, but you can't insert one.
+The first difference is that an alias uses `:=` instead of `extending`. In other words, an alias is a computed expression. Also note that `alias Vampire` ends in a semicolon - again, because it is an expression. And since aliases are expressions and not standalone types, they can't be inserted into a database. Instead, they point to data—usually a type that exists in the database—and can give it an extra shape on top of the original. You can query an alias, but you can't insert one.
 
 One other difference is that `extending` can only be used on an `abstract type`, while an alias can be used on just about anything.
 
-Let's make an alias for our schema too. Looking at the Demeter again, the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
+Let's make an alias for our schema too. Looking at the Demeter again, we see that the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
 
 ```sdl
 type Crewman extending HasNumber, Person {
 }
 ```
 
-Imagine that for some reason we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game needs to reflect that. A Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. Everything else about the type should be the same, which allows us to use an alias rather than extending. Let's also add a `current_location` computed link that makes a link to the `Place` object with the name Bulgaria. Here's how to do that:
+Imagine that we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game would like to reflect that. A Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. In addition, the fresh Bulgarian air gives sailors extra strength in our game so our `CrewmanInBulgaria` objects will also be a bit stronger. But an entirely separate type doesn't feel right here - we just want to have a slightly different shape to work with when making queries. Here's how to do that:
 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
   name := 'Gospodin ' ++ .name,
-  current_location := (select Place filter .name = 'Bulgaria'),
+  strength := .strength + <int16>1,
+  # Just in case we want to filter on the original name
+  original_name := .name,
 };
 ```
 
-You'll notice right away that `name` and `current_location` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. For the same reason, you can't do an `insert CrewmanInBulgaria`, because there is no such type. It gives this error:
+You'll notice right away that `name` and `strength` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. Let's now take a look at the error we get if we try to insert a `CrewmanInBulgaria`. Remember, it won't work because an alias is just an expression, not a type that can be inserted:
+
+```edgeql
+insert CrewmanInBulgaria {name := "New Crewman", number := 6};
+```
+
+Here is the error:
 
 ```
 error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 ```
 
-So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's add Bulgaria now,
+So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's now compare a `select` on the `Crewman` objects to a `select` with the `CrewmanInBulgaria` alias:
 
 ```edgeql
-insert Country {
-  name := 'Bulgaria'
-};
-```
-
-And then select this alias to see what we get:
-
-```edgeql
-select CrewmanInBulgaria {
-  name,
-  current_location: {
-    name
-  }
-};
-```
-
-And now we see the same `Crewman` types under their `CrewmanInBulgaria` alias: with _Gospodin_ added to their name and linked to the `Country` type we just inserted.
-
-```
+edgedb> select Crewman { name, strength };
 {
-  default::Crewman {
-    name: 'Gospodin Crewman 1',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
-  default::Crewman {
-    name: 'Gospodin Crewman 2',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
-  default::Crewman {
-    name: 'Gospodin Crewman 3',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
-  default::Crewman {
-    name: 'Gospodin Crewman 4',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
-  default::Crewman {
-    name: 'Gospodin Crewman 5',
-    current_location: default::Country {name: 'Bulgaria'},
-  },
+  default::Crewman {name: 'Crewman 1', strength: 1},
+  default::Crewman {name: 'Crewman 2', strength: 2},
+  default::Crewman {name: 'Crewman 3', strength: 1},
+  default::Crewman {name: 'Crewman 4', strength: 2},
+  default::Crewman {name: 'Crewman 5', strength: 5},
+}
+edgedb> select CrewmanInBulgaria { original_name, name, strength };
+{
+  default::Crewman {original_name: 'Crewman 1', name: 'Gospodin Crewman 1', strength: 2},
+  default::Crewman {original_name: 'Crewman 2', name: 'Gospodin Crewman 2', strength: 3},
+  default::Crewman {original_name: 'Crewman 3', name: 'Gospodin Crewman 3', strength: 2},
+  default::Crewman {original_name: 'Crewman 4', name: 'Gospodin Crewman 4', strength: 3},
+  default::Crewman {original_name: 'Crewman 5', name: 'Gospodin Crewman 5', strength: 6},
 }
 ```
 
-The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` mentions that they let you use "the full power of EdgeQL (expressions, aggregate functions, backwards link navigation) from GraphQL", so keep aliases in mind if you use GraphQL a lot.
+The expression works well, giving names that start with Gospodin and strength values a bit higher than outside of Bulgaria. But note that the expression still returns a `default::Crewman`, as the alias is just an expression on top of the original type.
+
+Aliases can be used in a number of other ways too, such as on scalar types. The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` has a number of other interesting examples of how you might want to use an alias in your project.
 
 ## Creating new names for types in a query (local expression aliases)
 
