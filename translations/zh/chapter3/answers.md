@@ -2,12 +2,12 @@
 
 #### 1. 此查询试图显示每个 `NPC` 的 `name`，并给每个 `NPC` 加上所有 `City`，但执行后出现了错误。请问它缺少了什么？
 
-它所需要的只是 `SELECT` 语句前后的括号——请记住，把它放在括号中来“捕获”输出，以便它可以被使用。
+它所需要的只是 `select` 语句前后的括号——请记住，把它放在括号中来“捕获”输出，以便它可以被使用。
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
-  cities := (SELECT City.name)
+  cities := (select City.name)
 };
 ```
 
@@ -34,7 +34,7 @@ type City extending Place {
 你可以通过在第二次访问时给它一个不同的名称来访问 `property name` 两次。让我们叫它 name2：
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   name2 := .name
 };
@@ -58,7 +58,7 @@ scalar type HumanAge extending int16 {
 但是当然，你可以通过强制转换来选择一个：
 
 ```edgeql
-SELECT <HumanAge>16;
+select <HumanAge>16;
 ```
 
 这将给出 `{16}`。
@@ -66,8 +66,8 @@ SELECT <HumanAge>16;
 通过尝试以下操作，你也可以看出，它仅仅是 `int16` 的另一种叫法。
 
 ```edgeql
-SELECT <HumanAge>16 IS int16;
-SELECT <HumanAge>16 IS HumanAge;
+select <HumanAge>16 is int16;
+select <HumanAge>16 is HumanAge;
 ```
 
 两句均会返回：`{true}`。

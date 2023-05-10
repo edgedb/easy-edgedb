@@ -5,9 +5,9 @@
 You can do it with concatenation using `++`:
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
-  greeting := "Pleased to meet you, I'm " ++ .name
+  greeting := "Pleased to meet you. I'm " ++ .name ++ '.'
 };
 ```
 
@@ -16,22 +16,22 @@ SELECT NPC {
 Here is one way:
 
 ```edgeql
-UPDATE Person FILTER .name = 'Mina Murray'
-SET {
-  places_visited += (SELECT Place FILTER .name = 'Romania')
+update Person filter .name = 'Mina Murray'
+set {
+  places_visited += (select Place filter .name = 'Romania')
 };
 ```
 
-You can of course go with `UPDATE NPC` and `SELECT Country` if you prefer.
+You can of course go with `update NPC` and `select Country` if you prefer.
 
-Also, here is the same thing using `WITH`:
+Also, here is the same thing using `with`:
 
 ```edgeql
-WITH
-  mina := (SELECT NPC FILTER .name = 'Mina Murray'),
-  romania := (SELECT Country FILTER .name = 'Romania'),
-UPDATE mina
-SET {
+with
+  mina := (select NPC filter .name = 'Mina Murray'),
+  romania := (select Country filter .name = 'Romania'),
+update mina
+set {
   places_visited += romania
 };
 ```
@@ -41,10 +41,10 @@ SET {
 It looks like this:
 
 ```edgeql
-WITH letters := {'W', 'J', 'C'}
-SELECT Person {
+with letters := {'W', 'J', 'C'}
+select Person {
   name
-} FILTER .name LIKE '%' ++ letters ++ '%';
+} filter .name like '%' ++ letters ++ '%';
 ```
 
 And should display these characters we've inserted so far:
@@ -59,50 +59,50 @@ And should display these characters we've inserted so far:
 }
 ```
 
-The key is that `LIKE` takes a string, so you can concatenate `%` on the left and right with `++`.
+The key is that `like` takes a string, so you can concatenate `%` on the left and right with `++`.
 
 #### 4. How would you display this same query as JSON?
 
-Getting JSON output is super easy by casting with `<json>`, but where does it go? You can't put it in front of `SELECT`, and `<json>Person` isn't an expression either, so this won't work:
+Getting JSON output is super easy by casting with `<json>`, but where does it go? You can't put it in front of `select`, and `<json>Person` isn't an expression either, so this won't work:
 
 ```edgeql
-WITH letters := {'W', 'J', 'C'}
-SELECT <json>Person {
+with letters := {'W', 'J', 'C'}
+select <json>Person {
   name
-} FILTER .name LIKE '%' ++ letters ++ '%';
+} filter .name like '%' ++ letters ++ '%';
 ```
 
-You need to wrap the SELECT in brackets, cast with `<json>` and then SELECT that:
+You need to wrap the `select` in brackets, cast with `<json>` and then select that:
 
 ```edgeql
-WITH letters := {'W', 'J', 'C'}
-SELECT <json>(
-  SELECT Person {
+with letters := {'W', 'J', 'C'}
+select <json>(
+  select Person {
     name
-  } FILTER .name LIKE '%' ++ letters ++ '%'
+  } filter .name like '%' ++ letters ++ '%'
 );
 ```
 
-Or you can use `WITH` to do this:
+Or you can use `with` to do this:
 
 ```edgeql
-WITH
+with
   letters := {'W', 'J', 'C'},
   P := (
-    SELECT Person FILTER .name LIKE '%' ++ letters ++ '%'
+    select Person filter .name like '%' ++ letters ++ '%'
   )
-SELECT <json>P { name };
+select <json>P { name };
 ```
 
-So you're selecting the casted-to-JSON version of the result of `SELECT Person`.
+So you're selecting the casted-to-JSON version of the result of `select Person`.
 
 #### 5. How would you add ' the Great' to every Person type?
 
-Easy, just update without `FILTER`:
+Easy, just update without `filter`:
 
 ```edgeql
-UPDATE Person
-SET {
+update Person
+set {
   name := .name ++ ' the Great'
 };
 ```
@@ -112,8 +112,8 @@ Now their names are 'Woman 1 the Great', 'Mina Murray the Great', and so on.
 **Bonus question**: to undo this, just set `name` to the same string minus the last 10 characters using `[0:-10]`:
 
 ```edgeql
-UPDATE Person
-SET {
+update Person
+set {
   name := .name[0:-10]
 };
 ```

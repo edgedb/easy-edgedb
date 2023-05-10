@@ -55,25 +55,27 @@ abstract type Person {
 Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert `Country` objects for Hungary and Romania:
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 ```
 
 (By the way, you might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi link`. That's true, though in this tutorial we never end up using it and it just stays in the schema as an array. If this were a schema for a real game, it would probably either end up turned to a `multi link` or removed if we decide we don't need it.)
 
-## Capturing a SELECT expression
+## Capturing a select expression
 
-With these countries added, we are now ready to make Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: London, Bistritz, Hungary, etc. We only know that Dracula has been in Romania, so we can do a quick `FILTER` when we select it. When doing this, we put the `SELECT` inside `()` brackets. The brackets (parentheses) are necessary to capture the result of the query using `SELECT`, that we then use to do something. In other words, the brackets delimit (set the boundaries for) the `SELECT` query so that its result can be used as a whole. EdgeDB will do the operation inside the brackets, and then that completed result is given to `places_visited`.
+With these countries added, we are now ready to insert Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: the `City` types London and Bistritz, the `Country` type Hungary, and any other types we decide to add later that will extend `Place`.
+
+We only know that Dracula has been in Romania, so his `places_visited` will be pretty easy: just select all the `Place` types and filter on `.name = 'Romania '`. When doing this, we put the `select` inside `()` brackets (parentheses). The parentheses are used to capture the result of the `select` query. In other words, the parentheses delimit (set the boundaries for) the `select` query which is then assigned to `places_visited`.
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
-  places_visited := (SELECT Place FILTER .name = 'Romania'),
-  # .places_visited is the result of this SELECT query.
+  places_visited := (select Place filter .name = 'Romania'),
+  # .places_visited is the result of this select query.
 };
 ```
 
@@ -81,10 +83,10 @@ The result is `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
 
 The `uuid` there is the reply from the server showing which object was just created and that we were successful.
 
-Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `SELECT` it:
+Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `select` it:
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   places_visited: {
     name
   }
@@ -124,7 +126,7 @@ type NPC extending Person {
 It's our own type with its own name, but underneath it's an `int16` that can't be greater than 120. So if we write this, it won't work:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
     name := 'The innkeeper',
     age := 130
 };
@@ -136,14 +138,14 @@ Now if we change `age` to 30, we get a message showing that it worked: `{Object 
 
 ## Deleting objects
 
-Deleting in EdgeDB is very easy: just use the `DELETE` keyword. It's similar to `SELECT` in that you write `DELETE` and then the type, which will by default delete them all. And in the same way as `SELECT`, if you `FILTER` then it will only delete the ones that match the filter.
+Deleting in EdgeDB is very easy: just use the `delete` keyword. It's similar to `select` in that you write `delete` and then the type, which will by default delete them all. And in the same way as `select`, if you `filter` then it will only delete the ones that match the filter.
 
-This similarity to `SELECT` might make you nervous, because if you type something like `SELECT City` then it will select all of them. `DELETE` is the same: `DELETE City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
+This similarity to `select` might make you nervous, because if you type something like `select City` then it will select all of them. `delete` is the same: `delete City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
 
 So let's give it a try. Remember our two `Country` objects for Hungary and Romania? Let's delete them:
 
 ```edgeql
-DELETE Country;
+delete Country;
 ```
 
 We got an error telling us that deleting a `Country` is not possible because it is still referenced by `places_visited` of a `Person`.
@@ -156,13 +158,13 @@ ERROR: ConstraintViolationError: deletion of default::Country (7f3c611c-ff43-11e
 That's Count Dracula who visited Romania getting in the way. Let's delete him first then:
 
 ```edgeql
-DELETE Vampire;
+delete Vampire;
 ```
 
 Just like an insert, it gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`. Now we can try deleting the `Country` objects:
 
 ```edgeql
-DELETE Country;
+delete Country;
 ```
 
 We got confirmation that two `Country` objects have been deleted:
@@ -176,26 +178,26 @@ We got confirmation that two `Country` objects have been deleted:
 Okay, insert them again. Now let's delete with a filter:
 
 ```edgeql
-DELETE Country FILTER .name ILIKE '%States%';
+delete Country filter .name ilike '%States%';
 ```
 
 Nothing matches, so the output is `{}` - we deleted nothing. Let's try again:
 
 ```edgeql
-DELETE Country FILTER .name ILIKE '%ania%';
+delete Country filter .name ilike '%ania%';
 ```
 
-We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `DELETE` inside brackets and `SELECT` it. Let's delete all the `Country` objects again but this time we'll select it:
+We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `delete` inside brackets and `select` it. Let's delete all the `Country` objects again but this time we'll select it:
 
 ```edgeql
-SELECT (DELETE Country) {
+select (delete Country) {
   name
 };
 ```
 
-The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `SELECT Country` we get a `{}`, which confirms that we did delete them all.
+The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `select Country` we get a `{}`, which confirms that we did delete them all.
 
-(Fun fact: `DELETE` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `DELETE (SELECT ...)`. You'll be learning something called `LIMIT` in the next chapter with `SELECT` and as you do so, keep in mind that you can apply the same to `DELETE` too.)
+(Fun fact: `delete` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `delete (select ...)`. You'll be learning something called `limit` in the next chapter with `select` and as you do so, keep in mind that you can apply the same to `delete` too.)
 
 Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
 
@@ -208,9 +210,9 @@ Finally, let's insert Hungary and Romania again to finish the chapter. We'll lea
 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 
    ```edgeql
-   SELECT NPC {
+   select NPC {
      name,
-     cities := SELECT City.name
+     cities := select City.name
    };
    ```
 
@@ -218,7 +220,7 @@ Finally, let's insert Hungary and Romania again to finish the chapter. We'll lea
 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
    ```edgeql
-   SELECT Person {
+   select Person {
      name,
      name
    };

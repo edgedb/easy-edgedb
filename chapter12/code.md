@@ -1,336 +1,331 @@
 ```
 # Schema:
-START MIGRATION TO {
-  module default {
-    abstract type Person {
-      property name -> str {
-        delegated constraint exclusive;
-      }
-      multi link places_visited -> Place;
-      multi link lover -> Person;
-      property strength -> int16;
-      property first_appearance -> cal::local_date;
-      property last_appearance -> cal::local_date;
-      property age -> int16;
-      property title -> str;
-      property degrees -> str;
-      property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
-      property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+
+module default {
+  abstract type Person {
+    property name -> str {
+      delegated constraint exclusive;
     }
-
-    type PC extending Person {
-      required property transport -> Transport;
-    }
-
-    type NPC extending Person {
-      overloaded property age {
-        constraint max_value(120)
-    }
-      overloaded multi link places_visited -> Place {
-        default := (SELECT City filter .name = 'London');
-      }
-    }
-
-    type Vampire extending Person {
-      multi link slaves -> MinorVampire;
-    }
-
-    type MinorVampire extending Person {
-    }
-    
-    abstract type Place {
-      required property name -> str {
-        delegated constraint exclusive;
-      }
-      property modern_name -> str;
-      property important_places -> array<str>;
-    }
-
-    type City extending Place {
-      property population -> int64;
-    }
-
-    type Country extending Place;
-
-    type OtherPlace extending Place;
-
-    type Castle extending Place {
-      property doors -> array<int16>;
-    }
-
-    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
-
-    type Time {
-      required property clock -> str;
-      property clock_time := <cal::local_time>.clock;
-      property hour := .clock[0:2];
-      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
-    }
-
-    abstract type HasNumber {
-      required property number -> int16;
-    }
-    
-    type Crewman extending HasNumber, Person {
-    }
-
-   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
-
-    type Sailor extending Person {
-      property rank -> Rank;
-    }
-
-    type Ship {
-      required property name -> str;
-      multi link sailors -> Sailor;
-      multi link crew -> Crewman;
-    }
-
-    type Event {
-      required property description -> str;
-      required property start_time -> cal::local_datetime;
-      required property end_time -> cal::local_datetime;
-      required multi link place -> Place;
-      required multi link people -> Person;
-      property exact_location -> tuple<float64, float64>;
-      property east -> bool;
-      property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east = true else 'W');
-    }
-  
-    function fight(one: Person, two: Person) -> str
-      using (
-        (one.name ?? 'Fighter 1') ++ ' wins!'
-        if (one.strength ?? 0) > (two.strength ?? 0)
-        else (two.name ?? 'Fighter 2') ++ ' wins!'
-      );
-
-    function fight(people_names: array<str>, opponent: Person) -> str
-      using (
-        with
-            people := (select Person filter contains(people_names, .name)),
-        select
-            array_join(people_names, ', ') ++ ' win!'
-            if sum(people.strength) > (opponent.strength ?? 0)
-            else (opponent.name ?? 'Opponent') ++ ' wins!'
-      );
-
-    function fight(names: str, one: int16, two: str) -> str
-      using (
-        WITH opponent := assert_single((SELECT Person FILTER .name = two))
-        SELECT
-            names ++ ' win!' IF one > opponent.strength ELSE
-            two ++ ' wins!'
-      );
-
-    function visited(person: str, city: str) -> bool
-      using (
-        WITH person := (SELECT Person FILTER .name = person),
-        SELECT city IN person.places_visited.name
-      );
+    multi link places_visited -> Place;
+    multi link lovers -> Person;
+    property strength -> int16;
+    property first_appearance -> cal::local_date;
+    property last_appearance -> cal::local_date;
+    property age -> int16;
+    property title -> str;
+    property degrees -> str;
+    property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+    property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
-};
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+  type PC extending Person {
+    required property transport -> Transport;
+  }
 
+  type NPC extending Person {
+    overloaded property age {
+      constraint max_value(120)
+  }
+    overloaded multi link places_visited -> Place {
+      default := (select City filter .name = 'London');
+    }
+  }
+
+  type Vampire extending Person {
+    multi link slaves -> MinorVampire;
+  }
+
+  type MinorVampire extending Person {
+  }
+  
+  abstract type Place {
+    required property name -> str {
+      delegated constraint exclusive;
+    }
+    property modern_name -> str;
+    property important_places -> array<str>;
+  }
+
+  type City extending Place {
+    property population -> int64;
+  }
+
+  type Country extending Place;
+
+  type OtherPlace extending Place;
+
+  type Castle extending Place {
+    property doors -> array<int16>;
+  }
+
+  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+
+  type Time {
+    required property clock -> str;
+    property clock_time := <cal::local_time>.clock;
+    property hour := .clock[0:2];
+    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  }
+
+  abstract type HasNumber {
+    required property number -> int16;
+  }
+  
+  type Crewman extending HasNumber, Person {
+  }
+
+  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
+  type Sailor extending Person {
+    property rank -> Rank;
+  }
+
+  type Ship {
+    required property name -> str;
+    multi link sailors -> Sailor;
+    multi link crew -> Crewman;
+  }
+
+  type Event {
+    required property description -> str;
+    required property start_time -> cal::local_datetime;
+    required property end_time -> cal::local_datetime;
+    required multi link place -> Place;
+    required multi link people -> Person;
+    property exact_location -> tuple<float64, float64>;
+    property east -> bool;
+    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  }
+
+  function fight(one: Person, two: Person) -> str
+    using (
+      (one.name ?? 'Fighter 1') ++ ' wins!'
+      if (one.strength ?? 0) > (two.strength ?? 0)
+      else (two.name ?? 'Fighter 2') ++ ' wins!'
+    );
+
+  function fight(people_names: array<str>, opponent: Person) -> str
+    using (
+      with
+          people := (select Person filter contains(people_names, .name)),
+      select
+          array_join(people_names, ', ') ++ ' win!'
+          if sum(people.strength) > (opponent.strength ?? 0)
+          else (opponent.name ?? 'Opponent') ++ ' wins!'
+    );
+
+  function fight(names: str, one: int16, two: str) -> str
+    using (
+      with opponent := assert_single((select Person filter .name = two))
+      select
+          names ++ ' win!' if one > opponent.strength else
+          two ++ ' wins!'
+    );
+
+  function visited(person: str, city: str) -> bool
+    using (
+      with person := (select Person filter .name = person),
+      select city in person.places_visited.name
+    );
+}
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
 
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 
-INSERT Country {
+insert Country {
   name := 'France'
 };
 
-INSERT Country {
+insert Country {
   name := 'Slovakia'
 };
 
-INSERT Castle {
+insert Castle {
     name := 'Castle Dracula',
     doors := [6, 19, 10],
 };
 
-INSERT City {
+insert City {
     name := 'London',
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
-  places_visited := (SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
+  places_visited := (select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'})
 };
 
-INSERT NPC {
+insert NPC {
   name := 'The innkeeper',
   age := 30,
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
-  lover := (SELECT DETACHED NPC Filter .name = 'Jonathan Harker'),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  lovers := (select detached NPC Filter .name = 'Jonathan Harker'),
+  places_visited := (select City filter .name = 'London'),
 };
 
-UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
-    lover := (SELECT DETACHED Person FILTER .name = 'Mina Murray')
+update Person filter .name = 'Jonathan Harker'
+  set {
+    lovers := (select detached Person filter .name = 'Mina Murray')
 };
 
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 2',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 3',
   }),
  },
-   places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
+   places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
 };
 
-UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
+update Person filter .name = 'Jonathan Harker'
+  set {
     strength := 5
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := Rank.Captain
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'Petrofsky',
   rank := Rank.FirstMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The First Mate',
   rank := Rank.SecondMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := Rank.Cook
 };
 
-FOR n IN {1, 2, 3, 4, 5}
-  UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+  union (
+  insert Crewman {
   number := n,
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16),
 });
 
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Lucy Westenra',
-  places_visited := (SELECT City FILTER .name = 'London')
+  places_visited := (select City filter .name = 'London')
 };
 
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
-  UNION (
-    INSERT NPC {
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+  union (
+    insert NPC {
     name := character_name,
-    lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
+    lovers := (select Person filter .name = 'Lucy Westenra'),
 });
 
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
-  lover := (
-    SELECT Person FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+update NPC filter .name = 'Lucy Westenra'
+set {
+  lovers := (
+    select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-  SET {
-    lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
+update NPC filter .name = 'Lucy Westenra'
+  set {
+    lovers := (select detached NPC filter .name = 'Arthur Holmwood'),
 };
 
-UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
-  SET {
-    lover := {} # 😢
+update NPC filter .name in {'John Seward', 'Quincey Morris'}
+  set {
+    lovers := {} # 😢
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
   strength := 10,
 };
 
-INSERT City {
+insert City {
   name := 'Whitby',
   population := 14400
 };
 
-FOR data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
-  UNION (
-    UPDATE City FILTER .name = data.0
-    SET {
+for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+  union (
+    update City filter .name = data.0
+    set {
     population := data.1
 });
 
-INSERT NPC {
+insert NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
   degrees := 'M.D., Ph. D. Lit., etc.'
 };
 
-INSERT Event {
+insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
   start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
   end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
-  place := (SELECT Place FILTER .name = 'Whitby'),
-  people := (SELECT Person FILTER .name ILIKE {'%helsing%', '%westenra%', '%seward%'}),
+  place := (select Place filter .name = 'Whitby'),
+  people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
   east := false
 };
 
-UPDATE Person
-  FILTER NOT EXISTS .strength
-  SET {
+update Person
+  filter not exists .strength
+  set {
     strength := <int16>round(random() * 5)
 };
 
-UPDATE Vampire
-FILTER .name = 'Count Dracula'
-SET {
+update Vampire
+filter .name = 'Count Dracula'
+set {
   strength := 20
   };
 ```

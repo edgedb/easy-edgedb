@@ -5,16 +5,16 @@
 类似于我们在之前的章节中插入 `Ship` 时所做的：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Mr. Swales',
   places_visited := {
-    (INSERT City {
+    (insert City {
       name := 'York'
     }),
-    (INSERT Country {
+    (insert Country {
       name := 'England'
     }),
-    (INSERT OtherPlace {
+    (insert OtherPlace {
       name := 'Whitby Abbey'
     }),
   }
@@ -26,7 +26,7 @@ INSERT NPC {
 这个查询：
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties,
   links
@@ -55,7 +55,7 @@ SELECT (INTROSPECT Ship) {
 在两个地方添加 `: {name}` 则可使其完全可读：
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {name},
   links: {name},
@@ -83,10 +83,10 @@ SELECT (INTROSPECT Ship) {
 
 #### 3. 查看 `Vampire` 类型有哪些链接的最简单的方法是什么？
 
-类似于 `SELECT Vampire.name` 可以给出所有 `Vampire` 对象的名称，你可以这样做：
+类似于 `select Vampire.name` 可以给出所有 `Vampire` 对象的名称，你可以这样做：
 
 ```edgeql
-SELECT (Introspect Vampire).links { name };
+select (Introspect Vampire).links { name };
 ```
 
 输出是：
@@ -100,7 +100,7 @@ SELECT (Introspect Vampire).links { name };
 }
 ```
 
-#### 4. `SELECT DISTINCT {1, 2} + {1, 2};` 的输出会是什么？
+#### 4. `select distinct {1, 2} + {1, 2};` 的输出会是什么？
 
 输出是：
 
@@ -108,10 +108,10 @@ SELECT (Introspect Vampire).links { name };
 {2, 3, 3, 4}
 ```
 
-因为 `DISTINCT` 的绑定强度大于 `+`，所以它会只作用于 `+` 之前的表达式，也就是 `{1, 2}`。这也是为什么 `SELECT DISTINCT {1, 2} + {1, 2};` 和 `SELECT {1, 2} + {1, 2};` 的输出会是相同的。而对于 `SELECT DISTINCT {2, 2}`，则只是输出 `{2}`。
+因为 `distinct` 的绑定强度大于 `+`，所以它会只作用于 `+` 之前的表达式，也就是 `{1, 2}`。这也是为什么 `select distinct {1, 2} + {1, 2};` 和 `select {1, 2} + {1, 2};` 的输出会是相同的。而对于 `select distinct {2, 2}`，则只是输出 `{2}`。
 
-#### 5. `SELECT DISTINCT {2, 2} + {2, 2};` 的输出会是什么？
+#### 5. `select distinct {2, 2} + {2, 2};` 的输出会是什么？
 
-输出将为 `{4, 4}`，因为 `DISTINCT` 仅作用于第一个集合。
+输出将为 `{4, 4}`，因为 `distinct` 仅作用于第一个集合。
 
-要想输出为 `{4}`，你可以重复使用 `DISTINCT`：即 `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`。或者你可以像这样用小括号使 `DISTINCT` 作用在整个表达式上：`SELECT DISTINCT({2, 2} + {2, 2})`。
+要想输出为 `{4}`，你可以重复使用 `distinct`：即 `select distinct {2, 2} + distinct {2, 2};`。或者你可以像这样用小括号使 `distinct` 作用在整个表达式上：`select distinct({2, 2} + {2, 2})`。

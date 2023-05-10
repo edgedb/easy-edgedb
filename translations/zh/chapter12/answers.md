@@ -22,7 +22,7 @@ error: cannot create the `default::gives_number(input: std::int64)` function: a 
 
 #### 2. 那么下面两个函数呢？EdgeDB 会允许同时定义它们吗？
 
-会接受，因为可以接收的输入不同，所以它们的签名是不同的：一个接收 `int16`，另一个接收 `int32`。事实上，你可以通过使用 `DESCRIBE` 来查看它们。例如，执行 `DESCRIBE FUNCTION make64 AS TEXT`：
+会接受，因为可以接收的输入不同，所以它们的签名是不同的：一个接收 `int16`，另一个接收 `int32`。事实上，你可以通过使用 `describe` 来查看它们。例如，执行 `describe function make64 as text`：
 
 ```
 {
@@ -31,43 +31,43 @@ error: cannot create the `default::gives_number(input: std::int64)` function: a 
 }
 ```
 
-但是请注意，执行 `SELECT make64(8);` 实际上会产生错误！错误是：
+但是请注意，执行 `select make64(8);` 实际上会产生错误！错误是：
 
 ```
 error: function "make64(arg0: std::int64)" does not exist
   ┌─ query:1:8
   │
-1 │ SELECT make64(8);
+1 │ select make64(8);
   │        ^^^^^^^^^ Did you want one of the following functions instead:
 default::make64(input: std::int16)
 default::make64(input: std::int32)
 ```
 
-这是因为 `SELECT make64(8)` 输入的是一个 `int64`（**默认**），且它没有对应的签名。你需要在 `SELECT make64(<int32>8);`（或 `<int16>8`）中使用类型转换以使其工作。
+这是因为 `select make64(8)` 输入的是一个 `int64`（**默认**），且它没有对应的签名。你需要在 `select make64(<int32>8);`（或 `<int16>8`）中使用类型转换以使其工作。
 
-#### 3. `SELECT {} ?? {3, 4} ?? {5, 6};` 能工作吗？
+#### 3. `select {} ?? {3, 4} ?? {5, 6};` 能工作吗？
 
 不能工作，因为 EdgeDB 不知道 `{}` 是什么类型。但是，如果你将 `{}` 转换为 `int64`：
 
 ```edgeql
-SELECT <int64>{} ?? {3, 4} ?? {5, 6};
+select <int64>{} ?? {3, 4} ?? {5, 6};
 ```
 
 它会给出输出：`{3, 4}`。
 
-#### 4. `SELECT <int64>{} ?? <int64>{} ?? {1, 2};` 能工作吗
+#### 4. `select <int64>{} ?? <int64>{} ?? {1, 2};` 能工作吗
 
 可以工作，输出是 `{1, 2}`。如果你使用更多 `??`，它会一直运行，直到碰到不为空的东西。
 
 知道了这一点，你大概可以猜到下面这个的输出结果：
 
 ```edgeql
-SELECT <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
+select <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
 ```
 
 输出是 `{1}`，它是第一个遇见的非空集。
 
-#### 5. `SELECT array_join(array_agg(Person.name));` 在尝试获得一个含有所有人姓名的字符串，但它不能工作，问题出在哪里？
+#### 5. `select array_join(array_agg(Person.name));` 在尝试获得一个含有所有人姓名的字符串，但它不能工作，问题出在哪里？
 
 错误信息给出了一个提示：
 
@@ -79,4 +79,4 @@ SELECT <int64>{} ?? <int64>{} ?? {1} ?? <int64>{} ?? {5};
 std::array_join(array: array<str>, delimiter: str) -> str
 ```
 
-因此，我们可以将其更改为 `SELECT array_join(array_agg(Person.name), ' ');` 或 `SELECT array_join(array_agg(Person.name), ' is awesome ');` 或其他任何字符串作为第二个参数输入，它都将工作。
+因此，我们可以将其更改为 `select array_join(array_agg(Person.name), ' ');` 或 `select array_join(array_agg(Person.name), ' is awesome ');` 或其他任何字符串作为第二个参数输入，它都将工作。

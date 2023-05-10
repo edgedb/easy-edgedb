@@ -8,7 +8,7 @@ tags: Expression On, Error Messages
 
 ## More abstract types
 
-This chapter they learned something about vampires: they need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
+Our heroes learned something about vampires in this chapter: vampires need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
 
 - Each place in the world either has coffins or doesn't have them,
 - Has coffins = vampires can enter and terrorize the people,
@@ -26,15 +26,15 @@ abstract type HasCoffins {
 
 Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
-- Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize
-- Feel free because the night has just begun, start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
+- Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize.
+- Feel a sense of freedom because the night has just begun, and start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
 - Around 1 or 2 am, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
 So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
-With a more complex game we could imagine that vampire terrorism is worse in the winter (activity radius = about 150 km), but we won't get into those details.
+If we were building a more complex game, vampire terrorism on humans would be worse in the winter, when the activity radius might increase to about 150km due to longer nights... but we won't get that detailed here.
 
-With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City`, `OtherPlace`, etc.:
+With our abstract type done, we will want to have a lot of types `extending` this. First we can have `Place` extend it, and that gives it to all the other location types such as `City` and `OtherPlace`:
 
 ```sdl
 abstract type Place extending HasCoffins {
@@ -59,29 +59,28 @@ type Ship extending HasCoffins {
 If we want, we can now make a quick function to test whether a vampire can enter a place:
 
 ```sdl
-function can_enter(person_name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := assert_single(
-        (SELECT Person FILTER .name = person_name)
-    )
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-  );
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
 ```
 
-You'll notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. It uses `assert_single()` though, and we can probably trust that the user of the function will use it properly. If we can't trust the user of the function, there are some options:
+The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
+
+If we can't trust the user of the function to always enter a `Vampire` or `MinorVampire` object, there are some options:
 
 - Overload the function to have two signatures, one for each type of Vampire:
 
 ```sdl
-function can_enter(vampire: Vampire, place: HasCoffins) -> str
-function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
+function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
+function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- Create an abstract type (like `type IsVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: IsVampire, place: HasCoffins) -> str`
+- Create an abstract type (like `type AnyVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str`
 
-Overloading the function is probably the easier option, because we wouldn't need to do an explicit migration.
-
-Note that you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
+Let's learn a bit more about the `optional` keyword. Without it, you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
 
 ```sdl
 function try(place: City) -> str
@@ -92,7 +91,7 @@ function try(place: City) -> str
 
 If we call it with: `select try((select City filter .name = 'London'));`, the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
 
-However, note that the input is not optional. That means that if you run `select try((select City filter .name = 'Beijing'));`, the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
+So far so good, but the input is not optional so what happens if we type `select try((select City filter .name = 'Beijing'));` instead? Now the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
 
 ```sdl
 function try(place: optional City) -> str
@@ -105,7 +104,7 @@ In this case we are still ignoring the argument `place` (the `City` type) but ma
 
 {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `OPTIONAL` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
 
 `optional anytype ?? set of anytype -> set of anytype`
 
@@ -114,8 +113,8 @@ So those are some ideas for how to set up your functions depending on how you th
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
 ```edgeql
-UPDATE City FILTER .name = 'London'
-SET {
+update City filter .name = 'London'
+set {
   coffins := 21
 };
 ```
@@ -123,21 +122,21 @@ SET {
 Now we can finally call up our function and see if it works:
 
 ```edgeql
-SELECT can_enter('Count Dracula', (SELECT City FILTER .name = 'London'));
+select can_enter('Count Dracula', (select City filter .name = 'London'));
 ```
 
 We get `{'Count Dracula can enter.'}`.
 
 Some other possible ideas for improvement later on for `can_enter()` are:
 
-- Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `SELECT` the type and then display its name, giving a result like "Count Dracula can enter London."
+- Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `select` the type and then display its name, giving a result like "Count Dracula can enter London."
 - Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like `vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`.
 
 ## More constraints
 
 Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose crazy names. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
 
 ```sdl
 type PC extending Person {
@@ -158,7 +157,7 @@ property title -> str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, etc. etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Mr., Ph.D., etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
@@ -189,7 +188,7 @@ We can write the constraint with `expression on` and `contains()` like this:
 ```sdl
 type Lord extending Person {
   constraint expression on (
-    contains(__subject__.name, 'Lord') = true
+    contains(__subject__.name, 'Lord')
   );
 }
 ```
@@ -199,7 +198,7 @@ type Lord extending Person {
 Now when we try to insert a `Lord` without it, it won't work:
 
 ```edgeql
-INSERT Lord {
+insert Lord {
   name := 'Billy'
   # Other stuff..
 };
@@ -207,13 +206,13 @@ INSERT Lord {
 
 But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
 
-While we're at it, let's practice doing a `SELECT` and `INSERT` at the same time so we see the output of our `INSERT` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
+While we're at it, let's practice doing a `select` and `insert` at the same time so we see the output of our `insert` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
 
 ```edgeql
-SELECT (
-  INSERT Lord {
+select (
+  insert Lord {
     name := 'Lord Billy',
-    places_visited := (SELECT Place),
+    places_visited := (select Place),
   }
 ) {
   name,
@@ -262,7 +261,7 @@ Here's the `Lord` type now:
 
 ```sdl
 type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+  constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
   };
 };
@@ -270,9 +269,7 @@ type Lord extending Person {
 
 ## Links in two directions
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want.
-
-(Note: we won't actually change the `MinorVampire` type here because we already know how to access `Vampire` with a backlink, but this is how to do it.)
+Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
@@ -282,7 +279,16 @@ type MinorVampire extending Person {
 }
 ```
 
-To add the master link again, one way to start would be with a property called `master_name` that is just a string. Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
+To add the master link again, one way to start would be with a property called `master_name` that is just a string:
+
+```sdl
+type MinorVampire extending Person {
+  link former_self -> Person;
+  required single property master_name -> str;
+};
+```
+
+Then we can use it to filter out the corresponding `Vampire` and assign it to a computed link named `master` as follows:
 
 ```sdl
 type MinorVampire extending Person {
@@ -294,21 +300,23 @@ type MinorVampire extending Person {
 };
 ```
 
-Note: it's a single link, so we needed to add `assert_single()`. (It won't work otherwise.) However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a reverse link.
+Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink.
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[is Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
+
+Note that we have written `single link`, because backlinks are assumed to be `multi` by default. This makes sense, because we have less control over what objects link back to any certain object - there could be quite a few of them. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
 
 And if we still want to have a shortcut for `master_name`, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[IS Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
   property master_name := .master.name;
 };
 ```
@@ -316,13 +324,13 @@ type MinorVampire extending Person {
 Now let's test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Kain',
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Billy',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Bob',
     })
   }
@@ -332,13 +340,13 @@ INSERT Vampire {
 Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   master_name,
   master: {
     name
   }
-} FILTER .name IN {'Billy', 'Bob'};
+} filter .name in {'Billy', 'Bob'};
 ```
 
 And the result:
@@ -374,7 +382,7 @@ Beautiful! All the information is right there.
 
    Try it first with `expression on`.
 
-4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` types with more than 0 coffins?
+4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
 
 5. How would you make it without touching the schema?
 

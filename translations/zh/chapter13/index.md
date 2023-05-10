@@ -30,36 +30,36 @@ type MinorVampire extending Person {
 另一个对 `MinorVampire` 与其前身 `NPC` 可以做的（非正式的）关联是给 `NPC` 的 `last_appearance` 和 `MinorVampire` 的 `first_appearance` 设置相同的日期。首先，我们先更新 `NPC` 露西的 `last_appearance`：
 
 ```edgeql
-UPDATE Person FILTER .name = 'Lucy Westenra'
-SET {
+update Person filter .name = 'Lucy Westenra'
+set {
   last_appearance := cal::to_local_date(1887, 9, 20)
 };
 ```
 
-然后我们可以将露西（Lucy）添加到德古拉（Dracula）的 `INSERT` 中。（如果前面章节里的操作你都有执行，那么现在只需先执行 `DELETE Vampire;` 和 `DELETE MinorVampire;`，然后我们就可以通过插入 `Vampire` 重新练习 `INSERT` 了）
+然后我们可以将露西（Lucy）添加到德古拉（Dracula）的 `insert` 中。（如果前面章节里的操作你都有执行，那么现在只需先执行 `delete Vampire;` 和 `delete MinorVampire;`，然后我们就可以通过插入 `Vampire` 重新练习 `insert` 了）
 
-注意下面语句中的第一行，我们创建了一个名为 `lucy` 的变量。然后我们使用它来引入所有数据，为露西创建 `MinorVampire`，这比插入时反复书写 `SELECT` 语句录入所有信息要高效得多。这里还需要包括露西的力量：我们给它额外加 5，因为吸血鬼会更加强壮些。
+注意下面语句中的第一行，我们创建了一个名为 `lucy` 的变量。然后我们使用它来引入所有数据，为露西创建 `MinorVampire`，这比插入时反复书写 `select` 语句录入所有信息要高效得多。这里还需要包括露西的力量：我们给它额外加 5，因为吸血鬼会更加强壮些。
 
 下面是具体的插入语句：
 
 ```edgeql
-WITH lucy := assert_single(
-    (SELECT Person FILTER .name = 'Lucy Westenra')
+with lucy := assert_single(
+    (select Person filter .name = 'Lucy Westenra')
 )
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 2',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 3',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       # We need to give a new name, so as not to clash with former_self.
       name := 'Lucy',
       former_self := lucy,
@@ -67,18 +67,18 @@ INSERT Vampire {
       strength := lucy.strength + 5,
     }),
   },
-  places_visited := (SELECT Place FILTER .name IN {'Romania', 'Castle Dracula'})
+  places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
 };
 ```
 
-多亏了 `former_self` 链接，我们很容易找到所有来自 `Person` 对象的小吸血鬼。即只需用 `EXISTS .former_self` 进行过滤：
+多亏了 `former_self` 链接，我们很容易找到所有来自 `Person` 对象的小吸血鬼。即只需用 `exists .former_self` 进行过滤：
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   strength,
   first_appearance,
-} FILTER EXISTS .former_self;
+} filter exists .former_self;
 ```
 
 输出结果：
@@ -93,14 +93,14 @@ SELECT MinorVampire {
 }
 ```
 
-使用其他的过滤方式也可以，比如使用 `FILTER .name IN Person.name AND .first_appearance IN Person.last_appearance;` 也是可以的，但检查链接是否 `EXISTS`（存在）最简单（也最保险）。我们还可以用 `cal::local_datetime` 替代 `cal::local_date` 作为时间属性的类型，以获得更精确的时间，但是我们现在还用不着。
+使用其他的过滤方式也可以，比如使用 `filter .name in Person.name and .first_appearance in Person.last_appearance;` 也是可以的，但检查链接是否 `exists`（存在）最简单（也最保险）。我们还可以用 `cal::local_datetime` 替代 `cal::local_date` 作为时间属性的类型，以获得更精确的时间，但是我们现在还用不着。
 
 ## 类型联合运算符：|
 
-另一个与类型相关的运算符是 `|`，用于联合类型（类似于 `OR`）。例如，下面的查询拉出了所有 `Person` 类型以判断露西所属类型是否在其中，并返回“真”：
+另一个与类型相关的运算符是 `|`，用于联合类型（类似于 `or`）。例如，下面的查询拉出了所有 `Person` 类型以判断露西所属类型是否在其中，并返回“真”：
 
 ```
-SELECT (SELECT Person FILTER .name LIKE 'Lucy%') IS NPC | MinorVampire | Vampire;
+select (select Person filter .name like 'Lucy%') is NPC | MinorVampire | Vampire;
 ```
 
 意思是如果选择的 `Person` 对象是 `NPC` 或 `MinorVampire` 或 `Vampire` 其中的任一个类型，则返回“真”。由于露西的 `NPC` 身份和露西的 `MinorVampire` 身份可以分别匹配到这三种类型中的一种，所以返回值是 `{true, true}`。
@@ -151,24 +151,24 @@ type MinorVampire extending Person {
 
 接下来，让我们看一些查询的小技巧。
 
-## 使用 DISTINCT
+## 使用 distinct
 
-`DISTINCT` 很简单：只需将 `SELECT` 更改为 `SELECT DISTINCT` 即可获得去重的结果。如果现在执行 `SELECT Person.strength;`，我们可以看到结果中会有相当多的重复项，因为它是查询所有 `Person` 对象的力量值，且有些对象的力量值是相等的：
+`distinct` 很简单：只需将 `select` 更改为 `select distinct` 即可获得去重的结果。如果现在执行 `select Person.strength;`，我们可以看到结果中会有相当多的重复项，因为它是查询所有 `Person` 对象的力量值，且有些对象的力量值是相等的：
 
 ```
 {5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 3, 3}
 ```
 
-如果将其更改为 `SELECT DISTINCT Person.strength;`，则输出为 `{2, 3, 4, 5, 10}`。
+如果将其更改为 `select distinct Person.strength;`，则输出为 `{2, 3, 4, 5, 10}`。
 
-`DISTINCT` 是按项目（item）工作，不会（对集合中的数组）做解包（unpack），因此 `SELECT DISTINCT {[7, 8], [7, 8], [9]};` 返回的是 `{[7, 8], [9]}` 而不是 `{7, 8, 9}`。
+`distinct` 是按项目（item）工作，不会（对集合中的数组）做解包（unpack），因此 `select distinct {[7, 8], [7, 8], [9]};` 返回的是 `{[7, 8], [9]}` 而不是 `{7, 8, 9}`。
 
 ## 使用 `__type__`
 
-我们之前已经了解到，我们可以使用 `__type__` 来获取查询中的对象类型，并且 `__type__` 里总是有 `.name` 来显示该类型的名称（否则我们只会得到 `uuid`）。就像我们可以通过 `SELECT Person.name` 获得所有对象的名字一样，我们可以像下面这样来获得所有类型的名字：
+我们之前已经了解到，我们可以使用 `__type__` 来获取查询中的对象类型，并且 `__type__` 里总是有 `.name` 来显示该类型的名称（否则我们只会得到 `uuid`）。就像我们可以通过 `select Person.name` 获得所有对象的名字一样，我们可以像下面这样来获得所有类型的名字：
 
 ```edgeql
-SELECT Person.__type__ {
+select Person.__type__ {
   name
 };
 ```
@@ -189,12 +189,12 @@ SELECT Person.__type__ {
 或者我们也可以在常规查询中使用它来返回类型。让我们来看看有哪些类型下有名为 `Lucy` 的对象：
 
 ```edgeql
-SELECT Person {
+select Person {
   __type__: {
     name
   },
   name
-} FILTER .name LIKE 'Lucy%';
+} filter .name like 'Lucy%';
 ```
 
 下面向我们展示了匹配到的对象，它们当然是 `NPC` 和 `MinorVampire`。
@@ -217,7 +217,7 @@ SELECT Person {
 
 ## 内省
 
-关键字 `INTROSPECT` 允许我们查看类型的更多详细信息。每种类型都有这些字段：`name`、`properties` 和 `links` 供我们访问，并且 `INTROSPECT` 可以让我们看到它们。现在让我们来试一下，看看会得到什么。我们将从 `Ship` 类型开始，它很小，但也包含了前面提到的三个字段。考虑到可能有人已经把它忘了，在此我们再一次列出 `Ship` 的属性和链接：
+关键字 `introspect` 允许我们查看类型的更多详细信息。每种类型都有这些字段：`name`、`properties` 和 `links` 供我们访问，并且 `introspect` 可以让我们看到它们。现在让我们来试一下，看看会得到什么。我们将从 `Ship` 类型开始，它很小，但也包含了前面提到的三个字段。考虑到可能有人已经把它忘了，在此我们再一次列出 `Ship` 的属性和链接：
 
 ```sdl
 type Ship {
@@ -227,18 +227,18 @@ type Ship {
 }
 ```
 
-首先，下面是最简单的 `INTROSPECT` 查询：
+首先，下面是最简单的 `introspect` 查询：
 
 ```edgeql
-SELECT (INTROSPECT Ship);
+select (introspect Ship);
 ```
 
-这个查询对我们来说不是很有用，但它确实说明了 `INTROSPECT` 是如何工作的：它返回了 `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`。请注意，`INTROSPECT` 和类型要放在括号内；它是你要捕捉的类型的 `SELECT` 表达式。
+这个查询对我们来说不是很有用，但它确实说明了 `introspect` 是如何工作的：它返回了 `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`。请注意，`introspect` 和类型要放在括号内；它是你要捕捉的类型的 `select` 表达式。
 
 现在让我们将 `name`、`properties` 和 `links` 放入内省（introspection）中：
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties,
   links,
@@ -264,12 +264,12 @@ SELECT (INTROSPECT Ship) {
 }
 ```
 
-就像直接在类型上使用 `SELECT` 一样，如果输出包含另一种类型、属性等，我们只会得到一个 id。我们还是要指明我们想要什么。
+就像直接在类型上使用 `select` 一样，如果输出包含另一种类型、属性等，我们只会得到一个 id。我们还是要指明我们想要什么。
 
 因此，让我们在查询中添加更多内容以获取我们想要的信息：
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {
     name,
@@ -316,7 +316,7 @@ SELECT (INTROSPECT Ship) {
 另外，如果查询本身不是太复杂（比如上面的例子），那么减少新行和缩进可能更有助于阅读。下面是同样的查询，但看起来简单多了：
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {name, target: {name}},
   links: {name, target: {name}},
@@ -334,7 +334,7 @@ SELECT (INTROSPECT Ship) {
 2. 下面这个内省查询结果的可读性如何？
 
    ```edgeql
-   SELECT (INTROSPECT Ship) {
+   select (introspect Ship) {
      name,
      properties,
      links
@@ -343,11 +343,11 @@ SELECT (INTROSPECT Ship) {
 
 3. 查看 `Vampire` 类型有哪些链接的最简单的方法是什么？
 
-4. `SELECT DISTINCT {1, 2} + {1, 2};` 的输出会是什么？
+4. `select distinct {1, 2} + {1, 2};` 的输出会是什么？
 
    提示：别忘了笛卡尔乘法。
 
-5. `SELECT DISTINCT {2, 2} + {2, 2};` 的输出会是什么？
+5. `select distinct {2, 2} + {2, 2};` 的输出会是什么？
 
 [点击这里查看答案](answers.md)
 

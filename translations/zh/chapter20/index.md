@@ -13,8 +13,8 @@ tags: Ddl, Sdl, Edgedb Community
 然而，我们可以确信的是女吸血鬼们已经被摧毁了，因此我们可以通过给她们一个 `last_appearance` 对她们做最后的变更。范海辛在 11 月 5 日摧毁了她们，因此我们将插入该日期。但不要忘记过滤掉露西——她并不属于居住在城堡里的三个女 `MinorVampire`。
 
 ```edgeql
-UPDATE MinorVampire FILTER .name != 'Lucy'
-SET {
+update MinorVampire filter .name != 'Lucy'
+set {
   last_appearance := <cal::local_date>'1887-11-05'
 };
 ```
@@ -29,8 +29,8 @@ SET {
 
 一个架构（a schema）的第一部分始终是启动迁移的命令：
 
-- 在代码中我们使用了命令 `START MIGRATION TO {};`，但 {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` 工具在实际的项目中可以提供更好的控制。
-- `module default {}`：在我们的架构里只使用了一个模块（命名空间），但如果你愿意，你可以制作更多。你可以使用 `DESCRIBE TYPE AS SDL`（或 `AS TEXT`）查看该模块。
+- 在代码中我们使用了命令 `start migration to {};`，但 {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` 工具在实际的项目中可以提供更好的控制。
+- `module default {}`：在我们的架构里只使用了一个模块（命名空间），但如果你愿意，你可以制作更多。你可以使用 `describe type as sdl`（或 `as text`）查看该模块。
 
 这里有一个 `Person` 的例子，如下所示，它向我们显示了它所在的模块：
 
@@ -69,11 +69,11 @@ abstract type Person {
     delegated constraint exclusive;
   }
   property age -> int16;
-  property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
-  property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+  property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   property strength -> int16;
   multi link places_visited -> Place;
-  multi link lover -> Person;
+  multi link lovers -> Person;
   property first_appearance -> cal::local_date;
   property last_appearance -> cal::local_date;
 }
@@ -98,7 +98,7 @@ error: possibly more than one element returned by an expression for a computed l
 所以对于用户遍布全球的数据库来说，`datetime` 通常是最好的选择。然后，你可以使用 {eql:func}`docs:std::to_datetime` 之类的函数将五个 `int64`、一个 `float64`（用于秒）和一个 `str`（用于 [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)）转换为一个总是作为 UTC 返回的 `datetime`：
 
 ```edgeql-repl
-edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -121,8 +121,8 @@ type Crewman extending HasNumber, Person {
 这个 `HasNumber` 类型用于五个起初没有名字的 `Crewman` 对象。后来，我们使用 `HasNumber` 中的 `number` 为他们创建了基于数字名称：
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   name := 'Crewman ' ++ <str>.number
 };
 ```
@@ -144,10 +144,10 @@ type MinorVampire extending Person {
 有了这个格式，我们可以像下面这样查询所有变成 `MinorVampire` 的人。
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  vampire_name := .<former_self[IS MinorVampire].name
-} FILTER EXISTS .vampire_name;
+  vampire_name := .<former_self[is MinorVampire].name
+} filter exists .vampire_name;
 ```
 
 在我们的游戏中，只有 Lucy 满足条件：`{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}`。但如果我们愿意，我们可以将游戏扩展到更早的历史时期，并将那三个吸血鬼女性与对应的 `NPC` 类型联系起来，将他们的 `former_self` 指向对应的 `NPC`。
@@ -176,7 +176,7 @@ type PC extending Person {
 
 - 将其转换为 {eql:type}`docs:cal::local_time` 并赋予属性 `clock_time`，
 - 使用切片获取它的前两个字符来并赋予属性 `hour`。因为它是一个字符串，所以即使像 `1` 这样的单个数字也需要用两位数书写，即“01”，以适应“小时数”的获取方式，
-- 由另一个名为 `awake` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
+- 由另一个名为 `sleep_state` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
 
 ```sdl
 type Visit {
@@ -186,7 +186,7 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
@@ -198,7 +198,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -215,7 +215,7 @@ abstract type Place extending HasNameAndCoffins {
 `important_places` 属性仅在下面的插入中使用过：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
@@ -245,7 +245,7 @@ abstract annotation warning;
 
 ```sdl
 type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+  constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
   };
 };
@@ -278,19 +278,19 @@ type Castle extending Place {
 回到第 7 章，我们在查询中使用了它来查看乔纳森（Jonathan）是否可以打破城堡中的某扇门并逃离城堡。想法很简单：乔纳森会对每一扇门都做尝试，只要他比其中任意一个门更有力量，那么他就可以逃离城堡。
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(array_unpack(doors));
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select jonathan_strength > min(array_unpack(doors));
 ```
 
 但是，后来我们学习了 `any()` 函数，所以让我们看看如何在这里利用上它。使用 `any()`，我们可以将查询更改为：
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
 当然，我们也可以创建一个函数来做同样的事情，因为我们已经知道如何编写函数以及如何使用 `any()`。由于我们是按名称进行的过滤（Jonathan Harker 和 Castle Dracula），因此该函数也将只接收两个字符串作为参数并执行相同的查询。
@@ -298,10 +298,10 @@ SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is differe
 不要忘记，我们需要用 {eql:func}`docs:std::array_unpack`，因为函数 {eql:func}`docs:std::any` 只接收集合：
 
 ```sdl
-std::any(values: SET OF bool) -> bool
+std::any(values: set of bool) -> bool
 ```
 
-因此，`SELECT any({5, 6, 7} = 7);` 可以正常工作，并返回 `{true}`。但 `SELECT any([5, 6, 7] = 7);` 将报错：
+因此，`select any({5, 6, 7} = 7);` 可以正常工作，并返回 `{true}`。但 `select any([5, 6, 7] = 7);` 将报错：
 
 ```
 error: operator '=' cannot be applied to operands of type 'array<std::int64>' and 'std::int64'
@@ -330,7 +330,7 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -392,15 +392,15 @@ module ModuleName "{"
 
 ### 深入探寻 DDL
 
-DDL 主要在处理迁移时会看到，因为它非常适合表达增量更改。到目前为止，我们只提到了函数的 DDL，因为在需要时添加 `CREATE` 来创建函数非常容易。
+DDL 主要在处理迁移时会看到，因为它非常适合表达增量更改。到目前为止，我们只提到了函数的 DDL，因为在需要时添加 `create` 来创建函数非常容易。
 
 SDL: `function says_hi() -> str using('hi');`
 
-DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
+DDL: `create function says_hi() -> str using('hi')`
 
 大小写也无关紧要。
 
-但是对于类型，DDL 需要更多的输入，使用诸如 `CREATE`、`SET`、`ALTER` 等关键字。使用 {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` 工具使得我们只需要使用 SDL 就可以处理架构。
+但是对于类型，DDL 需要更多的输入，使用诸如 `create`、`set`、`alter` 等关键字。使用 {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` 工具使得我们只需要使用 SDL 就可以处理架构。
 
 ## EdgeDB 词法结构
 

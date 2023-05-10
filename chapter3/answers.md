@@ -2,12 +2,12 @@
 
 #### 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 
-All it needs is brackets around the `SELECT` - remember, putting it in brackets "captures" the output so it can be used.
+All it needs is brackets around the `select` - remember, putting it in brackets "captures" the output so it can be used.
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
-  cities := (SELECT City.name)
+  cities := (select City.name)
 };
 ```
 
@@ -34,7 +34,7 @@ type City extending Place {
 You can access `property name` twice by giving it a different name the second time. Let's call it name2:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   name2 := .name
 };
@@ -58,7 +58,7 @@ No, because it's a scalar type and not an object - a `HumanAge` would just be an
 But of course, you can select one by casting:
 
 ```edgeql
-SELECT <HumanAge>16;
+select <HumanAge>16;
 ```
 
 This gives `{16}`.
@@ -66,8 +66,8 @@ This gives `{16}`.
 You can also see that it is just a different name for an `int16` by trying the following:
 
 ```edgeql
-SELECT <HumanAge>16 IS int16;
-SELECT <HumanAge>16 IS HumanAge;
+select <HumanAge>16 is int16;
+select <HumanAge>16 is HumanAge;
 ```
 
 Both of these return `{true}`.

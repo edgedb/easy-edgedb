@@ -5,7 +5,7 @@
 Easy, just use the `len()` function:
 
 ```edgeql
-SELECT City {
+select City {
   name,
   name_length := len(.name)
 };
@@ -13,12 +13,12 @@ SELECT City {
 
 #### 2. How would you select each City and the length of its `name` minus the length of `modern_name` if `modern_name` exists, and 0 if `modern_name` does not exist?
 
-For this we use our old friends `IF EXISTS` and `ELSE`:
+For this we use our old friends `if exists` and `else`:
 
 ```edgeql
-SELECT City {
+select City {
   name,
-  length_difference := len(.name) - len(.modern_name) IF EXISTS .modern_name ELSE 0
+  length_difference := len(.name) - len(.modern_name) if exists .modern_name else 0
 };
 ```
 
@@ -27,9 +27,9 @@ SELECT City {
 First of all, here's what we can't do:
 
 ```edgeql
-SELECT City {
+select City {
   name,
-  length_difference := len(.name) - len(.modern_name) IF EXISTS .modern_name ELSE 'Modern name does not exist'
+  length_difference := len(.name) - len(.modern_name) if exists .modern_name else 'Modern name does not exist'
 };
 ```
 
@@ -42,9 +42,9 @@ error: operator 'std::IF' cannot be applied to operands of type 'std::int64', 's
 Fortunately, we can just cast the results to a string:
 
 ```edgeql
-SELECT City {
+select City {
   name,
-  length_difference := <str>(len(.name) - len(.modern_name)) IF EXISTS .modern_name ELSE 'Modern name does not exist'
+  length_difference := <str>(len(.name) - len(.modern_name)) if exists .modern_name else 'Modern name does not exist'
 };
 ```
 
@@ -64,38 +64,38 @@ It should give this result:
 It looks like this:
 
 ```edgeql
-INSERT NPC {
-  name := 'NPC number ' ++ <str>(count(DETACHED NPC) + 1)
+insert NPC {
+  name := 'NPC number ' ++ <str>(count(detached NPC) + 1)
 };
 ```
 
-`SELECT count(NPC)` on its own gives the number, but we are inserting an `NPC` at the same time so we need `DETACHED` to select the `NPC` type in general.
+`select count(NPC)` on its own gives the number, but we are inserting an `NPC` at the same time so we need `detached` to select the `NPC` type in general.
 
-#### 5. How would you select only the `Person` types that have the shortest names?
+#### 5. How would you select only the `Person` type objects that have the shortest names?
 
 First, here's how **not** to do it:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-} FILTER len(.name) = min(len(Person.name));
+} filter len(.name) = min(len(Person.name));
 ```
 
 This seems like it might work, but `min(len(Person.name))` is the minimum length of `Person` that we are selecting - in other words, one `Person`. The result: every Person type and their names show up.
 
-Adding `DETACHED` solves it:
+Adding `detached` solves it:
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-} FILTER len(.name) = min(len(DETACHED Person.name));
+} filter len(.name) = min(len(detached Person.name));
 ```
 
-We could do the same with `WITH` as well, which is maybe a bit easier to read. This way we don't need `DETACHED` because `minimum_length` gets defined before the main `SELECT` starts:
+We could do the same with `with` as well, which is maybe a bit easier to read. This way we don't need `detached` because `minimum_length` gets defined before the main `select` starts:
 
 ```edgeql
-WITH minimum_length := min(len(Person.name))
-SELECT Person {
+with minimum_length := min(len(Person.name))
+select Person {
   name,
-} FILTER len(.name) = minimum_length;
+} filter len(.name) = minimum_length;
 ```

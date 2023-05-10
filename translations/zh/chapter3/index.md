@@ -55,25 +55,25 @@ abstract type Person {
 现在，创建一个 `Country` 很容易，只需插入并给它一个名字。接下来，快速插入匈牙利（Hungary）和罗马尼亚（Romania）两个 `Country` 类型的对象：
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 ```
 
 顺便说一下，你可能注意到了 `Place` 中的 `important_places` 仍然是一个字符串数组 `array<str>`，也许改为 `multi link` 可能会更好？确实如此，但是在本教程中我们最终并未使用这个属性，所以我们就简单地将其作为数组保留在这个结构中，不做过多调整了。如果这是一个正式的架构设计，它可能最终会变成一个“多链接”`multi link`，或者因为我们并不需要它而被删除掉。
 
-## 捕获 SELECT 表达式
+## 捕获 select 表达式
 
-现在，我们准备为“德古拉”创建一条相应的数据。首先，我们已将 `Person` 中的 `places_visited` 由 `City` 改为 `Place` 使得它有更多可能性，比如：伦敦（London），比斯特里察（Bistritz），匈牙利（Hungary）等等。并且，我们目前只是知道德古拉一直待在罗马尼亚（Romania），所以当我们想“选择罗马尼亚”赋值给德古拉的 `place_visited` 时，我们可以通过对 `Place` 做一个快速的 `FILTER` 从而选出罗马尼亚。这样做时，我们需要将 `SELECT` 语句放在一个 `()` 圆括号内，该括号是捕获 `SELECT` 查询结果所必需的，然后我们可以使用该查询结果来做一些事情。换句话说，括号界定了（设置边界）`SELECT` 查询，从而使其结果可以作为一个整体被使用。即，EdgeDB 将在括号内进行操作，然后将完成的结果提供给 `places_visited`。
+现在，我们准备为“德古拉”创建一条相应的数据。首先，我们已将 `Person` 中的 `places_visited` 由 `City` 改为 `Place` 使得它有更多可能性，比如：伦敦（London），比斯特里察（Bistritz），匈牙利（Hungary）等等。并且，我们目前只是知道德古拉一直待在罗马尼亚（Romania），所以当我们想“选择罗马尼亚”赋值给德古拉的 `place_visited` 时，我们可以通过对 `Place` 做一个快速的 `filter` 从而选出罗马尼亚。这样做时，我们需要将 `select` 语句放在一个 `()` 圆括号内，该括号是捕获 `select` 查询结果所必需的，然后我们可以使用该查询结果来做一些事情。换句话说，括号界定了（设置边界）`select` 查询，从而使其结果可以作为一个整体被使用。即，EdgeDB 将在括号内进行操作，然后将完成的结果提供给 `places_visited`。
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
-  places_visited := (SELECT Place FILTER .name = 'Romania'),
-  # .places_visited is the result of this SELECT query.
+  places_visited := (select Place filter .name = 'Romania'),
+  # .places_visited is the result of this select query.
 };
 ```
 
@@ -81,10 +81,10 @@ INSERT Vampire {
 
 `uuid` 是来自服务器的回复，显示我们刚刚创建了哪个对象并表明创建成功。
 
-现在，让我们来检查一下 `places_visited` 是否可以工作。目前我们只是有一个 `Vampire` 的对象，对它进行 `SELECT`：
+现在，让我们来检查一下 `places_visited` 是否可以工作。目前我们只是有一个 `Vampire` 的对象，对它进行 `select`：
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   places_visited: {
     name
   }
@@ -124,7 +124,7 @@ type NPC extending Person {
 `HumanAge` 是我们自己的类型，有自己的名字，它是一个不能大于 120 的 `int16`。所以如果我们像下方一样进行插入，将无法工作：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
     name := 'The innkeeper',
     age := 130
 };
@@ -136,14 +136,14 @@ INSERT NPC {
 
 ## 删除对象
 
-在 EdgeDB 里删除是十分容易的：只需要使用关键字 `DELETE`。类似于 `SELECT`，当你键入 `DELETE` 和类型后，默认情况下会删除该类型的所有。和 `SELECT` 一样，如果你使用 `FILTER` 那么它只会删除过滤器匹配到的那些数据。
+在 EdgeDB 里删除是十分容易的：只需要使用关键字 `delete`。类似于 `select`，当你键入 `delete` 和类型后，默认情况下会删除该类型的所有。和 `select` 一样，如果你使用 `filter` 那么它只会删除过滤器匹配到的那些数据。
 
-这种与 `SELECT` 的相似性可能会让你感到紧张，因为如果你键入类似 `SELECT City` 的内容，它将选择 `City` 的所有内容。`DELETE` 是相同的：`DELETE City` 会删除 `City` 类型的每一个对象。这就是为什么我们在删除任何内容前都需要再三考虑。
+这种与 `select` 的相似性可能会让你感到紧张，因为如果你键入类似 `select City` 的内容，它将选择 `City` 的所有内容。`delete` 是相同的：`delete City` 会删除 `City` 类型的每一个对象。这就是为什么我们在删除任何内容前都需要再三考虑。
 
 所以让我们来试一下。还记得我们创建的匈牙利（Hungary）和罗马尼亚（Romania）两个 `Country` 类型的对象吗？现在让我们来删除它们：
 
 ```edgeql
-DELETE Country;
+delete Country;
 ```
 
 此时，我们会收到错误，它告诉我们无法删除 `Country`，因为 `Country` 类型的对象仍然在被某个 `Person` 对象的 `places_visited` 所引用。
@@ -156,13 +156,13 @@ ERROR: ConstraintViolationError: deletion of default::Country (7f3c611c-ff43-11e
 这正是正待在罗马尼亚的德古拉伯爵带来的麻烦。所以我们在这里先暂时删除它：
 
 ```edgeql
-DELETE Vampire;
+delete Vampire;
 ```
 
 就像插入一样，EdgeDB 将返回我们现在正在删除的所有对象的 id：`{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`。现在，我们可以再试一下删除 `Country`：
 
 ```edgeql
-DELETE Country;
+delete Country;
 ```
 
 我们得到确认，即两个 `Country` 对象已被删除：
@@ -176,26 +176,26 @@ DELETE Country;
 现在，让我们把它们再重新插入回去，并试一下带过滤的删除：
 
 ```edgeql
-DELETE Country FILTER .name ILIKE '%States%';
+delete Country filter .name ilike '%States%';
 ```
 
 没有任何匹配项，因此输出为 `{}`——我们没有删除任何内容。让我们再试一次：
 
 ```edgeql
-DELETE Country FILTER .name ILIKE '%ania%';
+delete Country filter .name ilike '%ania%';
 ```
 
-这次我们得到 `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`，即 Romania。现在只剩下 Hungary 了。如果我们想查看我们到底删除了什么怎么办？没问题——只需将 `DELETE` 放在圆括号内，然后使用 `SELECT` 即可。现在，让我们再次删除所有 `Country` 对象，但这次我们将 `SELECT` 删除结果：
+这次我们得到 `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`，即 Romania。现在只剩下 Hungary 了。如果我们想查看我们到底删除了什么怎么办？没问题——只需将 `delete` 放在圆括号内，然后使用 `select` 即可。现在，让我们再次删除所有 `Country` 对象，但这次我们将 `select` 删除结果：
 
 ```edgeql
-SELECT (DELETE Country) {
+select (delete Country) {
   name
 };
 ```
 
-输出结果是：`{default::Country {name: 'Hungary'}}`，这说明我们删除了 Hungary。如果现在我们执行 `SELECT Country`，我们将得到一个空集 `{}`，这说明我们确实把它们都删了。
+输出结果是：`{default::Country {name: 'Hungary'}}`，这说明我们删除了 Hungary。如果现在我们执行 `select Country`，我们将得到一个空集 `{}`，这说明我们确实把它们都删了。
 
-（有趣的是：在 EdgeDB 里，`DELETE` 语句实际上是 `DELETE (SELECT ...)` 的语法糖 {ref}`syntactic sugar <docs:ref_eql_statements_delete>`。另外，在下一章中，你将通过使用 `SELECT` 学习关键字 `LIMIT`。当你学习使用它时，请记住你也同样可以将其应用到 `DELETE`。）
+（有趣的是：在 EdgeDB 里，`delete` 语句实际上是 `delete (select ...)` 的语法糖 {ref}`syntactic sugar <docs:ref_eql_statements_delete>`。另外，在下一章中，你将通过使用 `select` 学习关键字 `limit`。当你学习使用它时，请记住你也同样可以将其应用到 `delete`。）
 
 > 语法糖（英语：Syntactic sugar）是由英国计算机科学家彼得·兰丁发明的一个术语，指计算机语言中添加的某种语法，这种语法对语言的功能没有影响，但是更方便程序员使用。语法糖让程序更加简洁，有更高的可读性。
 
@@ -210,9 +210,9 @@ SELECT (DELETE Country) {
 1. 此查询试图显示每个 `NPC` 的 `name`，并给每个 `NPC` 加上所有 `City`，但执行后出现了错误。请问它缺少了什么？
 
    ```edgeql
-   SELECT NPC {
+   select NPC {
      name,
-     cities := SELECT City.name
+     cities := select City.name
    };
    ```
 
@@ -220,7 +220,7 @@ SELECT (DELETE Country) {
 3. 此查询出于某种原因想要显示两次 `name`，但出现了错误。你能想出办法解决吗？
 
    ```edgeql
-   SELECT Person {
+   select Person {
      name,
      name
    };

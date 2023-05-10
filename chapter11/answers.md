@@ -65,7 +65,7 @@ Here's the output:
 Looking at the input, you can see that there will be 16 lines generated, because each part of each set will be combined with each part of every other set:
 
 ```edgeql
-SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
 ```
 
 (2 * 1 * 2 * 1 * 2 * 1 * 2 = 16)
@@ -100,26 +100,26 @@ Here's one way to do it:
 ```sdl
 function two_cities(city_one: str, city_two: str) -> float64
   using (
-    WITH first_city := (SELECT City FILTER .name = city_one),
-         second_city := (SELECT City FILTER .name = city_two),
-    SELECT first_city.population / second_city.population
+    with first_city := (select City filter .name = city_one),
+         second_city := (select City filter .name = city_two),
+    select first_city.population / second_city.population
   );
 ```
 
 Then it would be used in this sort of way:
 
 ```edgeql-repl
-edgedb> SELECT two_cities('Munich', 'Bistritz');
+edgedb> select two_cities('Munich', 'Bistritz');
 {25.277252747252746}
-edgedb> SELECT two_cities('Munich', 'London');
+edgedb> select two_cities('Munich', 'London');
 {0.06572085714285714}
 ```
 
 `city_one` and `city_two` could of course be a `City` type, but then it would take a lot more effort to use.
 
-#### 5. Will `SELECT (City.population + City.population)` and `SELECT ((SELECT City.population) + (SELECT City.population))` produce different results?
+#### 5. Will `select (City.population + City.population)` and `select ((select City.population) + (select City.population))` produce different results?
 
-Yes. The first one is a `SELECT` on a single set that adds each item to itself, giving this: `{28800, 460046, 805412, 18200, 7000000}`
+Yes. The first one is a `select` on a single set that adds each item to itself, giving this: `{28800, 460046, 805412, 18200, 7000000}`
 
 Meanwhile, the second is two sets where each item is added to each other one in every possible combination. That gives 25 results in total:
 

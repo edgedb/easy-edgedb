@@ -6,7 +6,7 @@ tags: Complex Inserts, Schema Cleanup
 
 > Van Helsing was correct: Mina is connected to Dracula. He continues to use hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula. They find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
+This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania, and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
 Now, there is one difficulty: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 pence to 1 pound, it was as follows:
 
@@ -44,9 +44,9 @@ abstract type Currency {
 }
 ```
 
-You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. In modern times that includes Japanese yen, Korean won, etc. that are just a single money unit and a number.
+You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. Two examples from modern times are the Japanese yen and Korean won that are just a single money unit and a number.
 
-We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. And complicated things like credit and negative money we can probably just ignore for now.
+We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. Money can be negative in real life, but we don't need to think about complicated subjects like credit and negative money in our game.
 
 Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds. Here's the `Pound` type:
 
@@ -73,8 +73,8 @@ type Pound extending Currency {
 Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1887.
 
 ```edgeql
-INSERT Pound {
-  owner := (SELECT Person FILTER .name = 'Count Dracula'),
+insert Pound {
+  owner := (select Person filter .name = 'Count Dracula'),
   major_amount := 2500,
   minor_amount := 50,
   sub_minor_amount := 200
@@ -84,19 +84,19 @@ INSERT Pound {
 Then we can use the conversion rates to display the total amount he owns in pounds:
 
 ```edgeql
-SELECT Currency {
+select Currency {
   owner: {name},
   total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
 };
 ```
 
-He has this many:
+Based on the results of the query, he has about 2503 pounds:
 
 ```
 {default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}
 ```
 
-We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give a few of them a random amount of money, and also `SELECT` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
+We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give a few of them a random amount of money, and also `select` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
 
 Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but using the last signature:
 
@@ -113,10 +113,10 @@ That signature has an extra `d: int64` part for the number of decimal places we 
 All together, it looks like this:
 
 ```edgeql
-SELECT (FOR character IN {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
-  UNION (
-    INSERT Pound {
-      owner := assert_single((SELECT Person FILTER .name = character)),
+select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+  union (
+    insert Pound {
+      owner := assert_single((select Person filter .name = character)),
       major_amount := <int64>round(random() * 500),
       minor_amount := <int64>round(random() * 100),
       sub_minor_amount := <int64>round(random() * 500)
@@ -184,16 +184,16 @@ type Dollar {
 The `total_money` type, by the way, will become a `float64` because of the `/ 100` part. We can confirm this with a quick query:
 
 ```edgeql
-SELECT (100 + (55 / 100)) IS float64;
+select (100 + (55 / 100)) is float64;
 ```
 
 The output: `{true}`.
 
-We can see the same when we make an insert and use `SELECT` to check the `total_money` property:
+We can see the same when we make an insert and use `select` to check the `total_money` property:
 
 ```edgeql
-SELECT(
-  INSERT Dollar {
+select (
+  insert Dollar {
     dollars := 100,
     cents := 55
   }
@@ -204,32 +204,32 @@ SELECT(
 
 Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
 
-Not that we need this `Dollar` type in our game: in our schema it would be `type Dollar extending Currency`.
+Dollars won't be used in this game, but if they were, we'd create it with `type Dollar extending Currency`.
 
-One final note: our `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
+One final note: the dollar's `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
 
 ## Cleaning up the schema
 
-We are nearing the end of the book, and should probably start to clean up the schema and inserts a bit.
+We've come a long way since first setting up our database and doing our early object inserts. Let's look back and see how things might change if we were starting again, knowing what we now know.
 
 First, we have two inserts here where we could only have one.
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'London',
 };
 ```
 
-We'll change that to an insert with a `FOR` loop:
+We'll change that to an insert with a `for` loop:
 
 ```edgeql
-FOR city_name IN {'Munich', 'London'}
-UNION (
-  INSERT City {
+for city_name in {'Munich', 'London'}
+union (
+  insert City {
     name := city_name
   }
 );
@@ -238,9 +238,9 @@ UNION (
 Then we'll do the same for the four `Country` types that we inserted (Hungary, Romania, France, Slovakia). Now they are a single insert:
 
 ```edgeql
-FOR country_name IN {'Hungary', 'Romania', 'France', 'Slovakia'}
-UNION (
-  INSERT Country {
+for country_name in {'Hungary', 'Romania', 'France', 'Slovakia'}
+union (
+  insert Country {
     name := country_name
   }
 );
@@ -249,13 +249,13 @@ UNION (
 The other `City` inserts are a bit different: some have `modern_name` and others have `population`. In a real game we would insert them all in this sort of form, all at once:
 
 ```edgeql
-FOR city IN {
+for city in {
     ('City 1\'s name', 'City 1\'s modern name', 800),
     ('City 2\'s name', 'City 2\'s modern name', 900),
     ('City 3\'s name', 'City 3\'s modern name', 455),
   }
-UNION (
-  INSERT City {
+union (
+  insert City {
     name := city.0,
     modern_name := city.1,
     population := city.2
@@ -268,36 +268,36 @@ And we would do the same with all the `NPC` types, their `first_appearance` data
 We can also turn the inserts for the `Ship` type into a single one. Right now it looks like this:
 
 ```edgeql
-FOR n IN {1, 2, 3, 4, 5}
-UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+union (
+  insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
   }
 );
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Captain',
   rank := Rank.Captain
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The First Mate',
   rank := Rank.FirstMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Second Mate',
   rank := Rank.SecondMate
 };
 
-INSERT Sailor {
+insert Sailor {
   name := 'The Cook',
   rank := Rank.Cook
 };
 
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
@@ -307,30 +307,30 @@ INSERT Ship {
 Let's put that all together:
 
 ```edgeql
-INSERT Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := {
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Captain',
       rank := Rank.Captain
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The First Mate',
       rank := Rank.FirstMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Second Mate',
       rank := Rank.SecondMate
     }),
-    (INSERT Sailor {
+    (insert Sailor {
       name := 'The Cook',
       rank := Rank.Cook
     })
   },
   crew := (
-    FOR n IN {1, 2, 3, 4, 5}
-    UNION (
-      INSERT Crewman {
+    for n in {1, 2, 3, 4, 5}
+    union (
+      insert Crewman {
         number := n,
         first_appearance := cal::to_local_date(1887, 7, 6),
         last_appearance := cal::to_local_date(1887, 7, 16),

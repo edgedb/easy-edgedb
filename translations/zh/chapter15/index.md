@@ -59,13 +59,12 @@ type Ship extending HasCoffins {
 如果我们需要，我们现在可以创建一个快速函数来判断吸血鬼是否可以进入某一个地方：
 
 ```sdl
-function can_enter(person_name: str, place: HasCoffins) -> str
+function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := assert_single(
-        (SELECT Person filter .name = person_name)
-    )
-    SELECT vampire.name ++ ' can enter.' IF place.coffins > 0 ELSE vampire.name ++ ' cannot enter.'
-  );
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
 ```
 
 你可能注意到了，这个函数中的 `person_name` 实际上只接受一个字符串用于选择过滤一个 `Person`。所以我们可能会得到类似“Jonathan Harker cannot enter（乔纳森·哈克不能进入）”的输出（但乔纳森是个人类）。尽管其中使用了 `assert_single()`，我们也可能愿意相信运用此函数的用户能够正确地使用它，但依旧无法避免错误的发生。所以如果我们不能信任使用者，这里有一些更健壮的方法：
@@ -73,11 +72,11 @@ function can_enter(person_name: str, place: HasCoffins) -> str
 - 重载函数以获得两个签名，每种类型的吸血鬼均有一个对应的函数签名：
 
 ```sdl
-function can_enter(vampire: Vampire, place: HasCoffins) -> str
-function can_enter(vampire: MinorVampire, place: HasCoffins) -> str
+function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
+function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- 或是创建一个抽象类型，如 `abstract type IsVampire`，再让 `Vampire` 和 `MinorVampire` 都扩展自 `IsVampire`。最后给 `can_enter` 增加新的函数签名：`function can_enter(vampire: IsVampire, place: HasCoffins) -> str`。
+- 或是创建一个抽象类型，如 `abstract type AnyVampire`，再让 `Vampire` 和 `MinorVampire` 都扩展自 `AnyVampire`。最后给 `can_enter` 增加新的函数签名：`function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str`。
 
 第一种方法可能是更简单的选择，因为它不需要我们进行任何显式迁移（explicit migration）。
 
@@ -114,8 +113,8 @@ function try(place: optional City) -> str
 现在，让我们来给往伦敦（London）放置一些棺材。按照原著所述，我们的英雄们在当天晚上摧毁了卡法克斯（Carfax）里的 29 具棺材，也就是说在伦敦还有 21 具棺材不知所踪。
 
 ```edgeql
-UPDATE City FILTER .name = 'London'
-SET {
+update City filter .name = 'London'
+set {
   coffins := 21
 };
 ```
@@ -123,14 +122,14 @@ SET {
 现在，我们终于有机会调用我们刚刚创建的函数，并看看它是否有效了：
 
 ```edgeql
-SELECT can_enter('Count Dracula', (SELECT City FILTER .name = 'London'));
+select can_enter('Count Dracula', (select City filter .name = 'London'));
 ```
 
 得到：`{'Count Dracula can enter.'}`
 
 当然，可能你还会有一些其他改进 `can_enter()` 的想法，比如：
 
-- 将属性 `name` 从 `Place` 和 `Ship` 移到 `HasCoffins`。函数的第二个参数改为接收一个字符串（即地点名称），函数签名为 `function can_enter(person_name: str, place_name: str) -> str`，函数体中通过该地点的名称字符串 `SELECT` 到对应的地点对象，然后再使用其属性 `coffins`，给出类似 `{'Count Dracula can enter London.'}` 的结果。
+- 将属性 `name` 从 `Place` 和 `Ship` 移到 `HasCoffins`。函数的第二个参数改为接收一个字符串（即地点名称），函数签名为 `function can_enter(person_name: str, place_name: str) -> optional str`，函数体中通过该地点的名称字符串 `select` 到对应的地点对象，然后再使用其属性 `coffins`，给出类似 `{'Count Dracula can enter London.'}` 的结果。
 - 给函数加一个日期类型的输入，以便我们可以先检查这个吸血鬼是否已经死了。例如，如果我们输入一个露西死后的日期，它只会显示类似 `vampire.name ++ ' is already dead on ' ++ <str>vampire.last_appearance ++ ' and cannot enter ' ++ city.name`。
 
 ## 更多约束
@@ -189,7 +188,7 @@ std::contains(haystack: str, needle: str) -> bool
 ```sdl
 type Lord extending Person {
   constraint expression on (
-    contains(__subject__.name, 'Lord') = true
+    contains(__subject__.name, 'Lord')
   );
 }
 ```
@@ -199,7 +198,7 @@ type Lord extending Person {
 现在，当我们尝试插入一个名字中没有“Lord”的 `Lord` 对象时，将无法成功：
 
 ```edgeql
-INSERT Lord {
+insert Lord {
   name := 'Billy'
   # Other stuff..
 };
@@ -207,13 +206,13 @@ INSERT Lord {
 
 但是如果 `name` 是“Lord Billy”（或“Lord” + 任何东西），它就会正常工作。
 
-在此期间，让我们再来练习一下 `SELECT` 和 `INSERT` 的同时执行，以便我们立即看到 `INSERT` 的结果。我们把 `Billy` 改为 `Lord Billy`，且比利勋爵（Lord Billy）十分富有，到访过我们数据库中的所有地方。
+在此期间，让我们再来练习一下 `select` 和 `insert` 的同时执行，以便我们立即看到 `insert` 的结果。我们把 `Billy` 改为 `Lord Billy`，且比利勋爵（Lord Billy）十分富有，到访过我们数据库中的所有地方。
 
 ```edgeql
-SELECT (
-  INSERT Lord {
+select (
+  insert Lord {
     name := 'Lord Billy',
-    places_visited := (SELECT Place),
+    places_visited := (select Place),
   }
 ) {
   name,
@@ -262,7 +261,7 @@ SELECT (
 
 ```sdl
 type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+  constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
   };
 };
@@ -303,7 +302,7 @@ type MinorVampire extending Person {
 ```sdl
 type MinorVampire extending Person {
   link former_self -> Person;
-  link master := assert_single(.<slaves[is Vampire]);
+  single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
 
@@ -320,13 +319,13 @@ type MinorVampire extending Person {
 现在让我们来验证一下上面的方法是否工作。首先，创建一个名为“Kain”的吸血鬼，并同时插入被他控制的两个 `MinorVampire` 奴隶，他们分别叫做“Billy”和“Bob”。
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Kain',
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Billy',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Bob',
     })
   }
@@ -336,13 +335,13 @@ INSERT Vampire {
 如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   master_name,
   master: {
     name
   }
-} FILTER .name IN {'Billy', 'Bob'};
+} filter .name in {'Billy', 'Bob'};
 ```
 
 结果是：

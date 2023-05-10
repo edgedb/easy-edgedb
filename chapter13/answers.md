@@ -5,16 +5,16 @@
 Here it is, similar to the `Ship` insert we did:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Mr. Swales',
   places_visited := {
-    (INSERT City {
+    (insert City {
       name := 'York'
     }),
-    (INSERT Country {
+    (insert Country {
       name := 'England'
     }),
-    (INSERT OtherPlace {
+    (insert OtherPlace {
       name := 'Whitby Abbey'
     }),
   }
@@ -26,7 +26,7 @@ INSERT NPC {
 This query:
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties,
   links
@@ -55,7 +55,7 @@ is one third readable: `name` will actually show up as a real human-readable nam
 Add `: {name}` in two places to make it fully readable:
 
 ```edgeql
-SELECT (INTROSPECT Ship) {
+select (introspect Ship) {
   name,
   properties: {name},
   links: {name},
@@ -83,10 +83,10 @@ Now it gives this:
 
 #### 3. What would be the shortest way to see what links from the `Vampire` type?
 
-Similar to how `SELECT Vampire.name` just gives all the names for the `Vampire` type (as opposed to `SELECT Vampire { name }`, you can do this:
+Similar to how `select Vampire.name` just gives all the names for the `Vampire` type (as opposed to `select Vampire { name }`), you can do this:
 
 ```edgeql
-SELECT (INTROSPECT Vampire).links { name };
+select (introspect Vampire).links { name };
 ```
 
 Here's the output:
@@ -100,7 +100,7 @@ Here's the output:
 }
 ```
 
-#### 4. What do you think the output of `SELECT DISTINCT {1, 2} + {1, 2};` will be?
+#### 4. What do you think the output of `select distinct {1, 2} + {1, 2};` will be?
 
 Here's the output:
 
@@ -108,10 +108,10 @@ Here's the output:
 {2, 3, 3, 4}
 ```
 
-The `DISTINCT` operator binds stronger than `+`. So it only applies to the part of the expression before `+`, which is `{1, 2}`. This is why `SELECT DISTINCT {1, 2} + {1, 2};` and `SELECT {1, 2} + {1, 2};` are the same. But if you were to write `SELECT DISTINCT {2, 2}` the output would be just `{2}`.
+The `distinct` operator binds stronger than `+`. So it only applies to the part of the expression before `+`, which is `{1, 2}`. This is why `select distinct {1, 2} + {1, 2};` and `select {1, 2} + {1, 2};` are the same. But if you were to write `select distinct {2, 2}` the output would be just `{2}`.
 
-#### 5. What do you think the output of `SELECT DISTINCT {2, 2} + {2, 2};` will be?
+#### 5. What do you think the output of `select distinct {2, 2} + {2, 2};` will be?
 
-The output will be `{4, 4}` because `DISTINCT` only works on the first set.
+The output will be `{4, 4}` because `distinct` only works on the first set.
 
-To get the output `{4}`, you can repeat the `DISTINCT`: `SELECT DISTINCT {2, 2} + DISTINCT {2, 2};`. Or you can apply `DISTINCT` to the whole thing by using parentheses like this: `SELECT DISTINCT({2, 2} + {2, 2})`.
+To get the output `{4}`, you can repeat the `distinct`: `select distinct {2, 2} + distinct {2, 2};`. Or you can apply `distinct` to the whole thing by using parentheses like this: `select distinct({2, 2} + {2, 2})`.

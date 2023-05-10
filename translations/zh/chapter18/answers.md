@@ -47,21 +47,21 @@ type Goldmark extending Currency {
 这是一个相当长的插入：
 
 ```edgeql
-WITH new_vampires := {
+with new_vampires := {
     ('Fritz Frosch', '1850-01-15', '1887-09-11'),
     ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
     ('김훈', '1860-09-09', '1887-09-11')
   }
-INSERT Vampire {
+insert Vampire {
   name := 'Godbrand',
   slaves := (
-    FOR new_vampire IN new_vampires
-    UNION (
-      INSERT MinorVampire {
+    for new_vampire in new_vampires
+    union (
+      insert MinorVampire {
         name := 'Undead' ++ new_vampire.0,
         first_appearance := <cal::local_date>new_vampire.2,
         former_self := (
-          INSERT NPC {
+          insert NPC {
             name := new_vampire.0,
             first_appearance := <cal::local_date>new_vampire.1,
             last_appearance := <cal::local_date>new_vampire.2

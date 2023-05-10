@@ -9,7 +9,7 @@ tags: Type Annotations, Backlinks
 这里，我们有了一个名为“Exeter（埃克塞特）”的新城市，添加它很容易：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Exeter',
   population := 40000
 };
@@ -30,10 +30,10 @@ type City extending Place {
 }
 ```
 
-然后，我们可以对其进行 `INTROSPECT` 查询。我们从上一章就知道如何做到这一点——即只需在各处添加上 `: {name}` 则可获取其内部细节：
+然后，我们可以对其进行 `introspect` 查询。我们从上一章就知道如何做到这一点——即只需在各处添加上 `: {name}` 则可获取其内部细节：
 
 ```edgeql
-SELECT (INTROSPECT City) {
+select (introspect City) {
   name,
   properties: {name},
   annotations: {name}
@@ -63,7 +63,7 @@ SELECT (INTROSPECT City) {
 这就是 `@` 的用武之地。为了获得里面的值，我们要写入：`@value`。`@` 用于直接访问内部的值（字符串），而不仅仅是类型名称。让我们再试一次：
 
 ```edgeql
-SELECT (INTROSPECT City) {
+select (introspect City) {
   name,
   properties: {name},
   annotations: {
@@ -114,7 +114,7 @@ type OtherPlace extending Place {
 现在，让我们仅对其名称和注释进行内省查询：
 
 ```edgeql
-SELECT (INTROSPECT OtherPlace) {
+select (introspect OtherPlace) {
   name,
   annotations: {name, @value}
 };
@@ -136,15 +136,15 @@ SELECT (INTROSPECT OtherPlace) {
 
 ## 更多关于日期
 
-如今，已经有很多角色陆续死去了，所以让我们现在来考虑一下这个问题。我们可以运用 `cal::local_date` 来判断谁还活着，谁已经死了。首先，我们先来看一下到目前为止我们已经拥有了多少个 `Person` 对象。为此，我们可以使用 `SELECT count(Person)` 轻松得到结果是 `{24}`。
+如今，已经有很多角色陆续死去了，所以让我们现在来考虑一下这个问题。我们可以运用 `cal::local_date` 来判断谁还活着，谁已经死了。首先，我们先来看一下到目前为止我们已经拥有了多少个 `Person` 对象。为此，我们可以使用 `select count(Person)` 轻松得到结果是 `{24}`。
 
 这里再引出一个名为 {eql:func}`docs:std::enumerate` 的函数，该函数接受任何集合，并会返回一组形式为 `(index, element)` 的元组，每个元组项包含从零开始计数的索引以及输入集合中对应的元素。我们将用它与 `count()` 函数的结果进行比较，以确保我们得到的数字是正确的。
 
 下面是运用了 `enumerate()` 的一个简单示例：
 
 ```edgeql
-WITH three_things := {'first', 'second', 'third'},
-SELECT enumerate(three_things);
+with three_things := {'first', 'second', 'third'},
+select enumerate(three_things);
 ```
 
 输出是：
@@ -153,7 +153,7 @@ SELECT enumerate(three_things);
 {(0, 'first'), (1, 'second'), (2, 'third')}
 ```
 
-现在，让我们来执行 `SELECT enumerate(Person.name);`：如果最后一个索引是 23，则验证了我们得到了 24 个结果：
+现在，让我们来执行 `select enumerate(Person.name);`：如果最后一个索引是 23，则验证了我们得到了 24 个结果：
 
 ```
 {
@@ -182,10 +182,10 @@ SELECT enumerate(three_things);
 但只有 19 个？哦，没错：因为我们有 5 个 `Crewman` 对象没有名称，所以它们不会出现。那我们该如何在查询中获取它们呢？我们当然可以像下面这样做：
 
 ```edgeql
-WITH
-  a := array_agg((SELECT enumerate(Person.name))),
-  b := array_agg((SELECT enumerate(Crewman.number))),
-SELECT (a, b);
+with
+  a := array_agg((select enumerate(Person.name))),
+  b := array_agg((select enumerate(Crewman.number))),
+select (a, b);
 ```
 
 （`array_agg()` 是为了避免发生集合乘以集合的情况，如果对此你记得不太清楚了，可以重新回顾一下第 12 章）
@@ -213,18 +213,18 @@ SELECT (a, b);
 `Crewman` 类型在结果中的名字只是数字，这看起来不太友好。所以，让我们放弃像上面一样花哨的查询，先用基于数字的名称对 `Crewman` 的 `name` 进行更新：
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   name := 'Crewman ' ++ <str>.number
 };
 ```
 
-现在，每个人都有名字了（此时再执行 `SELECT enumerate(Person.name);`，结果中的最后一个索引将为 23），让我们再来看看他们是否都还在世。逻辑很简单：我们输入一个 `cal::local_date`，如果它大于 `last_appearance` 的日期，那么表明这个角色已经死了。
+现在，每个人都有名字了（此时再执行 `select enumerate(Person.name);`，结果中的最后一个索引将为 23），让我们再来看看他们是否都还在世。逻辑很简单：我们输入一个 `cal::local_date`，如果它大于 `last_appearance` 的日期，那么表明这个角色已经死了。
 
 ```edgeql
-WITH p := (SELECT Person),
+with p := (select Person),
      date := <cal::local_date>'1887-08-16',
-SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
+select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
 这是输出（只有 6 个结果，因为其他对象尚未设置过 `last_appearance`）：
@@ -249,7 +249,7 @@ SELECT(p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date 
 首先，我们可以像下面这样获取德古拉伯爵的所有 `slave` 的名称：
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   name,
   slaves: {
     name
@@ -273,10 +273,10 @@ SELECT Vampire {
 }
 ```
 
-但是如果我们想做相反的事情呢？即用 `SELECT MinorVampire` 开头，并访问与其链接的 `Vampire` 对象，该怎么做呢？毕竟现在的 `MinorVampire` 只能调用属于 `MinorVampire` 类型和抽象类型 `Person` 的属性：
+但是如果我们想做相反的事情呢？即用 `select MinorVampire` 开头，并访问与其链接的 `Vampire` 对象，该怎么做呢？毕竟现在的 `MinorVampire` 只能调用属于 `MinorVampire` 类型和抽象类型 `Person` 的属性：
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
   # master... how do we get this?
   # There's no link to Vampire inside MinorVampire...
@@ -285,12 +285,12 @@ SELECT MinorVampire {
 
 既然上面没有 `link master -> Vampire`，我们该如何倒退查看链接到它的 `Vampire` 类型呢？
 
-这就要靠反向链接了，我们使用 `.<` 代替 `.` 并指定我们要查找的类型：`[IS Vampire]`。
+这就要靠反向链接了，我们使用 `.<` 代替 `.` 并指定我们要查找的类型：`[is Vampire]`。
 
 首先，让我们抛开对 `MinorVampire` 的查询，看看`.<` 是如何工作的。这有一个例子：
 
 ```edgeql
-SELECT MinorVampire.<slaves[IS Vampire] {
+select MinorVampire.<slaves[is Vampire] {
   name,
   age
 };
@@ -298,7 +298,7 @@ SELECT MinorVampire.<slaves[IS Vampire] {
 
 这并不是在选择 `MinorVampire` 的 `slaves`，它是在选择 `Vampire`，且需要满足其 `.slaves` 链接有指向的 `MinorVampire` 对象。
 
-你可以将 `MinorVampire.<slaves[IS Vampire] {name, age}` 视为：选择“拥有 MinorVampire 作为奴隶”的 Vampire 的名称和年龄”。
+你可以将 `MinorVampire.<slaves[is Vampire] {name, age}` 视为：选择“拥有 MinorVampire 作为奴隶”的 Vampire 的名称和年龄”。
 
 这里是输出：
 
@@ -306,16 +306,16 @@ SELECT MinorVampire.<slaves[IS Vampire] {
 {default::Vampire {name: 'Count Dracula', age: 800}}
 ```
 
-这与 `SELECT Vampire: {name, age}` 的输出结果相同，但它在我们之前想要访问多种类型的查询中变得非常有用。现在我们可以选择所有 `MinorVampire` 对象以及它们的主人了：
+这与 `select Vampire: {name, age}` 的输出结果相同，但它在我们之前想要访问多种类型的查询中变得非常有用。现在我们可以选择所有 `MinorVampire` 对象以及它们的主人了：
 
 ```edgeql
-SELECT MinorVampire {
+select MinorVampire {
   name,
-  master := .<slaves[IS Vampire] {name},
+  master := .<slaves[is Vampire] {name},
 };
 ```
 
-你可以将 `.<slaves[IS Vampire] {name}` 解读为“通过 `.slaves` 链接到 `MinorVampire` 的 `Vampire` 的名称”。 
+你可以将 `.<slaves[is Vampire] {name}` 解读为“通过 `.slaves` 链接到 `MinorVampire` 的 `Vampire` 的名称”。 
 
 这里是输出：
 

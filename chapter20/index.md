@@ -6,15 +6,15 @@ tags: Ddl, Sdl, Edgedb Community
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
 
-> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and the need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
+> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) and search for "the look of hate in them turned to triumph".
 
 We are sure that the vampire women have been destroyed, however, so we can do one final change by giving them a `last_appearance`. Van Helsing destroys them on November 5, so we will insert that date. But don't forget to filter Lucy out - she's the only `MinorVampire` that isn't one of the three women at the castle.
 
 ```edgeql
-UPDATE MinorVampire FILTER .name != 'Lucy'
-SET {
+update MinorVampire filter .name != 'Lucy'
+set {
   last_appearance := <cal::local_date>'1887-11-05'
 };
 ```
@@ -27,10 +27,10 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
 
-The first part to a schema is always the command to start the migration:
+First let's start with the schema in general.
 
-- We've used `START MIGRATION TO {};` commands, but the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools provide better control in real projects.
-- `module default {}`: We only used one module (namespace) for our schema, but you can make more if you like. You can see the module when you use `DESCRIBE TYPE AS SDL` (or `AS TEXT`).
+- To migrate a schema, just use the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools. A simple `edgedb migration create` and `edgedb migrate` is all you need to migrate your schema to a new one.
+- `module default {}`: We only used one module (namespace) for our schema, but you can make more modules if you like. You can see the module when you use `describe type as sdl` (or `as text`).
 
 Here's an example with `Person`, which starts like this and shows us the module it's located in:
 
@@ -69,11 +69,11 @@ abstract type Person {
     delegated constraint exclusive;
   }
   property age -> int16;
-  property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
-  property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+  property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   property strength -> int16;
   multi link places_visited -> Place;
-  multi link lover -> Person;
+  multi link lovers -> Person;
   property first_appearance -> cal::local_date;
   property last_appearance -> cal::local_date;
 }
@@ -81,7 +81,7 @@ abstract type Person {
 
 `exclusive` is probably the most common {ref}`constraint <docs:ref_datamodel_constraints>`, which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with strange names: `Woman 2`, `The innkeeper`, etc. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
 Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
 
@@ -98,7 +98,7 @@ For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_d
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
-edgedb> SELECT std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -121,8 +121,8 @@ type Crewman extending HasNumber, Person {
 This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   name := 'Crewman ' ++ <str>.number
 };
 ```
@@ -144,13 +144,13 @@ type MinorVampire extending Person {
 With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
-  vampire_name := .<former_self[IS MinorVampire].name
-} FILTER EXISTS .vampire_name;
+  vampire_name := .<former_self[is MinorVampire].name
+} filter exists .vampire_name;
 ```
 
-In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted to, we could extend the game back to more historical times and link the vampire women to an `NPC` type. That would become their `former_self`.
+In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted, we could extend the game back before the events of the book and link the vampire women to an `NPC` type. That would become their `former_self`.
 
 Our two enums were used for the `PC` and `Sailor` types:
 
@@ -168,15 +168,15 @@ type PC extending Person {
 
 The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
 
-- choosing `Feet` gives the character a certain speed and costs nothing,
+- Choosing `Feet` gives the character a certain speed and costs nothing,
 - `HorseDrawnCarriage` increases speed but decreases money,
-- `Train` increases speed the most but decreases money and can only follow railway lines, etc.
+- `Train` increases speed the most but decreases money and can only follow railway lines.
 
 `Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
-- by another computed property called `awake` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
+- by another computed property called `sleep_state` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
 ```sdl
 type Visit {
@@ -186,11 +186,11 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
+  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
-The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_links_overloading>` keyword, which lets us use properties, links, functions etc. in different ways than the default. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
+The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_links_overloading>` keyword, which lets us use properties, links, functions etc. in different ways than in the type's parent type. Here we wanted to constrain `age` to 120 years, and to use the `places_visited` link in a different way than in `Person` by giving it London as the default.
 
 ```sdl
 type NPC extending Person {
@@ -198,7 +198,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -215,7 +215,7 @@ abstract type Place extending HasNameAndCoffins {
 The `important_places` property only got used once in this insert:
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
@@ -245,13 +245,13 @@ Our `Lord` type was only created to show how to use `constraint expression on`, 
 
 ```sdl
 type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord') = true) {
+  constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
   };
 };
 ```
 
-(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc. etc.)
+(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc.)
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
@@ -278,19 +278,19 @@ type Castle extending Place {
 Back in Chapter 7, we used this in a query to see if Jonathan could break any of the doors and escape the castle. The idea was simple: Jonathan would try to open every door, and if he had more strength then any one of them then he could escape the castle.
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT jonathan_strength > min(array_unpack(doors));
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select jonathan_strength > min(array_unpack(doors));
 ```
 
 However, later on we learned the `any()` function so let's see how we could use it here. With `any()`, we could change the query to this:
 
 ```edgeql
-WITH
-  jonathan_strength := (SELECT Person FILTER .name = 'Jonathan Harker').strength,
-  doors := (SELECT Castle FILTER .name = 'Castle Dracula').doors,
-SELECT any(array_unpack(doors) < jonathan_strength); # Only this part is different
+with
+  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
+  doors := (select Castle filter .name = 'Castle Dracula').doors,
+select any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
 And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
@@ -298,12 +298,12 @@ And of course, we could also create a function to do the same now that we know h
 Don't forget, we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
 
 ```sdl
-std::any(values: SET OF bool) -> bool
+std::any(values: set of bool) -> bool
 ```
 
-So this (a set) will work: `SELECT any({5, 6, 7} = 7);`
+So this (a set) will work: `select any({5, 6, 7} = 7);`
 
-But this (an array) will not: `SELECT any([5, 6, 7] = 7);`
+But this (an array) will not: `select any([5, 6, 7] = 7);`
 
 Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
 
@@ -328,21 +328,21 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property exact_location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
-This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property is for users of the database with descriptions like `'The Demeter arrives at Whitby, crashing on the beach'` that are used to find events when we need to.
+This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property makes it easy for usersof the database to find events. It might contain something like `'The Demeter arrives at Whitby, crashing on the beach'`.
 
 The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
 
 ## Navigating EdgeDB documentation
 
-Now that you have reached the end of the book, you will certainly start looking at the EdgeDB documentation. We'll close the book out with some tips to do so, so that it feels familiar and easy to look through.
+Now that you have reached the end of the book, you'll be referencing our documentation to refresh what you know and to learn more. We'll close the book out with some tips to do so, so that it feels familiar and easy to look through.
 
 ### Syntax
 
-This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create a type, property etc. and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
+This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create one of these items and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
 
 For a simple example, {ref}`here is the syntax on creating a module <docs:ref_eql_sdl_modules>`:
 
@@ -353,7 +353,7 @@ module ModuleName "{"
 "}"
 ```
 
-Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). Easy enough.
+Looking at that you can see that a module is just a module name, `{}`, and everything inside (the schema declarations). The `[]` square brackets in documentation are used to show optional input. In other words, a module can contain schema declarations or not. Easy enough.
 
 How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types>`:
 
@@ -369,7 +369,7 @@ How about object types? {ref}`They look like this <docs:ref_eql_sdl_object_types
   "}" ]
 ```
 
-This should be familiar to you: you need `type TypeName` to start. You can add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
+This should be familiar to you: you need `type TypeName` to start. You can optionally add `abstract` on the left and `extending` for other types, and then everything else goes inside `{}`.
 
 Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and include three types: concrete, computed, and abstract. We're most familiar with concrete so let's take a look at that:
 
@@ -386,31 +386,33 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
     "}" ]
 ```
 
+The `{ | }` in documentation is used to show the possible options available to you. So `[{required | optional}]` means that you don't need to write either required or optional (because both are inside `[]` square brackets), but if you choose to use it, you must choose either `required` or `optional`, not both.
+
 You can think of the syntax as a helpful guide to keep your declarations in the right order.
 
 ### Dipping into DDL
 
-DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `CREATE` to make a function whenever you need.
+DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `create` to make a function whenever you need.
 
 SDL: `function says_hi() -> str using('hi');`
 
-DDL: `CREATE FUNCTION says_hi() -> str USING('hi')`
+DDL: `create function says_hi() -> str using('hi')`
 
 And even the capitalization doesn't matter.
 
-But for types, DDL requires a lot more typing, using keywords like `CREATE`, `SET`, `ALTER`, and so on. Using {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools makes it possible to work with the schema using only SDL.
+But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Throughout this book, we have used the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools that make it possible to work with the schema using only SDL.
 
 ## EdgeDB lexical structure
 
-You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexical>` for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. Things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
+You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexical>` for reference during your projects. It contains the whole lexical structure of EdgeDB including items that are maybe too dry for a textbook like this one. This includes things like order of precedence for operators, all reserved keywords, which characters can be used in identifiers, and so on.
 
 ## Getting help
 
-Help is always just a message away. The best way to get help is to start a discussion on [our discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on this very page.
+Help is always just a message away. The most active place to discuss EdgeDB and get help is [our Discord server](https://discord.gg/edgedb), while the [discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub is another good place to start a conversation. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on [its dedicated GitHub repo](https://github.com/edgedb/easy-edgedb/).
 
 ## And now it's time to say goodbye
 
-We hope you enjoyed learning EdgeDB through a story, and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on the forums! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
+We hope you enjoyed learning EdgeDB through a story and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on our Discord! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.
 
 > The Road goes ever on and on
 > Down from the door where it began.

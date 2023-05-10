@@ -1,40 +1,35 @@
 ```
 # Schema:
-START MIGRATION TO {
-  module default {
-    type Person {
-      required property name -> str;
-      multi link places_visited -> City;
-    }
-    
-    type City {
-      required property name -> str;
-      property modern_name -> str;
-    }
+
+module default {
+  type Person {
+    required property name -> str;
+    multi link places_visited -> City;
   }
-};
-
-POPULATE MIGRATION;
-COMMIT MIGRATION;
-
+  
+  type City {
+    required property name -> str;
+    property modern_name -> str;
+  }
+}
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița'
 };
 
-INSERT Person {
+insert Person {
   name := 'Jonathan Harker',
   places_visited := City,
 };

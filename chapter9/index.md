@@ -16,41 +16,41 @@ This is a good time to add two new properties to the `Person` type to indicate w
 
 For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
-Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
-
-```edgeql
-INSERT Crewman {
-  number := count(DETACHED Crewman) +1,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
-};
-```
-
-And since we have a lot of `Crewman` objects already inserted, we can easily use the `UPDATE` and `SET` syntax on all of them if we assume they all died at the same time (or if being super precise doesn't matter).
-
-Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
-
-```edgeql
-SELECT <cal::local_date>'1887-07-08';
-```
-
-But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
-
 Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
 
 Here are its signatures (we're using the third):
 
 ```
-cal::to_local_date(s: str, fmt: OPTIONAL str = {}) -> local_date
+cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
 cal::to_local_date(dt: datetime, zone: str) -> local_date
 cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```
 
+Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
+
+```edgeql
+insert Crewman {
+  number := count(detached Crewman) +1,
+  first_appearance := cal::to_local_date(1887, 7, 6),
+  last_appearance := cal::to_local_date(1887, 7, 16),
+};
+```
+
+And since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise).
+
+Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
+
+```edgeql
+select <cal::local_date>'1887-07-08';
+```
+
+But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
+
 Now we update the `Crewman` objects and give them all the same date to keep things simple:
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16)
 };
@@ -63,9 +63,9 @@ This will of course depend on our game. Can a `PC` actually visit the ship when 
 Now let's get back to inserting the new characters. First we'll insert Lucy:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Lucy Westenra',
-  places_visited := (SELECT City FILTER .name = 'London')
+  places_visited := (select City filter .name = 'London')
 };
 ```
 
@@ -77,7 +77,7 @@ With `default` and `overloaded` added, it now looks like this:
 type NPC extending Person {
   property age -> HumanAge;
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -87,7 +87,7 @@ type NPC extending Person {
 One convenient function is {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`, which gives the datetime right now. Let's try it out:
 
 ```edgeql-repl
-edgedb> SELECT datetime_current();
+edgedb> select datetime_current();
 {<datetime>'2020-11-17T06:13:24.418765000Z'}
 ```
 
@@ -121,36 +121,36 @@ abstract type Place {
 
 We don't need this in our schema so we won't change `Place`, but this is how you would do it.
 
-## Using FOR and UNION
+## Using the 'for' and 'union' keywords
 
-We're almost ready to insert our three new characters, and now we don't need to add `(SELECT City FILTER .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
+We're almost ready to insert our three new characters, and now we don't need to add `(select City filter .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
 
-To do this, we can use a `FOR` loop, followed by the keyword `UNION`. First, here's the `FOR` part:
+To do this, we can use a `for` loop, followed by the keyword `union`. First, here's the `for` part:
 
 ```edgeql
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 ```
 
 In other words: take this set of three strings and do something to each one. `character_name` is the variable name we chose to call each string in this set.
 
-`UNION` comes next, because it is the keyword used to join sets together. For example, this query:
+`union` comes next, because it is the keyword used to join sets together. For example, this query:
 
 ```edgeql
-WITH city_names := (SELECT City.name),
-  castle_names := (SELECT Castle.name),
-SELECT city_names UNION castle_names;
+with city_names := (select City.name),
+  castle_names := (select Castle.name),
+select city_names union castle_names;
 ```
 
 joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
 
-Now let's return to the `FOR` loop with the variable name `character_name`, which looks like this:
+Now let's return to the `for` loop with the variable name `character_name`, which looks like this:
 
 ```edgeql
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
-UNION (
-  INSERT NPC {
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+union (
+  insert NPC {
     name := character_name,
-    lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
+    lovers := (select Person filter .name = 'Lucy Westenra'),
   }
 );
 ```
@@ -160,7 +160,7 @@ We get three `uuid`s as a response to show that they were entered.
 Then we can check to make sure that it worked:
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
   places_visited: {
     name,
@@ -168,7 +168,7 @@ SELECT NPC {
   lover: {
     name,
   },
-} FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
+} filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
 ```
 
 And as we hoped, they are all connected to Lucy now.
@@ -193,12 +193,12 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we could use this method to insert our five `Crewman` objects inside one `INSERT` instead of doing it five times. We can put their numbers inside a single set, and use the same `FOR` and `UNION` method to insert them. Of course, we already used `UPDATE` to change the inserts but from now on in our code their insert will look like this:
+By the way, now we could use this method to insert our five `Crewman` objects inside one `insert` instead of doing it five times. We can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
 
 ```edgeql
-FOR n IN {1, 2, 3, 4, 5}
-UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+union (
+  insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
@@ -206,14 +206,14 @@ UNION (
 );
 ```
 
-It's a good idea to familiarize yourself with {ref}`the order to follow <docs:ref_eql_statements_for>` when you use `FOR`:
+It's a good idea to familiarize yourself with {ref}`the order to follow <docs:ref_eql_statements_for>` when you use `for`:
 
 ```edgeql-synopsis
-[ WITH with-item [, ...] ]
+[ with with-item [, ...] ]
 
-FOR variable IN iterator-expr
+for variable in iterator-expr
 
-UNION output-expr ;
+union output-expr ;
 ```
 
 The important part is the *iterator-expr* which needs to be a single simple expression that gives back some kind of set. Usually, it is a just a set inside `{` and `}`. It can also be a path, such as `NPC.places_visited`, or it can be a function call, such as `array_unpack()`. More complex expressions should have parentheses around them.
@@ -221,23 +221,23 @@ The important part is the *iterator-expr* which needs to be a single simple expr
 Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
 
 ```edgeql
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
-  lover := (
-    SELECT Person FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+update NPC filter .name = 'Lucy Westenra'
+set {
+  lovers := (
+    select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 ```
 
-Now we'll select her to make sure it worked. Let's use `LIKE` this time for fun when doing the filter:
+Now we'll select her to make sure it worked. Let's use `like` this time for fun when doing the filter:
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
   lover: {
     name
   }
-} FILTER .name LIKE 'Lucy%';
+} filter .name like 'Lucy%';
 ```
 
 And this does indeed print her out with her three lovers.
@@ -273,7 +273,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City filter .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -293,28 +293,29 @@ Okay, let's read the rest of the introduction for this chapter. It continues to 
 
 > ...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately the three men become friends with each other. Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax not far outside London. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
-Oops! Looks like Lucy doesn't have three lovers anymore. Now we'll have to update her to only have Arthur:
+Oops! Looks like Lucy doesn't have three lovers anymore.  We will have to remove her as a lover from the other two gentlemen. We'll just give them a sad empty set.
 
 ```edgeql
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
-  lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
+update NPC filter .name in {'John Seward', 'Quincey Morris'}
+set {
+  lovers := {} # 😢
 };
 ```
 
-And then remove her from the other two. We'll just give them a sad empty set.
+That makes it easy to update Lucy's `lovers` link, since we know she now only shows up inside the `lovers` for Jonathan Harker.
 
 ```edgeql
-UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
-SET {
-  lover := {} # 😢
-};
+update NPC filter .name = 'Lucy Westenra'
+set {
+lovers := (
+select Person filter NPC in .lovers
+)};
 ```
 
-Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `FILTER` for:
+Looks like we are mostly up to date now. The only thing left is to insert the mysterious Renfield. He is easy because he has no lover to `filter` for:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
   strength := 10,
@@ -332,9 +333,9 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 1. Why doesn't this insert work and how can it be fixed?
 
    ```edgeql
-   FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
-   UNION (
-     INSERT Castle {
+   for castle in ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
+   union (
+     insert Castle {
        name := castle
      }
    );
@@ -354,7 +355,7 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
      property age -> int16;
      property strength -> int16;
      multi link places_visited -> Place;
-     multi link lover -> Person;
+     multi link lovers -> Person;
      property first_appearance -> cal::local_date;
      property last_appearance -> cal::local_date;
    }

@@ -12,35 +12,45 @@ But there is good news for us, because we are going to keep learning about Carte
 
 ## Overloading functions
 
-Last chapter, we used the `fight()` function for some characters, but most only have `{}` for the `strength` property. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen.
+Last chapter, we gave every character a strength of 5 and used the `fight()` function for a few of them. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen. We should give Dracula a more realistic strength, and randomize some of the strength values for some of our characters.
 
-Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique. Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
+Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - he gets 10. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. We can do this with three quick updates:
 
 ```edgeql
-SELECT <int16>round(random() * 5);
+update NPC
+filter .name = 'Jonathan Harker'
+set {
+  strength := 5
+};
+update NPC
+filter .name = 'Renfield'
+set {
+  strength := 10
+};
+update Vampire
+filter .name = 'Count Dracula'
+set {
+  strength := 20
+};
+```
+
+Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
+
+```edgeql
+select <int16>round(random() * 5);
 ```
 
 So now we'll use this to update our `Person` types and give them all a random strength.
 
 ```edgeql
-UPDATE Person
-  FILTER NOT EXISTS .strength
-  SET {
+update Person
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
+  set {
     strength := <int16>round(random() * 5)
-};
+  };
 ```
 
-And we'll make sure Count Dracula gets 20 strength, because he's Dracula:
-
-```edgeql
-UPDATE Vampire
-FILTER .name = 'Count Dracula'
-SET {
-  strength := 20
-};
-```
-
-Now let's `SELECT Person.strength;` and see if it works:
+Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
 
 ```
 {3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 20, 4, 4, 4, 4}
@@ -50,22 +60,24 @@ Looks like it worked.
 
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight.
 
+(Note: the array_join function in the signature joins an array of strings into a single string)
+
 ```sdl
 function fight(people_names: array<str>, opponent: Person) -> str
   using (
-    WITH
-        people := (SELECT Person FILTER contains(people_names, .name)),
-    SELECT
+    with
+        people := (select Person filter contains(people_names, .name)),
+    select
         array_join(people_names, ', ') ++ ' win!'
-        IF sum(people.strength) > (opponent.strength ?? 0)
-        ELSE (opponent.name ?? 'Opponent') ++ ' wins!'
+        if sum(people.strength) > (opponent.strength ?? 0)
+        else (opponent.name ?? 'Opponent') ++ ' wins!'
   );
 ```
 
 With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
 
 - We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
-- `sum` in the next line of our `SELECT` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
+- `sum` in the next line of our `select` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
 
 You may wonder why we provide a default value for the opponent name (`opponent.name ?? 'Opponent'`) but not for the names of the people in the group. This is because, if the array of names is empty, the group cannot win since no `Person` object will be returned from the query. We can't have a case where `people_names` is empty but the party won the fight, so no need for a fallback name to call the group! The `.name` property isn't required though, so since you pass in the opponent's `Person` object directly, you could pass in a powerful opponent without a name. The group is selected by their names, so there's no way to do the same for their side.
 
@@ -83,10 +95,10 @@ The function name is the same, but to call it, we enter an array of the fighters
 Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
 
 ```edgeql
-WITH
+with
   party := ['Jonathan Harker', 'Renfield'],
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-SELECT fight(party, dracula);
+  dracula := (select Person filter .name = 'Count Dracula'),
+select fight(party, dracula);
 ```
 
 So did they...
@@ -98,10 +110,10 @@ So did they...
 No, they didn't win. How about four people?
 
 ```edgeql
-WITH
+with
   party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'],
-  dracula := (SELECT Person FILTER .name = 'Count Dracula'),
-SELECT fight(party , dracula);
+  dracula := (select Person filter .name = 'Count Dracula'),
+select fight(party , dracula);
 ```
 
 Much better:
@@ -121,63 +133,30 @@ Here is a simple one that tells us if a `Person` type has visited a `Place` or n
 ```sdl
 function visited(person: str, city: str) -> bool
   using (
-    WITH person := (SELECT Person FILTER .name = person),
-    SELECT city IN person.places_visited.name
+    with person := (select Person filter .name = person),
+    select city in person.places_visited.name
   );
 ```
 
 Now our queries are much shorter:
 
 ```edgeql-repl
-edgedb> SELECT visited('Mina Murray', 'London');
+edgedb> select visited('Mina Murray', 'London');
 {true}
-edgedb> SELECT visited('Mina Murray', 'Bistritz');
+edgedb> select visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
 Thanks to the function, even more complicated queries are still quite readable:
 
 ```edgeql
-SELECT(
+select (
   'Did Mina visit Bistritz? ' ++ <str>visited('Mina Murray', 'Bistritz'),
   'What about Jonathan and Romania? ' ++ <str>visited('Jonathan Harker', 'Romania')
 );
 ```
 
 This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romania? true')}`.
-
-The documentation for creating functions {ref}`is here <docs:ref_eql_ddl_functions>`. You can see that you can create them with SDL or DDL but there is not much difference between the two. In fact, they are so similar that the only difference is the word `CREATE` that DDL needs. In other words, just add `CREATE` to make a function without needing to do an explicit migration. For example, here's a function that just says hi:
-
-```sdl
-function say_hi() -> str
-  using ('hi');
-```
-
-If you want to create it right now, just do this:
-
-```edgeql
-CREATE FUNCTION say_hi() -> str
-  USING ('hi');
-```
-
-(or with lowercase letters, it doesn't matter)
-
-You'll see more or less the same thing when you ask to `DESCRIBE FUNCTION say_hi`:
-
-```
-{'CREATE FUNCTION default::say_hi() ->  std::str USING (\'hi\');'}
-```
-
-## Deleting (dropping) functions
-
-You can delete a function with the `DROP` keyword and the function signature. You only have to specify the input though, because the input is all that EdgeDB looks at when identifying a function. So in the case of our two `fight()` functions:
-
-```sdl
-fight(one: Person, two: Person) -> str
-fight(names: str, one: int16, two: str) -> str
-```
-
-You would delete them with `DROP fight(one: Person, two: Person)` and `DROP fight(names: str, one: int16, two: str)`. The `-> str` part isn't needed.
 
 ## More about Cartesian products and the coalescing operator
 
@@ -186,9 +165,9 @@ Now let's learn more about Cartesian products in EdgeDB. You might recall from t
 Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER Place.name ILIKE 'b%'),
-     f_places := (SELECT Place FILTER Place.name ILIKE 'f%'),
-SELECT b_places.name ++ ' ' ++ f_places.name;
+with b_places := (select Place filter Place.name ilike 'b%'),
+     f_places := (select Place filter Place.name ilike 'f%'),
+select b_places.name ++ ' ' ++ f_places.name;
 ```
 
 The result may not be what you'd expect.
@@ -200,7 +179,7 @@ The result may not be what you'd expect.
 Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
 
 ```edgeql
-SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
+select {'Buda-Pesth', 'Bistritz'} ++ {};
 ```
 
 So that should give a `{}`. The output is...
@@ -209,16 +188,16 @@ So that should give a `{}`. The output is...
 error: operator '++' cannot be applied to operands of type 'std::str' and 'anytype'
   ┌─ query:1:8
   │
-1 │ SELECT {'Buda-Pesth', 'Bistritz'} ++ {};
+1 │ select {'Buda-Pesth', 'Bistritz'} ++ {};
   │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. You can probably guess that the same is true for array constructors too, so `SELECT [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```edgeql-repl
-edgedb> SELECT {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 
@@ -232,11 +211,11 @@ In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return
 To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
-     f_places := (SELECT Place FILTER .name ILIKE 'f%'),
-SELECT b_places.name ++ ' ' ++ f_places.name
-  IF EXISTS b_places.name AND EXISTS f_places.name
-  ELSE b_places.name ?? f_places.name;
+with b_places := (select Place filter .name ilike 'b%'),
+     f_places := (select Place filter .name ilike 'f%'),
+select b_places.name ++ ' ' ++ f_places.name
+  if exists b_places.name and exists f_places.name
+  else b_places.name ?? f_places.name;
 ```
 
 This returns:
@@ -250,11 +229,11 @@ That's better.
 But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
-SELECT b_places.name ++ ' ' ++ m_places.name
-  IF EXISTS b_places.name AND EXISTS m_places.name
-  ELSE b_places.name ?? m_places.name;
+with b_places := (select Place filter .name ilike 'b%'),
+     m_places := (select Place filter .name ilike 'm%'),
+select b_places.name ++ ' ' ++ m_places.name
+  if exists b_places.name and exists m_places.name
+  else b_places.name ?? m_places.name;
 ```
 
 Then we'll get this result:
@@ -265,45 +244,34 @@ Then we'll get this result:
 
 instead of something like 'Buda-Pesth, Bistritz, Munich'.
 
-Let's experiment some more while introducing two new functions, called `array_agg` and `array_join`. Here's what they do:
-
-- {eql:func}`docs:std::array_agg`, turns sets into arrays (it 'aggregates' them).
-- {eql:func}`docs:std::array_join` turns arrays into a single string. So let's give that a try:
+One way to join the two together without thinking about Cartesian multiplication is to turn them into an array. The {eql:func}`docs:std::array_agg` function will do this: it 'aggregates' them.
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
-SELECT array_join(array_agg(b_places.name), ', ') ++ ', ' ++
-  array_join(array_agg(m_places.name), ', ')
-  IF EXISTS b_places.name AND EXISTS m_places.name
-  ELSE b_places.name ?? m_places.name;
+with b_places := (select Place filter .name ilike 'b%'),
+     m_places := (select Place filter .name ilike 'm%'),
+select array_agg(b_places.name) ++
+  array_agg(m_places.name);
 ```
 
-This looks not too bad: the output is `{'Buda-Pesth, Bistritz, Munich'}`. But there's a small problem:
+Using this gives us an output of `{['Buda-Pesth', 'Bistritz', 'Munich']}`.
 
-- if both sets are not empty we get a single string with commas,
-- otherwise we get a set of strings.
-
-So that's not very robust. Plus the query is kind of hard to read now.
-
-The best way is actually the easiest: just `UNION` the sets.
+But if we just want to stick with a set, there is an even easier way: just `union` the sets.
 
 ```edgeql
-WITH b_places := (SELECT Place FILTER .name ILIKE 'b%'),
-     m_places := (SELECT Place FILTER .name ILIKE 'm%'),
-     both_places := b_places UNION m_places,
-SELECT both_places.name;
+with b_places := (select Place filter .name ilike 'b%'),
+  m_places := (select Place filter .name ilike 'm%'),
+  select b_places.name union m_places.name;
 ```
 
-Finally! The output is `{'Buda-Pesth', 'Bistritz', 'Munich'}`
+And that will give us an output of `{'Buda-Pesth', 'Bistritz', 'Munich'}`.
 
-Now with this more robust query we can use it on anything and don't need to worry about getting `{}` if we choose a letter like x. Let's look at every place that contains k or e:
+With this, we don't need to worry about getting `{}` if we choose a letter like x. Let's look at every place that contains k or e:
 
 ```edgeql
-WITH has_k := (SELECT Place FILTER .name ILIKE '%k%'),
-     has_e := (SELECT Place FILTER .name ILIKE '%e%'),
-     has_either := has_k UNION has_e,
-SELECT has_either.name;
+with has_k := (select Place filter .name ilike '%k%'),
+     has_e := (select Place filter .name ilike '%e%'),
+     has_either := has_k union has_e,
+select has_either.name;
 ```
 
 This gives us the result:
@@ -315,9 +283,9 @@ This gives us the result:
 Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
 
 ```edgeql
-WITH cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+with cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
      cities2 := <str>{}, # Don't forget to cast to <str>
-SELECT cities1 ?= cities2;
+select cities1 ?= cities2;
 ```
 
 and get the output
@@ -329,7 +297,7 @@ and get the output
 instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:
 
 ```edgeql
-SELECT Vampire.lover.name ?= Crewman.name;
+select Vampire.lover.name ?= Crewman.name;
 ```
 
 will return `{true}`. (Because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`.)
@@ -372,11 +340,11 @@ will return `{true}`. (Because Dracula has no lover and the Crewmen have no name
      using(input);
    ```
 
-3. Will `SELECT {} ?? {3, 4} ?? {5, 6};` work?
+3. Will `select {} ?? {3, 4} ?? {5, 6};` work?
 
-4. Will `SELECT <int64>{} ?? <int64>{} ?? {1, 2}` work?
+4. Will `select <int64>{} ?? <int64>{} ?? {1, 2}` work?
 
-5. Trying to make a single string of everyone's name with `SELECT array_join(array_agg(Person.name));` isn't working. What's the problem?
+5. Trying to make a single string of everyone's name with `select array_join(array_agg(Person.name));` isn't working. What's the problem?
 
 [See the answers here.](answers.md)
 

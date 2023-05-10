@@ -10,7 +10,7 @@ tags: Indexing, String Functions
 
 ## `index on` for quicker lookups
 
-We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original book Dracula is all organized into letters, diaries, etc. that begin with the date and sometimes the time. They all start out in this sort of way:
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original text of Dracula is organized into letters, diary entries, newspaper reports, etc. that begin with the date and sometimes the time. They tend to start out like this:
 
 ```
 Dr. Seward’s Diary.
@@ -24,7 +24,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (excerpt = part of a book).
+This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
 
 ```sdl
 type BookExcerpt {
@@ -39,12 +39,15 @@ The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and m
 
 We could do this for certain other types too - it might be good for types like `Place` and `Person`.
 
-Note: `index` is good in limited quantities, but you don't want to index everything. Here is why:
+```{eval-rst}
+.. note::
+`index` is good in limited quantities, but you don't want to index everything. Here is why:
 
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
 
-This is probably not surprising, because you can see that `index` is a choice that the user needs to make. If using `index` was the best idea in every case, then EdgeDB would just do it automatically.
+If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so.
+```
 
 Finally, here are two times when you don't need to create an `index`:
 
@@ -56,17 +59,17 @@ Indexes are automatically created in these two cases so you don't need to use in
 So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'John Seward')),
+  author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 ```
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'Jonathan Harker')),
+  author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 ```
@@ -74,14 +77,14 @@ INSERT BookExcerpt {
 Then later on we could do this sort of query to get all the entries in order and displayed as JSON.
 
 ```edgeql
-SELECT <json>(
-  SELECT BookExcerpt {
+select <json>(
+  select BookExcerpt {
     date,
     author: {
       name
     },
     excerpt
-  } ORDER BY .date
+  } order by .date
 );
 ```
 
@@ -106,7 +109,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -117,7 +120,7 @@ You can see that `description` is a short string that we write, while `excerpt` 
 The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```edgeql-repl
-edgedb> SELECT str_lower('RENFIELD WAS HERE');
+edgedb> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
@@ -126,9 +129,9 @@ Here it is in a longer query:
 ```edgeql
 select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT (<str>.date)[0:10]),
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select (<str>.date)[0:10]),
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 It uses `len()` which is then cast to a string, and `str_lower()` to compare against `.excerpt()` by making it lowercase first. It also slices the `cal::local_datetime` into a string so it can just print indexes 0 to 10. Here is the output:
@@ -148,21 +151,21 @@ Another way to make `the_date` is with the {eql:func}`docs:std::to_str` method, 
 ```edgeql
 select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 Some other functions for strings are:
 
 - `find()` This gives the index of the first match it finds, and returns `-1` if it can't find anything:
 
-`SELECT find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
+`select find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
 
 - `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
 
 ```edgeql-repl
-edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -186,12 +189,12 @@ edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!
 But this works too:
 
 ```edgeql
-SELECT MinorVampire {
-  names := (SELECT str_split(.name, 'n'))
+select MinorVampire {
+  names := (select str_split(.name, 'n'))
 };
 ```
 
-Now the `n`s are all gone:
+Now, the names have been split into arrays at each instance of `n`:
 
 ```
 {
@@ -202,17 +205,17 @@ Now the `n`s are all gone:
 }
 ```
 
-You can also split by `\n` to split by new line. You can't see it but from the point of view of the computer every new line has a `\n` in it. So this:
+You can also split by `\n` to split by new line. You can’t see it as a human but from the point of view of the computer every new line has a `\n` in it. Take this for example:
 
 ```edgeql
-SELECT str_split('Oh, hear me!
+select str_split('Oh, hear me!
 hear me!
 Let me go!
 let me go!
 let me go!', '\n');
 ```
 
-will split it by line and give the following array:
+The output is an array of the text split by line:
 
 ```
 {['Oh, hear me!', 'hear me!', 'Let me go!', 'let me go!', 'let me go!']}
@@ -221,20 +224,25 @@ will split it by line and give the following array:
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
 
 ```edgeql-repl
-edgedb> SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-The function signature is `std::re_match_all(pattern: str, string: str) -> SET OF array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
+The function signature is `std::re_match_all(pattern: str, string: str) -> set of array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
 
 - start with a `T` or a `t`,
 - then have an `o`,
 - maybe have an `-` in between,
 - and end in `night`,
 
-so it gives: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`.
+Here is the output: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`
 
 And to match anything, you can use the wildcard character: `.`
+
+```edgeql-repl
+edgedb> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
+{['Noo,'], ['door']}
+```
 
 ## Two more notes on `index on`
 
@@ -268,7 +276,7 @@ type City extending Place {
 
 ## Time to practice
 
-1. How would you split all the `Person` names into two strings if they have two words, and ignore any that don't have exactly two words?
+1. How would you write a query to show all the `Person` names split into an array of two strings if they have two names and ignored if they don't have exactly two names?
 
 2. How would you display all the `Person` names and where the string 'ma' is in their name?
 

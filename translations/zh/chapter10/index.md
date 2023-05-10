@@ -25,7 +25,7 @@ type City extending Place {
 现在让我们来插入惠特比市（Whitby），这很容易：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Whitby',
   population := 14400
 };
@@ -35,7 +35,7 @@ INSERT City {
 
 ## 元组和数组的使用
 
-如果我们将所有城市数据放在一起，我们完全可以使用 `FOR` 和 `UNION` 循环进行一次“单次”插入（或更新）。假设我们在一个“元组（tuples）”中存放一些数据，它看起来与数组（arrays）相似，但又完全不同。一个很大的区别是元组可以包含不同类型的数据，比如像下面这样：
+如果我们将所有城市数据放在一起，我们完全可以使用 `for` 和 `union` 循环进行一次“单次”插入（或更新）。假设我们在一个“元组（tuples）”中存放一些数据，它看起来与数组（arrays）相似，但又完全不同。一个很大的区别是元组可以包含不同类型的数据，比如像下面这样：
 
 `('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
 
@@ -43,12 +43,12 @@ INSERT City {
 
 在我们开始使用这些元组之前，让我们先来了解一下元组（tuples）与数组（arrays）之间的区别。首先，让我们先进一步看一下切片数组（slicing arrays）和字符串（strings）。
 
-你一定还记得我们使用方括号来访问数组或字符串的一部分。所以 `SELECT ['Mina Murray', 'Lucy Westenra'][1];` 将给出输出 `{'Lucy Westenra'}`（即索引 1 对应的数值）。
+你一定还记得我们使用方括号来访问数组或字符串的一部分。所以 `select ['Mina Murray', 'Lucy Westenra'][1];` 将给出输出 `{'Lucy Westenra'}`（即索引 1 对应的数值）。
 
 你也应该还记得，我们在索取切片时用冒号分隔起始索引和结束索引，如下所示：
 
 ```edgeql
-SELECT NPC.name[0:10];
+select NPC.name[0:10];
 ```
 
 这将输出所有 NPC 名字的前十个字母：
@@ -69,7 +69,7 @@ SELECT NPC.name[0:10];
 如果你想从后往前（倒着）进行索引，同样可以用负数来完成。例如：
 
 ```edgeql
-SELECT NPC.name[2:-2];
+select NPC.name[2:-2];
 ```
 
 这将从索引 2 打印到距离末尾 2 个索引（即分别切断名字前后两端的两个字母）的所有字母。输出如下所示：
@@ -92,7 +92,7 @@ SELECT NPC.name[2:-2];
 所以像下面这样，完全没有问题：
 
 ```edgeql
-SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
+select {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
 ```
 
 输出结果是：
@@ -107,37 +107,37 @@ SELECT {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, c
 由于类型已经设定（上面所示的类型是 `tuple<str, int64, cal::local_date>`），因此你不能将它与其他元组类型混淆。比如像下面这样是不被允许的：
 
 ```edgeql
-SELECT {(1, 2, 3), (4, 5, '6')};
+select {(1, 2, 3), (4, 5, '6')};
 ```
 
 此时，EdgeDB 会报错，因为这里它不会尝试处理不同类型的元组。错误提示为：
 
 ```
-ERROR: QueryError: operator 'UNION' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+ERROR: QueryError: operator 'union' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
   Hint: Consider using an explicit type cast or a conversion function.
 ```
 
-在上面的例子中，我们可以轻松地将第二个元祖中的最后一个字符串转换为整数，然后 EdgeDB 则会再次工作，即：`SELECT {(1, 2, 3), (4, 5, <int64>'6')};`。
+在上面的例子中，我们可以轻松地将第二个元祖中的最后一个字符串转换为整数，然后 EdgeDB 则会再次工作，即：`select {(1, 2, 3), (4, 5, <int64>'6')};`。
 
 要访问元组的字段，仍然是从数字 0 开始索引，但数字要写在 `.` 之后，而不是在 `[]` 内。现在我们已经足够了解元祖了，于是我们可以像下面这样同时对所有城市的人口数量进行一次“单次“更新了：
 
 ```edgeql
-FOR data IN {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
-UNION (
-  UPDATE City FILTER .name = data.0
-  SET {
+for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+union (
+  update City filter .name = data.0
+  set {
     population := data.1
   }
 );
 ```
 
-即，将元组依次发送到 `FOR` 循环中，按城市名字的字符串（即 `data.0`）进行过滤，然后对城市人口数量（即 `data.1`）进行更新。
+即，将元组依次发送到 `for` 循环中，按城市名字的字符串（即 `data.0`）进行过滤，然后对城市人口数量（即 `data.1`）进行更新。
 
 在这个部分的最后，我们再说一下关于类型的转换。我们知道我们可以用 `<>` 在标量类型间做转换，这也同样适用于标量类型的元组，且会使用与 `<>` 相同的格式，只是需要把它放在 `<tuple>` 里面，像这样：
 
 ```edgeql
-WITH london := ('London', 3500000),
-SELECT <tuple<json, int32>>london;
+with london := ('London', 3500000),
+select <tuple<json, int32>>london;
 ```
 
 输出为：
@@ -149,21 +149,21 @@ SELECT <tuple<json, int32>>london;
 下面是另一个例子，假设我们需要对伦敦人口进行一些浮点数的数学计算：
 
 ```edgeql
-WITH london := <tuple<json, float64>>('London', 3500000),
-  SELECT (london.0, london.1 / 9);
+with london := <tuple<json, float64>>('London', 3500000),
+  select (london.0, london.1 / 9);
 ```
 
 输出为：`{("\"London\"", 388888.8888888889)}`.
 
 ## 排序和数学
 
-现在我们有了一些数字，因此我们可以开始玩排序和数学了。排序是非常简单的：输入 `ORDER BY`，然后指明你要排序的属性或链接。这里我们按人口排序：
+现在我们有了一些数字，因此我们可以开始玩排序和数学了。排序是非常简单的：输入 `order by`，然后指明你要排序的属性或链接。这里我们按人口排序：
 
 ```edgeql
-SELECT City {
+select City {
   name,
   population
-} ORDER BY .population DESC;
+} order by .population desc;
 ```
 
 输出结果是：
@@ -178,13 +178,13 @@ SELECT City {
 }
 ```
 
-什么是 `DESC`？它是指降序，因此这里先展示人口数量最大的，然后逐步减小。如果我们不写 `DESC`，那么 EdgeDB 会假设我们需要的是升序。你也可以特意写上表达升序的 `ASC`（使代码阅读起来更清晰），但你不是非得这么做。
+什么是 `desc`？它是指降序，因此这里先展示人口数量最大的，然后逐步减小。如果我们不写 `desc`，那么 EdgeDB 会假设我们需要的是升序。你也可以特意写上表达升序的 `asc`（使代码阅读起来更清晰），但你不是非得这么做。
 
 对于一些实用的数学函数，你可以查看 `std` 中的 {eql:func}`函数 <docs:std::sum>` 以及 `math` {ref}`模块 <docs:ref_std_math>`。不过，与其逐一查看，不如让我们这在里一起做一个大查询，将其中的一些函数一并运用进来。为了使输出更友好，我们会对各函数作用后的结果进行解释，并编写进字符串，同时将函数的输出结果转换为 `<str>`，最后，使用级联运算符 `++` 将它们连接在一起。如下所示：
 
 ```edgeql
-WITH cities := City.population
-SELECT (
+with cities := City.population
+select (
   'Number of cities: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
@@ -224,20 +224,20 @@ SELECT (
 
 其中 `any()`、`all()` 和 `count()` 在操作中特别有用，它们可以让你更加了解你的数据。
 
-## 使用 WITH 导入模块
+## 使用 with 导入模块
 
-你也可以使用关键字 `WITH` 来导入模块。在上面的例子中，我们使用了 EdgeDB `math` 模块中的两个函数：`math::mean()` 和 `math::stddev()`。如果我们只写 `mean()` 和 `stddev()`，则会报错：
+你也可以使用关键字 `with` 来导入模块。在上面的例子中，我们使用了 EdgeDB `math` 模块中的两个函数：`math::mean()` 和 `math::stddev()`。如果我们只写 `mean()` 和 `stddev()`，则会报错：
 
 ```
 ERROR: InvalidReferenceError: function 'default::mean' does not exist
 ```
 
-如果你不想每次都写模块名 `math`，你可以在 `WITH` 后面导入模块。让我们来调整一下上面提到的大查询语句，看看你是否发现了变化：
+如果你不想每次都写模块名 `math`，你可以在 `with` 后面导入模块。让我们来调整一下上面提到的大查询语句，看看你是否发现了变化：
 
 ```edgeql
-WITH cities := City.population,
-  MODULE math
-SELECT (
+with cities := City.population,
+  module math
+select (
   'Number of cities: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
@@ -253,8 +253,8 @@ SELECT (
 与“重命名一个类型”相同，你还可以使用 `AS` 重命名一个模块（其实就是为模块起个 _别名_）。所以像下面这样也可以正常工作：
 
 ```edgeql
-WITH M AS MODULE math,
-SELECT M::mean(City.population);
+with M as module math,
+select M::mean(City.population);
 ```
 
 结果是所有城市人口数量的平均值：`{831245.8}`。
@@ -285,8 +285,8 @@ Title（头衔） | First name（名） | Last name（姓） | Degree（学位�
 ```sdl
 property title -> str;
 property degrees -> str;
-property conversational_name := .title ++ ' ' ++ .name IF EXISTS .title ELSE .name;
-property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
+property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
 ```
 
 我们也可以尝试对 `degrees` 做一些更有趣的事情，比如将 `degrees` 设置为 `array<str>`，但我们的游戏可能不需要那么高的精度，我们只是会在角色对话框中引用到他们的学位称号而已。
@@ -294,7 +294,7 @@ property pen_name := .name ++ ', ' ++ .degrees IF EXISTS .degrees ELSE .name;
 现在，让我们来插入创建范海辛 (Van Helsing）：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
   degrees := 'M.D., Ph. D. Lit., etc.'
@@ -304,8 +304,8 @@ INSERT NPC {
 接下来，我们可以利用这些属性在游戏中模仿一些对话了。例如：
 
 ```edgeql
-WITH helsing := (SELECT NPC FILTER .name ILIKE '%helsing%')
-SELECT (
+with helsing := (select NPC filter .name ilike '%helsing%')
+select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
   'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
@@ -336,8 +336,8 @@ PS：在有真实”用户“的标准数据库中，收集用户信息要简单
 如果你想忽略转义字符，请在引号前放置一个 `r`。让我们用上面的例子来试试，如下所示，我们在最后一部分的引号前放置了一个 `r`：
 
 ```edgeql
-WITH helsing := (SELECT NPC FILTER .name ILIKE '%helsing%')
-SELECT (
+with helsing := (select NPC filter .name ilike '%helsing%')
+select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
   'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
@@ -372,30 +372,30 @@ $$;
 
 你现在已经了解了 EdgeDB 的所有标量类型。总结起来有：`int16`、`int32`、`int64`、`float32`、`float64`、`bigint`、`decimal`、`sequence`、`str`、`bool`、`datetime`、 `duration`、`cal::local_datetime`、`cal::local_date`、`cal::local_time`、`cal::relative_duration`, `cal::date_duration`, `uuid`、`json` 和 `enum`。你可以在 {ref}`这里 <docs:ref_datamodel_scalar_types>` 查看它们的文档。
 
-## 关键词 UNLESS CONFLICT ON + ELSE + UPDATE
+## 关键词 unless conflict on + else + update
 
 之前，我们在 `Person` 的 `name` 上设置了 `constraint exclusive`，这样游戏中就不会出现两个同名的角色了。之所以这样做，是因为我们担心有人看到了书中的一个角色并将其插入，然后其他人（协作的人）又尝试做同样的事情。因此，下面这个名为约翰尼（Johnny）的角色可以被成功插入，说明我们的数据库里暂时还没有同名的对象：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Johnny'
 };
 ```
 
 如果我们再重复做一遍上面的插入，我们则会得到错误提示：`ERROR: ConstraintViolationError: name violates exclusivity constraint`
 
-但有时仅仅生成错误提示是不够的——也许我们希望在错误发生时会引发其他的事情而不是直接放弃。这正是 `UNLESS CONFLICT ON` 发挥作用的时候了，在它的后面会跟着 `ELSE` 来说明发生错误时具体要做什么。通过示例可能更容易解释 `UNLESS CONFLICT ON`。下面展示了当我们要创建带有人口的 `City` 时我们可以怎么做，即：插入，但如果该城市已经存在于数据库中，则做更新。
+但有时仅仅生成错误提示是不够的——也许我们希望在错误发生时会引发其他的事情而不是直接放弃。这正是 `unless conflict on` 发挥作用的时候了，在它的后面会跟着 `else` 来说明发生错误时具体要做什么。通过示例可能更容易解释 `unless conflict on`。下面展示了当我们要创建带有人口的 `City` 时我们可以怎么做，即：插入，但如果该城市已经存在于数据库中，则做更新。
 
-1880 年慕尼黑（Munich）的人口为 230,023，五年后为 261,023。假设我们正在更新 `City` 数据，且一些城市可能已经在数据库里存在了，而另一些城市可能尚未创建。那么，`INSERT` 慕尼黑（Munich）的语句应如下所示：
+1880 年慕尼黑（Munich）的人口为 230,023，五年后为 261,023。假设我们正在更新 `City` 数据，且一些城市可能已经在数据库里存在了，而另一些城市可能尚未创建。那么，`insert` 慕尼黑（Munich）的语句应如下所示：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich',
   population := 261023,
-} UNLESS CONFLICT ON .name
-ELSE (
-  UPDATE City
-  SET {
+} unless conflict on .name
+else (
+  update City
+  set {
     population := 261023,
   }
 );
@@ -406,19 +406,19 @@ ELSE (
 首先是一个普通的插入：
 
 ```edgeql
-INSERT City {
+insert City {
   name := 'Munich'
 }
 ```
 
-但是数据库里可能已经有一个同名的 `City` 了，所以它可能不起作用，于是我们添加 `UNLESS CONFLICT ON .name`。然后在它后面加上 `ELSE`，指明如果该城市已经存在，该做些什么。
+但是数据库里可能已经有一个同名的 `City` 了，所以它可能不起作用，于是我们添加 `unless conflict on .name`。然后在它后面加上 `else`，指明如果该城市已经存在，该做些什么。
 
-需要注意的是：这里我们不写 `ELSE INSERT`，因为我们已经在 `INSERT` 当中了。我们是要为插入类型在插入失败的情况下做 `UPDATE`，所以是 `UPDATE City`。根本上讲，我们是从插入中取出失败的数据并更新它以重试。所以我们会这样做：
+需要注意的是：这里我们不写 `else insert`，因为我们已经在 `insert` 当中了。我们是要为插入类型在插入失败的情况下做 `update`，所以是 `update City`。根本上讲，我们是从插入中取出失败的数据并更新它以重试。所以我们会这样做：
 
 ```edgeql
-ELSE (
-  UPDATE City
-  SET {
+else (
+  update City
+  set {
     population := 261023
   }
 );
@@ -446,7 +446,7 @@ ELSE (
 
    提示：`''` 的长度为 0，这可能会有问题。
 
-5. 范海辛医生（Dr. Van Helsing ）有一份 `MinorVampire` 的名单，上面有他们的名字和力量。我们的数据库中已经有一些 `MinorVampire` 了。如果对象已经存在，你将如何在确保 `UPDATE` 的同时 `INSERT` 不存在的？ 
+5. 范海辛医生（Dr. Van Helsing ）有一份 `MinorVampire` 的名单，上面有他们的名字和力量。我们的数据库中已经有一些 `MinorVampire` 了。如果对象已经存在，你将如何在确保 `update` 的同时 `insert` 不存在的？ 
 
 
 [点击这里查看答案](answers.md)

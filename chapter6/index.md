@@ -11,7 +11,7 @@ tags: Filtering On Insert, Json
 There is not much new in this lesson when it comes to types, so let's look at improving our schema. Right now Jonathan Harker is still inserted like this:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
@@ -20,48 +20,48 @@ INSERT NPC {
 This was fine when we only had cities, but now we have the `Place` and `Country` types. First we'll insert two more `Country` types to have some more variety:
 
 ```edgeql
-INSERT Country {
+insert Country {
   name := 'France'
 };
-INSERT Country {
+insert Country {
   name := 'Slovakia'
 };
 ```
 
-(In Chapter 9 we'll learn how to do this with just one `INSERT`!)
+(In Chapter 9 we'll learn how to do this with just one `insert`!)
 
 Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;` and it's done.
 
 Then we'll insert our first `OtherPlace`:
 
 ```edgeql
-INSERT OtherPlace {
+insert OtherPlace {
   name := 'Castle Dracula'
 };
 ```
 
 That gives us a good number of types from `Place` that aren't of the `City` type.
 
-So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := SELECT Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. It looks like this:
+So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := select Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. It looks like this:
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := (
-    SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
   )
 };
 ```
 
 You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
 
-Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `INSERT` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `UPDATE` and `SET` keywords. `UPDATE` selects the type to start the update, and `SET` is for the parts we want to change. It looks like this:
+Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `insert` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `update` and `set` keywords. The `update` keyword selects the type to start the update, and `set` is for the parts we want to change. It looks like this:
 
 ```edgeql
-UPDATE NPC
-FILTER .name = 'Jonathan Harker'
-SET {
-  places_visited += (SELECT Place FILTER .name = 'Slovakia')
+update NPC
+filter .name = 'Jonathan Harker'
+set {
+  places_visited += (select Place filter .name = 'Slovakia')
 };
 ```
 
@@ -71,39 +71,39 @@ You'll know that it succeeded because EdgeDB will return the IDs of the objects 
 {default::NPC {id: ca4e21c8-014f-11ec-9658-7f88bf45dae6}}
 ```
 
-And if we had written something like `FILTER .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `FILTER .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `FILTER` there.
+And if we had written something like `filter .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `filter .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `filter` there.
 
-And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `UPDATE` syntax to remove it now.
+And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `update` syntax to remove it now.
 
-With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `SET`: `:=`, `+=`, and `-=`.
+With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `set`: `:=`, `+=`, and `-=`.
 
 Let's do another update. Remember this?
 
 ```edgeql
-SELECT Person {
+select Person {
   name,
   lover
-} FILTER .name = 'Jonathan Harker';
+} filter .name = 'Jonathan Harker';
 ```
 
 Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her because we inserted him first. We can change that now:
 
 ```edgeql
-UPDATE Person FILTER .name = 'Jonathan Harker'
-SET {
+update Person filter .name = 'Jonathan Harker'
+set {
   lover := assert_single(
-    (SELECT DETACHED Person FILTER .name = 'Mina Murray')
+    (select detached Person filter .name = 'Mina Murray')
   )
 };
 ```
 
-We need to use `DETACHED Person` here for the same reason we needed it when using `INSERT NPC` to create Mina Murray with her lover. We're using `UPDATE` on one `Person` and we also need to `SELECT` another `Person` as lover. Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
+We need to use `detached Person` here for the same reason we needed it when using `insert NPC` to create Mina Murray with her lover. We're using `update` on one `Person` and we also need to `select` another `Person` as lover. Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
 
-Of course, if you use `UPDATE` without `FILTER` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
+Of course, if you use `update` without `filter` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
 ```edgeql
-UPDATE Person
-SET {
+update Person
+set {
   places_visited := Place
 };
 ```
@@ -112,10 +112,10 @@ SET {
 
 One other operator is `++`, which does concatenation (joining together) instead of adding.
 
-You can do simple operations with it like: `SELECT 'My name is ' ++ 'Jonathan Harker';` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
+You can do simple operations with it like: `select 'My name is ' ++ 'Jonathan Harker';` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
 ```edgeql
-SELECT 'A character from the book: ' ++ (SELECT NPC.name) ++ ', who is not ' ++ (SELECT Vampire.name);
+select 'A character from the book: ' ++ (select NPC.name) ++ ', who is not ' ++ (select Vampire.name);
 ```
 
 This prints:
@@ -128,9 +128,9 @@ This prints:
 }
 ```
 
-(The concatenation operator works on arrays too, putting them into a single array. So `SELECT ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
+(The concatenation operator works on arrays too, putting them into a single array. So `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
 
-Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. That means we need a `multi link`:
+Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. In the book, any person that Dracula bites becomes his slave - once they die, they become another vampire that lives forever that Dracula can control with his mind (that's what makes the book scary). That means we need a `multi link`:
 
 ```sdl
 type Vampire extending Person {
@@ -139,16 +139,16 @@ type Vampire extending Person {
 }
 ```
 
-Then we can `INSERT` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
+Then we can `insert` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
 
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required link`) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
 ```edgeql-repl
-edgedb> DELETE MinorVampire;
+edgedb> delete MinorVampire;
 ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
   Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
-edgedb> DELETE Vampire;
+edgedb> delete Vampire;
 ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
@@ -163,31 +163,31 @@ type MinorVampire extending Person {
 and then we create them all together with Count Dracula like this:
 
 ```edgeql
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 2',
     }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 3',
     }),
   }
 };
 ```
 
-Note two things: we used `{}` after `slaves` to put everything into a set, and each `INSERT` is inside `()` brackets to capture the insert.
+Note two things: we used `{}` after `slaves` to put everything into a set, and each `insert` is inside `()` brackets to capture the insert.
 
 Now we don't have to insert the `MinorVampire` types first and then filter: we can just put them in together with Dracula.
 
-Then when we `SELECT Vampire` like this:
+Then when we `select Vampire` like this:
 
 ```edgeql
-SELECT Vampire {
+select Vampire {
   name,
   slaves: {name}
 };
@@ -215,8 +215,8 @@ This might make you wonder: what if we do want two-way links? There's actually a
 What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
 
 ```edgeql
-SELECT <json>Vampire {
-  # <json> is the only difference from the SELECT above
+select <json>Vampire {
+  # <json> is the only difference from the select above
   name,
   slaves: {name}
 };
@@ -249,19 +249,19 @@ To restore the default format type: `\set output-format default`.
 So what about the other way around, namely JSON to an EdgeDB type? You can do this too, but remember to think about the JSON type that you are giving to cast. The EdgeDB philosophy is that casts should be symmetrical: a type cast into JSON should only be cast back into that type. For example, here is the first date in the book Dracula as a string, then cast to JSON and then into a `cal::local_date`:
 
 ```edgeql
-SELECT <cal::local_date><json>'18870503';
+select <cal::local_date><json>'18870503';
 ```
 
 This is fine because `<json>` turns it into a JSON string, and `cal::local_date` can be created from a string. The result we get is `{<cal::local_date>'1887-05-03'}`. But if we try to turn the JSON value into an `int64`, it won't work:
 
 ```edgeql
-SELECT <int64><json>'18870503';
+select <int64><json>'18870503';
 ```
 
 The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number or null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
 
 ```edgeql
-SELECT <int64><str><json>'18870503';
+select <int64><str><json>'18870503';
 ```
 
 Now it works: we get `{18870503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
@@ -274,10 +274,10 @@ The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types t
 
 ## Time to practice
 
-1. This select is incomplete. How would you complete it so that it says "Pleased to meet you, I'm " and then the NPC's name?
+1. This select is incomplete. How would you complete it so that it says "Pleased to meet you. I'm " and then the NPC's name followed by a period?
 
    ```edgeql
-   SELECT NPC {
+   select NPC {
      name,
      greeting := ## Put the rest here
    };
@@ -287,7 +287,7 @@ The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types t
 
 3. With the set `{'W', 'J', 'C'}`, how would you display all the `Person` types with a name that contains any of these capital letters?
 
-   Hint: it involves `WITH` and a bit of concatenation.
+   Hint: it involves `with` and a bit of concatenation.
 
 4. How would you display this same query as JSON?
 

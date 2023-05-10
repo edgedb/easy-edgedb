@@ -42,7 +42,7 @@ type BookExcerpt {
 注意：`index` 在数量有限的情况下表现是良好的，你也不会希望索引所有的东西，因为：
 
 - 虽然查询更快了，但增加了数据库大小；
-- 如果你有太多索引，也会使 `INSERT` 和 `UPDATE` 变得很慢。
+- 如果你有太多索引，也会使 `insert` 和 `update` 变得很慢。
 
 这并不奇怪，因为哪些需要使用 `index` 是用户需要做出的选择。如果在任何情况下使用 `index` 都是最好的主意，那么 EdgeDB 就自动执行了，不烦用户来做选择了。
 
@@ -56,17 +56,17 @@ type BookExcerpt {
 现在，让我们来插入两条摘录。这些条目中的字符串都很长（有时会长达几页），因此我们在这里仅显示开头和结尾：
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'John Seward')),
+  author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 ```
 
 ```edgeql
-INSERT BookExcerpt {
+insert BookExcerpt {
   date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
-  author := assert_single((SELECT Person FILTER .name = 'Jonathan Harker')),
+  author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 ```
@@ -74,14 +74,14 @@ INSERT BookExcerpt {
 然后我们可以执行下方查询，即按时间顺序获取所有条目并显示为 JSON。
 
 ```edgeql
-SELECT <json>(
-  SELECT BookExcerpt {
+select <json>(
+  select BookExcerpt {
     date,
     author: {
       name
     },
     excerpt
-  } ORDER BY .date
+  } order by .date
 );
 ```
 
@@ -106,7 +106,7 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property exact_location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' IF .east = true ELSE 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -117,18 +117,18 @@ type Event {
 {ref}`字符串函数 <docs:ref_std_string>` 在对我们的 `BookExcerpt` 类型（或通过 `Event` 的 `BookExcerpt`）进行查询时特别有用。其中一个实用的函数是 {eql:func}`docs:std::str_lower`，它可以使字符串的字母都变为小写：
 
 ```edgeql-repl
-edgedb> SELECT str_lower('RENFIELD WAS HERE');
+edgedb> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
 下面是一个较长的查询：
 
 ```edgeql
-SELECT BookExcerpt {
+select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT (<str>.date)[0:10]),
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select (<str>.date)[0:10]),
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 - 对 `.excerpt` 使用 `len()`，得到 `.excerpt` 所含字符的数量后，将其转换为字符串类型并赋予 `length`；
@@ -152,21 +152,21 @@ SELECT BookExcerpt {
 ```edgeql
 select BookExcerpt {
   excerpt,
-  length := (<str>(SELECT len(.excerpt)) ++ ' characters'),
-  the_date := (SELECT to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
-} FILTER contains(str_lower(.excerpt), 'mina');
+  length := (<str>(select len(.excerpt)) ++ ' characters'),
+  the_date := (select to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
+} filter contains(str_lower(.excerpt), 'mina');
 ```
 
 可以作用于字符串的函数还有：
 
 - `find()`：用于查找第二个字符串参数在第一个字符串参数中首次出现的位置索引，如果找不到任何匹配内容，则返回 `-1`：
 
-`SELECT find(BookExcerpt.excerpt, 'sofa');` 输出 `{-1, 151}`。这是因为我们有两个 `BookExcerpt` 对象，第一个 `BookExcerpt.excerpt` 中没有单词 `sofa`，而在第二个中的索引 151 处出现了 `sofa`。
+`select find(BookExcerpt.excerpt, 'sofa');` 输出 `{-1, 151}`。这是因为我们有两个 `BookExcerpt` 对象，第一个 `BookExcerpt.excerpt` 中没有单词 `sofa`，而在第二个中的索引 151 处出现了 `sofa`。
 
 - `str_split()`：该函数可以将字符串以你想要的方式进行拆分并转变为数组。最常见的是用 `' '` 作为分割符来分隔单词：
 
 ```edgeql-repl
-edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -190,8 +190,8 @@ edgedb> SELECT str_split('Oh, hear me! hear me! Let me go! let me go! let me go!
 下面的例子也同样工作（以 `'n'` 进行分割）：
 
 ```edgeql
-SELECT MinorVampire {
-  names := (SELECT str_split(.name, 'n'))
+select MinorVampire {
+  names := (select str_split(.name, 'n'))
 };
 ```
 
@@ -209,7 +209,7 @@ SELECT MinorVampire {
 你也可以以 `\n` 作为分割符按“新行”进行拆分。虽然你看不到它（`\n`），但从计算机的角度来看，每行的结尾都有一个 `\n`。例如：
 
 ```edgeql
-SELECT str_split('Oh, hear me!
+select str_split('Oh, hear me!
 hear me!
 Let me go!
 let me go!
@@ -225,11 +225,11 @@ let me go!', '\n');
 - `re_match()`（用于第一次匹配）和 `re_match_all()]`（用于所有匹配）：如果你对如何使用 [正则表达式](https://en.wikipedia.org/wiki/Regular_expression) 有所了解，并想使用它们，这俩函数可能会很有用。小说《德古拉》写于 100 多年前，因此有些单词的拼写已经不大一样了。例如，`tonight` 这个词在《德古拉》中总是使用较旧的 `to-night` 拼写。为了处理这样的问题，我们就可以使用这两个函数：
 
 ```edgeql-repl
-edgedb> SELECT re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-其中所用函数的签名是 `std::re_match_all(pattern: str, string: str) -> SET OF array<str>`，正如你所看到的那样，第一个参数是模式（pattern），第二个参数是被查找的字符串。模式 `[Tt]o-?night` 的意思是：
+其中所用函数的签名是 `std::re_match_all(pattern: str, string: str) -> set of array<str>`，正如你所看到的那样，第一个参数是模式（pattern），第二个参数是被查找的字符串。模式 `[Tt]o-?night` 的意思是：
 
 - 以 `T` 或 `t` 开头，
 - 然后紧跟着一个 `o`，

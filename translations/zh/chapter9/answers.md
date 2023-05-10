@@ -5,9 +5,9 @@
 它需要是一个集合而不是一个数组，所以将 `IN` 后面的括号改为 `{}`：
 
 ```edgeql
-FOR castle IN {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
-UNION (
-  INSERT Castle {
+for castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
+union (
+  insert Castle {
     name := castle
   }
 );
@@ -18,10 +18,10 @@ UNION (
 如下所示：
 
 ```edgeql
-SELECT (
-  FOR castle IN {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
-  UNION (
-    INSERT Castle {
+select (
+  for castle in {'Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle'}
+  union (
+    insert Castle {
       name := castle
     }
   )
@@ -46,19 +46,19 @@ type Vampire extending Person {
 如下所示，你将对每一个 `Person` 的 `last_appearance` 进行更新：
 
 ```edgeql
-UPDATE Person
-SET {
+update Person
+set {
   last_appearance := <cal::local_date>'1887-09-11'
 };
 ```
 
 #### 5. 如果所有名字中带有 `e` 或 `a` 的 `Person` 角色都被复活了，你将如何更新？
 
-你可以通过在集合上而不是在单个字母上使用 `LIKE` 来进行 `UPDATE`：
+你可以通过在集合上而不是在单个字母上使用 `like` 来进行 `update`：
 
 ```edgeql
-UPDATE Person FILTER .name LIKE {'%a%', '%e%'}
-SET {
+update Person filter .name like {'%a%', '%e%'}
+set {
   last_appearance := {}
 };
 ```
@@ -66,9 +66,9 @@ SET {
 如果为了确保成功你想同时显示执行结果，也可以这样写：
 
 ```edgeql
-SELECT (
-  UPDATE Person FILTER .name ILIKE {'%a%', '%e%'}
-  SET {
+select (
+  update Person filter .name ilike {'%a%', '%e%'}
+  set {
     last_appearance := {}
   }
 ) {

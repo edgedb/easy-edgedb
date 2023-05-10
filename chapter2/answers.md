@@ -1,16 +1,16 @@
 # Chapter 2 Questions and Answers
 
-#### 1. Change the following `SELECT` to display `{100}` by casting: `SELECT '99' + '1'`;
+#### 1. Change the following `select` to display `{100}` by casting: `select '99' + '1'`;
 
-You can cast with a numeric type, such as `SELECT <int64>'99' + <int64>'1'`. Note that the types don't have to be the same, but EdgeDB will convert them automatically if you do this. You can see this with a query like `SELECT <int64>'99' + <int16>'1' IS int64;`, which returns `{true}`: it will convert the smaller `int16` to the larger `int64` if you add them together.
+You can cast with a numeric type, such as `select <int64>'99' + <int64>'1'`. Note that the types don't have to be the same, but EdgeDB will convert them automatically if you do this. You can see this with a query like `select <int64>'99' + <int16>'1' is int64;`, which returns `{true}`: it will convert the smaller `int16` to the larger `int64` if you add them together.
 
 #### 2. Select all the `City` types that start with 'Mu' (case sensitive).
 
-`SELECT City FILTER .name LIKE 'Mu%';` - don't forget the `%` so that it will match cities like Munich.
+`select City filter .name like 'Mu%';` - don't forget the `%` so that it will match cities like Munich.
 
 #### 3. Select the third letter (i.e. index number 2) of the name of every city.
 
-`SELECT NPC.name[2];` will do it.
+`select NPC.name[2];` will do it.
 
 #### 4. How would you change the `Person` type to extend `HasAString`?
 
@@ -28,7 +28,7 @@ abstract type Person extending HasAString {
 Change it to this:
 
 ```edgeql
-SELECT Person {
+select Person {
   places_visited: {name}
 };
 ```
@@ -36,7 +36,7 @@ SELECT Person {
 Don't forget the `:` and remember that spacing doesn't matter, so you could write it this way too:
 
 ```edgeql
-SELECT Person {
+select Person {
   places_visited: {
     name
     }

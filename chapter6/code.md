@@ -1,146 +1,142 @@
 ```
 # Schema:
-START MIGRATION TO {
-  module default {
-    abstract type Person {
-      required property name -> str;
-      multi link places_visited -> Place;
-      link lover -> Person;
-    }
 
-    type PC extending Person {
-      required property transport -> Transport;
-    }
-
-    scalar type HumanAge extending int16 {
-      constraint max_value(120);
-    }
-
-    type NPC extending Person {
-      property age -> HumanAge;
-    }
-
-    type Vampire extending Person {
-      property age -> int16;
-      multi link slaves -> MinorVampire;
-    }
-
-    type MinorVampire extending Person {
-    }
-    
-    abstract type Place {
-      required property name -> str;
-      property modern_name -> str;
-      property important_places -> array<str>;
-    }
-
-    type City extending Place;
-
-    type Country extending Place;
-
-    type OtherPlace extending Place;
-
-    scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
-
-    type Time {
-      required property clock -> str;
-      property clock_time := <cal::local_time>.clock;
-      property hour := .clock[0:2];
-      property awake := 'asleep' IF <int16>.hour > 7 AND <int16>.hour < 19 ELSE 'awake';
-    }
+module default {
+  abstract type Person {
+    required property name -> str;
+    multi link places_visited -> Place;
+    link lover -> Person;
   }
-};
 
-POPULATE MIGRATION;
-COMMIT MIGRATION;
+  type PC extending Person {
+    required property transport -> Transport;
+  }
+
+  scalar type HumanAge extending int16 {
+    constraint max_value(120);
+  }
+
+  type NPC extending Person {
+    property age -> HumanAge;
+  }
+
+  type Vampire extending Person {
+    property age -> int16;
+    multi link slaves -> MinorVampire;
+  }
+
+  type MinorVampire extending Person {
+  }
+  
+  abstract type Place {
+    required property name -> str;
+    property modern_name -> str;
+    property important_places -> array<str>;
+  }
+
+  type City extending Place;
+
+  type Country extending Place;
+
+  type OtherPlace extending Place;
+
+  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+
+  type Time {
+    required property clock -> str;
+    property clock_time := <cal::local_time>.clock;
+    property hour := .clock[0:2];
+    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  }
+}
 
 
 # Data:
 
-INSERT City {
+insert City {
   name := 'Munich',
 };
 
-INSERT City {
+insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
 };
 
-INSERT City {
+insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 
-INSERT PC {
+insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
 
-INSERT Country {
+insert Country {
   name := 'Hungary'
 };
 
-INSERT Country {
+insert Country {
   name := 'Romania'
 };
 
-INSERT Country {
+insert Country {
   name := 'France'
 };
 
-INSERT Country {
+insert Country {
   name := 'Slovakia'
 };
 
-INSERT OtherPlace {
+insert OtherPlace {
   name := 'Castle Dracula'
 };
 
-INSERT City {
+insert City {
     name := 'London',
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := (
-    SELECT Place FILTER .name IN {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
   )
 };
 
-INSERT NPC {
+insert NPC {
   name := 'The innkeeper',
   age := 30,
 };
 
-INSERT NPC {
+insert NPC {
   name := 'Mina Murray',
-  lover := assert_single((SELECT DETACHED NPC Filter .name = 'Jonathan Harker')),
-  places_visited := (SELECT City FILTER .name = 'London'),
+  lover := assert_single((select detached NPC filter .name = 'Jonathan Harker')),
+  places_visited := (select City filter .name = 'London'),
 };
 
-UPDATE Person FILTER .name = 'Jonathan Harker'
-  SET {
+update Person filter .name = 'Jonathan Harker'
+  set {
     lover := assert_single(
       (select detached Person filter .name = 'Mina Murray')
     )
 };
 
-INSERT Vampire {
+insert Vampire {
   name := 'Count Dracula',
   age := 800,
   slaves := {
-    (INSERT MinorVampire {
+    (insert MinorVampire {
       name := 'Woman 1',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 2',
   }),
-    (INSERT MinorVampire {
+    (insert MinorVampire {
      name := 'Woman 3',
   }),
  },
-   places_visited := (SELECT Place FILTER .name in {'Romania', 'Castle Dracula'})
+   places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
 };
 ```

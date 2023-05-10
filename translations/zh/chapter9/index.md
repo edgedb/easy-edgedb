@@ -19,19 +19,19 @@ tags: Defaults, Overloading, For Loops
 现在，如果对具有 `first_appearance` 和 `last_appearance` 属性的 `Crewman` 对象进行插入，应按如下所示：
 
 ```edgeql
-INSERT Crewman {
-  number := count(DETACHED Crewman) +1,
+insert Crewman {
+  number := count(detached Crewman) +1,
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16),
 };
 ```
 
-由于我们已经插入了很多 `Crewman` 对象，如果我们假设他们都同时死亡（这里并不需要那么精确），我们即可以很轻松地使用 `UPDATE` 和 `SET` 对这些对象进行更新。
+由于我们已经插入了很多 `Crewman` 对象，如果我们假设他们都同时死亡（这里并不需要那么精确），我们即可以很轻松地使用 `update` 和 `set` 对这些对象进行更新。
 
 由于 `cal::local_date` 需要的格式非常简单：即：YYYYMMDD，因此在插入中使用它的最简单方法就是直接对字符串进行转换：
 
 ```edgeql
-SELECT <cal::local_date>'1887-07-08';
+select <cal::local_date>'1887-07-08';
 ```
 
 但是我们之前遇到过将年、月、日以单独数字作为输入的相关函数，考虑到可读性，这里我们将继续使用类似的函数。
@@ -41,7 +41,7 @@ SELECT <cal::local_date>'1887-07-08';
 下面是它的三个签名（我们将使用第三个）：
 
 ```
-cal::to_local_date(s: str, fmt: OPTIONAL str = {}) -> local_date
+cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
 cal::to_local_date(dt: datetime, zone: str) -> local_date
 cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```
@@ -49,8 +49,8 @@ cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 现在，我们来更新 `Crewman` 对象并赋予它们相同的起止日期：
 
 ```edgeql
-UPDATE Crewman
-SET {
+update Crewman
+set {
   first_appearance := cal::to_local_date(1887, 7, 6),
   last_appearance := cal::to_local_date(1887, 7, 16)
 };
@@ -63,9 +63,9 @@ SET {
 现在让我们回到对新角色的插入。首先，我们将创建露西（Lucy）：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Lucy Westenra',
-  places_visited := (SELECT City FILTER .name = 'London')
+  places_visited := (select City filter .name = 'London')
 };
 ```
 
@@ -77,7 +77,7 @@ INSERT NPC {
 type NPC extending Person {
   property age -> HumanAge;
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -87,7 +87,7 @@ type NPC extending Person {
 这里介绍一个方便实用的的函数，即 {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`，它可以给出当前的日期时间。让我们试试看：
 
 ```edgeql-repl
-edgedb> SELECT datetime_current();
+edgedb> select datetime_current();
 {<datetime>'2020-11-17T06:13:24.418765000Z'}
 ```
 
@@ -121,36 +121,36 @@ abstract type Place {
 
 在我们的架构（schema）中我们并不需要这个日期，所以我们并不打算真的改变 `Place` 的定义，这里只是为了展示你可以如何操作。
 
-## 使用 FOR 和 UNION
+## 使用 for 和 union
 
-现在，我们几乎准备好插入那些新角色了，我们不再需要每次都编写 `(SELECT City FILTER .name = 'London')`。但是，如果我们可以只使用单个插入而不是三个类似的插入不是更好吗？
+现在，我们几乎准备好插入那些新角色了，我们不再需要每次都编写 `(select City filter .name = 'London')`。但是，如果我们可以只使用单个插入而不是三个类似的插入不是更好吗？
 
-要做到这一点，我们可以使用一个 `FOR` 循环，后面跟着关键字 `UNION`。首先，这是 `FOR` 的部分：
+要做到这一点，我们可以使用一个 `for` 循环，后面跟着关键字 `union`。首先，这是 `for` 的部分：
 
 ```edgeql
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 ```
 
 换句话说就是：获取这三个字符串组成的集合，并对每个字符串做一些事情。`character_name` 是我们选择调用集合中每个字符串时所用的变量名称。
 
-`UNION` 是用于将集合连接在一起的关键字。例如：
+`union` 是用于将集合连接在一起的关键字。例如：
 
 ```edgeql
-WITH city_names := (SELECT City.name),
-  castle_names := (SELECT Castle.name),
-SELECT city_names UNION castle_names;
+with city_names := (select City.name),
+  castle_names := (select Castle.name),
+select city_names union castle_names;
 ```
 
 该查询将 `city_names` 和 `castle_names` 两个名称集合合并在一起进行输出：`{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`。
 
-现在让我们回到带有变量名 `character_name` 的 `FOR` 循环，如下所示：
+现在让我们回到带有变量名 `character_name` 的 `for` 循环，如下所示：
 
 ```edgeql
-FOR character_name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
-UNION (
-  INSERT NPC {
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+union (
+  insert NPC {
     name := character_name,
-    lover := (SELECT Person FILTER .name = 'Lucy Westenra'),
+    lovers := (select Person filter .name = 'Lucy Westenra'),
   }
 );
 ```
@@ -160,7 +160,7 @@ UNION (
 然后，让我们来检查一下，以确保我们的操作确实成功了：
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
   places_visited: {
     name,
@@ -168,7 +168,7 @@ SELECT NPC {
   lover: {
     name,
   },
-} FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
+} filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'};
 ```
 
 结果正如我们所希望的那样，他们现在都与露西有关（即他们的 `lover` 都是露西）。
@@ -193,12 +193,12 @@ SELECT NPC {
 }
 ```
 
-顺便说一下，现在我们也可以使用同样的方法将我们的五个 `Crewman` 对象用一个 `INSERT` 完成插入，而不是 `INSERT` 五次。我们可以将船员的编号放在一个集合中，并使用 `FOR` 和 `UNION` 来创建他们。当然，在这之前我们已经使用了 `UPDATE` 对他们进行了更改，但从现在开始，在我们的代码中，船员的插入将如下所示：
+顺便说一下，现在我们也可以使用同样的方法将我们的五个 `Crewman` 对象用一个 `insert` 完成插入，而不是 `insert` 五次。我们可以将船员的编号放在一个集合中，并使用 `for` 和 `union` 来创建他们。当然，在这之前我们已经使用了 `update` 对他们进行了更改，但从现在开始，在我们的代码中，船员的插入将如下所示：
 
 ```edgeql
-FOR n IN {1, 2, 3, 4, 5}
-UNION (
-  INSERT Crewman {
+for n in {1, 2, 3, 4, 5}
+union (
+  insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1887, 7, 6),
     last_appearance := cal::to_local_date(1887, 7, 16),
@@ -206,14 +206,14 @@ UNION (
 );
 ```
 
-使用 `FOR` 时，可以先熟悉一下 {ref}`要遵循的书写顺序 <docs:ref_eql_statements_for>`：
+使用 `for` 时，可以先熟悉一下 {ref}`要遵循的书写顺序 <docs:ref_eql_statements_for>`：
 
 ```edgeql-synopsis
-[ WITH with-item [, ...] ]
+[ with with-item [, ...] ]
 
-FOR variable IN iterator-expr
+for variable in iterator-expr
 
-UNION output-expr ;
+union output-expr ;
 ```
 
 最重要的部分是 *iterator-expr*，它需要一个简单的表达式，返回某个集合。通常是置于 `{` 和 `}` 中的一个集合。也可以是返回集合的一个路径，例如 `NPC.places_visited`，也可以是返回集合的一个函数调用，例如 `array_unpack()`。对于更复杂的表达来说，要放置于圆括号中引用。
@@ -221,23 +221,23 @@ UNION output-expr ;
 现在是时候更新露西（Lucy）的情人链接了（但她有三个情人）。露西已经破坏了我们将 `lover` 仅仅作为一个 `link`（即 `single link`）的设定。我们不得不将其变更为 `multi link`，这样我们就可以同时添加他们三个人给露西了。这里是我们对露西的更新：
 
 ```edgeql
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
-  lover := (
-    SELECT Person FILTER .name IN {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+update NPC filter .name = 'Lucy Westenra'
+set {
+  lovers := (
+    select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 ```
 
-现在，我们用查询来验证对她的更新是否有效。这次我们会在过滤器中使用 `LIKE`：
+现在，我们用查询来验证对她的更新是否有效。这次我们会在过滤器中使用 `like`：
 
 ```edgeql
-SELECT NPC {
+select NPC {
   name,
   lover: {
     name
   }
-} FILTER .name LIKE 'Lucy%';
+} filter .name like 'Lucy%';
 ```
 
 结果确实输出了露西和她的三个情人：
@@ -273,7 +273,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City filter .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -296,25 +296,25 @@ type Vampire extending Person {
 哎呀！看起来露西（Lucy）已经没有三个情人了。现在我们必须将她更新为只有亚瑟（Arthur）一个情人了：
 
 ```edgeql
-UPDATE NPC FILTER .name = 'Lucy Westenra'
-SET {
-  lover := (SELECT DETACHED NPC FILTER .name = 'Arthur Holmwood'),
+update NPC filter .name = 'Lucy Westenra'
+set {
+  lovers := (select detached NPC filter .name = 'Arthur Holmwood'),
 };
 ```
 
 然后，将她从另外两个男人的 `lover` 中移除——我们只好给他们一个悲伤的空集了。
 
 ```edgeql
-UPDATE NPC FILTER .name in {'John Seward', 'Quincey Morris'}
-SET {
-  lover := {} # 😢
+update NPC filter .name in {'John Seward', 'Quincey Morris'}
+set {
+  lovers := {} # 😢
 };
 ```
 
-现在，基本上一切都是最新的了。就剩下为神秘的伦菲尔德（Renfield）创建数据了。这很容易，因为他没有情人，不需要做 `FILTER`：
+现在，基本上一切都是最新的了。就剩下为神秘的伦菲尔德（Renfield）创建数据了。这很容易，因为他没有情人，不需要做 `filter`：
 
 ```edgeql
-INSERT NPC {
+insert NPC {
   name := 'Renfield',
   first_appearance := cal::to_local_date(1887, 5, 26),
   strength := 10,
@@ -332,9 +332,9 @@ INSERT NPC {
 1. 为什么下面这个插入不起作用，该如何修复？
 
    ```edgeql
-   FOR castle IN ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
-   UNION (
-     INSERT Castle {
+   for castle in ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
+   union (
+     insert Castle {
        name := castle
      }
    );
@@ -354,7 +354,7 @@ INSERT NPC {
      property age -> int16;
      property strength -> int16;
      multi link places_visited -> Place;
-     multi link lover -> Person;
+     multi link lovers -> Person;
      property first_appearance -> cal::local_date;
      property last_appearance -> cal::local_date;
    }

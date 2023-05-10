@@ -65,7 +65,7 @@ select get_two('John Seward', 'Count Dracula') {
 看下输入，你就会知道将有 16 行信息被生成，因为每个集合的每个部分都会与其他每个集合的每个部分进行组合：
 
 ```edgeql
-SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
 ```
 
 (2 * 1 * 2 * 1 * 2 * 1 * 2 = 16)
@@ -100,24 +100,24 @@ SELECT {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++
 ```sdl
 function two_cities(city_one: str, city_two: str) -> float64
   using (
-    WITH first_city := (SELECT City FILTER .name = city_one),
-         second_city := (SELECT City FILTER .name = city_two),
-    SELECT first_city.population / second_city.population
+    with first_city := (select City filter .name = city_one),
+         second_city := (select City filter .name = city_two),
+    select first_city.population / second_city.population
   );
 ```
 
 然后我们会像下面一样使用它：
 
 ```edgeql-repl
-edgedb> SELECT two_cities('Munich', 'Bistritz');
+edgedb> select two_cities('Munich', 'Bistritz');
 {25.277252747252746}
-edgedb> SELECT two_cities('Munich', 'London');
+edgedb> select two_cities('Munich', 'London');
 {0.06572085714285714}
 ```
 
 参数 `city_one` 和 `city_two` 当然也可以定义为 `City` 类型，但是使用起来可能会有些别手。
 
-#### 5. `SELECT (City.population + City.population)` 和 `SELECT ((SELECT City.population) + (SELECT City.population))` 会产生不同的结果吗？
+#### 5. `select (City.population + City.population)` 和 `select ((select City.population) + (select City.population))` 会产生不同的结果吗？
 
 > 第十章中我们定义过五个城市的人口，在这里列出，便于解题：
 > * Buda-Pesth (Budapest): 402706
@@ -126,7 +126,7 @@ edgedb> SELECT two_cities('Munich', 'London');
 > * Whitby: 14400
 > * Bistritz (Bistrița): 9100
 
-题中的两个语句会产生不同结果。第一个是单个集合上的 `SELECT`，会将每个项目添加到自身，结果是：`{28800, 460046, 805412, 18200, 7000000}`
+题中的两个语句会产生不同结果。第一个是单个集合上的 `select`，会将每个项目添加到自身，结果是：`{28800, 460046, 805412, 18200, 7000000}`
 
 同时，第二个是作用在两个集合上，其中每个项目都会分别和另一个集合里的每个项目进行一次相加。因此会得到 25（5 * 5）个结果：
 

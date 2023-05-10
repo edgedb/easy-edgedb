@@ -34,7 +34,7 @@ type NPC extending Person {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -44,13 +44,13 @@ Since `name` comes from Person, we can overload it with this constraint. With `e
 ```sdl
 type NPC extending Person {
   overloaded property name {
-    constraint expression on (len(__subject__) > 4 AND len(__subject__) < 31)
+    constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
   overloaded property age {
     constraint max_value(120)
   }
   overloaded multi link places_visited -> Place {
-    default := (SELECT City FILTER .name = 'London');
+    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -62,21 +62,21 @@ Another option is just to use the `max_len_value()` and `min_len_value()` constr
 Here's one way to do it:
 
 ```sdl
-function display_coffins() -> SET OF HasCoffins
+function display_coffins() -> set of HasCoffins
   using(
-    SELECT HasCoffins FILTER .coffins > 0
+    select HasCoffins filter .coffins > 0
   );
 ```
 
 Note though that `HasCoffins` doesn't have properties like `name` so queries using it would look something like this:
 
 ```edgeql
-SELECT display_coffins() {
-  [IS City].name,
-  [IS City].population,
+select display_coffins() {
+  [is City].name,
+  [is City].population,
 };
 ```
 
 #### 5. How would you make it without touching the schema?
 
-Easy, just put `CREATE` in front of it!
+Easy, just put `create` in front of it!
