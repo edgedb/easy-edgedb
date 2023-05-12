@@ -65,7 +65,7 @@ Renfield is no longer alive, so we need to use `update` to give him a `last_appe
 select ( # Put the whole update inside
   update NPC filter .name = 'Renfield'
   set {
-    last_appearance := <cal::local_date>'1887-10-03'
+    last_appearance := <cal::local_date>'1893-10-03'
   }
 ) # then use it to call up name and last_appearance
 {
@@ -74,7 +74,7 @@ select ( # Put the whole update inside
 };
 ```
 
-This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
+This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
 One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this:
 

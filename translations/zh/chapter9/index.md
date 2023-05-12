@@ -10,7 +10,7 @@ tags: Defaults, Overloading, For Loops
 
 ## 关于日期的更多处理
 
-按照故事情节的发展，看起来我们还有更多人物需要插入创建。但在此之前，让我们再来斟酌一下叫做“德米特号”的那艘船。船上所有人都被德古拉（Dracula）杀死了，但我们并不想删除船员，因为他们仍然是我们游戏的一部分。小说告诉我们，这艘船是在 7 月 6 日离开瓦尔纳的，船上的最后一个人（船长）死于 8 月 4 日（1887 年）。
+按照故事情节的发展，看起来我们还有更多人物需要插入创建。但在此之前，让我们再来斟酌一下叫做“德米特号”的那艘船。船上所有人都被德古拉（Dracula）杀死了，但我们并不想删除船员，因为他们仍然是我们游戏的一部分。小说告诉我们，这艘船是在 7 月 6 日离开瓦尔纳的，船上的最后一个人（船长）死于 8 月 4 日（1893 年）。
 
 这正是给 `Person` 类型添加两个新属性以展示一个角色在游戏里存活时间的好时机。我们给它们分别命名为 `first_appearance` 和 `last_appearance`。`last_appearance` 比起 `death` 更为合适，因为角色是否生理性死亡对我们的游戏来说无关紧要：我们只想知道角色是否还会出现在游戏当中。
 
@@ -21,8 +21,8 @@ tags: Defaults, Overloading, For Loops
 ```edgeql
 insert Crewman {
   number := count(detached Crewman) +1,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 };
 ```
 
@@ -31,7 +31,7 @@ insert Crewman {
 由于 `cal::local_date` 需要的格式非常简单：即：YYYYMMDD，因此在插入中使用它的最简单方法就是直接对字符串进行转换：
 
 ```edgeql
-select <cal::local_date>'1887-07-08';
+select <cal::local_date>'1893-07-08';
 ```
 
 但是我们之前遇到过将年、月、日以单独数字作为输入的相关函数，考虑到可读性，这里我们将继续使用类似的函数。
@@ -51,8 +51,8 @@ cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```edgeql
 update Crewman
 set {
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16)
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16)
 };
 ```
 
@@ -200,8 +200,8 @@ for n in {1, 2, 3, 4, 5}
 union (
   insert Crewman {
     number := n,
-    first_appearance := cal::to_local_date(1887, 7, 6),
-    last_appearance := cal::to_local_date(1887, 7, 16),
+    first_appearance := cal::to_local_date(1893, 7, 6),
+    last_appearance := cal::to_local_date(1893, 7, 16),
   }
 );
 ```
@@ -316,7 +316,7 @@ set {
 ```edgeql
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 ```
@@ -342,7 +342,7 @@ insert NPC {
 
 2. 如何在显示城堡名称的同时进行与上题相同的插入？
 3. 如果所有的吸血鬼都需要一个最小为 10 的力量值，如何修改 `Vampire` 类型？
-4. 如何更新所有的 `Person` 类型的对象，表明他们都死于 1887 年 9 月 11 日？
+4. 如何更新所有的 `Person` 类型的对象，表明他们都死于 1893 年 9 月 11 日？
 
    提示：下面是 `Person` 类型当前的定义：
 

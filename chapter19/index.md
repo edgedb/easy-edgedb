@@ -108,11 +108,11 @@ That was easy. Now we can put the ship visits in.
 
 ```edgeql
 for visit in {
-    ('The Demeter', 'Varna', '1887-07-06'),
-    ('The Demeter', 'Bosphorus', '1887-07-11'),
-    ('The Demeter', 'Whitby', '1887-08-08'),
-    ('Czarina Catherine', 'London', '1887-10-05'),
-    ('Czarina Catherine', 'Galatz', '1887-10-28')
+    ('The Demeter', 'Varna', '1893-07-06'),
+    ('The Demeter', 'Bosphorus', '1893-07-11'),
+    ('The Demeter', 'Whitby', '1893-08-08'),
+    ('Czarina Catherine', 'London', '1893-10-05'),
+    ('Czarina Catherine', 'Galatz', '1893-10-28')
   }
 union (
   insert Visit {
@@ -123,7 +123,7 @@ union (
 );
 ```
 
-With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1887, we can see if there are any ships in town:
+With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1893, we can see if there are any ships in town:
 
 ```edgeql
 select Visit {
@@ -134,7 +134,7 @@ select Visit {
     name
   },
   date
-} filter .place.name = 'Galatz' and .date = <cal::local_date>'1887-10-28';
+} filter .place.name = 'Galatz' and .date = <cal::local_date>'1893-10-28';
 ```
 
 And it looks like there is a ship in town! It's the Czarina Catherine.
@@ -144,7 +144,7 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
   default::Visit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
   },
 }
 ```
@@ -172,7 +172,7 @@ Here is the output:
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
   },
 }
 ```
@@ -228,7 +228,7 @@ Here's the output, including whether vampires are awake or asleep.
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     time_: default::Time {
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
@@ -287,7 +287,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     clock: '13:00:00',
     hour: '13',
     sleep_state: 'asleep',
@@ -312,7 +312,7 @@ type Region extending Place {
 
 That connects our types based on `Place` quite well.
 
-Now let's do a medium-sized entry that has `Country`, `Region`, and `City` all at the same time. We'll choose Germany in 1887 because Jonathan went through there first. It will have:
+Now let's do a medium-sized entry that has `Country`, `Region`, and `City` all at the same time. We'll choose Germany in 1893 because Jonathan went through there first. It will have:
 
 - One country: Germany,
 - Three regions: Prussia, Hesse, Saxony

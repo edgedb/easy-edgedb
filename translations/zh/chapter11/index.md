@@ -38,8 +38,8 @@ type Event {
 ```edgeql
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
@@ -76,8 +76,8 @@ select Event {
 {
   default::Event {
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    start_time: <cal::local_datetime>'1887-09-11T18:00:00',
-    end_time: <cal::local_datetime>'1887-09-11T23:00:00',
+    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
+    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
     place: {
       default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
     },

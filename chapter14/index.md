@@ -223,7 +223,7 @@ So now that everyone has a name, let's use that to see if they are dead or not. 
 
 ```edgeql
 with p := (select Person),
-     date := <cal::local_date>'1887-08-16',
+     date := <cal::local_date>'1893-08-16',
 select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
@@ -231,12 +231,12 @@ Here is the output:
 
 ```
 {
-  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1887-08-16? false'),
-  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Lucy Westenra', <cal::local_date>'1893-09-20', 'Dead on 1893-08-16? false'),
+  ('Crewman 1', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 2', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 3', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 4', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 5', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
 }
 ```
 

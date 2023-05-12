@@ -32,7 +32,7 @@ type MinorVampire extending Person {
 ```edgeql
 update Person filter .name = 'Lucy Westenra'
 set {
-  last_appearance := cal::to_local_date(1887, 9, 20)
+  last_appearance := cal::to_local_date(1893, 9, 20)
 };
 ```
 
@@ -88,7 +88,7 @@ select MinorVampire {
   default::MinorVampire {
     name: 'Lucy',
     strength: 5,
-    first_appearance: <cal::local_date>'1887-09-20',
+    first_appearance: <cal::local_date>'1893-09-20',
   },
 }
 ```
@@ -125,7 +125,7 @@ type Vampire extending Person {
 
 ## 链接目标删除策略
 
-我们在这里决定为露西保留旧的 `NPC` 对象，因为作为 `NPC` 的露西将在游戏中待到 1887 年 9 月 20 日，也许会有 `PC` 类型的对象会与她有所互动。但这可能会让你想了解关于链接的删除。即如果我们在她成为 `MinorVampire` 时想删除她的旧类型对象，该怎样？或者更现实地说，当吸血鬼死时，想要同时删除所有链接到 `Vampire` 的 `MinorVampire` 对象，该怎么办？我们不会在我们的游戏中真的这样做，但你确实可以使用 `on target delete` 来实现。`on target delete` 的意思是“当链接目标被删除时”，执行其后面（在 `{}` 里）命令。为此，我们有 {ref}`四个选项 <docs:ref_datamodel_link_deletion>`：
+我们在这里决定为露西保留旧的 `NPC` 对象，因为作为 `NPC` 的露西将在游戏中待到 1893 年 9 月 20 日，也许会有 `PC` 类型的对象会与她有所互动。但这可能会让你想了解关于链接的删除。即如果我们在她成为 `MinorVampire` 时想删除她的旧类型对象，该怎样？或者更现实地说，当吸血鬼死时，想要同时删除所有链接到 `Vampire` 的 `MinorVampire` 对象，该怎么办？我们不会在我们的游戏中真的这样做，但你确实可以使用 `on target delete` 来实现。`on target delete` 的意思是“当链接目标被删除时”，执行其后面（在 `{}` 里）命令。为此，我们有 {ref}`四个选项 <docs:ref_datamodel_link_deletion>`：
 
 - `restrict`：禁止删除目标对象。
 

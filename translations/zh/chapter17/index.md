@@ -65,7 +65,7 @@ select (minor_vampires.women.name, minor_vampires.lucy.name);
 select ( # Put the whole update inside
   update NPC filter .name = 'Renfield'
   set {
-    last_appearance := <cal::local_date>'1887-10-03'
+    last_appearance := <cal::local_date>'1893-10-03'
   }
 ) # then use it to call up name and last_appearance
 {
@@ -74,7 +74,7 @@ select ( # Put the whole update inside
 };
 ```
 
-结果是：`{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
+结果是：`{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
 最后要提的是：在元组中命名一个项目对项目本身是没有任何影响的。所以：
 

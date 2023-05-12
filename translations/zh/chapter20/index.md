@@ -15,7 +15,7 @@ tags: Ddl, Sdl, Edgedb Community
 ```edgeql
 update MinorVampire filter .name != 'Lucy'
 set {
-  last_appearance := <cal::local_date>'1887-11-05'
+  last_appearance := <cal::local_date>'1893-11-05'
 };
 ```
 

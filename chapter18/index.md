@@ -70,7 +70,7 @@ type Pound extending Currency {
 }
 ```
 
-Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1887.
+Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1893.
 
 ```edgeql
 insert Pound {
@@ -272,8 +272,8 @@ for n in {1, 2, 3, 4, 5}
 union (
   insert Crewman {
     number := n,
-    first_appearance := cal::to_local_date(1887, 7, 6),
-    last_appearance := cal::to_local_date(1887, 7, 16),
+    first_appearance := cal::to_local_date(1893, 7, 6),
+    last_appearance := cal::to_local_date(1893, 7, 16),
   }
 );
 
@@ -332,8 +332,8 @@ insert Ship {
     union (
       insert Crewman {
         number := n,
-        first_appearance := cal::to_local_date(1887, 7, 6),
-        last_appearance := cal::to_local_date(1887, 7, 16),
+        first_appearance := cal::to_local_date(1893, 7, 6),
+        last_appearance := cal::to_local_date(1893, 7, 16),
       }
     )
   )
@@ -359,9 +359,9 @@ Much better!
    Here is their data (name, date of birth (`first_appearance`), date turned into a MinorVampire (`last_appearance`)):
 
    ```
-   ('Fritz Frosch', '1850-01-15', '1887-09-11'),
-   ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
-   ('김훈', '1860-09-09', '1887-09-11'),
+   ('Fritz Frosch', '1850-01-15', '1893-09-11'),
+   ('Levanta Sinyeva', '1862-02-24', '1893-09-11'),
+   ('김훈', '1860-09-09', '1893-09-11'),
    ```
 
 [See the answers here.](answers.md)

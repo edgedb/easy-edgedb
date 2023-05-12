@@ -270,8 +270,8 @@ for n in {1, 2, 3, 4, 5}
   union (
   insert Crewman {
   number := n,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 });
 
 insert Ship {
@@ -311,7 +311,7 @@ update NPC filter .name in {'John Seward', 'Quincey Morris'}
 
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 
@@ -335,8 +335,8 @@ insert NPC {
 
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
@@ -351,7 +351,7 @@ update Person
 
 update Person filter .name = 'Lucy Westenra'
   set {
-  last_appearance := cal::to_local_date(1887, 9, 20)
+  last_appearance := cal::to_local_date(1893, 9, 20)
 };
 
 with lucy := assert_single((select Person filter .name = 'Lucy Westenra'))
@@ -398,13 +398,13 @@ update City filter .name = 'London'
  };
 
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 4, 0, 0),
   author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 5, 0, 0),
   author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
@@ -412,7 +412,7 @@ insert BookExcerpt {
 select (
   update NPC filter .name = 'Renfield'
     set {
-  last_appearance := <cal::local_date>'1887-10-03'
+  last_appearance := <cal::local_date>'1893-10-03'
 })
   {
   name, 

@@ -48,9 +48,9 @@ type Goldmark extending Currency {
 
 ```edgeql
 with new_vampires := {
-    ('Fritz Frosch', '1850-01-15', '1887-09-11'),
-    ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
-    ('김훈', '1860-09-09', '1887-09-11')
+    ('Fritz Frosch', '1850-01-15', '1893-09-11'),
+    ('Levanta Sinyeva', '1862-02-24', '1893-09-11'),
+    ('김훈', '1860-09-09', '1893-09-11')
   }
 insert Vampire {
   name := 'Godbrand',

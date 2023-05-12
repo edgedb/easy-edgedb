@@ -5,7 +5,7 @@
 如下所示：
 
 ```edgeql
-for person in {('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')}
+for person in {('Jimmy the Bartender', '1893-09-10', '1893-09-11'), ('Some friend of Jonathan Harker', '1893-07-08', '1893-07-09')}
 union (
   insert NPC {
     name := person.0,
@@ -17,7 +17,7 @@ union (
 
 #### 2. 这里还有两个要插入的 `NPC`，后者的最后有一个空集（因为她还没有死）。插入它们时，我们会遇到什么问题？
 
-问题是 EdgeDB 不知道后者的最后一个 `{}` 是什么类型。你可以通过快速执行一下 `select {('Dracula\'s Castlevisitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05 -08', {})}`：
+问题是 EdgeDB 不知道后者的最后一个 `{}` 是什么类型。你可以通过快速执行一下 `select {('Dracula\'s Castlevisitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05 -08', {})}`：
 
 发现结果：
 
@@ -29,7 +29,7 @@ ERROR: QueryError: operator 'union' cannot be applied to operands of type 'tuple
 类型转换为 `<str>{}` 是一种选择，但我们可以做一些更健壮的事情。首先将 `{}` 更改为空字符串，然后指定 `last_appearance` 的长度必须为 10，否则将其设为 `<cal::local_date>{}`：
 
 ```edgeql
-for person in {('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', '')}
+for person in {('Dracula\'s Castle visitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05-08', '')}
 union(
   insert NPC {
     name := person.0,

@@ -249,22 +249,22 @@ To restore the default format type: `\set output-format default`.
 So what about the other way around, namely JSON to an EdgeDB type? You can do this too, but remember to think about the JSON type that you are giving to cast. The EdgeDB philosophy is that casts should be symmetrical: a type cast into JSON should only be cast back into that type. For example, here is the first date in the book Dracula as a string, then cast to JSON and then into a `cal::local_date`:
 
 ```edgeql
-select <cal::local_date><json>'18870503';
+select <cal::local_date><json>'18930503';
 ```
 
-This is fine because `<json>` turns it into a JSON string, and `cal::local_date` can be created from a string. The result we get is `{<cal::local_date>'1887-05-03'}`. But if we try to turn the JSON value into an `int64`, it won't work:
+This is fine because `<json>` turns it into a JSON string, and `cal::local_date` can be created from a string. The result we get is `{<cal::local_date>'1893-05-03'}`. But if we try to turn the JSON value into an `int64`, it won't work:
 
 ```edgeql
-select <int64><json>'18870503';
+select <int64><json>'18930503';
 ```
 
 The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number or null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
 
 ```edgeql
-select <int64><str><json>'18870503';
+select <int64><str><json>'18930503';
 ```
 
-Now it works: we get `{18870503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
+Now it works: we get `{18930503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
 
 The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types turn into which EdgeDB types, lists functions for working with JSON values, and is good to bookmark if you need to convert from JSON a lot.
 

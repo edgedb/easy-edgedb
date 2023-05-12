@@ -31,7 +31,7 @@ insert City {
 
 ## 枚举、标量类型及类型扩展
 
-到目前位置，我们在书中提到了两种交通工具：火车和马车。这本书以 1887 年为背景，因此游戏中我们将让角色使用当年可用的交通工具。这里用 `enum`（枚举）可能是最好的选择，因为 `enum` 可以提供多个选项，供使用者选择一个所需的。枚举的变量需要用大写驼峰式（UpperCamelCase）进行书写。
+到目前位置，我们在书中提到了两种交通工具：火车和马车。这本书以 1893 年为背景，因此游戏中我们将让角色使用当年可用的交通工具。这里用 `enum`（枚举）可能是最好的选择，因为 `enum` 可以提供多个选项，供使用者选择一个所需的。枚举的变量需要用大写驼峰式（UpperCamelCase）进行书写。
 
 这里，我们将第一次看到关键词 `scalar`：它是一个“标量类型”（`scalar type`），因为一次只保存一个值。而其他类型（如 `City`、`Person`）属于“对象类型”（`object types`），因为他们能够同时保存多个值。
 
@@ -252,11 +252,11 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 因此语句：
 
 ```edgeql
-select 1887#0503 is the first day of the book Dracula when...
+select 1893#0503 is the first day of the book Dracula when...
 ;
 ```
 
-只是会返回 `{1887}`.
+只是会返回 `{1893}`.
 
 [→ 点击这里查看到第 2 章为止的所有代码](code.md)
 

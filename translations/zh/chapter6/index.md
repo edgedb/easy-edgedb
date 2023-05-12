@@ -245,27 +245,27 @@ select <json>Vampire {
 
 ## 从 JSON 转换回来
 
-那么反过来呢，就是把 JSON 转回成 EdgeDB 的类型呢？这也是可行的，但要当心 JSON 数据的类型，因为 EdgeDB 讲究转换的对称性：转成 JSON 前是什么类型，转回来还应该是什么类型。比如，《德古拉》里出现的第一个日期字符串是 `'18870503'`，如果我们尝试将它的 JSON 值转换为一个 `int64`，它将无法正常工作：
+那么反过来呢，就是把 JSON 转回成 EdgeDB 的类型呢？这也是可行的，但要当心 JSON 数据的类型，因为 EdgeDB 讲究转换的对称性：转成 JSON 前是什么类型，转回来还应该是什么类型。比如，《德古拉》里出现的第一个日期字符串是 `'18930503'`，如果我们尝试将它的 JSON 值转换为一个 `int64`，它将无法正常工作：
 
 ```edgeql
-select <int64><json>'18870503';
+select <int64><json>'18930503';
 ```
 
 问题出在从 JSON 字符串到 EdgeDB `int64` 的转换，错误提示为：`ERROR: InvalidValueError: expected json number or null; got json string`。也就是说，EdgeDB `str` 转换为 JSON 字符串后，又试图转换为 EdgeDB `int64`，这是不可行的。（除非是 EdgeDB 数字类型转换为 JSON 数字，才可再转换回 EdgeDB 数字类型。）因此，这里为了保持对称，你需要先将 JSON 字符串转换为 EdgeDB 的 `str`，然后再转换为 `int64`：
 
 ```edgeql
-select <int64><str><json>'18870503';
+select <int64><str><json>'18930503';
 ```
 
-现在它正常工作了：我们可以得到 `{18870503}`，过程是 EdgeDB `str`，变成了 JSON 字符串，然后又回到 EdgeDB `str`，最后被转换为 `int64`。
+现在它正常工作了：我们可以得到 `{18930503}`，过程是 EdgeDB `str`，变成了 JSON 字符串，然后又回到 EdgeDB `str`，最后被转换为 `int64`。
 
 接下来，我们再来看下面的列子，即把《德古拉》里出现的第一个日期字符串转换成 JSON 字符串后再转换回成 `cal::local_date` 类型：
 
 ```edgeql
-select <cal::local_date><json>'18870503';
+select <cal::local_date><json>'18930503';
 ```
 
-你会发现它是可以正确执行的，结果是 `{<cal::local_date>'1887-05-03'}`。因为 `<json>` 将 `'18870503'` 转换为了 JSON 字符串，且 `cal::local_date` 可以接收 JSON 字符串以进行创建。换句话说，当你对 EdgeDB 的 `cal::local_date` 进行 JSON 转换时，你将得到一个 JSON 字符串，因此反之，你固然可以将符合日期格式的 JSON 字符串直接转换回 `cal::local_date`。
+你会发现它是可以正确执行的，结果是 `{<cal::local_date>'1893-05-03'}`。因为 `<json>` 将 `'18930503'` 转换为了 JSON 字符串，且 `cal::local_date` 可以接收 JSON 字符串以进行创建。换句话说，当你对 EdgeDB 的 `cal::local_date` 进行 JSON 转换时，你将得到一个 JSON 字符串，因此反之，你固然可以将符合日期格式的 JSON 字符串直接转换回 `cal::local_date`。
 
 关于 JSON 的文档 {ref}`documentation on JSON <docs:ref_std_json>` 解释了哪些 JSON 类型可以转换为哪些 EdgeDB 类型，列出了可以处理 JSON 值的函数，如果在你的应用中需要对 JSON 进行大量转换，可以将其添加至书签。
 

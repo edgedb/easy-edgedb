@@ -10,7 +10,7 @@ For this chapter we've gone back in time a few weeks to when the ship left Varna
 
 ## Working with dates some more
 
-It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1887).
+It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1893).
 
 This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
@@ -31,8 +31,8 @@ Doing an insert for the `Crewman` objects with the properties `first_appearance`
 ```edgeql
 insert Crewman {
   number := count(detached Crewman) +1,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 };
 ```
 
@@ -41,7 +41,7 @@ And since we have a lot of `Crewman` objects already inserted, we can easily use
 Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
 
 ```edgeql
-select <cal::local_date>'1887-07-08';
+select <cal::local_date>'1893-07-08';
 ```
 
 But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
@@ -51,8 +51,8 @@ Now we update the `Crewman` objects and give them all the same date to keep thin
 ```edgeql
 update Crewman
 set {
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16)
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16)
 };
 ```
 
@@ -200,8 +200,8 @@ for n in {1, 2, 3, 4, 5}
 union (
   insert Crewman {
     number := n,
-    first_appearance := cal::to_local_date(1887, 7, 6),
-    last_appearance := cal::to_local_date(1887, 7, 16),
+    first_appearance := cal::to_local_date(1893, 7, 6),
+    last_appearance := cal::to_local_date(1893, 7, 16),
   }
 );
 ```
@@ -317,7 +317,7 @@ Looks like we are mostly up to date now. The only thing left is to insert the my
 ```edgeql
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 ```
@@ -343,7 +343,7 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
 2. How would you do the same insert while displaying the castle's name at the same time?
 3. How would you change the `Vampire` type if all vampires needed a minimum strength of 10?
-4. How would you update all the `Person` types to show that they died on September 11, 1887?
+4. How would you update all the `Person` types to show that they died on September 11, 1893?
 
    Hint: here's the type again:
 

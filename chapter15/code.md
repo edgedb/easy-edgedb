@@ -250,8 +250,8 @@ for n in {1, 2, 3, 4, 5}
   union (
   insert Crewman {
   number := n,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 });
 
 insert Ship {
@@ -291,7 +291,7 @@ update NPC filter .name in {'John Seward', 'Quincey Morris'}
 
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 
@@ -315,8 +315,8 @@ insert NPC {
 
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
   exact_location := (54.4858, 0.6206),
@@ -331,7 +331,7 @@ update Person
 
 update Person filter .name = 'Lucy Westenra'
   set {
-  last_appearance := cal::to_local_date(1887, 9, 20)
+  last_appearance := cal::to_local_date(1893, 9, 20)
 };
 
 with lucy := assert_single((select Person filter .name = 'Lucy Westenra'))

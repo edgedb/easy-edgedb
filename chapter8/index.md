@@ -261,7 +261,7 @@ select Person {
 Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
 
 ```edgeql
-with year := 1887,
+with year := 1893,
 select year is int16 or year is int32 or year is int64;
 ```
 
@@ -269,7 +269,7 @@ Output: `{true}`.
 
 But fortunately these types all {ref}`extend from abstract types too <docs:ref_std_abstract_types>`, and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
 
-So with that you can change the above input to `select 1887 is anyint` and get `{true}`.
+So with that you can change the above input to `select 1893 is anyint` and get `{true}`.
 
 ## Multi in other places
 

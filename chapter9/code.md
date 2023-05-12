@@ -196,8 +196,8 @@ for n in {1, 2, 3, 4, 5}
   union (
   insert Crewman {
   number := n,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 });
 
 insert Ship {
@@ -237,7 +237,7 @@ update NPC filter .name in {'John Seward', 'Quincey Morris'}
 
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 ```

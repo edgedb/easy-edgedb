@@ -7,7 +7,7 @@ leadImage: illustration_02.jpg
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
-> Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. We also see that Jonathan Harker is from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
+> Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
 Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
@@ -19,7 +19,7 @@ type City {
 }
 ```
 
-Now our original insert for Bistritz will look like this:
+Now our insert for Bistritz will look like this:
 
 ```edgeql
 insert City {
@@ -29,9 +29,11 @@ insert City {
 };
 ```
 
+After this insert, our database will have two cities called Bistritz. To delete one of them, we will need to know two more keywords: `filter` and `delete`. We will learn `filter` in this chapter, and `delete` in the next, and then we will delete our duplicate Bistritz.
+
 ## Enums, scalar types, and extending
 
-We now have two types of transport in the book: train, and horse-drawn carriage. The book is based in 1887, and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
+We now have two types of transport in the book: train, and horse-drawn carriage. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
 
 Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
 
@@ -252,11 +254,11 @@ Did you notice in that previous select query, we used `#` to add a comment? Comm
 So this:
 
 ```edgeql
-select 1887#0503 is the first day of the book Dracula when...
+select 1893#0503 is the first day of the book Dracula when...
 ;
 ```
 
-returns `{1887}`.
+returns `{1893}`.
 
 [Here is all our code so far up to Chapter 2.](code.md)
 

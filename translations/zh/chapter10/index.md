@@ -14,7 +14,7 @@ type City extending Place {
 }
 ```
 
-顺便说一下，这是小说出版时相关各城市的大致人口。这些城市的人口在 1887 年时还很少：
+顺便说一下，这是小说出版时相关各城市的大致人口。这些城市的人口在 1893 年时还很少：
 
 - Buda-Pesth (Budapest): 402706
 - London: 3500000
@@ -92,15 +92,15 @@ select NPC.name[2:-2];
 所以像下面这样，完全没有问题：
 
 ```edgeql
-select {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
+select {('Bistritz', 9100, cal::to_local_date(1893, 5, 6)), ('Munich', 230023, cal::to_local_date(1893, 5, 8))};
 ```
 
 输出结果是：
 
 ```
 {
-  ('Bistritz', 9100, <cal::local_date>'1887-05-06'),
-  ('Munich', 230023, <cal::local_date>'1887-05-08'),
+  ('Bistritz', 9100, <cal::local_date>'1893-05-06'),
+  ('Munich', 230023, <cal::local_date>'1893-05-08'),
 }
 ```
 
@@ -434,11 +434,11 @@ else (
 
 1. 尝试通过一个插入语句插入两个 `NPC` 类型的对象，其中包含 `name`, `first_appearance` 和 `last_appearance` 信息。
 
-   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')}`
+   `{('Jimmy the Bartender', '1893-09-10', '1893-09-11'), ('Some friend of Jonathan Harker', '1893-07-08', '1893-07-09')}`
 
 2. 这里还有两个要插入的 `NPC`，后者的最后有一个空集（因为她还没有死）。插入它们时，我们会遇到什么问题？
 
-   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})}`
+   `{('Dracula\'s Castle visitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05-08', {})}`
 
 3. 你将如何按人物姓名的最后一个字母对 `Person` 类型的对象进行排序？
 
