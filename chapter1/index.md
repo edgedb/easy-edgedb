@@ -475,7 +475,20 @@ type Person {
 
 We wrote `multi` in front of `link` because one `Person` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
 
-Now when we insert Jonathan Harker, he will be connected to the type `City`. Don't forget that `places_visited` is not `required`, so we can still insert with just his name to create him:
+And now do a migration with `edgedb migration create` and `edgedb migrate`. The CLI questions this time are pretty easy:
+
+```
+c:\easy-edgedb>edgedb migration create
+Connecting to an EdgeDB instance at localhost:10716...
+Did you drop property 'places_visited' of object type 'default::Person'? [y,n,l,c,b,s,q,?]
+> y
+Did you create link 'places_visited' of object type 'default::Person'? [y,n,l,c,b,s,q,?]
+> y
+```
+
+When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi link` just means that a `Person` _can_ link to one or more `City` types, but they don't have to.
+
+Now when we insert Jonathan Harker, he can be connected to one or more `City` objects. Don't forget that `places_visited` is not `required`, so we could do an `insert` with just his name to create him. It would look like this:
 
 ```edgeql
 insert Person {
@@ -483,7 +496,7 @@ insert Person {
 };
 ```
 
-But this would only create a `Person` type connected to the `City` type but with nothing in it. Let's see what's inside:
+If we were to do that, it would only create a `Person` type connected to the `City` type but with nothing in it. And if we did a query on the `Person` type as follows:
 
 ```edgeql
 select Person {
@@ -492,9 +505,13 @@ select Person {
 };
 ```
 
-Here is the output: `{default::Person {name: 'Jonathan Harker', places_visited: {}}}`
+Then the output wouldn't show any links to any `City` objects:
 
-But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `insert` to `places_visited := City`:
+```
+{default::Person {name: 'Jonathan Harker', places_visited: {}}}
+```
+
+But we want to have Jonathan be connected to the cities he has traveled to. So instead of just giving him a `name`, we'll also give him a `places_visited` multi link when we `insert` by writing `places_visited := City`:
 
 ```edgeql
 insert Person {
@@ -503,7 +520,7 @@ insert Person {
 };
 ```
 
-Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
+Now let's see the places that Jonathan has visited. The query below is almost but not quite what we need:
 
 ```edgeql
 select Person {
@@ -553,9 +570,9 @@ Success! Now we get the output we wanted:
 }
 ```
 
-Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
+Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects and one `Person` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
 
-Note that if you have inserted "Johnathan Harker" multiple times, you will have multiple `Person` objects with that name corresponding to each `insert` command. This is OK for now. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
+Note that if you inserted "Jonathan Harker" multiple times (or any other `Person` objects with the same name), you will now have multiple `Person` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
 
 [Here is all our code so far up to Chapter 1.](code.md)
 
