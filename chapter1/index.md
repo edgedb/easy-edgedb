@@ -14,12 +14,12 @@ In the beginning of the book we see the main character Jonathan Harker, a young 
 This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is {ref}`SDL (schema definition language)<docs:ref_eql_sdl>` that makes migration easy, and which we will learn in this book. So far our schema needs the following:
 
 - Some kind of `City` or `Location` type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
-- Some kind of `Person` type. We need it to have a name, and also a way to track the places that the person visited.
+- Some kind of `NPC` type to represent the people in the book. We need it to have a name, and also a way to track the places that the person visited.
 
-To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
+To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `NPC` type will start out like this:
 
 ```sdl
-type Person {
+type NPC {
 }
 ```
 
@@ -66,7 +66,7 @@ edgedb>
 
 You just made your first query in EdgeDB. Now type `\quit` to escape the REPL and get back to the command line.
 
-So now let's take a look at the schema so we can create our `Person` type. The CLI has already let us know that the schema is inside the `\edgedb\dbschema` directory, so go inside there and look for a file called `default.esdl`. This is your schema. At the moment, all it holds is a module called `default`:
+So now let's take a look at the schema so we can create our `NPC` type. The CLI has already let us know that the schema is inside the `\edgedb\dbschema` directory, so go inside there and look for a file called `default.esdl`. This is your schema. At the moment, all it holds is a module called `default`:
 
 ```sdl
 module default {
@@ -74,11 +74,11 @@ module default {
 }
 ```
 
-This module is where we will hold the types for our database, including our `Person` type. Let's give it a try! Add the `Person` type that we made above, as follows:
+This module is where we will hold the types for our database, including our `NPC` type. Let's give it a try! Add the `NPC` type that we made above, as follows:
 
 ```sdl
 module default {
-  type Person {
+  type NPC {
   }
 }
 ```
@@ -110,19 +110,19 @@ We will be doing a lot of that in this book! Even by the second chapter you will
   The CLI creates a new file upon each migration to generate the commands to change the schema to the one we want. The first file will be called 00001.edgeql, the second will be 00002.edgeql, and so on. These files are quite readable so feel free to take a look at if you are curious. But note that they use a syntax called DDL (Data Definition Language) that gives commands to EdgeDB one at a time, and you do not need to learn it. Human users of EdgeDB use a language called SDL (Schema Definition Language) that simply declares what a schema will look like. The CLI then automatically creates DDL commands to make it happen.
 ```
 
-Now that we know how to do a schema migration, let's add some properties to our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional. Let's give the `Person` type a name and an array (a collection) of places visited:
+Now that we know how to do a schema migration, let's add some properties to our `NPC` type. Use `required property` if the type needs it, and just `property` if it is optional. Let's give the `NPC` type a name and an array (a collection) of places visited:
 
 ```sdl
-type Person {
+type NPC {
   required property name -> str;
   property places_visited -> array<str>;
 }
 ```
 
-With `required property name` our `Person` objects are always guaranteed to have a name - you can't make a `Person` object without it. Here's the error message if you try:
+With `required property name` our `NPC` objects are always guaranteed to have a name - you can't make an `NPC` object without it. Here's the error message if you try:
 
 ```
-MissingRequiredError: missing value for required property default::Person.name
+MissingRequiredError: missing value for required property default::NPC.name
 ```
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
@@ -178,13 +178,13 @@ Looks good! It's a type `City` inside the module `default`, it has a `required p
 ```
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
 > y
-Did you alter object type 'default::Person'? [y,n,l,c,b,s,q,?]
+Did you alter object type 'default::NPC'? [y,n,l,c,b,s,q,?]
 > y
-Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::Person' required:
+Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::NPC' required:
 fill_expr>
 ```
 
-The CLI is essentially saying: "There might be `Person` objects in the database already. But now they all need to have a `name` property, which wasn't required before. How should I decide what `name` to give them?"
+The CLI is essentially saying: "There might be `NPC` objects in the database already. But now they all need to have a `name` property, which wasn't required before. How should I decide what `name` to give them?"
 
 Fortunately, the expression here is pretty simple: let's just give them all an empty string. Type `''` and hit enter, and the CLI will now be happy with the migration. Don't forget to complete the migration with `edgedb migration`, and we are done!
 
@@ -258,21 +258,21 @@ insert City {
 
 Note that a comma after the last item is optional - you can put it in or leave it out. Here we put a comma at the end sometimes and left it out at other times to show this.
 
-Finally, the `Person` insert would look like this, but don't insert it yet:
+Finally, the `NPC` insert would look like this, but don't insert it yet:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
 ```
 
-Because hold on a second...that insert won't link a `Person` object it to any of the `City` inserts that we already did. Here's where our schema needs some improvement:
+Because hold on a second...that insert won't link an `NPC` object it to any of the `City` inserts that we already did. Here's where our schema needs some improvement:
 
-- We have a `Person` type and a `City` type,
-- The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
+- We have an `NPC` type and a `City` type,
+- The `NPC` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
-So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
+So let's not do that `NPC` insert. We'll fix the `NPC` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
 
 But first let's look a bit closer at what happens when we use `insert`.
 
@@ -301,7 +301,7 @@ error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are
 Every time you `insert` an item, EdgeDB gives you a `uuid` back. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
 
 ```
-{default::Person {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
+{default::NPC {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
 ```
 
 You probably noticed this already when we inserted our first three `City` objects.
@@ -464,42 +464,42 @@ There is a way to change one type to another that we will learn in the next chap
 
 ## Links
 
-So now the last thing left to do is to change our `property` in `Person` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `Person`. We'll change `Person` to look like this:
+So now the last thing left to do is to change our `property` in `NPC` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `NPC` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `NPC`. We'll change `NPC` to look like this:
 
 ```sdl
-type Person {
+type NPC {
   required property name -> str;
   multi link places_visited -> City;
 }
 ```
 
-We wrote `multi` in front of `link` because one `Person` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
+We wrote `multi` in front of `link` because one `NPC` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
 
 And now do a migration with `edgedb migration create` and `edgedb migrate`. The CLI questions this time are pretty easy:
 
 ```
 c:\easy-edgedb>edgedb migration create
 Connecting to an EdgeDB instance at localhost:10716...
-Did you drop property 'places_visited' of object type 'default::Person'? [y,n,l,c,b,s,q,?]
+Did you drop property 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
 > y
-Did you create link 'places_visited' of object type 'default::Person'? [y,n,l,c,b,s,q,?]
+Did you create link 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
 > y
 ```
 
-When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi link` just means that a `Person` _can_ link to one or more `City` types, but they don't have to.
+When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi link` just means that an `NPC` _can_ link to one or more `City` types, but they don't have to.
 
 Now when we insert Jonathan Harker, he can be connected to one or more `City` objects. Don't forget that `places_visited` is not `required`, so we could do an `insert` with just his name to create him. It would look like this:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
 };
 ```
 
-If we were to do that, it would only create a `Person` type connected to the `City` type but with nothing in it. And if we did a query on the `Person` type as follows:
+If we were to do that, it would only create an `NPC` type connected to the `City` type but with nothing in it. And if we did a query on the `NPC` type as follows:
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
@@ -508,13 +508,13 @@ select Person {
 Then the output wouldn't show any links to any `City` objects:
 
 ```
-{default::Person {name: 'Jonathan Harker', places_visited: {}}}
+{default::NPC {name: 'Jonathan Harker', places_visited: {}}}
 ```
 
 But we want to have Jonathan be connected to the cities he has traveled to. So instead of just giving him a `name`, we'll also give him a `places_visited` multi link when we `insert` by writing `places_visited := City`:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
@@ -523,7 +523,7 @@ insert Person {
 Now let's see the places that Jonathan has visited. The query below is almost but not quite what we need:
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
@@ -533,7 +533,7 @@ Here is the output:
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {id: 4ba1074e-ff3f-11eb-aeb7-cf15feb714ef},
@@ -547,7 +547,7 @@ Here is the output:
 Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited: {
     name
@@ -559,7 +559,7 @@ Success! Now we get the output we wanted:
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {name: 'Munich'},
@@ -570,9 +570,9 @@ Success! Now we get the output we wanted:
 }
 ```
 
-Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects and one `Person` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
+Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects and one `NPC` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
 
-Note that if you inserted "Jonathan Harker" multiple times (or any other `Person` objects with the same name), you will now have multiple `Person` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
+Note that if you inserted "Jonathan Harker" multiple times (or any other `NPC` objects with the same name), you will now have multiple `NPC` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `NPC` with the same name.
 
 [Here is all our code so far up to Chapter 1.](code.md)
 

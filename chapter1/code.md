@@ -2,7 +2,7 @@
 # Schema:
 
 module default {
-  type Person {
+  type NPC {
     required property name -> str;
     multi link places_visited -> City;
   }
@@ -29,7 +29,7 @@ insert City {
   modern_name := 'Bistrița'
 };
 
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };

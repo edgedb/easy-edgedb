@@ -33,11 +33,11 @@ After this insert, our database will have two cities called Bistritz. To delete 
 
 ## Enums, scalar types, and extending
 
-We now have two types of transport in the book: train, and horse-drawn carriage. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
+We now have three types of transport in the book: walking, train, and horse-drawn carriage. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
 
-Here we see the word `scalar` for the first time: this is a `scalar type` because it only holds a single value at a time. The other types (`City`, `Person`) are `object types` because they can hold multiple values at the same time.
+Here we see the word `scalar` for the first time: this is a `scalar type`, which means that it only holds a single value at a time. The other types (`City`, `NPC`) are `object types` because they can hold multiple values at the same time.
 
-The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This gives you all the power of the type that you are extending, and adds some more options. We will write our `Transport` type like this:
+The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This keyword gives you all the power of the type that you are extending, and lets you add more on top. We will write our `Transport` type like this:
 
 ```sdl
 scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
@@ -47,7 +47,7 @@ Did you notice that `scalar type` ends with a semicolon and the other types don'
 
 To choose between the values (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Transport.Feet`, `Transport.Train`, or `Transport.HorseDrawnCarriage`.
 
-This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need a `PC` type and an `NPC` type, but our `Person` type should stay too - we can use it a base type for both. To do this, we can make `Person` an `abstract type` instead of just a `type`. Then with this abstract type, we can use the keyword `extending` for the other `PC` and `NPC` types.
+This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need both an `PC` type and an `NPC` type. These two types are pretty similar to each other: they both have a `name`, `places_visited`, and probably  some other properties that we will add later. This is a good case for an abstract type. Inside this abstract type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
 
 So now this part of the schema looks like this:
 
@@ -65,7 +65,7 @@ type NPC extending Person {
 }
 ```
 
-Now the characters from the book will be `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is now an abstract type, we can't insert it directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:
+The characters from the book are still `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is an abstract type, we can't insert directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:
 
 ```
 error: cannot insert into abstract object type 'default::Person'
@@ -77,7 +77,7 @@ error: cannot insert into abstract object type 'default::Person'
 
 No problem - just change `Person` to `NPC` and it will work.
 
-Also, `select` on an abstract type is just fine - it will select all the types that extend from it.
+However, `select` on an abstract type is just fine - it will select all the types that extend from it.
 
 Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
 

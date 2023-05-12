@@ -33,7 +33,7 @@ insert City {
 
 到目前位置，我们在书中提到了两种交通工具：火车和马车。这本书以 1893 年为背景，因此游戏中我们将让角色使用当年可用的交通工具。这里用 `enum`（枚举）可能是最好的选择，因为 `enum` 可以提供多个选项，供使用者选择一个所需的。枚举的变量需要用大写驼峰式（UpperCamelCase）进行书写。
 
-这里，我们将第一次看到关键词 `scalar`：它是一个“标量类型”（`scalar type`），因为一次只保存一个值。而其他类型（如 `City`、`Person`）属于“对象类型”（`object types`），因为他们能够同时保存多个值。
+这里，我们将第一次看到关键词 `scalar`：它是一个“标量类型”（`scalar type`），因为一次只保存一个值。而其他类型（如 `City`、`NPC`）属于“对象类型”（`object types`），因为他们能够同时保存多个值。
 
 另一个我们将第一次看到的关键词是 `extending`：它是指以一个类型作为基础并对其进行扩展。这不仅为你提供了你想要扩展的类型的所有功能，并允许你添加更多选项。因此，我们将这样定义 `Transport` 类型：
 
@@ -45,7 +45,7 @@ scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
 要在枚举中的变体（选项）间进行选择，只需用 `.`。对于上面的枚举，这意味着我们可以选择 `Transport.Feet`、`Transport.Train` 或 `Transport.HorseDrawnCarriage`。
 
-现在设定这个 `Transport` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型，但我们的 `Person` 类型也应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
+现在设定这个 `Transport` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型。我们的 `Person` 类型也应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
 
 因此，现在这部分结构看起来像这样：
 
@@ -63,7 +63,7 @@ type NPC extending Person {
 }
 ```
 
-现在书中的角色都将是 `NPC`（非玩家角色）类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 现在是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
+现在书中的角色都将是 `NPC`类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
 
 ```
 error: cannot insert into abstract object type 'default::Person'
