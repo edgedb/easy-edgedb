@@ -45,7 +45,7 @@ scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
 
 要在枚举中的变体（选项）间进行选择，只需用 `.`。对于上面的枚举，这意味着我们可以选择 `Transport.Feet`、`Transport.Train` 或 `Transport.HorseDrawnCarriage`。
 
-现在设定这个 `Transport` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型。我们的 `Person` 类型也应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
+现在设定这个 `Transport` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型。因为`PC`和`NPC`彼此非常相似，我们可以创造一个 `abstract type Person`（抽象类型）。我们的 `Person` 类型应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
 
 因此，现在这部分结构看起来像这样：
 
