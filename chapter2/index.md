@@ -68,8 +68,8 @@ type NPC extending Person {
 The characters from the book are still `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is an abstract type, we can't insert directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:
 
 ```
-error: cannot insert into abstract object type 'default::Person'
-  ┌─ query:1:8
+error: QueryError: cannot insert into abstract object type 'default::Person'
+  ┌─ <query>:1:8
   │
 1 │ insert Person {name := 'Mr. HasAName'};
   │        ^^^^^^ error

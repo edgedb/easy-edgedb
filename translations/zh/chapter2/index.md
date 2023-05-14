@@ -66,8 +66,8 @@ type NPC extending Person {
 现在书中的角色都将是 `NPC`类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
 
 ```
-error: cannot insert into abstract object type 'default::Person'
-  ┌─ query:1:8
+error: QueryError: cannot insert into abstract object type 'default::Person'
+  ┌─ <query>:1:8
   │
 1 │ insert Person {name := 'Mr. HasAName'};
   │        ^^^^^^ error
