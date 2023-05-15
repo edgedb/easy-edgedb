@@ -127,13 +127,13 @@ This gives us an output showing objects of both the `PC` and `NPC` type.
 
 ## Casting 
 
-Casting means to quickly change one type into another, Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. For example:
+Casting means to quickly change one type into another. Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. For example:
 
 ```edgeql
 select 9 + 9.9;
 ```
 
-EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
+The 9 in this example is an `int64`, while 9.9 is a `float64`. And though 9 and 9.9 are different types, EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
 
 ```edgeql
 select (9 + 9.9) is float64;
@@ -141,7 +141,9 @@ select (9 + 9.9) is float64;
 
 This will give `true`, while `select (9 + 9.9) is float32;` gives `false`.
 
-When you need to do the cast yourself, you can indicate the type using `<>` angle brackets. For example, this will generate an error:
+When a cast is done without you needing to type anything extra, it is known as an _implicit cast_.
+
+When you need to do the cast yourself, it is called an _explicit cast_. In this case you can indicate the type using `<>` angle brackets. For example, this will generate an error:
 
 ```edgeql
 select '9' + 9;
@@ -150,12 +152,11 @@ select '9' + 9;
 EdgeDB tells us the exact problem here:
 
 ```
-error: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
-  ┌─ query:1:8
+error: InvalidTypeError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+  ┌─ <query>:1:8
   │
 1 │ select '9' + 9;
   │        ^^^^^^^ Consider using an explicit type cast or a conversion function.
-
 ```
 
 And to fix it, just use the angle brackets:
@@ -165,6 +166,13 @@ select <int32>'9' + 9;
 ```
 
 And you will get `18`, a 32-bit integer.
+
+Of course, a cast won't work if the input is invalid:
+
+```edgeql
+edgedb> select <int32>"Hi I'm a number please add me to" + 9;
+edgedb error: InvalidValueError: invalid input syntax for type std::int32: "Hi I'm a number please add me to"
+```
 
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
 
