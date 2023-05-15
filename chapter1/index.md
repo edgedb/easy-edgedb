@@ -122,7 +122,7 @@ type NPC {
 With `required property name` our `NPC` objects are always guaranteed to have a name - you can't make an `NPC` object without it. Here's the error message if you try:
 
 ```
-MissingRequiredError: missing value for required property default::NPC.name
+edgedb error: MissingRequiredError: missing value for required property 'name' of object type 'default::NPC'
 ```
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
@@ -291,8 +291,8 @@ And because the characters must be 1 byte, only ASCII works for this type. So th
 
 ```edgeql-repl
 edgedb> select b'Bistrița';
-error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
-  ┌─ query:1:8
+error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
+  ┌─ <query>:1:8
   │
 1 │ select b'Bistrița';
   │        ^ error
