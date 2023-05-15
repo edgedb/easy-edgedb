@@ -99,7 +99,7 @@ Perfect.
 
 ## Adding constraints
 
-Now let's think about `age` again. It was easy for the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use {ref}`one of the functions <docs:ref_datamodel_constraints>` that it can take. We will use `max_value()`.
+Now let's think about `age` again. It was easy to add the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use {ref}`one of the functions <docs:ref_datamodel_constraints>` that it can take. We will use the one called  `max_value()`.
 
 Here's the signature for `max_value()`:
 
@@ -123,7 +123,7 @@ type NPC extending Person {
 }
 ```
 
-It's our own type with its own name, but underneath it's an `int16` that can't be greater than 120. So if we write this, it won't work:
+This `HumanAge` scalar is our own type with its own name, but underneath it's an `int16` that can't be greater than 120. So let's do a migration now and try to add an `NPC` that is 130 years old. This `insert` should not work:
 
 ```edgeql
 insert NPC {
@@ -132,9 +132,14 @@ insert NPC {
 };
 ```
 
-Here is the error: `ERROR: ConstraintViolationError: Maximum allowed value for HumanAge is 120.` Perfect.
+As expected, we are not allowed and an error shows up. Perfect.
 
-Now if we change `age` to 30, we get a message showing that it worked: `{Object {id: 72884afc-f2b1-11ea-9f40-97b378dbf5f8}}`. Now no NPCs can be over 120 years old.
+```
+edgedb error: ConstraintViolationError: Maximum allowed value for HumanAge is 120.
+  Detail: Maximum allowed value for value of scalar type 'default::HumanAge' is 120.
+```
+
+Now let's insert the same innkeeper but give him an `age` of 30. This will now work: `{default::NPC {id: e7c4dd96-f2d4-11ed-a0c7-17fe2be02578}}`. Our `NPC` objects are now guaranteed to be no more than 120 years old.
 
 ## Deleting objects
 
