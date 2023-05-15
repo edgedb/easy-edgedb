@@ -1,5 +1,5 @@
 ---
-tags: Scalar Types, Abstract Types, Filter
+tags: Scalar Types, Abstract Types, Filtering, Slicing
 leadImage: illustration_02.jpg
 ---
 
