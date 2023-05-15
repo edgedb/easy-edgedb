@@ -81,9 +81,7 @@ insert Vampire {
 };
 ```
 
-The result is `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
-
-The `uuid` there is the reply from the server showing which object was just created and that we were successful.
+The insert worked, with a result that looks something like this: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
 
 Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `select` it:
 

@@ -298,7 +298,7 @@ error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are
   │        ^ error
 ```
 
-Every time you `insert` an item, EdgeDB gives you a `uuid` back. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
+Every time you `insert` an item, EdgeDB gives you a `uuid` back. The `uuid` there is the reply from the server showing which object was just created and that we were successful. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
 
 ```
 {default::NPC {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
