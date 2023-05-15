@@ -147,7 +147,7 @@ Deleting in EdgeDB is very easy: just use the `delete` keyword. It's similar to 
 
 This similarity to `select` might make you nervous, because if you type something like `select City` then it will select all of them. `delete` is the same: `delete City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
 
-So let's give it a try. Remember our two `Country` objects for Hungary and Romania? Let's delete them:
+However, sometimes you may be prevented from deleting an object. Remember our two `Country` objects for Hungary and Romania? Let's try deleting them all:
 
 ```edgeql
 delete Country;
@@ -156,8 +156,8 @@ delete Country;
 We got an error telling us that deleting a `Country` is not possible because it is still referenced by `places_visited` of a `Person`.
 
 ```
-ERROR: ConstraintViolationError: deletion of default::Country (7f3c611c-ff43-11eb-af59-dfe5a152a5cb) is prohibited by link target policy
-  Detail: Object is still referenced in link places_visited of default::Person (7f5b25ac-ff43-11eb-af59-3f8e155c6686).
+edgedb error: ConstraintViolationError: deletion of default::Country (e9e8acda-f2d2-11ed-86e2-4bed5b30457e) is prohibited by link target policy
+  Detail: Object is still referenced in link places_visited of default::Person (ce8146ea-f2d3-11ed-92a8-237b79022c26).
 ```
 
 That's Count Dracula who visited Romania getting in the way. Let's delete him first then:
