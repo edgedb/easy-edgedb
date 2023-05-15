@@ -291,7 +291,7 @@ edgedb> select City {
 edgedb error: InvalidValueError: string index 0 is out of bounds (on line 4, column 16)
 ```
 
-So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough. Later on in the book we will learn how to use _constraints_ to ensure that your data matches certain expectations you have, such as minimum length.
+So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough. In the next chapter we will learn how to use _constraints_ to ensure that your data matches certain expectations you have, such as minimum length.
 
 So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` instead. If you replace the `.name[0]` part in the query above with `.name ilike 'B%'` we don't get an error, and the query still checks to see if there is a 'B' at index 0.
 
