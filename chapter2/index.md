@@ -270,16 +270,39 @@ edgedb error: InvalidValueError: string index 18 is out of bounds (on line 4, co
 
 Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough.
 
-You can also slice a string to get a piece of it. Because 'Jonathan' starts at zero, its index values look like this:
+You can also slice a string to get a piece of it. Let's look at the index values for 'Jonathan' again and think about how we could slice it.
 
 ```
-|J|o|n|a|t|h|a|n|
-0 1 2 3 4 5 6 7 8
+J o n a t h a n
+0 1 2 3 4 5 6 7
 ```
 
-It's 8 characters long, so it fits entirely between 0 and 8. If you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friend to tell them that you're 'at their house': you're not telling them that you're inside it.
+Slices represent a part of a string that starts at one index and ends _before_ another one. In other words, if you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friend to tell them that you're 'at their house': you're not telling them that you're inside it.
 
-Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7.
+In the same way, selecting a slice of 'Jonathan' up to index 7 will show up to and including index 6:
+
+```edgeql
+edgedb> select 'Jonathan'[0:7];
+{'Jonatha'}
+```
+
+In this case, you could search up to index 8. You could even search up to index 1000, as slicing doesn't involve trying to directly access an index so it won't generate an error if there is no value at that index. Or you can use `[0:]` for an open-ended slice that starts at 0 and ends when the string ends. So all three of these queries will work without generating an error:
+
+```edgeql
+edgedb> select 'Jonathan'[0:8];
+{'Jonathan'}
+edgedb> select 'Jonathan'[0:1000];
+{'Jonathan'}
+edgedb> select 'Jonathan'[0:];
+{'Jonathan'}
+```
+
+You can also use negative numbers to slice from the other end of a string. Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7. Let's prove this with a query:
+
+```edgeql
+edgedb> select {'Jonathan'[7] = 'Jonathan'[-1]};
+{true}
+```
 
 So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `like` and `ilike` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
 
