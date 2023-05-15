@@ -43,7 +43,7 @@ type City extending Place;
 type Country extending Place;
 ```
 
-We will need to change `places_visited` in the `Person` type now to be a `Place` instead of a `City`. After all, characters can visit more places than just cities:
+We will also need to change `places_visited` in `Person` from `City` to `Place` so that it can include many things: the `City` types London and Bistritz, the `Country` type Hungary, and any other types we decide to add later that will extend `Place`.
 
 ```sdl
 abstract type Person {
@@ -69,7 +69,7 @@ insert Country {
 
 ## Capturing a select expression
 
-With these countries added, we are now ready to insert Dracula. First we will change `places_visited` in `Person` from `City` to `Place` so that it can include many things: the `City` types London and Bistritz, the `Country` type Hungary, and any other types we decide to add later that will extend `Place`.
+With these countries added, we are now ready to insert Dracula.
 
 We only know that Dracula has been in Romania, so his `places_visited` will be pretty easy: just select all the `Place` types and filter on `.name = 'Romania '`. When doing this, we put the `select` inside `()` brackets (parentheses). The parentheses are used to capture the result of the `select` query. In other words, the parentheses delimit (set the boundaries for) the `select` query which is then assigned to `places_visited`.
 
