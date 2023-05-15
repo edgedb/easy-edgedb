@@ -104,7 +104,7 @@ select Person {
 
 This gives us an output showing objects of both the `PC` and `NPC` type.
 
-```edgeql
+```
 {
   default::NPC {
     name: 'Jonathan Harker',
@@ -182,13 +182,13 @@ select <str><int64><str><int32>50 is str;
 
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
 
-Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` means "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` can be read as "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
 Also note that casting is only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into each other.
 
 ## Filter
 
-Let's learn how to `filter` before we're done Chapter 2. You can use `filter` after the curly brackets in `select` to only show certain results. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
+To finish up the second chapter, let's learn how to `filter`. You can use `filter` after the curly brackets in `select` to only show certain objects instead of showing every object for a type. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
 
 ```edgeql
 select Person {
@@ -199,7 +199,7 @@ select Person {
 
 `filter .name` is short for `filter Person.name`. You can write `filter Person.name` too if you want - it's the same thing.
 
-The output is this:
+The output now only shows a single `PC` object with a name that matches our filter:
 
 ```
 {
@@ -214,10 +214,10 @@ The output is this:
 }
 ```
 
-Let's filter the cities now. One flexible way to search is with `like` or `ilike` to match on parts of a string.
+Let's filter the cities now. One flexible way to search is with `like` or `ilike` which allow us to to match on parts of a string.
 
-- `like` is case-sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
-- `ilike` is not case-sensitive (the i in ilike means **insensitive**), so "Bistritz" matches both "BiStRitz" and "bisTRITz".
+- `like` is case sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
+- `ilike` is not case sensitive (the i in ilike means **insensitive**), so "Bistritz" matches both "BiStRitz" and "bisTRITz".
 
 You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
 
@@ -262,13 +262,13 @@ select City {
 } filter .name[0] = 'B'; # First character must be 'B'
 ```
 
-That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`filter .name[18] = 'B';`), we'll get this:
+That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`filter .name[18] = 'B';`), we'll get this error:
 
 ```
-ERROR: InvalidValueError: string index 18 is out of bounds
+edgedb error: InvalidValueError: string index 18 is out of bounds (on line 4, column 16)
 ```
 
-Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
+Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough.
 
 You can also slice a string to get a piece of it. Because 'Jonathan' starts at zero, its index values look like this:
 
