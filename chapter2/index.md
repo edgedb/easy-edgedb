@@ -268,7 +268,48 @@ That gives the same result. Careful though: if you set the number too high then 
 edgedb error: InvalidValueError: string index 18 is out of bounds (on line 4, column 16)
 ```
 
-Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough.
+Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
+
+Let's try to make that error happen.
+
+First we will insert a `City` object with '' for a name:
+
+```edgeql
+edgedb> insert City {
+ name := ''
+ };
+{default::City {id: 5d01e634-f2c7-11ed-87af-d7dfced50628}}
+```
+
+And now our former query doesn't work, because EdgeDB will come across a `City` object with a name property that it can't index into.
+
+```edgeql
+edgedb> select City {
+  name,
+  modern_name,
+ } filter .name[0] = 'B';
+edgedb error: InvalidValueError: string index 0 is out of bounds (on line 4, column 16)
+```
+
+So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough. Later on in the book we will learn how to use _constraints_ to ensure that your data matches certain expectations you have, such as minimum length.
+
+So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` instead. If you replace the `.name[0]` part in the query above with `.name ilike 'B%'` we don't get an error, and the query still checks to see if there is a 'B' at index 0.
+
+```edgeql
+edgedb> select City {
+  name,
+  modern_name,
+ } filter .name ilike 'B%';
+```
+
+The result is now all `City` objects that start with 'B', and the `City' object with a `name` of `''` is no longer getting in the way.
+
+ {
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
+}
+
+## Slicing
 
 You can also slice a string to get a piece of it. Let's look at the index values for 'Jonathan' again and think about how we could slice it.
 
@@ -297,6 +338,20 @@ edgedb> select 'Jonathan'[0:];
 {'Jonathan'}
 ```
 
+This also means that you can use slicing to safely search for values at a certain index even if the value might be an empty string. At the moment we have a `City` object in the database with a `name` of `''`, so `select City.name[0]` generates an error:
+
+```edgeql
+edgedb> select City.name[0];
+edgedb error: InvalidValueError: string index 0 is out of bounds (on line 1, column 18)
+```
+
+However, if we change the query to `edgedb> select City.name[0:1];` then it will look for a slice instead of an exact character index, and the query will work:
+
+```
+edgedb> select City.name[0:1];
+{'M', 'B', 'B', ''}
+```
+
 You can also use negative numbers to slice from the other end of a string. Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7. Let's prove this with a query:
 
 ```edgeql
@@ -304,15 +359,7 @@ edgedb> select {'Jonathan'[7] = 'Jonathan'[-1]};
 {true}
 ```
 
-So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` with an empty parameter, because it will just give an empty set: `{}` instead of an error. `like` and `ilike` are safer than indexing if there is a chance of having data that is too short in a property. There is a small lesson to be had here:
-
-- "no data" in Edgedb is shown as an empty set: `{}`
-- `""` (an empty string) is actually data.
-
-Keeping that in mind helps you understand the behaviour between the two.
-
-
-Did you notice in that previous select query, we used `#` to add a comment? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
+Let's end the chapter with a quick note. Did you notice one of the queries used `#` to add a comment? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
 
 So this:
 
@@ -332,7 +379,8 @@ returns `{1893}`.
 1. Change the following `select` to display `{100}` by casting: `select '99' + '1'`;
 2. Select all the `City` types that start with 'Mu' (case sensitive).
 3. Select the third letter (i.e. index number 2) of the name of every `NPC`.
-4. Imagine an abstract type called `HasAString`:
+4. If some `NPC` objects might have a name of `''`, how would you find the third letter of the name of every `NPC`?
+5. Imagine an abstract type called `HasAString`:
 
    ```sdl
    abstract type HasAString {
@@ -342,7 +390,7 @@ returns `{1893}`.
 
    How would you change the `Person` type to extend `HasAString`?
 
-5. This query only shows the id numbers of the places visited. How do you show their name?
+6. This query only shows the id numbers of the places visited. How do you show their name?
 
    ```edgeql
    select Person {

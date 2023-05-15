@@ -12,7 +12,11 @@ You can cast with a numeric type, such as `select <int64>'99' + <int64>'1'`. Not
 
 `select NPC.name[2];` will do it.
 
-#### 4. How would you change the `Person` type to extend `HasAString`?
+#### 4. If some `NPC` objects might have a name of `''`, how would you find the third letter of the name of every `NPC`?
+
+You can use a slice that goes from index 2 up to the next index (index 3). `select NPC.name[2:3];` will do it.
+
+#### 5. How would you change the `Person` type to extend `HasAString`?
 
 Just add `extending HasAString` to the type, which would now look like this:
 
@@ -23,7 +27,7 @@ abstract type Person extending HasAString {
 }
 ```
 
-#### 5. This query only shows the id numbers of the places visited. How do you show their name?
+#### 6. This query only shows the id numbers of the places visited. How do you show their name?
 
 Change it to this:
 

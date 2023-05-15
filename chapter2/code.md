@@ -51,4 +51,8 @@ insert PC {
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
 };
+
+insert City {
+  name := ''
+};
 ```
