@@ -77,9 +77,9 @@ error: QueryError: cannot insert into abstract object type 'default::Person'
 
 No problem - just change `Person` to `NPC` and it will work.
 
-However, `select` on an abstract type is just fine - it will select all the types that extend from it.
+However, `select` on an abstract type is just fine - it will select all the types that extend from it. Let's add a `PC` object now to make a `select` on the abstract `Person` type more interesting. 
 
-Let's also experiment with a player character. We'll make one called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
+We'll make a `PC` called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
 
 ```edgeql
 insert PC {
@@ -89,9 +89,41 @@ insert PC {
 };
 ```
 
-Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time.
+Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the values.
 
-Note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the values.
+Now let's do a select on the abstract type `Person` to see the objects inside, plus the properties common to both: `name` and `places_visited`.
+
+```edgeql
+select Person {
+  name,
+  places_visited: {
+    name
+  }
+};
+```
+
+This gives us an output showing objects of both the `PC` and `NPC` type.
+
+```edgeql
+{
+  default::NPC {
+    name: 'Jonathan Harker',
+    places_visited: {
+      default::City {name: 'Munich'},
+      default::City {name: 'Buda-Pesth'},
+      default::City {name: 'Bistritz'},
+    },
+  },
+  default::PC {
+    name: 'Emil Sinclair',
+    places_visited: {
+      default::City {name: 'Munich'},
+      default::City {name: 'Buda-Pesth'},
+      default::City {name: 'Bistritz'},
+    },
+  },
+}
+```
 
 ## Casting 
 
