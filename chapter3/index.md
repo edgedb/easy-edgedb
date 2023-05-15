@@ -166,7 +166,9 @@ That's Count Dracula who visited Romania getting in the way. Let's delete him fi
 delete Vampire;
 ```
 
-Just like an insert, it gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`. Now we can try deleting the `Country` objects:
+Just like an insert, it gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
+
+Now we can try deleting all of the `Country` objects:
 
 ```edgeql
 delete Country;
@@ -176,23 +178,24 @@ We got confirmation that two `Country` objects have been deleted:
 
 ```
 {
-    default::Country {id: 7f2da5e6-ff43-11eb-af59-33db995c2682}, default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb},
+  default::Country {id: e988e476-f2d2-11ed-86e2-e34ef4a919b9},
+  default::Country {id: e9e8acda-f2d2-11ed-86e2-4bed5b30457e},
 }
 ```
 
-Okay, insert them again. Now let's delete with a filter:
+Okay, let's insert both countries again. This time we will try deleting them with a filter. First let's try deleting every `Country` object that has a name with "States" somewhere inside it. `ilike` will let us do that:
 
 ```edgeql
 delete Country filter .name ilike '%States%';
 ```
 
-Nothing matches, so the output is `{}` - we deleted nothing. Let's try again:
+Nothing matches, so the output is just an empty set of `{}` - we deleted nothing. Let's try again, deleting any `Country` object that has "ania" in its name:
 
 ```edgeql
 delete Country filter .name ilike '%ania%';
 ```
 
-We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `delete` inside brackets and `select` it. Let's delete all the `Country` objects again but this time we'll select it:
+We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `delete` inside brackets and `select` it. Let's delete all the `Country` objects again but this time we'll select it. With the results of the query for objects selected, we can give it a shape as with any other `select` query:
 
 ```edgeql
 select (delete Country) {
@@ -204,7 +207,7 @@ The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted
 
 (Fun fact: `delete` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `delete (select ...)`. You'll be learning something called `limit` in the next chapter with `select` and as you do so, keep in mind that you can apply the same to `delete` too.)
 
-Finally, let's insert Hungary and Romania again to finish the chapter. We'll leave them alone now.
+Finally, let's insert Hungary and Romania again to finish the chapter. Plus Count Dracula! We'll leave them alone now.
 
 [Here is all our code so far up to Chapter 3.](code.md)
 
