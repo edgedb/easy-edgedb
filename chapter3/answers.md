@@ -42,7 +42,7 @@ select Person {
 
 #### 4. People keep trying to make characters with negative ages. Can you think of a constraint that can stop this?
 
-We haven't seen this constraint but it's easy to guess: with `min_value()` you can do it. With these two constraints, HumanAge must be between 0 and 120:
+We haven't seen this constraint before but we have seen `max_value()` so it's easy to guess: with `min_value()` you can do it. With these two constraints, HumanAge must be between 0 and 120:
 
 ```sdl
 scalar type HumanAge extending int16 {
