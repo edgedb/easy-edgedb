@@ -182,7 +182,7 @@ type Time {
 } 
 ```
 
-`.clock[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>` that we learned about in Chapter 2. To review, `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.clock[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>` that we learned about in Chapter 2. To review, `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. `09` is okay, but `9` is not).
 
 So this won't work:
 
@@ -199,7 +199,7 @@ Hint: Please use ISO8601 format. Examples: 18:43:27 or 18:43 Alternatively "to_l
 
 Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
 
-Now with this `Time` type, we can get the hour by doing this:
+Let's do a migration so we can insert a `Time` object. It's pretty easy:
 
 ```edgeql
 insert Time {
