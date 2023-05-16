@@ -237,10 +237,21 @@ type Time {
 
 So `sleep_state` is calculated like this:
 
-- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
-- Then it gives us a string saying either 'Asleep' or 'Awake' depending on that.
+- First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we cast into an `int16` with `<int16>.hour` instead of `.hour` so it can compare a number to a number.
+- Then it chooses between the 'Asleep' or 'Awake' values of the enum depending on that.
 
-Now if we `select` this with all the properties, it will give us this:
+Now let's do a `select` again with all the properties:
+
+```edgeql
+select Time {
+  clock,
+  clock_time,
+  hour,
+  sleep_state
+ };
+```
+
+We then get this output:
 
 ```
 default::Time {
@@ -254,7 +265,8 @@ default::Time {
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
 
 ```
-property sleep_state := 'SleepState.JustWakingUp' if <int16>.hour = 19 else
+property sleep_state := 
+  SleepState.JustWakingUp if <int16>.hour = 19 else
   SleepState.GoingToBed if <int16>.hour = 6 else
   SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19 else
   SleepState.Awake;
@@ -262,7 +274,9 @@ property sleep_state := 'SleepState.JustWakingUp' if <int16>.hour = 19 else
 
 ## Selecting what you just inserted
 
-Back in Chapter 3, we learned how to select while deleting at the same time. You can do the same thing with `insert` by enclosing it in brackets and then selecting that, same as with any other `select`. Because when we insert a new `Time`, all we get is a `uuid`:
+Back in Chapter 3, we learned how to `select` while deleting at the same time. Using an `insert` also returns the object (or objects) in question, so we can select them too. You can do this by enclosing the output in parentheses and then giving that a shape, same as with any other `select`. Let's work on this one step at a time.
+
+If we insert a new `Time`, all we get is a `uuid`:
 
 ```edgeql
 insert Time {
@@ -272,23 +286,47 @@ insert Time {
 
 The output is just something like this: `{default::Time {id: 3f6951c6-ff48-11eb-915e-3fd1092b2757}}`
 
-So let's wrap the whole entry in `select ()` so we can display its properties as we insert it. Because it's enclosed in brackets, EdgeDB will do that operation first, and then give it for us to select and do a normal query. Besides the properties to display, we can also add a computed property while we are at it. Let's give it a try:
+Now let's wrap it inside a `select`:
 
 ```edgeql
-select ( # Start a selection
-  insert Time { # Put the insert inside it
+select(
+  insert Time {
     clock := '22:44:10'
   }
-) # The bracket finishes the selection
-  { # Now just choose the properties we want
+);
+```
+
+The output is still the same so far. But now that we are using `select`, we can follow it up with brackets to provide it a shape. Besides the regular properties to display, we can also add a computed property while we are at it. This computed property will give you a taste of what we will learn in the next chapter.
+
+```edgeql
+select (
+  insert Time {
+    clock := '22:44:10'
+  }
+)
+  {
     clock,
     hour,
     sleep_state,
-    double_hour := <int16>.hour * 2
+    time_until_midnight := <cal::local_time>'24:00:00' - <cal::local_time>.clock
   };
 ```
 
-Now the output is more meaningful to us: `{default::Time {clock: '22:44:10', hour: '22', sleep_state: 'awake', double_hour: 44}}` We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered.
+Now the output is more meaningful to us: 
+
+
+```
+{
+  default::Time {
+    clock: '22:44:10',
+    hour: '22',
+    sleep_state: Awake,
+    time_until_midnight: <cal::relative_duration>'PT1H15M50S',
+  },
+}
+```
+
+We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered. Looks like we have one hour, 15 minutes, and 50 seconds until midnight.
 
 [Here is all our code so far up to Chapter 4.](code.md)
 
