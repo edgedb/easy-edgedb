@@ -5,9 +5,9 @@ leadImage: illustration_04.jpg
 
 # Chapter 4 - "What a strange man this Count Dracula is."
 
-> Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to a mental asylum, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning - they talked through the whole night again. Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
+> Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to a mental asylum, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning. They talked through the whole night again! Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
 
-First let's create Jonathan's girlfriend, Mina Murray. But we'll also add a new link to the `Person` type in the schema called `lover`:
+First let's create Jonathan's girlfriend, Mina Murray. It would be nice to represent their relationship somehow, so let's try by adding a new link to the `Person` type in the schema called `lover`. Let's change the `Person` type to what you see here and do a migration:
 
 ```sdl
 abstract type Person {
@@ -17,7 +17,7 @@ abstract type Person {
 }
 ```
 
-With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link`. But `link` is the short form of `single link` so we can just write `link`.
+With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link`. But `link` is the short form of `single link` so we only need to write `link`.
 
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
@@ -27,11 +27,11 @@ insert City {
 };
 ```
 
-To give her the city of London, we can just do a quick `select City filter .name = 'London'`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set.
+To give her the city of London, we can just do a quick `(select City filter .name = 'London')`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set. When giving her Jonathan Harker as a `lover` link, however, it is a bit more complicated. Let's see why.
 
 ## Using the keywords detached, exists, and limit
 
-For `lover` it is the same process but a bit more complicated:
+The full insert for Mina Murray will look like this:
 
 ```edgeql
 insert NPC {
