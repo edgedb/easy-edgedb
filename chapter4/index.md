@@ -158,7 +158,7 @@ There are two others that are almost the same as `cal::local_datetime`:
 - `cal::local_time`, when you only need to know the time of day, and
 - `cal::local_date`, when you only need to know the month, the day, and year.
 
-We'll start with `cal::local_time` first.
+We'll start with `cal::local_time` first. Take a close look at the name: this is the first time we have come across something in a different module in the standard library (it's `cal::local_time`, not `std::local_time`).
 
 `cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
@@ -172,7 +172,7 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that can help. It looks like this:
+We will imagine that our game engine has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that will hold this `str` and use it to make two computed properties. It looks like this:
 
 ```sdl
 type Time { 
@@ -182,7 +182,7 @@ type Time {
 } 
 ```
 
-`.clock[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>`. `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
+`.clock[0:2]` is an example of {eql:op}`"slicing" <docs:arrayslice>` that we learned about in Chapter 2. To review, `[0:2]` means start from index 0 (the first index) and stop _before_ index 2, which means indexes 0 and 1. This is fine because to cast a `str` to `cal::local_time` you need to write the hour with two numbers (e.g. 09 is okay, but 9 is not).
 
 So this won't work:
 
@@ -193,8 +193,8 @@ select <cal::local_time>'9:55:05';
 It gives this error:
 
 ```
-ERROR: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
-  Hint: Please use ISO8601 format. Examples: 18:43:27 or 18:43 Alternatively "to_local_time" function provides custom formatting options.
+edgedb error: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
+Hint: Please use ISO8601 format. Examples: 18:43:27 or 18:43 Alternatively "to_local_time" function provides custom formatting options.
 ```
 
 Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
