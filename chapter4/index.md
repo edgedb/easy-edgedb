@@ -48,10 +48,19 @@ insert NPC {
 
 You'll notice two things here:
 
-- `detached`. This is because we are inside of an `insert` for the `NPC` type, but we want to link to the same type: another `NPC`. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
+- `detached`. This is because we are inside of an `insert` for the `NPC` type, but we want to link to another `NPC`, not the one we are inserting. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now. Fortunately, the EdgeDB compiler wouldn't even let the insert happen if we forgot the `detached` keyword. Here's what the error would look like:
+
+```
+error: QueryError: invalid reference to default::NPC: self-referencing INSERTs are not allowed
+  ┌─ <query>:5:14
+  │
+5 │       select NPC
+  │              ^^^ Use DETACHED if you meant to refer to an uncorrelated default::NPC set
+```
+
 - {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
 
-Now we want to make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a normal query:
+Let's make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a basic query showing the names of each `Person` object's `lover`:
 
 ```edgeql
 select Person {
@@ -74,14 +83,14 @@ This gives us:
 }
 ```
 
-Okay, so Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
+We can see that Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first when Mina Murray didn't exist yet. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
 
-Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can put a computed property in the query, using `exists`. We'll call it `is_single`, but since it's not in the schema for the `Person` type we could call it anything we like here. The keyword `exists` will return `true` if a set is returned, and `false` if it gets `{}` (if there is nothing). This is once again a result of not having null in EdgeDB. It looks like this:
+Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can put a computed property in the query, using `exists`. We'll call it `is_single`, but since it's not in the schema for the `Person` type we could call it anything we like here. The keyword `not exists` will return `false` if a set is returned, and `true` if it gets `{}` (if there is nothing). This is once again one of the nice things about using empty sets in EdgeDB instead of null. It looks like this:
 
 ```edgeql
 select Person {
   name,
-  is_single := detached exists Person.lover,
+  is_single := not exists .lover,
 };
 ```
 
@@ -104,7 +113,7 @@ We've got a lot of single characters, let's try selecting just one of them:
 ```edgeql
 select Person {
   name,
-  is_single := detached exists Person.lover,
+  is_single := not exists .lover,
 } filter .is_single limit 1;
 ```
 
@@ -118,14 +127,14 @@ Notice that we use use `limit 1` instead of `assert_single()` because we want ju
 
 It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
 
-We can also put the computed property in the type itself. Here's the same computed property except now it's inside the `Person` type:
+We could also put the computed property in the type itself. Here's the same computed property except now it's inside the `Person` type:
 
 ```sdl
 abstract type Person {
   required property name -> str;
   multi link places_visited -> Place;
   link lover -> Person;
-  property is_single := detached exists .lover;
+  property is_single := not exists .lover;
 }
 ```
 
