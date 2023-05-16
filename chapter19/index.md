@@ -188,12 +188,13 @@ By the way, the heroes of the story found out about the Czarina Catherine thanks
 Remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
 
 ```sdl
-type Time {
-  required property clock -> str;
-  property clock_time := <cal::local_time>.clock;
-  property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-}
+type Time { 
+  required property clock -> str; 
+  property clock_time := <cal::local_time>.clock; 
+  property hour := .clock[0:2]; 
+  property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    else SleepState.Awake;
+} 
 ```
 
 Now that we know that the time was one o'clock, let's put that into the query too - including the `sleep_state` property. Now it looks like this:
@@ -233,7 +234,7 @@ Here's the output, including whether vampires are awake or asleep.
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
       hour: '13',
-      sleep_state: 'asleep',
+      sleep_state: Asleep,
     },
   },
 }

@@ -221,34 +221,43 @@ That gives us a nice output that shows everything, including the hour:
 
 `{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09'}}`.
 
-Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. We could use an `enum` but to be simple, we will just make it a `str`.
+Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. Since this property requires choosing between one of multiple choices, an enum seems like a good choice.
 
 ```sdl
+scalar type SleepState extending enum <Asleep, Awake>;
+
 type Time {
   required property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
-    else 'awake';
+  property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    else SleepState.Awake;
 }
 ```
 
 So `sleep_state` is calculated like this:
 
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we write `<int16>.hour` instead of `.hour` so it can compare a number to a number.
-- Then it gives us a string saying either 'asleep' or 'awake' depending on that.
+- Then it gives us a string saying either 'Asleep' or 'Awake' depending on that.
 
 Now if we `select` this with all the properties, it will give us this:
 
-`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', sleep_state: 'asleep'}}`
+```
+default::Time {
+  clock: '09:55:05',
+  clock_time: <cal::local_time>'09:55:05',
+  hour: '09',
+  sleep_state: Asleep,
+},
+```
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
 
 ```
-property sleep_state := 'just waking up' if <int16>.hour = 19 else
-                  'going to bed' if <int16>.hour = 6 else
-                  'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else
-                  'awake';
+property sleep_state := 'SleepState.JustWakingUp' if <int16>.hour = 19 else
+  SleepState.GoingToBed if <int16>.hour = 6 else
+  SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19 else
+  SleepState.Awake;
 ```
 
 ## Selecting what you just inserted
