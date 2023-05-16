@@ -150,7 +150,7 @@ The part of Romania that Jonathan Harker is visiting has an average sunrise of a
 
 EdgeDB uses two major types for time:
 
-- `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the ISO 8601 standard.
+- `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the [ISO 8601 standard](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1154675086).
 - `cal::local_datetime`, which doesn't worry about the timezone.
 
 There are two others that are almost the same as `cal::local_datetime`:
