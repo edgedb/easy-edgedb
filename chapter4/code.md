@@ -92,13 +92,13 @@ insert City {
 insert NPC {
   name := 'Mina Murray',
   lover := assert_single(
-    (insert detached NPC Filter .name = 'Jonathan Harker')
+    (select detached NPC Filter .name = 'Jonathan Harker')
   ),
-  places_visited := (insert City filter .name = 'London'),
+  places_visited := (select City filter .name = 'London'),
 };
 
 insert Vampire {
   name := 'Count Dracula',
-  places_visited := (insert Place filter .name = 'Romania'),
+  places_visited := (select Place filter .name = 'Romania'),
 };
 ```
