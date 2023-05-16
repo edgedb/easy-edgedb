@@ -2,7 +2,7 @@
 
 #### 1. This query is trying to display every `NPC` along with the `name` plus every `City` type for each `NPC`, but it's giving an error. What is it missing?
 
-All it needs is brackets around the `select` - remember, putting it in brackets "captures" the output so it can be used.
+All it needs is parentheses around the `select` - remember, putting it in parentheses "captures" the output so it can be used.
 
 ```edgeql
 select NPC {
@@ -27,7 +27,7 @@ type City extending Place {
 };
 ```
 
-`int16` only goes up to 32,767 while both `int32` and `int64` are large enough, but `int32`'s maximum of 2,147,483,647 is certainly enough for a city.
+`int16` has a maximum value of 32,767 while both `int32` and `int64` are large enough, but `int32`'s maximum value of 2,147,483,647 is certainly enough for a city.
 
 #### 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
@@ -55,7 +55,7 @@ scalar type HumanAge extending int16 {
 
 No, because it's a scalar type and not an object - a `HumanAge` would just be an `int16` connected to nothing.
 
-But of course, you can select one by casting:
+However, you can `select` a `HumanAge` by casting:
 
 ```edgeql
 select <HumanAge>16;
@@ -63,7 +63,7 @@ select <HumanAge>16;
 
 This gives `{16}`.
 
-You can also see that it is just a different name for an `int16` by trying the following:
+You can also see that a `HumanAge` is just a different name for an `int16` by trying the following:
 
 ```edgeql
 select <HumanAge>16 is int16;

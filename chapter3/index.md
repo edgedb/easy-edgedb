@@ -225,6 +225,7 @@ Finally, let's insert Hungary and Romania again to finish the chapter. Plus Coun
    ```
 
 2. If the `City` type needed a required property called `population`, what would it look like? What type would 'population' be?
+
 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
    ```edgeql
