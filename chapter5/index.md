@@ -21,11 +21,11 @@ So a cast to an actual datetime looks like this:
 db> select <datetime>'2020-12-06T22:12:10Z';
 ```
 
-The `T` inside there is just a separator, and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
+The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
 
 One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here is its signature <docs:std::to_datetime>`, which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
 
-By the way, you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. This is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
+Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
 
 ```edgeql-repl
 edgedb> select 6.777777777777777; # Good so far
@@ -43,23 +43,23 @@ edgedb> select 6.7777777777777777777777777777777777777777777777777n;
 {6.7777777777777777777777777777777777777777777777777n}
 ```
 
-Meanwhile, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
+Similarly, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
 
 ```edgeql-repl
 edgedb> select 9223372036854775807; # Good so far...
 {9223372036854775807}
 edgedb> select 9223372036854775808; # But add 1 and it will fail
-ERROR: NumericOutOfRangeError: std::int64 out of range
+edgedb error: NumericOutOfRangeError: std::int64 out of range
 ```
 
-So here you can just add an `n` and it will create a `bigint` that can accommodate any size.
+Here as well you can just add an `n` and it will create a `bigint` that can accommodate any size.
 
 ```edgeql-repl
 edgedb> select 9223372036854775808n;
 {9223372036854775808n}
 ```
 
-Now that we know all the numeric types, let's get back to the six signatures for the `std::to_datetime` function:
+Now that we know all the numeric types, let's get back to the six signatures for the `to_datetime()` function:
 
 ```
 std::to_datetime(s: str, fmt: optional str = {}) -> datetime
@@ -87,12 +87,12 @@ The `07:35:00` part shows that it was automatically converted to UTC, which is L
 We can also use this to see the duration between events. EdgeDB has a `duration` type that you can get by subtracting a datetime from another one. Let's practice by calculating the exact number of seconds between one date in Central Europe and another in Korea:
 
 ```edgeql
-select to_datetime(2020, 5, 12, 6, 10, 0, 'CET') - to_datetime(2000, 5, 12, 6, 10, 0, 'KST');
+select to_datetime(2003, 5, 12, 8, 15, 15, 'CET') - to_datetime(2003, 5, 12, 6, 10, 0, 'KST');
 ```
 
-This takes May 12 2020 6:10 am in Central European Time and subtracts May 12 2000 6:10 in Korean Standard Time. The result is: `{<duration>'175328:00:00'}`.
+This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 2003 6:10 in Korean Standard Time. The result is: `{<duration>'10:05:15'}`, so 10 hours, 5 minutes, and 15 seconds.
 
-Now let's try something similar with Jonathan in Castle Dracula again, trying to escape. It's May 12 at 10:35 am. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
+Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST') - to_datetime(1893, 5, 12, 6, 10, 0, 'UTC');
