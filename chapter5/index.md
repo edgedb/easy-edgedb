@@ -7,17 +7,19 @@ leadImage: illustration_05.jpg
 
 Poor Jonathan is not having much luck. Here's what happens to him in this chapter:
 
-> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
+> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
 ## std::datetime
 
-Since Jonathan was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
+Since Jonathan in Romania was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
 
 `YYYY-MM-DDTHH:MM:SSZ`
 
-And an actual date looks like this.
+So a cast to an actual datetime looks like this:
 
-`'2020-12-06T22:12:10Z'`
+```edgeql
+db> select <datetime>'2020-12-06T22:12:10Z';
+```
 
 The `T` inside there is just a separator, and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
 
