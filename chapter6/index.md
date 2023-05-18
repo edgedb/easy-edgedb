@@ -199,6 +199,10 @@ This prints:
 
 (The concatenation operator works on arrays too, putting them into a single array. So `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
 
+The last type that the concatenation operator works on is bytes.
+
+## Using `insert` instead of `select` when adding links
+
 Let's also change the `Vampire` type to link it to `MinorVampire` from that side instead. You'll remember that Count Dracula is the only real vampire, while the others are of type `MinorVampire`. In the book, any person that Dracula bites becomes his slave - once they die, they become another vampire that lives forever that Dracula can control with his mind (that's what makes the book scary). That means we need a `multi link`:
 
 ```sdl
@@ -208,7 +212,7 @@ type Vampire extending Person {
 }
 ```
 
-Then we can `insert` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other. There are two reasons for that:
+Then we can `insert` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other in this way. There are two reasons for that:
 
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required link`) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
@@ -229,7 +233,9 @@ type MinorVampire extending Person {
 }
 ```
 
-and then we create them all together with Count Dracula like this:
+And then do a migration.
+
+We said we would leave Dracula alone after all the practice deleting him before...but let's delete him again. Also let's delete 'Vampire Woman 1' (the `MinorVampire`) so we can practise inserting them all at the same time. Here's what the insert looks like:
 
 ```edgeql
 insert Vampire {
@@ -277,7 +283,7 @@ We have a nice output that shows them all together:
 }
 ```
 
-This might make you wonder: what if we do want two-way links? There's actually a very convenient way to do it (it's called a **backward link**), but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
+This might make you wonder: what if we do want two-way links? There's actually a very cool way to do it called a **backlink** that will let us give `MinorVampire` a link based on what links _to_ it, but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
 
 ## Just type \<json> to generate json
 
