@@ -4,11 +4,16 @@ tags: Constraint Delegation, $ Parameters
 
 # Chapter 7 - Jonathan finally "leaves" the castle
 
-> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire. A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped. Later, Jonathan hears Dracula tell the vampire women he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
+> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire.
+>A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped.
+>Later, Jonathan hears Dracula tell the vampire women that he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women.
+>He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
 
 ## More constraints
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120: `constraint max_value(120);`.
+
+We can give `name` a constraint too called `constraint exclusive` which prevents two objects of the same type from having the same name. Like the other constraint we added, you put it `constraint` in a block after the property, like this:
 
 ```sdl
 abstract type Person {
@@ -30,6 +35,12 @@ abstract type Place {
   property modern_name -> str;
   property important_places -> array<str>;
 }
+```
+
+Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we had two `MinorVampire` objects with the same name, it would give this output:
+
+```
+Detail: value of property 'name' of object type 'default::MinorVampire' violates exclusivity constraint
 ```
 
 ## Passing constraints with delegated
