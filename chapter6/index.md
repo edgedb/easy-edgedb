@@ -91,7 +91,7 @@ And if we had written something like `filter .name = 'SLLLovakia'` then it would
 
 With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `set`: `:=`, `+=`, and `-=`.
 
-Let's do another update. Remember this?
+Let's do another update. Remember the `lover` link on the `Person` type? Let's take a look at Jonathan and see how he is doing when it comes to love.
 
 ```edgeql
 select Person {
@@ -100,7 +100,56 @@ select Person {
 } filter .name = 'Jonathan Harker';
 ```
 
-Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her because we inserted him first. We can change that now:
+Here's the output:
+
+```
+{default::NPC {name: 'Jonathan Harker', lover: {}}}
+```
+
+Ah, that's right. Mina Murray has Jonathan Harker as her `lover`, but Jonathan doesn't have her as his `lover` because we inserted him first before Mina Murray was inserted. We can change that now.
+
+This command seems like it will work, but it doesn't quite. Do you remember why?
+
+```edgeql
+update Person filter .name = 'Jonathan Harker'
+set {
+  lover := assert_single(
+    (select Person filter .name = 'Mina Murray')
+  )
+};
+```
+
+No error is generated, but let's look at Jonathan Harker after the update:
+
+```edgeql
+select Person { name, lover } filter .name = 'Jonathan Harker';
+```
+
+Surprisingly, the output is `{default::NPC {name: 'Jonathan Harker', lover: {}}}`!
+
+After a bit of thought, we remember that we learned the `detached` keyword in Chapter 4 when inserting Mina. But let's imagine that we forgot how `detached` works and are trying to figure out what is going on. Let's investigate exactly what happens when `detached` doesn't get used.
+
+First we'll do a quick `select` to see what's going on. We'll select Jonathan Harker and also add a computed `lover := (select Person filter .name = 'Mina Murray')` inside the shape to see what shows up:
+
+```edgeql
+select Person {
+ name,
+ lover := (select Person filter .name = 'Mina Murray')
+ } filter .name = 'Jonathan Harker';
+```
+
+Again, the output is `{default::NPC {name: 'Jonathan Harker', lover: {}}}`. That in itself is a hint that something didn't work properly. Let's try another `select`. This time we will simply make `lover` into a `(select Person {name})` to see everything that shows up before the filter. The query now looks like this:
+
+```edgeql
+select Person {
+ name,
+ lover := (select Person {name})
+ } filter .name = 'Jonathan Harker';
+```
+
+This time, the output is _very_ interesting: `{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Jonathan Harker'}}}`. This output proves that the `select Person` inside this query effectively means to select the `Person` object or objects that have already been selected.
+
+So now let's do the update properly with the `detached` keyword so that Jonathan can finally be connected to Mina. (After all, he has enough to worry about without needing to think about this too.)
 
 ```edgeql
 update Person filter .name = 'Jonathan Harker'
@@ -111,9 +160,15 @@ set {
 };
 ```
 
-We need to use `detached Person` here for the same reason we needed it when using `insert NPC` to create Mina Murray with her lover. We're using `update` on one `Person` and we also need to `select` another `Person` as lover. Now `link lover` for Jonathan finally shows Mina instead of an empty `{}`.
+Let's do a `select` query now to make sure that it worked:
 
-Of course, if you use `update` without `filter` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
+```edgeql
+select Person {name, lover: {name}} filter .name = 'Jonathan Harker';
+```
+
+The output is now `{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Mina Murray'}}}`. Success!
+
+Now, if you use `update` without `filter` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
 ```edgeql
 update Person
