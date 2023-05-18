@@ -4,7 +4,8 @@ tags: Filtering On Insert, Json
 
 # Chapter 6 - Still no escape
 
-> The women vampires are next to Jonathan and he can't move. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him. Jonathan wakes up in his bed and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters, and is angry. He burns them in front of Jonathan and tells him not to do that again. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
+> The women vampires are next to Jonathan and he can't move. Suddenly, Dracula runs into the room and tells the women to leave: "You can have him later, but not tonight!" The women listen to him, and leave.
+> Jonathan wakes up in his bed the next day and it feels like a bad dream...but he sees that somebody folded his clothes, and he knows it was not just a dream. The castle has some visitors from Slovakia the next day, so Jonathan has an idea. He writes two letters, one to Mina and one to his boss. He gives the visitors some money and asks them to send the letters. But Dracula finds the letters and is angry. He burns the letters in front of Jonathan and tells him not to do that again. Jonathan is still stuck in the castle, and Dracula knows that Jonathan tried to trick him.
 
 ## Filtering on sets when doing an insert
 
@@ -30,9 +31,7 @@ insert Country {
 
 (In Chapter 9 we'll learn how to do this with just one `insert`!)
 
-Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;` and it's done.
-
-Then we'll insert our first `OtherPlace`:
+Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;` and it's done. Put that into the schema and do a migration, and now we can insert our first `OtherPlace`:
 
 ```edgeql
 insert OtherPlace {
@@ -42,7 +41,7 @@ insert OtherPlace {
 
 That gives us a good number of types from `Place` that aren't of the `City` type.
 
-So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := select Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. It looks like this:
+So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := select Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. If we were inserting Jonathan Harker for the first time, it would look like this:
 
 ```edgeql
 insert NPC {
@@ -53,9 +52,24 @@ insert NPC {
 };
 ```
 
-You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
+```{eval-rst}
+.. note::
+  You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
+```
 
-Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that he escapes and runs away to Slovakia. Of course, we can change his `insert` signature to include `'Slovakia'` in the set of names. But what do we do to make a quick update? For that we have the `update` and `set` keywords. The `update` keyword selects the type to start the update, and `set` is for the parts we want to change. It looks like this:
+But we already have a Jonathan Harker in the database. We could always do a quick `delete NPC filter .name = 'Jonathan Harker'` before doing this insert, but that's not ideal. Instead, we should do an update. For that we have the `update` and `set` keywords. The `update` keyword selects the type to start the update, and `set` is used to specify the parts that we want to change. So let's update Jonathan with this code instead:
+
+```edgeql
+update NPC 
+filter .name = 'Jonathan Harker'
+set {
+  places_visited := (
+    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+  )
+};
+```
+
+Now what if Jonathan ever escapes Castle Dracula and runs away to a new place? Let's pretend that the `PC` named Emil Sinclair changed the flow of the story by saving Jonathan and taking him away to Slovakia. In that case, we could select the `Place` object and use `+=` to add it to Jonathan's `places_visited` property:
 
 ```edgeql
 update NPC
@@ -65,15 +79,15 @@ set {
 };
 ```
 
-You'll know that it succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
+And do undo this change, you can just change `+=` to `-=` and run the command again. Let's do that, because Jonathan Harker doesn't ever actually end up visiting Slovakia.
+
+You'll know that an `update` succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
 
 ```
 {default::NPC {id: ca4e21c8-014f-11ec-9658-7f88bf45dae6}}
 ```
 
 And if we had written something like `filter .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `filter .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `filter` there.
-
-And since Jonathan hasn't visited Slovakia, we can use `-=` instead of `+=` with the same `update` syntax to remove it now.
 
 With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `set`: `:=`, `+=`, and `-=`.
 
