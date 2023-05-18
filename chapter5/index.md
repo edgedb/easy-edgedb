@@ -113,7 +113,7 @@ The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone
 
 ## Casting to a duration
 
-Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number of seconds, or a more precise unit if necessary. For example, `select <duration>'2 hours';` will return `{<duration>'2:00:00'}`, and `select <duration>'2 microseconds';` will return `{<duration>'0:00:00.000002'}`.
+Besides subtracting a `datetime` from another `datetime`, you can also just cast to make a `duration`. To do this, just write the number followed by the unit: `microseconds`, `milliseconds`, `seconds`, `minutes`, or `hours`. It will return a number including a number of seconds, or a more precise unit if necessary. For example, `select <duration>'2 hours';` will return `{<duration>'2:00:00'}`, and `select <duration>'2 microseconds';` will return `{<duration>'0:00:00.000002'}`.
 
 You can include multiple units as well. For example:
 
@@ -123,7 +123,7 @@ select <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 
 This will return `{<duration>'6:06:00.688999'}`.
 
-EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. So even this horrible input will work:
+EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. Even this horrible input will work:
 
 ```edgeql
 select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
@@ -131,6 +131,53 @@ select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
 ```
 
 The result: `{<duration>'-3:59:04.99401'}`.
+
+## Relative duration
+
+The scene in the book today takes place on the 16th of May, 15 days after Jonathan Harker left London. Jonathan Harker was kind enough to even mark down the time of day during his first journal entry, which gives us a good idea of how much time has gone by since then. Here are the two relevant journal entries:
+
+```
+3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at Vienna early next morning;
+
+The Morning of 16 May.—God preserve my sanity, for to this I am reduced...All three had brilliant white teeth that shone like pearls against the ruby of their voluptuous lips. There was something about them that made me uneasy, some longing and at the same time some deadly fear.
+```
+
+Let's imagine that our `PC` named Emil Sinclair has been accomplishing some missions during this time in order to build up experience and get involved with the events in the book. It would be nice to let the player know how much time has elapsed since the game started. If the player clock currently says 8:03:17 am right now, we can calculate the duration as we did just before:
+
+```
+with
+  game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
+  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+select today - game_start;
+```
+
+That gives us a duration of `{<duration>'296:28:17'}`. That's very precise, but it would be nice to show the player these units in more readable units. EdgeDB added a type called `relative_duration` in 2021 to do exactly this. A relative_duration will show up when you add or subtract local dates and local datetimes. Here is a quick example:
+
+```edgeql
+edgedb> select <cal::local_datetime>'2023-05-18T08:00:00' - <cal::local_datetime>'2023-05-16T04:06:55';
+```
+
+This gives the output `{<cal::relative_duration>'P2DT3H53M5S'}`, which has done all the calculating for us and is easy to split up into parts. Adding a few spaces makes it easy to read: `P 2D T 3H 53M 5S`. In other words:
+
+* P - period (i.e. a period of time). This is from the ISO8601 standard.
+* 2D - two days
+* T - delimiter between days and time
+* 3H = three hours
+* 53M - 53 minutes
+* 5S - 5 seconds
+
+So let's make a `relative_duration` for our `PC`. Here we will use a function called `cal::to_local_datetime` which turns a `datetime` into a `local_datetime` by entering the `datetime` to convert and the timezone we want it to show the time of.
+
+The player is currently in Romania so we will choose the EEST timezone. The code looks like this:
+
+```edgeql
+db> with
+  game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
+  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  select cal::to_local_datetime(today, 'EEST') - cal::to_local_datetime(game_start, 'EEST');
+```
+
+This gives us an output of `{<cal::relative_duration>'P12DT8H28M17S'}`. Perfect! Now our game can display something like `Time elapsed: 12 days, 8 hours, 28 minutes, 17 seconds` and we don't need to do any calculations to do so.
 
 ## Required links
 
