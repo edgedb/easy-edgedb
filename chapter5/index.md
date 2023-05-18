@@ -189,24 +189,58 @@ type MinorVampire extending Person {
 }
 ```
 
-Now that it's required, we can't insert a `MinorVampire` with just a name. It will give us this error: `ERROR: MissingRequiredError: missing value for required link default::MinorVampire.master`. So let's insert one and connect her to Dracula:
+Now let's do a migration to add `MinorVampire` to the schema.
+
+With `master` as a `required link`, we can't insert a `MinorVampire` with just a name:
+
+```edgeql
+insert MinorVampire {
+  name := 'Woman 1' # We never find out their names in the book
+};
+```
+
+Trying this insert will give us this error: `edgedb error: MissingRequiredError: missing value for required link 'master' of object type 'default::MinorVampire'`. This is what we want. Now let's insert the same `MinorVampire` but this time we will connect her to Dracula. This next insert almost works, but not quite. Can you guess why?
 
 ```edgeql
 insert MinorVampire {
   name := 'Woman 1',
-  master := assert_single(
-    (select Vampire filter .name = 'Count Dracula')
-  ),
+  master := (select Vampire filter .name = 'Count Dracula')
 };
 ```
 
-You need to put the query for getting Count Dracula in parentheses as you know from earlier examples. Then you need to put all that inside the `assert_single()` function. This function makes sure that there's no more than a single element in the set it is given. This is necessary because EdgeDB doesn't know that there is only one 'Count Dracula' and we need to provide only one Vampire as the master (remember, `required link` is short for `required single link`). If we tried this without the `assert_single()` function we would get the following error:
+The error is due to the fact that there might be more than one `Vampire` object with the name 'Count Dracula', because at the moment our schema allows this. And EdgeDB rightfully disallows us from trying to return a result that might be multiple links instead of a single link:
 
 ```
-error: possibly more than one element returned by an expression for a link 'master' declared as 'single'
+error: QueryError: possibly more than one element returned by an expression for a link 'master' declared as 'single'
+  ┌─ <query>:3:3
+  │
+3 │   master := (select Vampire filter .name = 'Count Dracula')
+  │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
 ```
+
+One way to get the insert to work would be to add `limit 1`:
+
+```edgeql
+insert MinorVampire {
+  name := 'Woman 1',
+  master := (select Vampire filter .name = 'Count Dracula' limit 1)
+};
+```
+
+But note that `limit 1` simply returns the first match to the filter. If our database had multiple `Vampire` objects called `Count Dracula`, it would return the first one it found. That's not ideal. Instead, we can wrap the `select` inside a function called `assert_single()`:
+
+```edgeql
+insert MinorVampire {
+  name := 'Woman 1',
+  master := assert_single(select Vampire filter .name = 'Count Dracula')
+};
+```
+
+This function makes sure that there's no more than a single element in the set it is given.
 
 Also note that `assert_single()` will return an error (a `CardinalityViolationError`) if more than one element is returned, so make sure to only use `assert_single()` if you are sure that there is only one element. In principle it's sort of like a "trust me, there is only one element" sort of function.
+
+Later on we will learn to add a constraint to ensure on the schema level that parameters like `name` have to be unique.
 
 ## Using the 'describe' keyword to look inside types
 
