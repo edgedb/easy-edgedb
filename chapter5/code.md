@@ -108,7 +108,7 @@ insert NPC {
 };
 
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   master := assert_single((select Vampire Filter .name = 'Count Dracula')),
 };
 ```

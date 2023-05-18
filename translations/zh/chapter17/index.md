@@ -56,7 +56,7 @@ select (minor_vampires.women.name, minor_vampires.lucy.name);
 输出是（别忘了笛卡尔乘法）：
 
 ```
-{('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
+{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'), ('Vampire Woman 3', 'Lucy')}
 ```
 
 伦菲尔德已经不在人世了，所以我们需要使用 `update` 给他的 `last_appearance` 更新一个日期。让我们再来体验一次在更新的同时，使用 `select` 显示“更新”结果的奇妙：
@@ -292,9 +292,9 @@ select Drac {
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
       default::MinorVampire {name: 'Lucy'},
     },
   },
@@ -346,9 +346,9 @@ select fight_2(MinorVampire, MinorVampire);
 ```
 {
   'Lucy fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Vampire Woman 1 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 3 fights Vampire Woman 3. Vampire Woman 3 wins!',
 }
 ```
 
@@ -370,21 +370,21 @@ select fight_2(MinorVampire, detached MinorVampire);
 ```
 {
   'Lucy fights Lucy. Lucy wins!',
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Lucy fights Vampire Woman 1. Lucy wins!',
+  'Lucy fights Vampire Woman 2. Lucy wins!',
+  'Lucy fights Vampire Woman 3. Lucy wins!',
+  'Vampire Woman 1 fights Lucy. Lucy wins!',
+  'Vampire Woman 1 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 1 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 1 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 2 fights Lucy. Lucy wins!',
+  'Vampire Woman 2 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 2 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 3 fights Lucy. Lucy wins!',
+  'Vampire Woman 3 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 3 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 3 fights Vampire Woman 3. Vampire Woman 3 wins!',
 }
 ```
 
@@ -399,18 +399,18 @@ select fight_2(M, MinorVampire) filter M != MinorVampire;
 
 ```
 {
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
+  'Lucy fights Vampire Woman 1. Lucy wins!',
+  'Lucy fights Vampire Woman 2. Lucy wins!',
+  'Lucy fights Vampire Woman 3. Lucy wins!',
+  'Vampire Woman 1 fights Lucy. Lucy wins!',
+  'Vampire Woman 1 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 1 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 2 fights Lucy. Lucy wins!',
+  'Vampire Woman 2 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 3 fights Lucy. Lucy wins!',
+  'Vampire Woman 3 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 3 fights Vampire Woman 2. Vampire Woman 2 wins!',
 }
 ```
 

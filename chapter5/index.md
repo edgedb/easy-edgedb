@@ -208,7 +208,7 @@ With `master` as a `required link`, we can't insert a `MinorVampire` with just a
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1' # We never find out their names in the book
+  name := 'Vampire Woman 1' # We never find out their names in the book
 };
 ```
 
@@ -216,7 +216,7 @@ Trying this insert will give us this error: `edgedb error: MissingRequiredError:
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   master := (select Vampire filter .name = 'Count Dracula')
 };
 ```
@@ -235,7 +235,7 @@ One way to get the insert to work would be to add `limit 1`:
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   master := (select Vampire filter .name = 'Count Dracula' limit 1)
 };
 ```
@@ -244,7 +244,7 @@ But note that `limit 1` simply returns the first match to the filter. If our dat
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   master := assert_single(select Vampire filter .name = 'Count Dracula')
 };
 ```

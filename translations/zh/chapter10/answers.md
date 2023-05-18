@@ -91,17 +91,17 @@ else (
 );
 ```
 
-然后即使他的数据有一个冲突的名字（比如 'Woman 1'，在我们的数据库里已经存在），它仍然会正确地更新“力度”，而不是简单地放弃：
+然后即使他的数据有一个冲突的名字（比如 'Vampire Woman 1'，在我们的数据库里已经存在），它仍然会正确地更新“力度”，而不是简单地放弃：
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   strength := 7,
 } unless conflict on .name
 else (
   update MinorVampire
   set {
-    name := 'Woman 1',
+    name := 'Vampire Woman 1',
     strength := 7,
   }
 );

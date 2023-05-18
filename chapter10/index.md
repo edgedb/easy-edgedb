@@ -278,7 +278,7 @@ Title | First name | Last name | Degree
 
 So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
 
-That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
 
 We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
 

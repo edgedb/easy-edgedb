@@ -166,9 +166,9 @@ select enumerate(three_things);
   (6, 'Arthur Holmwood'),
   (7, 'Abraham Van Helsing'),
   (8, 'Lucy Westenra'),
-  (9, 'Woman 1'),
-  (10, 'Woman 2'),
-  (11, 'Woman 3'),
+  (9, 'Vampire Woman 1'),
+  (10, 'Vampire Woman 2'),
+  (11, 'Vampire Woman 3'),
   (12, 'Lucy'),
   (13, 'Count Dracula'),
   (14, 'The Captain'),
@@ -264,9 +264,9 @@ select Vampire {
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
       default::MinorVampire {name: 'Lucy'},
     },
   },
@@ -321,9 +321,9 @@ select MinorVampire {
 
 ```
 {
-  default::MinorVampire {name: 'Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
   default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```

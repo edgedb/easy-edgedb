@@ -51,9 +51,9 @@ select Person {
 
 ```
 {
-  Object {name: 'Woman 1'},
-  Object {name: 'Woman 2'},
-  Object {name: 'Woman 3'},
+  Object {name: 'Vampire Woman 1'},
+  Object {name: 'Vampire Woman 2'},
+  Object {name: 'Vampire Woman 3'},
   Object {name: 'Jonathan Harker'},
   Object {name: 'Count Dracula'},
 }
@@ -107,7 +107,7 @@ set {
 };
 ```
 
-现在她们的名字是：“Woman 1 the Great”, “Mina Murray the Great”等等。
+现在她们的名字是：“Vampire Woman 1 the Great”, “Mina Murray the Great”等等。
 
 **此外**: 使用字符串索引来撤销上述操作的快速方法是用 `[0:-10]` 去掉 `name` 字符串后十位字符并再赋值给 `name`。
 

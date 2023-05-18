@@ -322,13 +322,13 @@ insert Vampire {
   strength := 20,
   slaves := {
     (insert MinorVampire {
-      name := 'Woman 1',
+      name := 'Vampire Woman 1',
   }),
     (insert MinorVampire {
-     name := 'Woman 2',
+     name := 'Vampire Woman 2',
   }),
     (insert MinorVampire {
-     name := 'Woman 3',
+     name := 'Vampire Woman 3',
   }),
     (insert MinorVampire {
      name := 'Lucy',

@@ -56,7 +56,7 @@ select (minor_vampires.women.name, minor_vampires.lucy.name);
 The output is:
 
 ```
-{('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
+{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'), ('Vampire Woman 3', 'Lucy')}
 ```
 
 Renfield is no longer alive, so we need to use `update` to give him a `last_appearance`. Let's do a fancy one again where we `select` the update we just made and display that information:
@@ -293,9 +293,9 @@ So far this is nothing special, because the output is the same:
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
       default::MinorVampire {name: 'Lucy'},
     },
   },
@@ -347,9 +347,9 @@ So the output for this is...
 ```
 {
   'Lucy fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Vampire Woman 1 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 3 fights Vampire Woman 3. Vampire Woman 3 wins!',
 }
 ```
 
@@ -371,25 +371,25 @@ The output is too long now:
 ```
 {
   'Lucy fights Lucy. Lucy wins!',
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Lucy fights Vampire Woman 1. Lucy wins!',
+  'Lucy fights Vampire Woman 2. Lucy wins!',
+  'Lucy fights Vampire Woman 3. Lucy wins!',
+  'Vampire Woman 1 fights Lucy. Lucy wins!',
+  'Vampire Woman 1 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 1 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 1 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 2 fights Lucy. Lucy wins!',
+  'Vampire Woman 2 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 2 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 3 fights Lucy. Lucy wins!',
+  'Vampire Woman 3 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 3 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 3 fights Vampire Woman 3. Vampire Woman 3 wins!',
 }
 ```
 
-We succeeded at getting each `MinorVampire` type to fight the other one, but there are still `MinorVampire`s fighting themselves (Lucy vs. Lucy, Woman 1 vs. Woman 1, etc.). This is where the convenience of the local type alias comes in: we can filter on it, for example. Now we'll filter to only use `fight_2()` with objects that are not identical to each other:
+We succeeded at getting each `MinorVampire` type to fight the other one, but there are still `MinorVampire`s fighting themselves (Lucy vs. Lucy, Vampire Woman 1 vs. Vampire Woman 1, etc.). This is where the convenience of the local type alias comes in: we can filter on it, for example. Now we'll filter to only use `fight_2()` with objects that are not identical to each other:
 
 ```edgeql
 with M := MinorVampire,
@@ -400,18 +400,18 @@ And now we finally have every combination of `MinorVampire` fighting the other o
 
 ```
 {
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
+  'Lucy fights Vampire Woman 1. Lucy wins!',
+  'Lucy fights Vampire Woman 2. Lucy wins!',
+  'Lucy fights Vampire Woman 3. Lucy wins!',
+  'Vampire Woman 1 fights Lucy. Lucy wins!',
+  'Vampire Woman 1 fights Vampire Woman 2. Vampire Woman 2 wins!',
+  'Vampire Woman 1 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 2 fights Lucy. Lucy wins!',
+  'Vampire Woman 2 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 2 fights Vampire Woman 3. Vampire Woman 3 wins!',
+  'Vampire Woman 3 fights Lucy. Lucy wins!',
+  'Vampire Woman 3 fights Vampire Woman 1. Vampire Woman 1 wins!',
+  'Vampire Woman 3 fights Vampire Woman 2. Vampire Woman 2 wins!',
 }
 ```
 

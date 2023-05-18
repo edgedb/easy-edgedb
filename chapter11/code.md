@@ -182,13 +182,13 @@ insert Vampire {
   age := 800,
   slaves := {
     (insert MinorVampire {
-      name := 'Woman 1',
+      name := 'Vampire Woman 1',
   }),
     (insert MinorVampire {
-     name := 'Woman 2',
+     name := 'Vampire Woman 2',
   }),
     (insert MinorVampire {
-     name := 'Woman 3',
+     name := 'Vampire Woman 3',
   }),
  },
    places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})

@@ -91,17 +91,17 @@ else (
 );
 ```
 
-Then even if his data has a conflicting name (like 'Woman 1'), it will still update with their correct strength instead of just giving up:
+Then even if his data has a conflicting name (like 'Vampire Woman 1'), it will still update with their correct strength instead of just giving up:
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   strength := 7,
 } unless conflict on .name
 else (
   update MinorVampire
   set {
-    name := 'Woman 1',
+    name := 'Vampire Woman 1',
     strength := 7,
   }
 );

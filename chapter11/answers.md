@@ -52,9 +52,9 @@ Here's the output:
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
     },
   },
 }

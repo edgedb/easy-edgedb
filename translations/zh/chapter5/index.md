@@ -144,7 +144,7 @@ type MinorVampire extending Person {
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
     master := assert_single(
     (select Vampire filter .name = 'Count Dracula')
   ),
