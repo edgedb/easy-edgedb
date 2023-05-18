@@ -287,7 +287,7 @@ This might make you wonder: what if we do want two-way links? There's actually a
 
 ## Just type \<json> to generate json
 
-What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB (except `bytes`) can be cast to json this easily:
+What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB can be cast to json this easily:
 
 ```edgeql
 select <json>Vampire {
