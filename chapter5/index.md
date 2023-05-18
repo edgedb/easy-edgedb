@@ -179,6 +179,19 @@ db> with
 
 This gives us an output of `{<cal::relative_duration>'P12DT8H28M17S'}`. Perfect! Now our game can display something like `Time elapsed: 12 days, 8 hours, 28 minutes, 17 seconds` and we don't need to do any calculations to do so.
 
+Another type called `date_duration` is useful when you only care about day to day duration. If we change the above code from `cal::to_local_datetime` to `cal::to_local_date` then we will cut off the time information and get a `date_duration` that only shows the number of days passed. So if we type this query:
+
+```edgeql
+db> with
+  game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
+  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  select cal::to_local_date(today, 'EEST') - cal::to_local_date(game_start, 'EEST');
+```
+
+We will get the output `{<cal::date_duration>'P13D'}`. So even though only about 12 days and 8 hours have gone by, in terms of changes to the date it is 13 days. Then we could add one to it and have this output for the character playing the game:
+
+`Day 14 of your quest...`
+
 ## Required links
 
 Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`. This is because Dracula controls them and they only exist as `MinorVampire`s because he exists.
