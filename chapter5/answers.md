@@ -44,7 +44,20 @@ select duration_to_seconds(to_datetime(2003, 12, 31, 19, 0, 0, 'UZT') - to_datet
 
 Which gets us `{568800.000000n}`. It's still 568,000 seconds but using more precision.
 
-#### 4. How would you write the same query using `with` for each of the two times?
+#### 4. How can you display how many days have passed between one `datetime` and another without having to do the math?
+
+You can use the `cal::to_local_date()` function which will cut off the time information and only keep the date. Then we can subtract one from the other to get the number of days. Here is one solution using `with` to keep the query readable:
+
+```edgeql
+with
+ d1 := <datetime>'2023-05-18T10:56:00+09:00',
+ d2 := <datetime>'2020-09-10T05:00:00+00:00',
+select cal::to_local_date(d1, 'UTC') - cal::to_local_date(d2, 'UTC');
+```
+
+This returns `{<cal::date_duration>'P980D'}`, so 980 days.
+
+#### 5. How would you write the same query using `with` for each of the two times?
 
 It would look something like this (depending on the name you give the variable and the order you prefer):
 
@@ -57,7 +70,7 @@ select duration_to_seconds(uzbek_time - turkmen_time);
 
 The output is exactly the same: `{568800.000000n}`
 
-#### 5. What's the best way to describe a type if you only want to see how you wrote it?
+#### 6. What's the best way to describe a type if you only want to see how you wrote it?
 
 The best way is `describe type as sdl`, which doesn't have all the extra info that `as text` gives you. Here's `MinorVampire` for example:
 

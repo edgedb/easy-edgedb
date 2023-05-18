@@ -344,9 +344,11 @@ So if `type` comes after `describe` for types and `module` after `describe` for 
 
 3. How many seconds went by between 5:00 am on Christmas Day 2003 in Turkmenistan (TMT) and 7:00 pm on New Year's Eve for the same year in Uzbekistan (UZT)?
 
-4. How would you write the same query using `with` for each of the two times?
+4. The query `select <datetime>'2023-05-18T10:56:00+09:00' - <datetime>'2020-09-10T05:00:00+00:00';` returns `{<duration>'23516:56:00'}` which is hard to read. How can we display how many days have passed without having to do the math ourselves?
 
-5. What's the best way to describe a type if you only want to see how you wrote it?
+5. How would you write the same query using `with` for each of the two times?
+
+6. What's the best way to describe a type if you only want to see how you wrote it?
 
 [See the answers here.](answers.md)
 
