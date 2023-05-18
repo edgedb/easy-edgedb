@@ -287,7 +287,7 @@ This might make you wonder: what if we do want two-way links? There's actually a
 
 ## Just type \<json> to generate json
 
-What do we do if we want the same output in json? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB can be cast to json this easily:
+What do we do if we want the same output in JSON? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB can be cast to JSON this easily:
 
 ```edgeql
 select <json>Vampire {
@@ -301,7 +301,7 @@ This will transform the results into JSON. However, what the REPL will show by d
 
 ```
 {
-  "{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Woman 1\"}, {\"name\": \"Woman 2\"}, {\"name\": \"Woman 3\"}]}",
+  Json("{\"name\": \"Count Dracula\", \"slaves\": [{\"name\": \"Vampire Woman 1\"}, {\"name\": \"Vampire Woman 2\"}, {\"name\": \"Vampire Woman 3\"}]}"),
 }
 ```
 
@@ -312,7 +312,7 @@ To make REPL show JSON in a nicer format just type `\set output-format json-pret
 ```json
 {
   "name": "Count Dracula",
-  "slaves": [{"name": "Woman 1"}, {"name": "Woman 2"}, {"name": "Woman 3"}]
+  "slaves": [{"name": "Vampire Woman 1"}, {"name": "Vampire Woman 2"}, {"name": "Vampire Woman 3"}]
 }
 ```
 
@@ -333,7 +333,7 @@ This is fine because `<json>` turns it into a JSON string, and `cal::local_date`
 select <int64><json>'18930503';
 ```
 
-The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `ERROR: InvalidValueError: expected json number or null; got json string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
+The problem is that it is a conversion from a JSON string to an EdgeDB `int64`. It gives this error: `edgedb error: InvalidValueError: expected JSON number or null; got JSON string`. To keep things symmetrical, you need to cast a JSON string to an EdgeDB `str` and then cast into an `int64`:
 
 ```edgeql
 select <int64><str><json>'18930503';
