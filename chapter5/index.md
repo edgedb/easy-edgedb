@@ -244,18 +244,14 @@ Later on we will learn to add a constraint to ensure on the schema level that pa
 
 ## Using the 'describe' keyword to look inside types
 
-Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to combine it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to picture it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
-- `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is a lower level language than SDL, the language we have been using. It is less convenient for schema, but is more explicit and can be useful for quick changes. We won't be learning any DDL in this course but later on you might find it useful sometimes. For example, with it you can quickly create functions without needing to do an _explicit_ migration.  And if you understand SDL it will not be hard to pick up some tricks in DDL.
-
-(Note though the word _explicit_ there: using DDL still results in a migration, just an _implicit_ one. In other words, a migration happens without calling it a migration. It's sort of a quick and dirty way to make changes but for the most part proper migration tools with SDL schema is the preferred way to go.)
-
-Now back to `describe type` which gives the results in DDL. Here's what our `MinorVampire` type looks like:
+- `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is the lower level language that we have seen in our migration files that end in `.edgeql` (00001.edgeql, 00002.edgeql, and so on). If we type `describe type MinorVampire` into the REPL, we will see the following output:
 
 ```
 {
-  'CREATE TYPE default::MinorVampire EXTENDING default::Person {
-    CREATE REQUIRED LINK master -> default::Vampire;
+  'create type default::MinorVampire extending default::Person {
+    create required link master -> default::Vampire;
 };',
 }
 ```
@@ -274,9 +270,9 @@ The output is almost the same too, just the SDL version of the above. It's also 
 }
 ```
 
-You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
+You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed when it comes to module paths: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-- The third method is `describe type MinorVampire as text`. This is what we want, because it shows everything inside the type, including stuff from the types that it extends. Here's the output:
+- The third method is `describe type MinorVampire as text`. Now the output shows almost everything inside the type, including from the types that it extends. Here's the output:
 
 ```
 {
@@ -295,13 +291,31 @@ You'll notice that it's basically the same as our SDL schema, just a bit more ve
 }
 ```
 
-(Note: `as text` doesn't include constraints and annotations. To see those, add `verbose` at the end: `describe type MinorVampire as text verbose`. You'll learn about annotations in Chapter 14.)
+If you want a bit more information, you can add the keyword `verbose` to make the command `describe type MinorVampire as text verbose`. This will look similar to the previous output, except it also includes constraints and annotations. (We'll learn about annotations in Chapter 14.) Here is the output:
 
-The parts that say `readonly := true` we don't need to worry about, as they are automatically generated (and we can't touch them). For everything else, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
+```
+{
+  'type default::MinorVampire extending default::Person {
+    required single link __type__ -> schema::ObjectType {
+        readonly := true;
+    };
+    optional single link lover -> default::Person;
+    required single link master -> default::Vampire;
+    optional multi link places_visited -> default::Place;
+    required single property id -> std::uuid {
+        readonly := true;
+        constraint std::exclusive;
+    };
+    required single property name -> std::str;
+};',
+}
+```
+
+The parts that say `readonly := true` we don't need to worry about, as they are automatically generated and we can't touch them (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
 
 And for a _really_ long output, try typing `describe schema` or `describe module default` (with `as sdl` or `as text` if you want). You'll get an output showing the whole schema we've built so far.
 
-So if `type` comes after `describe` for types and `module` after `describe` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, `type`. If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules).
+So if `type` comes after `describe` for types and `module` after `describe` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, `type`. If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules). So `describe scalar type SleepState` and `describe object SleepState` will both return the same thing.
 
 [Here is all our code so far up to Chapter 5.](code.md)
 
