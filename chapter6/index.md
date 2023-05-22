@@ -81,13 +81,29 @@ set {
 
 And do undo this change, you can just change `+=` to `-=` and run the command again. Let's do that, because Jonathan Harker doesn't ever actually end up visiting Slovakia.
 
-You'll know that an `update` succeeded because EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
+EdgeDB will return the IDs of the objects that have been updated. In our case, it's just one:
 
 ```
 {default::NPC {id: ca4e21c8-014f-11ec-9658-7f88bf45dae6}}
 ```
 
-And if we had written something like `filter .name = 'SLLLovakia'` then it would return `{}`, letting us know that nothing matched. Or to be precise: the top-level object matched on `filter .name = 'Jonathan Harker'`, but `places_visited` doesn't get updated because nothing matched the `filter` there.
+However, this doesn't mean that `places_visited` has been changed. If we had written something like `filter .name = 'SLLLovakia'` then the `set` portion of the update would have simply added an empty `{}` set to `places_visited`, because nothing matched the filter there. The returned `default::NPC` simply means that an `NPC` object was found that matched `filter .name = 'Jonathan Harker`, and that _something_ was done to it. But in this case, the _something_ was the addition of an empty set to an existing set, so nothing at all.
+
+One quick way to ensure that `places_visited` is actually being updated with something is to use the `assert_exists` function. This function will pass on the output if it exists, but give an error if the output is an empty set. Here is the same `update` with the incorrect name 'SLLLovakia', which will now give an error:
+
+```edgeql
+update NPC
+filter .name = 'Jonathan Harker'
+set {
+  places_visited += assert_exists((select Place filter .name = 'SLLovakia'))
+};
+```
+
+Here is the output now:
+
+```
+edgedb error: CardinalityViolationError: assert_exists violation: expression returned an empty set
+```
 
 With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `set`: `:=`, `+=`, and `-=`.
 
