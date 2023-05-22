@@ -162,12 +162,12 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
-Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
+Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with x.
 
 ```edgeql
 with b_places := (select Place filter Place.name ilike 'b%'),
-     f_places := (select Place filter Place.name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name;
+     x_places := (select Place filter Place.name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name;
 ```
 
 The result may not be what you'd expect.
@@ -212,10 +212,10 @@ To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
-     f_places := (select Place filter .name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name
-  if exists b_places.name and exists f_places.name
-  else b_places.name ?? f_places.name;
+     x_places := (select Place filter .name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name
+  if exists b_places.name and exists x_places.name
+  else b_places.name ?? x_places.name;
 ```
 
 This returns:
