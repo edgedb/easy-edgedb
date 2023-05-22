@@ -162,16 +162,16 @@ error: InvalidTypeError: operator '+' cannot be applied to operands of type 'std
 And to fix it, just use the angle brackets:
 
 ```edgeql
-select <int32>'9' + 9;
+select <int64>'9' + 9;
 ```
 
-And you will get `18`, a 32-bit integer.
+And you will get `18`, a 64-bit integer.
 
 Of course, a cast won't work if the input is invalid:
 
 ```edgeql
-edgedb> select <int32>"Hi I'm a number please add me to" + 9;
-edgedb error: InvalidValueError: invalid input syntax for type std::int32: "Hi I'm a number please add me to"
+edgedb> select <int64>"Hi I'm a number please add me to" + 9;
+edgedb error: InvalidValueError: invalid input syntax for type std::int64: "Hi I'm a number please add me to"
 ```
 
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
