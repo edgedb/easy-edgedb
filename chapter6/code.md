@@ -34,6 +34,8 @@ module default {
     property important_places -> array<str>;
   }
 
+  type Castle extending Place;
+
   type City extending Place;
 
   type Country extending Place;
@@ -93,7 +95,7 @@ insert Country {
   name := 'Slovakia'
 };
 
-insert OtherPlace {
+insert Castle {
   name := 'Castle Dracula'
 };
 

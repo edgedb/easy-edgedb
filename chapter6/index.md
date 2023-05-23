@@ -31,17 +31,24 @@ insert Country {
 
 (In Chapter 9 we'll learn how to do this with just one `insert`!)
 
-Then we'll make a new type called `OtherPlace` for places that aren't cities or countries. That's easy: `type OtherPlace extending Place;` and it's done. Put that into the schema and do a migration, and now we can insert our first `OtherPlace`:
+Then we'll make a two new types called `Castle` for castles and castle towns, and `OtherPlace` for any other kind of place. They are super easy to make:
+
+```sdl
+type Castle extending Place;
+type OtherPlace extending Place;
+```
+
+Put that into the schema and do a migration, and now we can insert our first `Castle`:
 
 ```edgeql
-insert OtherPlace {
+insert Castle {
   name := 'Castle Dracula'
 };
 ```
 
-That gives us a good number of types from `Place` that aren't of the `City` type.
+We will insert some `OtherPlace` objects later on in the book. Now we have a good number of types from `Place` that aren't of the `City` type.
 
-So back to Jonathan: in our database, he's been to four cities, one country, and one `OtherPlace`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := select Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. If we were inserting Jonathan Harker for the first time, it would look like this:
+So back to Jonathan: in our database, he's been to four cities, one country, and one `Castle`...but he hasn't been to Slovakia or France, so we can't just insert him with `places_visited := select Place`. Instead, we can filter on `Place` against a set with the names of the places he has visited. If we were inserting Jonathan Harker for the first time, it would look like this:
 
 ```edgeql
 insert NPC {
