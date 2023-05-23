@@ -97,7 +97,7 @@ insert Sailor {
 
 insert Sailor {
   name := 'The Second Mate',
-  rank := Rank.SecondMate'
+  rank := Rank.SecondMate
 };
 
 insert Sailor {
@@ -156,15 +156,17 @@ The result is:
 
 ## The sequence type
 
-On the subject of giving types a number, EdgeDB has a type called {eql:type}`docs:std::sequence` that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it. Let's imagine a `Townsperson` type for a moment that uses it. Here's the wrong way to do it:
+On the subject of giving types a number, EdgeDB has a type called {eql:type}`docs:std::sequence` that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it.
+
+A `sequence` is used as an abstract type for other type names to extend and can't be used on its own. So if we were to make a `Townsperson` type with a `sequence` property called `number`, this wouldn't quite work:
 
 ```sdl
 type Townsperson extending Person {
-  property number -> sequence;
+  required property number -> sequence;
 }
 ```
 
-This won't work because each `sequence` keeps a record of the most recent number, and if every type just uses `sequence` then they would share it. So the right way to do it is to extend it to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
+Instead, you can extend a `sequence` to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
 
 ```sdl
 scalar type TownspersonNumber extending sequence;
