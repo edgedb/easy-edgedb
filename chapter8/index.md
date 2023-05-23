@@ -6,12 +6,17 @@ tags: Multiple Inheritance, Polymorphism
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
-> A boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but they don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him. Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him. The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
+> Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him.
+>The days go by and more and more sailors disappear...
+>Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him.
+>The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
 > Meanwhile, Mina and her friend Lucy are in Whitby on vacation...
 
 ## Multiple inheritance
 
-While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance is doing this with more than one type at the same time. We'll try this with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for types that need a number:
+While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance means to do this with more than one type at the same time.
+
+We'll try some multiple inheritance with the ship's crew. The book doesn't give them any names, so we will give them numbers instead. Most `Person` types won't need a number, so we'll create an abstract type called `HasNumber` only for types that need a number:
 
 ```sdl
 abstract type HasNumber {
@@ -27,6 +32,8 @@ Now we can use multiple inheritance for the `Crewman` type. It's very simple: ju
 type Crewman extending HasNumber, Person {
 }
 ```
+
+With all that done, let's do a migration.
 
 Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
 
