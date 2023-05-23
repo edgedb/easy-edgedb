@@ -32,8 +32,9 @@ type Crewman extending HasNumber, Person {
 现在我们有了 `Crewman` 并且不需要为他们赋予名字，只需要给他们一个编号，而函数 `count()` 可以使我们对船员的插入变得很容易。我们只需要重复执行五次下面的语句：
 
 ```edgeql
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
 ```
 

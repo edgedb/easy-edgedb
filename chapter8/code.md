@@ -172,20 +172,25 @@ update Person filter .name = 'Jonathan Harker'
     strength := 5
 };
 
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
 
 insert Sailor {

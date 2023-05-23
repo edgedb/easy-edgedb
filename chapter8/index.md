@@ -38,8 +38,9 @@ With all that done, let's do a migration.
 Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
 
 ```edgeql
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
 ```
 
