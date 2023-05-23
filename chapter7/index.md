@@ -79,7 +79,7 @@ abstract type Place {
 Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
 
 - Doors have a strength, and people have strength as well.
-- If a person has greater strength than the door, then he or she can open it.
+- A `Person` with greater strength than the door will be able to open it.
 
 So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
@@ -89,7 +89,9 @@ type Castle extending Place {
 }
 ```
 
-Then we'll imagine that there are three main doors to enter and leave Castle Dracula, so we `insert` them as follows:
+Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
+
+Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First update the schema with `edgedb migration create` and `edgedb migrate` as usual, and then `insert` them as follows:
 
 ```edgeql
 insert Castle {
@@ -98,9 +100,7 @@ insert Castle {
 };
 ```
 
-Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
-
-Now we'll give Jonathan a strength of 5. That's easy with `update` and `set` like before:
+Now we'll give Jonathan a strength of 5.  And now we can update Jonathan with `update` and `set` like before:
 
 ```edgeql
 update Person filter .name = 'Jonathan Harker'
