@@ -70,7 +70,7 @@ type Sailor extending Person {
 }
 ```
 
-Then we will make a `Ship` type to hold them all.
+Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `Ship` object can move on its own without anyone alive on it so we won't make its sailors or crew `required`.
 
 ```sdl
 type Ship {
@@ -79,6 +79,8 @@ type Ship {
   multi link crew -> Crewman;
 }
 ```
+
+With these changes done, let's do another migration!
 
 Now to insert the sailors we just give them each a name and choose a rank from the enum:
 
