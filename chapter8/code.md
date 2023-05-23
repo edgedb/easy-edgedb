@@ -195,12 +195,12 @@ with next_number := count(Crewman) + 1,
 
 insert Sailor {
   name := 'The Captain',
-  rank := Rank.Captain
+  rank := 'Captain'
 };
 
 insert Sailor {
   name := 'Petrofsky',
-  rank := Rank.FirstMate
+  rank := 'FirstMate'
 };
 
 insert Sailor {

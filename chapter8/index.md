@@ -82,7 +82,7 @@ type Ship {
 
 With these changes done, let's do another migration!
 
-Now to insert the sailors we just give them each a name and choose a rank from the enum:
+Now to insert the sailors we just give them each a name and choose a rank from the enum. Let's mix up the enums between `str` and proper enum input to remind ourselves that EdgeDB will accept either one.
 
 ```edgeql
 insert Sailor {
@@ -97,12 +97,12 @@ insert Sailor {
 
 insert Sailor {
   name := 'The Second Mate',
-  rank := 'SecondMate'
+  rank := Rank.SecondMate'
 };
 
 insert Sailor {
   name := 'The Cook',
-  rank := 'Cook'
+  rank := Rank.Cook
 };
 ```
 
