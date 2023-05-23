@@ -91,6 +91,22 @@ insert PC {
 
 Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the values.
 
+However, EdgeDB also allows you to choose an enum just by writing a string that matches the value. So this insert would have worked too:
+
+```edgeql
+insert PC {
+  name := 'Emil Sinclair',
+  places_visited := City,
+  transport := 'HorseDrawnCarriage',
+};
+```
+
+But if you were to type `transport := 'rocket'` it wouldn't work:
+
+```
+edgedb error: InvalidValueError: invalid input value for enum 'default::Transport': "rocket"
+```
+
 Now let's do a select on the abstract type `Person` to see the objects inside, plus the properties common to both: `name` and `places_visited`.
 
 ```edgeql
