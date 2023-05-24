@@ -284,24 +284,23 @@ Here's the output:
 
 Note that the cast means you can just type 10, not '10'.
 
-So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
+## Optional parameters
+
+So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `City` object names above to allow a second filter for letters in the name:
 
 ```edgeql
-select (
-  insert Time {
-    clock := <optional str>$hour ++ <optional str>$minute ++ <optional str>$second
-  }
-) {
-  clock,
-  clock_time,
-  hour,
-  sleep_state
-};
+select City {
+  name,
+  modern_name
+} filter
+    .name ilike '%' ++ <str>$input1 ++ '%'
+  and
+  .name ilike '%' ++ <optional str>$input2 ++ '%';
 ```
 
-Of course, the `Time` type needs the proper formatting for the `clock` property so this is a bad idea. But that's how you would do it.
+In this case you could search for cities containing both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or just search for cities containing `B` and not enter anything for the second input.
 
-The opposite of `optional` is `required`, but it's the default so you don't need to write it.
+The opposite of `optional` is `required`, but `required` is the default so you don't need to write it.
 
 The `update` keyword that we learned last chapter can also take parameters, so that's four in total where you can use them: `select`, `insert`, `update`, and `delete`.
 
