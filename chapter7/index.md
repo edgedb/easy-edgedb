@@ -81,7 +81,7 @@ Let's also think about our game mechanics a bit. The book says that the doors in
 - Doors have a strength, and people have strength as well.
 - A `Person` with greater strength than the door will be able to open it.
 
-So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
+So we will change our `Castle` type to give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
 ```sdl
 type Castle extending Place {
@@ -91,13 +91,15 @@ type Castle extending Place {
 
 Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
 
-Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First update the schema with `edgedb migration create` and `edgedb migrate` as usual, and then `insert` them as follows:
+Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First let's update the schema with `edgedb migration create` and `edgedb migrate` as usual.
+
+Now we have to add the doors to Castla Dracula, so let's update it:
 
 ```edgeql
-insert Castle {
-  name := 'Castle Dracula',
-  doors := [6, 19, 10],
-};
+update Castle filter .name = 'Castle Dracula'
+  set {
+    doors := [6, 9, 10]
+  };
 ```
 
 Now we'll give Jonathan a strength of 5.  And now we can update Jonathan with `update` and `set` like before:
