@@ -188,9 +188,9 @@ select City {
 
 This works fine, returning one city: `{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}`.
 
-But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again.
+But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) and would like to pass in parameters instead of rewriting the query every time.
 
-This could be a good time to add parameters to a query by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
+This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and on the REPL it will ask us what value to give it. Let's start with something very simple:
 
 ```edgeql
 select City {
@@ -206,7 +206,7 @@ select City {
 } filter .name = $name;
 ```
 
-The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: missing a type cast before the parameter`. So because it's a string, we'll cast with `<str>`:
+The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: QueryError: missing a type cast before the parameter`. In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
 
 ```edgeql
 select City {
@@ -214,7 +214,13 @@ select City {
 } filter .name = <str>$name;
 ```
 
-When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{default::City {name: 'London'}}`
+When we do that, we get a prompt asking us to enter the value:
+
+`Parameter <str>$name:`
+
+Just typing London and hitting enter will lead to this expected result: `{default::City {name: 'London'}}`
+
+Note that on the REPL it knows to expect a string so you don't need to type `'London'`. Give `'London'` a try though! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
 
 Now let's take that to make a much more complicated (and useful) query, using two parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
 
