@@ -111,7 +111,7 @@ set {
 };
 ```
 
-Great. We know that Jonathan can't break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of a door. Or in other words, he needs a greater strength than the weakest door.
+Great. We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
 
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
@@ -125,7 +125,7 @@ select jonathan_strength > min(castle_doors);
 Here's the error:
 
 ```
-error: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
+error: InvalidTypeError: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
 ```
 
 We can {eql:func}`look at the function signature <docs:std::min>` to see the problem:
@@ -142,9 +142,9 @@ Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::ar
 
 ```edgeql
 with
-  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
-  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
-select jonathan_strength > min(array_unpack(castle_doors));
+  jonathan := (select Person filter .name = 'Jonathan Harker'),
+  castle := (select Castle filter .name = 'Castle Dracula'),
+  select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
