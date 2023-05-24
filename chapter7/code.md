@@ -101,9 +101,9 @@ insert Country {
   name := 'Slovakia'
 };
 
-insert Castle {
-    name := 'Castle Dracula',
-    doors := [6, 19, 10],
+update Castle filter .name = 'Castle Dracula'
+  set {
+    doors := [6, 9, 10]
 };
 
 insert City {
