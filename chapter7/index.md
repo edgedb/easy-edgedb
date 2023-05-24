@@ -171,9 +171,9 @@ The other example is with `count()`, which also has a cast to a `<str>`:
 select 'There are ' ++ <str>(select count(Place) - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 8 more places than castles'}`.
+It prints: `{'There are 8 more places than castles'}`. (The number 8 might be a bit different from yours if you have been experimenting with inserting `Place` objects.)
 
-In a few chapters we will learn how to create our own functions to make queries shorter.
+In a few chapters we will learn how to create our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
 
 ## Using $ to set parameters
 
