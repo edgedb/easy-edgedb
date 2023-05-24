@@ -30,19 +30,25 @@ insert Country {
 
 （在第 9 章中，我们将学习如何只用一个 `insert` 来做到同时插入多个对象！）
 
-现在，我们接着为既不是城市也不是国家的地方创建一个名为 `OtherPlace` 的新类型。这很容易做到：`type OtherPlace extending Place;`。
+现在，我们接着为既不是城市也不是国家的地方创建二个名为 `Castle` 和 `OtherPlace` 的新类型。这很容易做到：
 
-然后，插入我们的第一个 `OtherPlace`：
-
-```edgeql
-insert OtherPlace {
-  name := 'Castle Dracula'
-};
+```sdl
+type Castle extending Place;
+type OtherPlace extending Place;
 ```
 
-`OtherPlace` 可以为我们存储大量来自 `Place` 类型但不属于 `City` 类型的地点。
+然后，我们要更新已插入 Count Dracula 的 `Castle`：
 
-回到乔纳森：在我们的数据库中，他去过四个城市、一个国家和一个 `OtherPlace`……但他没有去过斯洛伐克（Slovakia）或法国（France），所以我们不能直接用 `places_visited := select Place` 对其进行插入。但我们可以根据他访问过的地方的名称对 `Place` 进行过滤。像这样：
+```edgeql
+update Castle filter .name = 'Castle Dracula'
+  set {
+    doors := [6, 9, 10]
+  };
+```
+
+然后 `OtherPlace` 可以为我们存储大量来自 `Place` 类型但不属于 `City` 类型的地点。
+
+回到乔纳森：在我们的数据库中，他去过四个城市、一个国家和一个 `Castle`……但他没有去过斯洛伐克（Slovakia）或法国（France），所以我们不能直接用 `places_visited := select Place` 对其进行插入。但我们可以根据他访问过的地方的名称对 `Place` 进行过滤。像这样：
 
 ```edgeql
 insert NPC {
