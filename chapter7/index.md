@@ -241,7 +241,7 @@ Parameter <str>$name: b
 Parameter <bool>$has_modern_name: true
 ```
 
-So that will give all `City` type objects with "b" in the name and that have a different modern name. The result:
+So that will give all `City` type objects with "b" in the name and that have a different modern name. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
 
 ```
 {
@@ -252,17 +252,18 @@ So that will give all `City` type objects with "b" in the name and that have a d
 
 Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
-```edgeql
-select (
-  insert Time {
-    clock := <str>$hour ++ <str>$minute ++ <str>$second
-  }
-) {
-  clock,
-  clock_time,
-  hour,
-  sleep_state
-};
+```edgeql-repl
+with time := (
+   insert Time {
+     clock := <str>$hour ++ <str>$minute ++ <str>$second
+   }
+ ),
+ select time {
+ clock,
+ clock_time,
+ hour,
+ sleep_state
+ };
 Parameter <str>$hour: 10
 Parameter <str>$minute: 09
 Parameter <str>$second: 09
