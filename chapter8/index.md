@@ -26,33 +26,10 @@ abstract type HasNumber {
 
 We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
 
-Now we can use multiple inheritance for the `Crewman` type. It's very simple: just add a comma between every type you want to extend.
+Now let's put together the `Crewman` type, which will use multiple inheritance. It's very simple: just add a comma between every type you want to extend.
 
 ```sdl
 type Crewman extending HasNumber, Person {
-}
-```
-
-With all that done, let's do a migration.
-
-Now that we have this type and don't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
-
-```edgeql
-with next_number := count(Crewman) + 1,
-  insert Crewman {
-  number := next_number
-};
-```
-
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `select Crewman {number};` to see the result. It gives us:
-
-```
-{
-  default::Crewman {number: 1},
-  default::Crewman {number: 2},
-  default::Crewman {number: 3},
-  default::Crewman {number: 4},
-  default::Crewman {number: 5},
 }
 ```
 
@@ -80,7 +57,28 @@ type Ship {
 }
 ```
 
-With these changes done, let's do another migration!
+With all those changes done, let's do a migration.
+
+Now that we have the `Crewman` type and it doesn't need a name, it's super easy to insert our crewmen thanks to `count()`. We just do this five times:
+
+```edgeql
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
+};
+```
+
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `select Crewman {number};` to see the result. It gives us:
+
+```
+{
+  default::Crewman {number: 1},
+  default::Crewman {number: 2},
+  default::Crewman {number: 3},
+  default::Crewman {number: 4},
+  default::Crewman {number: 5},
+}
+```
 
 Now to insert the sailors we just give them each a name and choose a rank from the enum. Let's mix up the enums between `str` and proper enum input to remind ourselves that EdgeDB will accept either one.
 
@@ -106,7 +104,7 @@ insert Sailor {
 };
 ```
 
-Inserting the `Ship` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `filter` anywhere.
+Finally we have to insert a `Ship` to hold them all. This `insert` is easy because right now every `Sailor` and every `Crewman` type is part of this ship - we don't need to `filter` anywhere.
 
 ```edgeql
 insert Ship {
