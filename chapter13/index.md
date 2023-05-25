@@ -339,6 +339,34 @@ select (introspect Ship) {
 };
 ```
 
+## The sequence type
+
+On the subject of giving types a number, EdgeDB has a type called {eql:type}`docs:std::sequence` that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it.
+
+A `sequence` is used as an abstract type for other type names to extend and can't be used on its own. So if we were to make a `Townsperson` type with a `sequence` property called `number`, this wouldn't quite work:
+
+```sdl
+type Townsperson extending Person {
+  required property number -> sequence;
+}
+```
+
+Instead, you can extend a `sequence` to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
+
+```sdl
+scalar type TownspersonNumber extending sequence;
+
+type Townsperson extending Person {
+  required property number -> TownspersonNumber;
+}
+```
+
+The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1).
+
+So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `update` and `set` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
+
+In our case, the crewmen on the ship do end up dying pretty quickly (unless a `PC` in the game can save the day?) but we won't be deleting them from the database so their `number` will always increment properly by using the `count()` function.
+
 [Here is all our code so far up to Chapter 13.](code.md)
 
 <!-- quiz-start -->
