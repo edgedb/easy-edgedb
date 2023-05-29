@@ -4,7 +4,7 @@ tags: Defaults, Overloading, For Loops
 
 # Chapter 9 - Strange events in England
 
-For this chapter we've gone back in time a few weeks to when the ship left Varna and Mina and Lucy haven't left for Whitby yet. The introduction is also split into two parts. Here's the first:
+The episode for this chapter is a flashback to see why everybody is in the town of Whitby in the first place. We've gone back in time a few weeks to when the ship left Varna and Mina and Lucy haven't left for Whitby yet. The introduction is also split into two parts. Here's the first:
 
 > We still don't know where Jonathan is, and the ship The Demeter is on its way to England with Dracula inside. Meanwhile, Mina Harker is in London writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood), and they all want to marry her....
 
@@ -26,7 +26,9 @@ cal::to_local_date(dt: datetime, zone: str) -> local_date
 cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```
 
-Doing an insert for the `Crewman` objects with the properties `first_appearance` and `last_appearance` will now look something like this:
+So let's do a migration now that these `first_appearance` and `last_appearance` properties have been added.
+
+Doing the inserts for the `Crewman` objects with the properties `first_appearance` and `last_appearance` would have looked something like this:
 
 ```edgeql
 insert Crewman {
@@ -36,17 +38,17 @@ insert Crewman {
 };
 ```
 
-And since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise).
+But since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise). We'll do that in a second.
 
-Since `cal::local_date` has a pretty simple YYYYMMDD format, the easiest way to use it in an insert would be just casting from a string:
+By the way, `cal::local_date` has a pretty simple YYYYMMDD format so casting from a string is pretty easy too:
 
 ```edgeql
 select <cal::local_date>'1893-07-08';
 ```
 
-But we imagined before that we had a function that gives separate numbers to put into a function, so we will continue to use that method.
+But we imagined before that our dates and datetimes are being generated from a source that gives us individual numbers instead of strings, so we will continue to use that method.
 
-Now we update the `Crewman` objects and give them all the same date to keep things simple:
+Now we can update the `Crewman` objects. We'll give them all the same date to keep things simple:
 
 ```edgeql
 update Crewman
@@ -56,7 +58,7 @@ set {
 };
 ```
 
-This will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we will need more precise dates. But we're fine with these approximate dates for now.
+These dates will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we would need more precise dates and would need to make these properties into a `datetime`. But we're fine with these approximate dates for now.
 
 ## Adding defaults to a type, and the overloaded keyword
 
