@@ -275,7 +275,7 @@ And now the two objects from out previous output have human-readble names.
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And of course, `supertype is subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And conversely, `supertype is subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
 
 In our schema, that means that `select PC is Person` returns `{true}`, while `select Person is PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
 
@@ -288,7 +288,16 @@ select Person {
 };
 ```
 
-Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? Of course this will work, but it's not very satisfying:
+The output will look like this:
+
+```
+{"name": "Emil Sinclair", "is_PC": true}
+{"name": "Vampire Woman 1", "is_PC": false}
+{"name": "Vampire Woman 2", "is_PC": false}
+# ... and so on
+```
+
+Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? We could check to see if an integer is one of any integer types, but this makes for a pretty awkward query:
 
 ```edgeql
 with year := 1893,
@@ -301,7 +310,7 @@ But fortunately these types all {ref}`extend from abstract types too <docs:ref_s
 
 So with that you can change the above input to `select 1893 is anyint` and get `{true}`.
 
-## Multi in other places
+## Array vs. multi property vs. multi link
 
 We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
 
@@ -361,11 +370,11 @@ The next question of course is which is best to use: `multi property`, `array`, 
   }
   ```
 
-  You'll remember seeing the `readonly := true` types, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
+  You'll remember seeing the `readonly := true` properties, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
   The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
 
-  Okay, now here are two positives for objects in comparison.
+  Having said that, now here are two positives for objects in comparison.
 
   Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi link`, for example.
 
