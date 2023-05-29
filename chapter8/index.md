@@ -154,9 +154,7 @@ The result is:
 
 ## Using the 'is' keyword to query multiple types
 
-So now we have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`.
-
-But this gives us a problem if we want to query them all at the same time. They all extend `Person`, but `Person` doesn't have all of their links and properties. So this query won't work:
+We now have quite a few types that extend the `Person` type, many with their own properties. The `Crewman` type has a property `number`, while the `NPC` type has a property called `age`. But since the `Person` type itself doesn't have the properties `age` or `number`, we can't just make a `Person` shape that includes them:
 
 ```edgeql
 select Person {
@@ -166,9 +164,15 @@ select Person {
 };
 ```
 
-The error is `ERROR: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`.
+The error is `error: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. The only property of the three that we can put in this query is `name`. That feels pretty limiting!
 
-Luckily there is an easy fix for this: we can use `is` inside square brackets to specify the type. Here's how it works:
+```edgeql
+select Person {
+  name
+};
+```
+
+So is there a way to include `age` if the type is an `NPC` and `number` if the type is a `Crewman`? Yes, there is! We can use the `is` keyword inside square brackets to specify the type. Here's how it works:
 
 - `.name`: this stays the same, because `Person` has this property
 - `.age`: this belongs to the `NPC` type, so change it to `[is NPC].age`
@@ -184,7 +188,7 @@ select Person {
 };
 ```
 
-The output is now quite large, so here's just a part of it. You'll notice that types that don't have a property or a link will return an empty set: `{}`.
+The output is now quite large, so here's just a part of it. You'll notice that types that don't have a property or a link will return an empty set: `{}`. So the `Crewman` objects have an `age: {}` while other objects have a `number: {}`.
 
 ```
 {
