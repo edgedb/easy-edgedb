@@ -71,7 +71,32 @@ insert NPC {
 };
 ```
 
-Hmm, it looks like we're doing a lot of work to insert 'London' every time we add a character. We have three characters left and they will all be from London too. To save ourselves some work, we can make London the default for `places_visited` for `NPC`. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. The word `overloaded` indicates that we are using `places_visited` in a different way than the `Person` type that we got it from.
+The other characters are from London too, which is the largest city in the world at the time. If we wanted to save ourselves some work, we could make London the default for `places_visited` for `NPC`. Let's give that a try. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. The word `overloaded` indicates that we are using `places_visited` in a different way than the `Person` type that we got it from.
+
+Let's first see what error EdgeDB gives us if we forget the `overloaded` keyword. Try changing the `NPC` type to this and migrating the schema:
+
+```sdl
+type NPC extending Person {
+property age -> HumanAge;
+multi link places_visited -> Place {
+  default := (select City filter .name = 'London');
+  }
+}
+```
+
+Impressive! It not only gives an error but tells us exactly what to do.
+
+```
+error: link 'places_visited' of object type 'default::NPC' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
+   ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:27:3
+   │
+27 │ ╭   multi link places_visited -> Place {
+28 │ │     default := (select City filter .name = 'London');
+29 │ │   }
+   │ ╰───^ error
+
+edgedb error: cannot proceed until .esdl files are fixed
+```
 
 With `default` and `overloaded` added, it now looks like this:
 
