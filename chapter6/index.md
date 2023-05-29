@@ -339,8 +339,7 @@ To make REPL show JSON in a nicer format just type `\set output-format json-pret
 }
 ```
 
-To restore the default format type: `\set output-format default`.
-
+To keep things easy to read, this book will show JSON output using this `json-pretty` output format. But if you ever want to restore the default format, just type `\set output-format default`.
 
 ## Converting back from JSON
 
