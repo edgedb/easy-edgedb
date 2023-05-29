@@ -202,36 +202,76 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 }
 ```
 
-This is pretty good, but if we send this output somewhere as JSON it won't show us the type for each of them. To refer to an object's own type in a query in EdgeDB you can use `__type__`. Calling just `__type__` will just give a `uuid` though, so we need to add `{name}` to indicate that we want the name of the type. All types have this `name` field that you can access if you want to show the object type in a query.
+This is officially called a {ref}`polymorphic query <docs:ref_eql_select_polymorphic>`, and is one of the best reasons to use abstract types in your schema.
+
+## Using __type__ to get the type
+
+Let's do a quick experiment with the same query as above, except with the `<json>` cast. What differences do you notice?
 
 ```edgeql
 select <json>Person {
-  __type__: {
-    name      # Name of the type inside module default
-  },
-  name, # Person.name
+  name,
   [is NPC].age,
   [is Crewman].number,
 };
 ```
 
-Choosing the six objects from before from the output, it now looks like this:
+Here is part of the output:
+
+```
+{"age": null, "name": "Emil Sinclair", "number": null}
+{"age": null, "name": "Vampire Woman 1", "number": null}
+{"age": null, "name": "The Captain", "number": null}
+{"age": null, "name": null, "number": 1}
+```
+
+The type information is all gone! This makes sense because a JSON object is just a bunch of keys and values, and with a concrete query like `PC` this would be no problem. But this query includes various object types extending `Person` and it's hard to tell which type is which. Fortunately, we can put the type information by adding `__type__` which is used to refer to an object's own type:
+
+```edgeql
+select <json>Person {
+  name,
+  [is NPC].age,
+  [is Crewman].number,
+  __type__
+};
+```
+
+The result is close to what we want, but not quite. Take a look at two of the results:
 
 ```
 {
-  # ... /snip
-  {
-  {\"name\": \"default::Crewman\"}}",
-  "{\"age\": null, \"name\": null, \"number\": 4, \"__type__\": {\"name\": \"default::Crewman\"}}",
-  "{\"age\": null, \"name\": null, \"number\": 5, \"__type__\": {\"name\": \"default::Crewman\"}}",
-  "{\"age\": null, \"name\": \"Emil Sinclair\", \"number\": null, \"__type__\": {\"name\": \"default::PC\"}}",
-  "{\"age\": 30, \"name\": \"The innkeeper\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
-  "{\"age\": null, \"name\": \"Mina Murray\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
-  "{\"age\": null, \"name\": \"Jonathan Harker\", \"number\": null, \"__type__\": {\"name\": \"default::NPC\"}}",
+  "age": null,
+  "name": "Emil Sinclair",
+  "number": null,
+  "__type__": {"id": "4a007f07-f91f-11ed-8096-7bf54ff85912"}
+}
+{
+  "age": null,
+  "name": "The Captain",
+  "number": null,
+  "__type__": {"id": "48b9bb2f-faaa-11ed-966c-6fc3482a7805"}
 }
 ```
 
-This is officially called a {ref}`polymorphic query <docs:ref_eql_select_polymorphic>`, and is one of the best reasons to use abstract types in your schema.
+We can see that they are two different types now, but the type name isn't readable. To fix this, we can add the `name` property after `__type__` to display this instead of the id.
+
+```edgeql
+select <json>Person {
+  name,
+  [is NPC].age,
+  [is Crewman].number,
+  __type__: {
+    name
+  }
+};
+```
+
+And now the two objects from out previous output have human-readble names.
+
+```
+{"age": null, "name": "Emil Sinclair", "number": null, "__type__": {"name": "default::PC"}}
+{"age": null, "name": "The Captain", "number": null, "__type__": {"name": "default::Sailor"}}
+```
 
 ## Supertypes, subtypes, and generic types
 
