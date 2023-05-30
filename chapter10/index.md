@@ -339,11 +339,17 @@ The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interestin
 
 Title | First name | Last name | Degree
 
-So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
+So there is:
 
-That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+* 'Count Dracula' (title + name),
+* 'Dr. Seward' (title + name),
+* 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees)
 
-We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
+And so on.
+
+That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+
+We could try a middle of the road approach  for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
 
 ```sdl
 property title -> str;
@@ -354,7 +360,7 @@ property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
 
 We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
 
-Now it's time to insert Van Helsing:
+Let's do a migration now, and try an insert for Van Helsing...or rather, Dr. Van Helsing!
 
 ```edgeql
 insert NPC {
@@ -390,11 +396,17 @@ This gives us:
 }
 ```
 
-In a standard database with users it's much simpler: get users to enter their first names, last names etc. and make each one a property.
+If this were just a standard database with website users it would be much simpler: get users to enter their first names and last names and then use these two properties to compute a full name. But the setting in Bram Stoker's Dracula is much more complex than that!
 
 ## Other escape characters and raw strings
 
-Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
+Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` and unicode escape character with `\u` are two that might be useful.
+
+Try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
+
+```edgeql
+select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D\u0020\u006E\u006F\u0074\u0020\u006A\u0065\u0073\u0074\u0069\u006E\u0067\u002E\u0020\u0054\u0068\u0069\u0073\u0020\u0069\u0073\u0020\u006E\u006F\u0020\u006A\u0065\u0073\u0074\u002C\u0020\u0062\u0075\u0074\u0020\u006C\u0069\u0066\u0065\u0020\u0061\u006E\u0064\u0020\u0064\u0065\u0061\u0074\u0068\u002C\u0020\u0070\u0065\u0072\u0068\u0061\u0070\u0073\u0020\u006D\u006F\u0072\u0065\u002E\u2019';
+```
 
 If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
