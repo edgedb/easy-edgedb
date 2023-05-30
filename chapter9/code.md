@@ -16,6 +16,9 @@ module default {
 
   type PC extending Person {
     required property transport -> Transport;
+    property created_at -> datetime {
+      default := datetime_current()
+  }
   }
 
   type NPC extending Person {

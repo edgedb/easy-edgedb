@@ -30,9 +30,12 @@ module default {
 
   type PC extending Person {
     required property transport -> Transport;
-      overloaded required property name -> str {
-        constraint max_len_value(30);
-      }
+    property created_at -> datetime {
+      default := datetime_current()
+  }
+    overloaded required property name -> str {
+      constraint max_len_value(30);
+    }
   }
 
   type Lord extending Person {

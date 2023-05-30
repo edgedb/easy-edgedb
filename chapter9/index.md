@@ -135,35 +135,46 @@ select three dates union max(three_dates);
 }
 ```
 
+Our game will have its `NPC` objects already in the database because they are all detailed in the book, but `PC` objects will only show up when a player decides to make a character. It could be useful to add a `date_created` property to the `PC` type so that we know when it was first made.
+
 Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
 
 ```sdl
-abstract type Place {
-  required property name -> str {
-    delegated constraint exclusive;
-  }
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date := datetime_current(); # this is new
+type PC extending Person {
+  required property transport -> Transport;
+  property created_at := datetime_current(); # this is new
 }
 ```
 
-This will actually generate the date when you *query* a `Place` object, not when you insert it. So to make a `Place` type that would have the date when you insert it, we can use `default` instead:
+Because `created_at` is a computable here, and computables are calculated when you *query* an object, this would generate the date when the query happens instead of when the object is inserted. So to make our `PC` objects have the date when you insert it, we can use `default` instead:
 
 ```sdl
-abstract type Place {
-  required property name -> str {
-    delegated constraint exclusive;
-  }
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date -> datetime {
+type PC extending Person {
+  required property transport -> Transport;
+  property created_at -> datetime {
     default := datetime_current()
   }
 }
 ```
 
-We don't need this in our schema so we won't change `Place`, but this is how you would do it.
+Let's do a migration and give this a try with a second PC. We'll call him Max Demian and choose a `transport` but nothing else, but thanks to `created_at` having a default value we don't need to specify it ourselves. Let's `select` Max Demian right after his creation to see the date he was made.
+
+```edgeql
+with new_pc := (insert PC {
+ name := 'Max Demian',
+ transport := Transport.Train
+ }),
+ select new_pc {
+ name,
+ created_at
+ };
+```
+
+The output will depend on when you do the insert, but it will look like this:
+
+```
+{default::PC {name: 'Max Demian', created_at: <datetime>'2023-05-30T01:13:28.022340Z'}}
+```
 
 ## Using the 'for' and 'union' keywords
 

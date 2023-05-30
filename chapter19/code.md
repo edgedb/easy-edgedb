@@ -30,9 +30,12 @@ module default {
 
   type PC extending Person {
     required property transport -> Transport;
-      overloaded required property name -> str {
-        constraint max_len_value(30);
-      }
+    property created_at -> datetime {
+      default := datetime_current()
+  }
+    overloaded required property name -> str {
+      constraint max_len_value(30);
+    }
   }
 
   type Lord extending Person {
@@ -255,6 +258,11 @@ insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
+};
+
+insert PC {
+ name := 'Max Demian',
+ transport := Transport.Train
 };
 
 for country_name in {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}

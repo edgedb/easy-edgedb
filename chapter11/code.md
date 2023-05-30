@@ -20,6 +20,9 @@ module default {
 
   type PC extending Person {
     required property transport -> Transport;
+    property created_at -> datetime {
+      default := datetime_current()
+  }
   }
 
   type NPC extending Person {
@@ -129,6 +132,11 @@ insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
   transport := Transport.HorseDrawnCarriage,
+};
+
+insert PC {
+ name := 'Max Demian',
+ transport := Transport.Train
 };
 
 insert Country {
