@@ -57,9 +57,6 @@ select Event {
   start_time,
   end_time,
   place: {
-    __type__: {
-      name
-    },
     name
   },
   people: {
@@ -78,9 +75,7 @@ select Event {
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
     start_time: <cal::local_datetime>'1893-09-11T18:00:00',
     end_time: <cal::local_datetime>'1893-09-11T23:00:00',
-    place: {
-      default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
-    },
+    place: {default::City {name: 'Whitby'}},
     people: {
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'John Seward'},

@@ -4,7 +4,9 @@ tags: Writing Functions, Multiplication, Coalescing
 
 # Chapter 11 - What's wrong with Lucy?
 
-> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and put garlic everywhere. They are confused, but Dr. Seward tells them to listen: Dr. Van Helsing is the smartest person he knows. It works, and Lucy gets better. But one night Lucy's mother walks into the room and thinks: "This place smells terrible! I'll open the windows for some fresh air." The next day Lucy wakes up pale and sick again. Every time someone makes a mistake like this Dracula gets in her room, and every time the men give Lucy their blood to help her get better. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. Then one day he didn't want to talk, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
+> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and place garlic flowers everywhere in Lucy's room. They are confused, but Dr. Seward tells them to listen: Dr. Van Helsing is the smartest person he knows. It works, and Lucy gets better.
+>But one night Lucy's mother walks into the room and thinks: "This place smells terrible! I'll open the windows for some fresh air." The next day Lucy wakes up pale and sick again. Every time someone makes a mistake like this Dracula gets in her room, and every time the men give Lucy their blood to help her get better. But Lucy is getting weaker and weaker as the days go by.
+>Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. Then one day Renfield doesn't want to talk at all, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
 
 We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. In our game, we could use a sort of `Event` type to group everything together: the people, the time, the place, and so on.
 
@@ -26,7 +28,7 @@ type Event {
 
 You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
 
-The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example:
+The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
 `https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E`
 
@@ -34,7 +36,7 @@ Luckily for us, the events in the book all take place in the north part of the p
 
 (Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
 
-Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```edgeql
 insert Event {
@@ -58,9 +60,6 @@ select Event {
   start_time,
   end_time,
   place: {
-    __type__: {
-      name
-    },
     name
   },
   people: {
@@ -79,9 +78,7 @@ It generates a nice output that shows us everything about the event:
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
     start_time: <cal::local_datetime>'1893-09-11T18:00:00',
     end_time: <cal::local_datetime>'1893-09-11T23:00:00',
-    place: {
-      default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
-    },
+    place: {default::City {name: 'Whitby'}},
     people: {
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'John Seward'},
