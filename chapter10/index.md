@@ -148,6 +148,51 @@ union (
 
 So it sends each tuple into the `for` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
 
+You can actually choose to give names to the items inside tuples if you like. Here are the same cities except now we can access them by name:
+
+```edgeql
+with cities := 
+(
+  (name := 'Buda-Pesth', pop := 402706), 
+  (name := 'London', pop := 3500000), 
+  (name := 'Munich', pop := 230023),
+  (name := 'Bistritz', pop := 9100)
+),
+  select cities.1.pop;
+```
+
+This returns `{3500000}`, the population of London.
+
+Similarly, we can give each of the tuples inside the `cities` tuple a name too!
+
+```edgeql
+with cities := 
+(
+  budapest := (name := 'Buda-Pesth', pop := 402706), 
+  london := (name := 'London', pop := 3500000), 
+  munich := (name := 'Munich', pop := 230023),
+  bistritz := (name := 'Bistritz', pop := 9100)
+  ),
+  select cities.munich.pop;
+```
+
+Now we get `{230023}`, the population of Munich.
+
+You can still access items inside tuples by numbers even if they have a name:
+
+```edgeql-repl
+edgedb> select (name := 'Jonathan Harker', age := 25).0;
+{'Jonathan Harker'}
+edgedb> select (name := 'Jonathan Harker', age := 25).name;
+{'Jonathan Harker'}
+```
+
+And also note that if you choose to name the items inside a tuple you have to name them all. So this won't work:
+
+```edgeql
+select ('Jonathan Harker', age := 25).age;
+```
+
 Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`, like this:
 
 ```edgeql
@@ -158,17 +203,20 @@ select <tuple<json, int32>>london;
 That gives us this output:
 
 ```
-{("\"London\"", 3500000)}
+{(Json("\"London\""), 3500000)}
 ```
 
 Here's another example if we need to do some math with floats on London's population:
 
 ```edgeql
-with london := <tuple<json, float64>>('London', 3500000),
-  select (london.0, london.1 / 23);
+with london := <tuple<str, float64>>('London', 3500000),
+# London after a population increase
+  london_after := (london.1 * 1.035),
+  select (london.0, <int32>london_after);
+{('London', 3622500)}
 ```
 
-The output is `{("\"London\"", 152173.91304347827)}`.
+The output is `{3605000}`.
 
 ## Ordering results and using math
 
