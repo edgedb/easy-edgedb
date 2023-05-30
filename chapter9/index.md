@@ -188,15 +188,25 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 
 In other words: take this set of three strings and do something to each one. `character_name` is the variable name we chose to call each string in this set.
 
-`union` comes next, because it is the keyword used to join sets together. For example, this query:
+`union` comes next, because it is the keyword used to join sets together. To understand why we need to write `union` in a `for` loop, take this example without `union`:
 
 ```edgeql
-with city_names := (select City.name),
-  castle_names := (select Castle.name),
-select city_names union castle_names;
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+select character_name ++ ' is great';
 ```
 
-joins the names together to give us the output `{'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Castle Dracula'}`.
+This generates an error because we are asking EdgeDB to give three query results at the same time. But what we want instead is a single query result (a single set) that contains the unified results of selecting each name. It will now work if we add `union` and surround `select` in parentheses, indicating that we are capturing the result of each `select` and joining them together:
+
+```edgeql
+for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+union (select character_name ++ ' is great');
+```
+
+With this, EdgeDB will select one name at a time, concatenate `' is great'` to the end, and unify them into a single set that it returns to us as follows:
+
+```
+{'John Seward is great', 'Quincey Morris is great', 'Arthur Holmwood is great'}
+```
 
 Now let's return to the `for` loop with the variable name `character_name`, which looks like this:
 
