@@ -258,7 +258,7 @@ select (
 );
 ```
 
-This used quite a few functions:
+This used quite a few functions, all of which work on sets:
 
 - `count()` to count the number of items,
 - `all()` to return `{true}` if all items match and `{false}` otherwise,
@@ -292,7 +292,7 @@ The output also makes it clear how they work:
 You can use the `with` keyword to import modules too. In the example above we used two functions from EdgeDB's `math` module: `math::mean()` and `math::stddev()`. Just writing `mean()` and `stddev()` would produce this error:
 
 ```
-ERROR: InvalidReferenceError: function 'default::mean' does not exist
+edgedb error: InvalidReferenceError: function 'default::mean' does not exist
 ```
 
 If you don't want to write the module name every time you can just import the module after `with`. Let's slip that into the query we just used. See if you can see what's changed:
@@ -313,7 +313,7 @@ select (
 
 The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`.
 
-You can also use `AS` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
+You can also use `as` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
 
 ```edgeql
 with M as module math,
