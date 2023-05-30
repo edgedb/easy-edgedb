@@ -408,7 +408,7 @@ Try pasting this into your REPL to decode it into what Van Helsing had to say du
 select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D\u0020\u006E\u006F\u0074\u0020\u006A\u0065\u0073\u0074\u0069\u006E\u0067\u002E\u0020\u0054\u0068\u0069\u0073\u0020\u0069\u0073\u0020\u006E\u006F\u0020\u006A\u0065\u0073\u0074\u002C\u0020\u0062\u0075\u0074\u0020\u006C\u0069\u0066\u0065\u0020\u0061\u006E\u0064\u0020\u0064\u0065\u0061\u0074\u0068\u002C\u0020\u0070\u0065\u0072\u0068\u0061\u0070\u0073\u0020\u006D\u006F\u0072\u0065\u002E\u2019';
 ```
 
-If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
+If you want to ignore escape characters, put an `r` (which stands for _raw_) in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
 ```edgeql
 with helsing := (select NPC filter .name ilike '%helsing%')
@@ -431,7 +431,7 @@ Now we get:
 }
 ```
 
-Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
+Finally, there is a raw string literal that uses `$$` on each side thas is useful if you want an entire raw string. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
 select $$ 
@@ -441,11 +441,17 @@ but he'd sound crazy."
 $$;
 ```
 
-Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error.
+Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error:
 
-## All the scalar types
-
-You now have an understanding of all the EdgeDB scalar types. Summed up, they are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `cal::relative_duration`, `cal::date_duration`, `uuid`, `json`, and `enum`. You can see the documentation for them {ref}`here <docs:ref_datamodel_scalar_types>`.
+```
+"Dr. Van Helsing would like to tell "
+them
+" about "
+vampires
+" and how to "
+kill
+" them, but he'd sound crazy."
+```
 
 ## Using `unless conflict on` + `else` + `update`
 
