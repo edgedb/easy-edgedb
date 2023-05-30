@@ -463,7 +463,7 @@ insert NPC {
 };
 ```
 
-But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
+But if we try again we will get this error: `edgedb error: ConstraintViolationError: name violates exclusivity constraint`
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 
@@ -474,10 +474,10 @@ But sometimes just generating an error isn't enough - maybe we want something el
 insert City {
   name := 'Munich',
   population := 261023
-}
+};
 ```
 
-However, we can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
+However, we also can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
 
 Here is how we would do it for Munich:
 
