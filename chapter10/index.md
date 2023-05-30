@@ -4,7 +4,8 @@ tags: Tuples, Computed Properties, Math
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside. One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
+> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
+>One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
 The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
@@ -14,7 +15,7 @@ type City extending Place {
 }
 ```
 
-By the way, here are the approximate populations for our three cities at the time of the book. They are much smaller back in 1893:
+By the way, here are the approximate populations for our five cities at the time of the book. They are much smaller back in 1893:
 
 - Buda-Pesth (Budapest): 402706
 - London: 3500000
@@ -22,7 +23,9 @@ By the way, here are the approximate populations for our three cities at the tim
 - Whitby: 14400
 - Bistritz (Bistrița): 9100
 
-Inserting Whitby is easy enough:
+Now let's do a migration.
+
+Whitby is the only one of the five that isn't in our database already. Inserting it is easy enough:
 
 ```edgeql
 insert City {
@@ -35,15 +38,15 @@ But for the rest of them it would be nice to update everything at the same time.
 
 ## Working with tuples and arrays
 
-If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. One big difference is that a tuple can hold different types, so this is okay:
+If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that the city data we have inside tuples, which seem similar to arrays but are quite different. One big difference is that a tuple can hold different types, so this is okay:
 
 `('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
 
 In this case, the type is called a `tuple<str, int64>`.
 
-Before we start using these tuples, let's make sure that we understand the difference between the two. To start, let's look at slicing arrays and strings in a bit more detail.
+Before we start using these tuples, let's make sure that we understand the difference between tuplys and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
 
-You'll remember that we use square brackets to access part of an array or a string. So `select ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+Previously we learned how to use square brackets to access part of an array or a string. So `select ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
 
 You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
@@ -72,7 +75,7 @@ But the same can be done with a negative number if you want to start from the in
 select NPC.name[2:-2];
 ```
 
-This prints from index 2 up to 2 indexes away from the end (it'll cut off the first two letters on each side). Here's the output:
+This prints from index 2 up to 2 indexes away from the end (in other words, it'll cut off two letters from each side). Here's the output:
 
 ```
 {
@@ -87,12 +90,15 @@ This prints from index 2 up to 2 indexes away from the end (it'll cut off the fi
 }
 ```
 
-Tuples are quite different: they behave more like object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+Tuples are very different. You can think of them as similar to object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
 
 So this is completely fine:
 
 ```edgeql
-select {('Bistritz', 9100, cal::to_local_date(1893, 5, 6)), ('Munich', 230023, cal::to_local_date(1893, 5, 8))};
+select {
+('Bistritz', 9100, cal::to_local_date(1893, 5, 6)),
+('Munich', 230023, cal::to_local_date(1893, 5, 8))
+};
 ```
 
 The output is:
@@ -113,13 +119,22 @@ select {(1, 2, 3), (4, 5, '6')};
 EdgeDB will give an error because it won't try to work with tuples that are of different types. It complains:
 
 ```
-ERROR: QueryError: operator 'union' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
-  Hint: Consider using an explicit type cast or a conversion function.
+error: InvalidTypeError: set constructor has arguments of incompatible types 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+  ┌─ <query>:1:8
+  │
+1 │ select {(1, 2, 3), (4, 5, '6')};
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-In the above example we could easily just cast the last string into an integer and EdgeDB will be happy again: `select {(1, 2, 3), (4, 5, <int64>'6')};`.
+You'll notice that the error suggests that we cast one of the items inside one of the tuples to match the other. Doing so removes the error and EdgeDB is happy again:
 
-To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
+```edgeql
+select {(1, 2, 3), (4, 5, <int64>'6')};
+```
+
+To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. This makes sense if you remember that tuples are like object types, which as we know use a `.` in front of the names of their properties.
+
+Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```edgeql
 for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
