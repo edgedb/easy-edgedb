@@ -104,9 +104,9 @@ type Event {
   required multi link place -> Place;
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt; # Only this is new
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 

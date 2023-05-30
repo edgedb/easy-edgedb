@@ -19,10 +19,10 @@ type Event {
   required property end_time -> cal::local_datetime;
   required multi link place -> Place;
   required multi link people -> Person;
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' 
-  ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' 
+  ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -34,7 +34,7 @@ The url that we are generating needs to know whether a location is east or west 
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
-(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
 
 Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
@@ -45,7 +45,7 @@ insert Event {
   end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 ```
@@ -65,7 +65,7 @@ select Event {
   people: {
     name
   },
-  exact_location,
+  location,
   url
 } filter .description ilike '%garlic flowers%';
 ```
@@ -84,7 +84,7 @@ It generates a nice output that shows us everything about the event:
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Abraham Van Helsing'},
     },
-    exact_location: (54.4858, 0.6206),
+    location: (54.4858, 0.6206),
     url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
   },
 }

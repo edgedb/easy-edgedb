@@ -98,9 +98,9 @@ module default {
     required property end_time -> cal::local_datetime;
     required multi link place -> Place;
     required multi link people -> Person;
-    property exact_location -> tuple<float64, float64>;
+    property location -> tuple<float64, float64>;
     property east -> bool;
-    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
   function fight(one: Person, two: Person) -> str
@@ -324,7 +324,7 @@ insert Event {
   end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 
