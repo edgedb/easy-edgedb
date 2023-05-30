@@ -215,12 +215,12 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 union (
   insert NPC {
     name := character_name,
-    lovers := (select Person filter .name = 'Lucy Westenra'),
+    lover := (select Person filter .name = 'Lucy Westenra'),
   }
 );
 ```
 
-We get three `uuid`s as a response to show that they were entered.
+We get three `uuid`s as a response to show that they were inserted.
 
 Then we can check to make sure that it worked:
 
@@ -258,7 +258,7 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we could use this method to insert our five `Crewman` objects inside one `insert` instead of doing it five times. We can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
+By the way, now we could use this method to insert our five `Crewman` objects inside one `insert` instead of doing it five times. Previously we used the `count()` function to insert their numbers, but we know that the book only ever has five crewmen so it will be easier to just use a `for` loop now. With this we can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
 
 ```edgeql
 for n in {1, 2, 3, 4, 5}
@@ -283,7 +283,61 @@ union output-expr ;
 
 The important part is the *iterator-expr* which needs to be a single simple expression that gives back some kind of set. Usually, it is a just a set inside `{` and `}`. It can also be a path, such as `NPC.places_visited`, or it can be a function call, such as `array_unpack()`. More complex expressions should have parentheses around them.
 
-Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll set it to `multi link` instead so we can add all three of the men. Here is our update for her:
+## An interesting migration
+
+Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll rename the `link lover` to `multi link lovers` instead and do a migration so that we can add all three of the men. This makes sense in any case, as other `Person` types could easily have more than one lover.
+
+The migration output this time is a little interesting, as EdgeDB needed a bit of help to understand what we were trying to do. It first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it.
+
+```
+c:\easy-edgedb>edgedb migration create
+Connecting to an EdgeDB instance at localhost:10716...
+did you drop link 'lover' of object type 'default::Person'? [y,n,l,c,b,s,q,?]
+> n
+did you rename link 'lover' of object type 'default::Person' to 'lovers'? [y,n,l,c,b,s,q,?]
+> y
+did you convert link 'lovers' of object type 'default::Person' to 'multi' cardinality? [y,n,l,c,b,s,q,?]
+> y
+```
+
+Looking at the ddl output in the most recent `.edgeql` migration file in our `migrations` folder shows what commands were used to change the link:
+
+```edgeql
+ALTER TYPE default::Person {
+      ALTER LINK lover {
+          RENAME TO lovers;
+      };
+  };
+  ALTER TYPE default::Person {
+      ALTER LINK lovers {
+          SET MULTI;
+      };
+  };
+```
+
+If we had said yes to dropping `link 'lover'`, then it would have created these commands instead:
+
+```edgeql
+ALTER TYPE default::Person {
+    DROP LINK lover;
+};
+ALTER TYPE default::Person {
+    CREATE MULTI LINK lovers: default::Person;
+};
+```
+
+In this case the schema migration would still have worked, but the `lover` data would now be gone. Then we would have had to update the three men again to give them Lucy back:
+
+```edgeql
+update NPC filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+ set {
+ lovers := (select Person filter .name = 'Lucy Westenra')
+ };
+```
+
+
+
+Here is our update for her:
 
 ```edgeql
 update NPC filter .name = 'Lucy Westenra'
@@ -297,12 +351,12 @@ set {
 Now we'll select her to make sure it worked. Let's use `like` this time for fun when doing the filter:
 
 ```edgeql
-select NPC {
-  name,
-  lover: {
-    name
-  }
-} filter .name like 'Lucy%';
+  select NPC {
+    name,
+    lovers: {
+      name
+    }
+  } filter .name like 'Lucy%';
 ```
 
 And this does indeed print her out with her three lovers.
@@ -311,7 +365,7 @@ And this does indeed print her out with her three lovers.
 {
   default::NPC {
     name: 'Lucy Westenra',
-    lover: {
+    lovers: {
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Quincey Morris'},
       default::NPC {name: 'Arthur Holmwood'},
