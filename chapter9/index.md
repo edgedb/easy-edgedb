@@ -376,7 +376,7 @@ And this does indeed print her out with her three lovers.
 
 ## Overloading instead of making a new type
 
-So now that we know the keyword `overloaded`, we don't need the `HumanAge` type for `NPC` anymore. Right now it looks like this:
+We can improve our schema a bit after having learned the `overloaded` keyword in this chapter. With this keyword we don't need the `HumanAge` type for `NPC` anymore. Right now it looks like this:
 
 ```sdl
 scalar type HumanAge extending int16 {
@@ -397,18 +397,16 @@ type NPC extending Person {
 }
 ```
 
-This is convenient because we can delete `age` from `Vampire` too:
+This is convenient because we can delete `age` from `Vampire` too. We don't need to `overload` here because vampires by default live forever the maximum value of 32767 for `int16` is, as far as we are concerned, forever. The type will now look like this:
 
 ```sdl
 type Vampire extending Person {
-  # property age -> int16; **Delete this one now**
+  # property age -> int16; **Deleted now
   multi link slaves -> MinorVampire;
 }
 ```
 
-You can see that a good usage of abstract types and the `overloaded` keyword lets you simplify your schema if you do it right.
-
-Okay, let's read the rest of the introduction for this chapter. It continues to explain what Lucy is up to:
+Okay, let's do the migration and then read the rest of the introduction for this chapter. It continues to explain what Lucy is up to:
 
 > ...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately the three men become friends with each other. Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax not far outside London. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them. He's not a vampire, but seems to act similar sometimes.
 
