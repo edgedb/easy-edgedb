@@ -114,11 +114,28 @@ type NPC extending Person {
 One convenient function is {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`, which gives the datetime right now. Let's try it out:
 
 ```edgeql-repl
-edgedb> select datetime_current();
-{<datetime>'2020-11-17T06:13:24.418765000Z'}
+db> select datetime_current();
+{<datetime>'2023-05-28T10:18:56.889701Z'}
 ```
 
-This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
+This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Here is a quick example that creates three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
+
+```edgeql-repl
+db> with three_dates := {
+  datetime_current(),
+  datetime_current(),
+  datetime_current()
+  },
+select three dates union max(three_dates);
+{
+  <datetime>'2023-05-28T10:26:55.744720Z',
+  <datetime>'2023-05-28T10:26:55.744733Z',
+  <datetime>'2023-05-28T10:26:55.744735Z',
+  <datetime>'2023-05-28T10:26:55.744735Z',
+}
+```
+
+Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
 
 ```sdl
 abstract type Place {
