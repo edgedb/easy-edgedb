@@ -14,6 +14,14 @@ But there is good news for us, because we are going to keep learning about Carte
 
 ## Overloading functions
 
+Functions can be overloaded in EdgeDB. Overloading a function means to give a function with the same name more than one signature, allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
+
+```
+cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
+cal::to_local_date(dt: datetime, zone: str) -> local_date
+cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
+```
+
 Last chapter, we gave every character a strength of 5 and used the `fight()` function for a few of them. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen. We should give Dracula a more realistic strength, and randomize some of the strength values for some of our characters.
 
 Jonathan Harker is just a human but is still quite strong. We'll let him keep his strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - we gave him a strength of 10 when we inserted him. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. So we only have to update Count Dracula's strength:
@@ -66,7 +74,7 @@ function fight(people_names: array<str>, opponent: Person) -> str
   );
 ```
 
-With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
+With this overloaded function we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
 
 - We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
 - `sum` in the next line of our `select` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
@@ -84,7 +92,16 @@ If we tried to overload our function with an input of `(Person, Person)`, it wou
 
 The function name is the same, but to call it, we enter an array of the fighters' names and the `Person` they are fighting.
 
-Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
+Let's do a migration now and see what happens if Jonathan and Renfield try to fight Dracula together. The migration output is a little interesting, as EdgeDB simply asks us if we created a function `default::fight` - it doesn't ask us if we overloaded a function. For humans the function looks the same because of the function name (which is what makes overloading convenient), but as far as EdgeDB is concerned this simply an entirely new function.
+
+```
+c:\easy-edgedb>edgedb migration create
+Connecting to an EdgeDB instance at localhost:10716...
+did you create function 'default::fight'? [y,n,l,c,b,s,q,?]
+> y
+```
+
+Now it's time to join together to fight Dracula. Good luck!
 
 ```edgeql
 with
@@ -99,22 +116,22 @@ So did they...
 {'Count Dracula wins!'}
 ```
 
-No, they didn't win. How about four people?
+No, they didn't win. How about five people?
 
 ```edgeql
 with
-  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'],
+  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper', 'Lucy Westenra'],
   dracula := (select Person filter .name = 'Count Dracula'),
 select fight(party , dracula);
 ```
 
-Much better:
+At this point it is most likely that the random `strength` values for everyone together will be greater than 20 and they will finally win. Then we will see the following output:
 
 ```
-{'Renfield, The innkeeper, Arthur Holmwood, Jonathan Harker win!'}
+{'Jonathan Harker, Renfield, Arthur Holmwood, The innkeeper, Lucy Westenra win!'}
 ```
 
-That's how function overloading works - you can create functions with the same name as long as the signature is different.
+So that's how function overloading works - you can create functions with the same name as long as the signature is different.
 
 You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which we used earlier to get our party strength. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
 

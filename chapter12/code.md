@@ -124,14 +124,6 @@ module default {
           else (opponent.name ?? 'Opponent') ++ ' wins!'
     );
 
-  function fight(names: str, one: int16, two: str) -> str
-    using (
-      with opponent := assert_single((select Person filter .name = two))
-      select
-          names ++ ' win!' if one > opponent.strength else
-          two ++ ' wins!'
-    );
-
   function visited(person: str, city: str) -> bool
     using (
       with person := (select Person filter .name = person),
