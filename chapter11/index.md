@@ -254,9 +254,16 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 }
 ```
 
-And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
+And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, eventually displaying this after the first 100 results:
 
-`` ... (further results hidden `\set limit 100`)``
+```edgeql-repl
+# First 98 results...
+'Count Dracula wins!',
+'Fighter 2 wins!',
+ ... (further results hidden `\set limit 100`)
+```
+
+If you want to display more or less than a maximum of 100 (the default), just type `\set limit` followed by whichever number you like.
 
 [Here is all our code so far up to Chapter 11.](code.md)
 
