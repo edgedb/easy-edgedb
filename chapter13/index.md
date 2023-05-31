@@ -235,7 +235,7 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 
 ## Being introspective
 
-The keyword `introspect` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
+The word introspect literally means to "look inside", and is also an EdgeDB keyword. Using the keyword `introspect` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
 
 ```sdl
 type Ship {
@@ -340,6 +340,8 @@ select (introspect Ship) {
   links: {name, target: {name}},
 };
 ```
+
+As of EdgeDB 3.0, the easiest way to see all the possible introspection of a type is to use the splat operator. And when using the `**` double splat operator, you will see pages and pages of output. If you want to know everything there is to know about our `Ship` type, just type `select (introspect Ship) {**};`!
 
 ## The sequence type
 
