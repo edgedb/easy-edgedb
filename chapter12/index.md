@@ -14,18 +14,13 @@ But there is good news for us, because we are going to keep learning about Carte
 
 Last chapter, we gave every character a strength of 5 and used the `fight()` function for a few of them. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen. We should give Dracula a more realistic strength, and randomize some of the strength values for some of our characters.
 
-Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - he gets 10. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. We can do this with three quick updates:
+Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - we gave him a strength of 10 when we inserted him. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. We can do this with two quick updates:
 
 ```edgeql
 update NPC
 filter .name = 'Jonathan Harker'
 set {
   strength := 5
-};
-update NPC
-filter .name = 'Renfield'
-set {
-  strength := 10
 };
 update Vampire
 filter .name = 'Count Dracula'
