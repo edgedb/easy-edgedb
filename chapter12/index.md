@@ -147,7 +147,7 @@ function visited(person: str, city: str) -> bool
   );
 ```
 
-Now our queries are much shorter:
+Pretty simple! Let's add it to the schema and do a migration. Now our queries are much shorter:
 
 ```edgeql-repl
 edgedb> select visited('Mina Murray', 'London');
@@ -171,7 +171,7 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
-Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with x.
+Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to concatenate the names of places that start with b with those that start with x.
 
 ```edgeql
 with b_places := (select Place filter Place.name ilike 'b%'),
@@ -185,7 +185,7 @@ The result may not be what you'd expect.
 {}
 ```
 
-Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
+Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's make sure that the output is the same when we manually type out the city names:
 
 ```edgeql
 select {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -201,7 +201,9 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+Ah, that's right - we saw one example of an empty set with a cast in the last chapter when we tried the query `select <str>{} ?? 'Count Dracula is now in Whitby';`. EdgeDB requires a cast for an empty set, because there's no way to know the type of a set if all EdgeDB sees is `{}`.
+
+You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
@@ -286,7 +288,7 @@ select has_either.name;
 This gives us the result:
 
 ```
-{'Slovakia', 'Buda-Pesth', 'Castle Dracula'}
+{'Slovakia', 'France', 'Castle Dracula', 'Buda-Pesth'}
 ```
 
 Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
@@ -297,19 +299,13 @@ with cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
 select cities1 ?= cities2;
 ```
 
-and get the output
-
-```
-{false, false, false}
-```
-
-instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:
+This will return the output `{false, false, false}` instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
 
 ```edgeql
-select Vampire.lover.name ?= Crewman.name;
+select Vampire.lovers.name ?= Crewman.name;
 ```
 
-will return `{true}`. (Because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`.)
+It returns `{true}` because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
 
 [Here is all our code so far up to Chapter 12.](code.md)
 
