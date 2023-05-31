@@ -54,12 +54,15 @@ insert Vampire {
   slaves := {
     (insert MinorVampire {
       name := 'Vampire Woman 1',
+      strength := <int16>round(random() * 5) + 5
     }),
     (insert MinorVampire {
       name := 'Vampire Woman 2',
+      strength := <int16>round(random() * 5) + 5
     }),
     (insert MinorVampire {
       name := 'Vampire Woman 3',
+      strength := <int16>round(random() * 5) + 5
     }),
     (insert MinorVampire {
       # We need to give a new name, so as not to clash with former_self.
