@@ -42,6 +42,8 @@ After doing the migration, let's practice a big insert to add Dracula along with
 
 Note the first line of the insert where we create a variable called `lucy`. We can then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
+We could give her the name 'Lucy Westenra' here because the `name` property is a delegated constraint from the `Person` type, but we'll just call her Lucy now.
+
 Here's the insert:
 
 ```edgeql
@@ -66,7 +68,6 @@ insert Vampire {
       strength := <int16>round(random() * 5) + 5
     }),
     (insert MinorVampire {
-      # We need to give a new name, so as not to clash with former_self.
       name := 'Lucy',
       former_self := lucy,
       first_appearance := lucy.last_appearance,

@@ -60,7 +60,6 @@ insert Vampire {
       name := 'Vampire Woman 3',
     }),
     (insert MinorVampire {
-      # We need to give a new name, so as not to clash with former_self.
       name := 'Lucy',
       former_self := lucy,
       first_appearance := lucy.last_appearance,
