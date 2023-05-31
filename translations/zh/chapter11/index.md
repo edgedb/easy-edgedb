@@ -116,6 +116,25 @@ function make_string(input: int64) -> str
 
 就是这样！
 
+Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+
+```sdl
+function get_url() -> str
+  using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required multi link place -> Place;
+  required multi link people -> Person;
+  property location -> tuple<float64, float64>;
+  property east -> bool;
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
+  ++ '_' ++ ('E' if .east else 'W');
+}
+```
+
 现在让我们来编写一个函数用于两个角色之间的战斗。我们将使逻辑尽可能简单：即具有更多力量的角色获胜，如果他们的力量相同，则第二个玩家获胜。
 
 ```sdl

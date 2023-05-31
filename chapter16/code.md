@@ -124,16 +124,19 @@ module default {
     required link author -> Person
   }
 
+  function get_url() -> str
+    using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
   type Event {
     required property description -> str;
     required property start_time -> cal::local_datetime;
     required property end_time -> cal::local_datetime;
     required multi link place -> Place;
     required multi link people -> Person;
-    multi link excerpt -> BookExcerpt;
+    multi link excerpt -> BookExcerpt; # Only this is new
     property location -> tuple<float64, float64>;
-    property east -> bool;
-    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+    property east_west -> bool;
+    property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
   function fight(one: Person, two: Person) -> str

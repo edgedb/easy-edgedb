@@ -119,7 +119,26 @@ function make_string(input: int64) -> str
 
 That's all there is to it!
 
-Now let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+
+```sdl
+function get_url() -> str
+  using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required multi link place -> Place;
+  required multi link people -> Person;
+  property location -> tuple<float64, float64>;
+  property east -> bool;
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
+  ++ '_' ++ ('E' if .east else 'W');
+}
+```
+
+Next, let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
 
 ```sdl
 function fight(one: Person, two: Person) -> str
