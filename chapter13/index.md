@@ -178,19 +178,21 @@ Now let's look at some tips for making queries.
 
 ## Using the 'distinct' keyword
 
-Using `distinct` is easy: just change `select` to `select distinct` to get only unique results. We can see that right now there are quite a few duplicates in our `Person` objects if we `select Person.strength;`. The output will vary because it comes from the `random` function, but it will look something like this:
+The `distinct` keyword is used if we want to remove duplicate values in a set, and is easy: just change `select` to `select distinct`. We can see that right now there are quite a few duplicate values in our `Person` objects if we `select Person.strength;`. The output will vary because it comes from the `random` function, but it will look something like this:
 
 ```
-{5, 4, 4, 4, 4, 4, 10, 2, 2, 2, 2, 2, 2, 2, 3, 3}
+{1, 1, 7, 8, 9, 9, 5, 3, 0, 0, 5, 10, 2, 0, 2, 5, 3, 4, 0, 1, 4, 20, 5, 5, 5, 5, 5}
 ```
 
-Change it to `select distinct Person.strength;` and the output will now be `{2, 3, 4, 5, 10}`.
+Change it to `select distinct Person.strength;` and the output will now be:
 
-`distinct` works by item and doesn't unpack, so `select distinct {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
+`{0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 20}`
+
+Note that `distinct` works by item and doesn't unpack or aggregate, so something like a set of arrays will check to see if the entire array is distinct or not, not each of the values inside. So `select distinct {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
 
 ## Getting `__type__` all the time
 
-We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names like this:
+We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names that extend the `Person` type:
 
 ```edgeql
 select Person.__type__ {
@@ -198,7 +200,7 @@ select Person.__type__ {
 };
 ```
 
-It shows us all the types attached to `Person` so far:
+The output shows us all the types attached to `Person` so far:
 
 ```
 {
@@ -211,7 +213,7 @@ It shows us all the types attached to `Person` so far:
 }
 ```
 
-Or we can use it in a regular query to return the types as well. Let's see what types there are that have the name `Lucy`:
+Or we can use it in a regular query to see the type names as well. Let's see what types there are that have the name `Lucy`:
 
 ```edgeql
 select Person {
@@ -230,15 +232,6 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
   default::MinorVampire {__type__: schema::ObjectType {name: 'default::MinorVampire'}, name: 'Lucy'},
 }
 ```
-
-Using `__type__` to display type information is useful when the results don't include this information, for example, when the results are in JSON format. There is a setting you can use to switch format to JSON: just type `\set output-format json-pretty`. If you do that and repeat the previous query, you'll get:
-
-```
-{"__type__": {"name": "default::NPC"}, "name": "Lucy Westenra"}
-{"__type__": {"name": "default::MinorVampire"}, "name": "Lucy"}
-```
-
-To restore the default format type: `\set output-format default`. Because it's so convenient, this book will show results as given with the default format options.
 
 ## Being introspective
 
