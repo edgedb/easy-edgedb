@@ -50,10 +50,19 @@ update Person
   };
 ```
 
+The vampire women are also pretty strong. Let's give them a random strength plus 5. This will ensure that they are stronger than average humans but not as strong as Dracula:
+
+```edgeql
+update MinorVampire
+  set {
+    strength := <int16>round(random() * 5) + 5
+  };
+```
+
 Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
 
 ```
-{1, 1, 3, 2, 0, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
+{1, 1, 7, 8, 10, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
 ```
 
 Looks like it worked.
