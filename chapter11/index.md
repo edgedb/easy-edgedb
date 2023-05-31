@@ -172,9 +172,7 @@ Here is a quick example:
 edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
-The empty set is on the left, but since it _is_ the empty set, it doesn't get the nod from the coalescing operator. Instead, this query will produce the string to the right of the coalescing operator: `{'Count Dracula is now in Whitby'}`
-
-If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
+Since the set on the left is empty, the coalescing operator turns its attention to the set on the right and returns that: `{'Count Dracula is now in Whitby'}` If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
 
 Here's how we can use the coalescing operator to fix our function:
 
@@ -187,7 +185,9 @@ function fight(one: Person, two: Person) -> str
   );
 ```
 
-Now, EdgeDB has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+With this change, EdgeDB now has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+
+Now that our function works, let's do a migration.
 
 So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight()` function:
 
@@ -206,7 +206,7 @@ It might also be a good idea to add `assert_single()` when doing a filter for th
 
 ## Cartesian multiplication
 
-Cartesian multiplication sounds intimidating but it really just means "join every item in one set to every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+Cartesian multiplication sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![A chart displaying the Cartesian product of 1, 2, 3 multiplied by x, y, and z](cartesian_product.svg)
 
