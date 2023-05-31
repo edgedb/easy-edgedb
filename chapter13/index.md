@@ -133,7 +133,9 @@ We only have Count Dracula in our database as the main `Vampire` type so we won'
 
 ## On target delete
 
-We've decided to keep the old `NPC` type for Lucy, because that Lucy will be in the game until September 1893. Maybe later `PC` types will interact with her, for example. But this might make you wonder about deleting links. What if we had chosen to delete the old type when she became a `MinorVampire`? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have {ref}`four options <docs:ref_datamodel_link_deletion>`:
+We've decided to keep the old `NPC` object for Lucy, because that Lucy will be in the game until September 1893. Other `PC` objects could interact with her as an `NPC` up to this time, for example. 
+
+But what if we had chosen to delete her, what would have happened to the objects she is linked to? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have {ref}`four options <docs:ref_datamodel_link_deletion>`:
 
 - `restrict`: forbids you from deleting the target object.
 
@@ -166,7 +168,7 @@ type MinorVampire extending Person {
 }
 ```
 
-The EdgeDB documentation notes that you should be careful with using this! Using `delete source` can result in quite a few automatic deletions, so be sure to double check which types are linking and being linked to.
+Be careful when using this! Using `delete source` can result in quite a few automatic deletions, so be sure to double check which types are linking and being linked to. As the EdgeDB documentation states:
 
 ```
 If a link uses the `delete source` policy, then deleting a target of the link will also delete the object that links to it (the source). This behavior can be used to implement cascading deletes; be careful with this power!
