@@ -402,15 +402,15 @@ insert Vampire {
   slaves := {
     (insert MinorVampire {
      name := 'Vampire Woman 1',
-     strength := 9,
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
      name := 'Vampire Woman 2',
-     strength := 9,
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
      name := 'Vampire Woman 3',
-     strength := 9,
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
      name := 'Lucy',

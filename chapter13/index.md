@@ -27,7 +27,7 @@ type MinorVampire extending Person {
 }
 ```
 
-It's optional because we don't always know anything about people before they were made into vampires. For example, we don't know anything about the three vampire women before Dracula found them so we can't make an `NPC` type for them.
+The `former_self` link is optional because we don't always know anything about people before they were made into vampires. For example, we don't know anything about the three vampire women before Dracula found them so we can't make an `NPC` type for them.
 
 Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 
@@ -38,9 +38,9 @@ set {
 };
 ```
 
-Then we can add Lucy to the `insert` for Dracula. (If you are following along, just `delete Vampire;` and `delete MinorVampire;` first so we can practice doing this longer `insert`.)
+After doing the migration, let's practice a big insert to add Dracula along with all of the `MinorVampire` objects. We haven't done much with them so we'll just `delete Vampire;` and `delete MinorVampire;` and insert them all again.
 
-Note the first line where we create a variable called `lucy`. We then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
+Note the first line of the insert where we create a variable called `lucy`. We can then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
 
 Here's the insert:
 
@@ -51,6 +51,7 @@ with lucy := assert_single(
 insert Vampire {
   name := 'Count Dracula',
   age := 800,
+  strength := 20,
   slaves := {
     (insert MinorVampire {
       name := 'Vampire Woman 1',
@@ -86,13 +87,13 @@ select MinorVampire {
 } filter exists .former_self;
 ```
 
-This gives us:
+This gives us the following input (though strength will vary):
 
 ```
 {
   default::MinorVampire {
     name: 'Lucy',
-    strength: 5,
+    strength: 9,
     first_appearance: <cal::local_date>'1893-09-20',
   },
 }
