@@ -358,10 +358,10 @@ insert Event {
 };
 
 update Person
-  filter not exists .strength
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
   set {
     strength := <int16>round(random() * 5)
-};
+  };
 
 update Person filter .name = 'Lucy Westenra'
   set {

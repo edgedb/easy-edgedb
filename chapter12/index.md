@@ -16,14 +16,9 @@ But there is good news for us, because we are going to keep learning about Carte
 
 Last chapter, we gave every character a strength of 5 and used the `fight()` function for a few of them. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen. We should give Dracula a more realistic strength, and randomize some of the strength values for some of our characters.
 
-Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - we gave him a strength of 10 when we inserted him. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. We can do this with two quick updates:
+Jonathan Harker is just a human but is still quite strong. We'll let him keep his strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - we gave him a strength of 10 when we inserted him. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. So we only have to update Count Dracula's strength:
 
 ```edgeql
-update NPC
-filter .name = 'Jonathan Harker'
-set {
-  strength := 5
-};
 update Vampire
 filter .name = 'Count Dracula'
 set {
@@ -31,13 +26,13 @@ set {
 };
 ```
 
-Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
+Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
 
 ```edgeql
 select <int16>round(random() * 5);
 ```
 
-So now we'll use this to update our `Person` types and give them all a random strength.
+So now we'll use it to update our `Person` objects (except for Jonathan, Dracula and Renfield) and give them all a random strength.
 
 ```edgeql
 update Person
@@ -50,7 +45,7 @@ update Person
 Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
 
 ```
-{3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 20, 4, 4, 4, 4}
+{1, 1, 3, 2, 0, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
 ```
 
 Looks like it worked.
