@@ -24,11 +24,16 @@ module default {
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
 
+  scalar type PCNumber extending sequence;
+
   type PC extending Person {
     required property transport -> Transport;
     property created_at -> datetime {
       default := datetime_current()
-  }
+    }
+    required property number -> PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
     overloaded required property name -> str {
       constraint max_len_value(30);
     }

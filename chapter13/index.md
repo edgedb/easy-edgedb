@@ -345,31 +345,142 @@ As of EdgeDB 3.0, the easiest way to see all the possible introspection of a typ
 
 ## The sequence type
 
-On the subject of giving types a number, EdgeDB has a type called {eql:type}`docs:std::sequence` that you may find useful. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you use it.
+We made a few inserts of `Crewman` objects a few chapters ago, in which we gave them each a number. To do that, we used the `count()` function to count the number of `Crewman` objects, to which we added one:
 
-A `sequence` is used as an abstract type for other type names to extend and can't be used on its own. So if we were to make a `Townsperson` type with a `sequence` property called `number`, this wouldn't quite work:
+```edgeql
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
+};
+```
+
+This gave us a sequence of numbers.
+
+Well, it just so happens that EdgeDB has a type called {eql:type}`docs:std::sequence` that has this incrementation built in. This type is defined as an "auto-incrementing sequence of int64", so an `int64` that starts at 1 and goes up every time you increment it.
+
+A `sequence` is used as an abstract type for other type names to extend, which allows each one of these sequence types to increment independently of any others. Note the similarity to the enum syntax we are familiar with:
 
 ```sdl
-type Townsperson extending Person {
-  required property number -> sequence;
+scalar type SomeSequence extending sequence;
+scalar type SomeEnumType extending enum<OptionOne, OptionTwo, OptionThree>;
+```
+
+And once it is defined, we can just stick it on our object types as a property.
+
+```sdl
+scalar type SomeSequenceNumber extending sequence;
+
+type SomeType {
+  # This wouldn't work
+  # required property number -> sequence;
+
+  # But this would
+  required property number -> SomeSequenceNumber;
 }
 ```
 
-Instead, you can extend a `sequence` to another type that you give a name to, and then that type will start from 1. So our `Townsperson` type would look like this instead:
+This sequence number could be useful for our `PC` objects, because players of our game might want us to delete their accounts. When that happens we will have to delete the `PC` object that the player used, so the data will be gone. That means that we can't use `count(PC)` as a sequence number. If we did that, then the 51st player would have the number 51, but if a `PC` object was then deleted then the next one would also be number 51! A sequence is just right for us here.
+
+Let's experiment first. We'll add a SomeSequenceNumber to our schema with the following, and do a migration:
 
 ```sdl
-scalar type TownspersonNumber extending sequence;
+scalar type SomeSequenceNumber extending sequence;
+```
 
-type Townsperson extending Person {
-  required property number -> TownspersonNumber;
+And now let's play around with this sequence type a bit before we make a `PCNumber` to put on our `PC` type as a property. Basic sequence behavior is pretty simple: you increment them with the `sequence_next()` function, and reset them with `sequence_reset()`. Inside these functions you specify the sequence type that we want to increment.
+
+In other words, just typing `sequence_next()` won't work because EdgeDB doesn't know which sequence type we want to increment:
+
+```edgeql-repl
+db> select sequence_next();
+error: QueryError: function "sequence_next()" does not exist
+  ┌─ <query>:1:8
+  │
+1 │ select sequence_next();
+  │        ^^^^^^^^^^^^^^^ Did you want "std::sequence_next(seq: schema::ScalarType)"?
+```
+
+And typing `SomeSequenceNumber` won't work either because SomeSequenceNumber isn't an object type in our schema:
+
+```edgeql-repl
+db> select sequence_next(SomeSequenceNumber);
+error: InvalidReferenceError: object type or alias 'default::SomeSequenceNumber' does not exist
+  ┌─ <query>:1:22
+  │
+1 │ select sequence_next(SomeSequenceNumber);
+  │                      ^^^^^^^^ error
+```
+
+But did you notice that the function is expecting an argument of `ScalarType`? We saw this just above when we learned the `introspect` keyword. Let's try replacing `SomeSequenceNumber` with `introspect SomeSequenceNumber` which returns a `ScalarType`:
+
+```edgeql-repl
+db> select sequence_next(introspect SomeSequenceNumber);
+{1}
+```
+
+Success! Just add `introspect` and the `sequence_next()` and `sequence_reset()` functions will know which sequence type to increment.
+
+Let's play around with this sequence number of ours for a bit. As you can see, it can be incremented or reset, but can't be reset to anything less than 1.
+
+```edgeql-repl
+edgedb> select sequence_next(introspect SomeSequenceNumber);
+{2}
+edgedb> select sequence_next(introspect SomeSequenceNumber);
+{3}
+edgedb> select sequence_next(introspect SomeSequenceNumber);
+{4}
+edgedb> select sequence_next(introspect SomeSequenceNumber);
+{5}
+edgedb> select sequence_reset(introspect SomeSequenceNumber, 10);
+{10}
+edgedb> select sequence_reset(introspect SomeSequenceNumber, 0);
+edgedb error: NumericOutOfRangeError: setval: value 0 is out of bounds for sequence "6f7e322d-ff25-11ed-95e6-558fd8f3e188_sequence" (1..9223372036854775807)
+edgedb> select sequence_reset(introspect SomeSequenceNumber, 1);
+{1}
+```
+
+Finally, let's change the schema for our `PC` type to include this number. We could type `sequence_next(introspect PCNumber)` every time we insert a PC object, but it's much easier just to set `sequence_next(introspect PCNumber)` in the schema as the default value. Delete `SomeSequenceNumber` from the schema if you like, and then change the schema around `PC` to look like the following and do a migration:
+
+```sdl
+scalar type PCNumber extending sequence;
+
+type PC extending Person {
+  required property transport -> Transport;
+  property created_at -> datetime {
+    default := datetime_current()
+  }
+  required property number -> PCNumber {
+    default := sequence_next(introspect PCNumber);
+  }
 }
 ```
 
-The number for a `sequence` type will continue to increase by 1 even if you delete other items. For example, if you inserted five `Townsperson` objects, they would have the numbers 1 to 5. Then if you deleted them all and then inserted one more `Townsperson`, this one would have the number 6 (not 1).
+And now let's do a quick query to see if it worked:
 
-So this is another possible option for our `Crewman` type. It's very convenient and there is no chance of duplication, but the number increments on its own every time you insert. Well, you _could_ create duplicate numbers using `update` and `set` (EdgeDB won't stop you there) but even then it would still keep track of the next number when you do the next insert.
+```edgeql
+select PC {
+  name, 
+  number,
+  created_at
+};
+```
 
-In our case, the crewmen on the ship do end up dying pretty quickly (unless a `PC` in the game can save the day?) but we won't be deleting them from the database so their `number` will always increment properly by using the `count()` function.
+And with that, the sequence incrementing just works. That was easy!
+
+```
+{
+  default::PC {
+    name: 'Emil Sinclair',
+    number: 1,
+    created_at: <datetime>'2023-05-28T10:40:53.598763Z',
+  },
+  default::PC {
+    name: 'Max Demian',
+    number: 2,
+    created_at: <datetime>'2023-05-30T01:13:28.022340Z',
+  },
+}
+```
 
 [Here is all our code so far up to Chapter 13.](code.md)
 
