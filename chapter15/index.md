@@ -246,7 +246,9 @@ type Lord extending Person {
 }
 ```
 
-`__subject__` there refers to the type itself.
+`__subject__` there refers to the object itself.
+
+Let's do a migration here because a `Lord` type could be useful later.
 
 Now when we try to insert a `Lord` without it, it won't work:
 
@@ -257,7 +259,7 @@ insert Lord {
 };
 ```
 
-But if the `name` is 'Lord Billy' (or 'Lord' anything), it will work.
+But if the `name` is 'Lord Billy' (or 'Lord William', or 'Lord' anything), it will work.
 
 While we're at it, let's practice doing a `select` and `insert` at the same time so we see the output of our `insert` right away. We'll change `Billy` to `Lord Billy` and say that Lord Billy (considering his great wealth) has visited every place in our database.
 
