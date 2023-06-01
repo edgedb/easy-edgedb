@@ -153,18 +153,20 @@ function can_enter(person_name: str, place: str) -> optional str
 
 And now let's do a migration. One of the migration questions will ask us what default name to give the existing objects, because `name` is a required property. We can just type `''` to give an empty string by default.
 
+```edgeql-repl
 Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::HasNameAndCoffins' required:
 fill_expr_2> ''
+```
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
 
-Finally, we can make our generic update for changing the number of coffins. It's easy:
+Finally, we can put together a query that takes arguments to change the number of coffins in a number of places. It's easy:
 
 ```edgeql
 update HasNameAndCoffins filter .name = <str>$place_name
 set {
   coffins := .coffins + <int16>$number
-}
+};
 ```
 
 Now let's give the ship `The Demeter` some coffins.
@@ -178,16 +180,37 @@ Parameter <str>$place_name: The Demeter
 Parameter <int16>$number: 10
 ```
 
-Then we'll make sure that it got them:
+Castle Dracula naturally should have some coffins too. Let's go with 50.
 
-```edgeql
-select Ship {
-  name,
-  coffins,
-};
+```edgeql-repl
+edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+....... set {
+.......   coffins := .coffins + <int16>$number
+....... };
+Parameter <str>$place_name: Castle Dracula
+Parameter <int16>$number: 50
 ```
 
-We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
+Then we'll make sure that these places got them:
+
+```edgeql
+select HasNameAndCoffins { 
+  name, 
+  coffins } 
+filter .coffins > 0;
+```
+
+And the result:
+
+```
+{
+  default::Castle {name: 'Castle Dracula', coffins: 50},
+  default::Ship {name: 'The Demeter', coffins: 20},
+  default::City {name: 'London', coffins: 21},
+}
+```
+
+Looks like the Demeter and Castle Dracula got their coffins!
 
 ## Aliases: creating subtypes when you need them
 
