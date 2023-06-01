@@ -4,14 +4,16 @@ tags: Expression On, Error Messages
 
 # Chapter 15 - The vampire hunt begins
 
-> It's good that Jonathan is back, but he is still in shock. He doesn't know if the experience with Dracula was real or not, and thinks he might be crazy. But then he meets Van Helsing who tells him that it was all true. Jonathan hears this and becomes strong and confident again. Now they begin to search for Dracula. The others learn that the Carfax mansion across from Dr. Seward's asylum is the one that Dracula bought. So that's why Renfield was so strongly affected... They search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy them all in Carfax, but there are still many left in London. If they don't destroy the other boxes, Dracula will be able to rest in them during the day and terrorize London every night when the sun goes down.
+> It's good that Jonathan is back, but he is still in shock. He doesn't know if the experience with Dracula was real or not, and thinks he might be crazy. But then Jonathan meets Van Helsing who tells him that it was all true. Now that he knows everything was true, Jonathan becomes strong and confident again.
+>Our heroes begin the search for Dracula. The others learn that the Carfax mansion across from Dr. Seward's asylum is the one that Dracula bought. So that's why Renfield was so strongly affected!
+>The heroes search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy them all in Carfax, but there are still many left in London. If they don't destroy the other boxes, Dracula will be able to rest in them during the day and terrorize London every night when the sun goes down.
 
 ## More abstract types
 
 Our heroes learned something about vampires in this chapter: vampires need to sleep in coffins (boxes for dead people) with holy earth during the day. That's why Dracula brought 50 of them over by ship on the Demeter. This is important for the mechanics of our game so we should create a type for this. And if we think about it:
 
 - Each place in the world either has coffins or doesn't have them,
-- Has coffins = vampires can enter and terrorize the people,
+- A place that has coffins is a place that vampires can enter and terrorize the people,
 - If a place has coffins, we should know how many of them there are.
 
 This sounds like a good case for an abstract type. Here it is:
@@ -27,8 +29,8 @@ abstract type HasCoffins {
 Most places will not have a special vampire coffin, so the default is 0. The `coffins` property is just an `int16`, and vampires can remain close to a place if the number is 1 or greater. In the mechanics of our game we would probably give vampires an activity radius of about 100 km from a place with a coffin. That's because of the typical vampire schedule which is usually as follows:
 
 - Wake up refreshed in the coffin after the sun goes down, get ready to leave by 8 pm to find people to terrorize.
-- Feel a sense of freedom because the night has just begun, and start moving away from the safety of the coffins to find victims. May use a horse-driven carriage at 25 kph to do so.
-- Around 1 or 2 am, start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
+- Feel a sense of freedom because the night has just begun, and start moving away from the safety of the coffins to find victims. A vampire might use a horse-driven carriage at 25 kph, which gives a pretty wide radius.
+- Around 1 or 2 am, the vampire start to feel nervous. The sun will be up in about 5 hours. Is there enough time to get home?
 
 So the part between 8 pm and 1 am is when the vampire is free to move away, and at 25 kph we get an activity radius of about 100 km around a coffin. At that distance, even the bravest vampire will start running back towards home by 2 am.
 
@@ -109,6 +111,37 @@ Interesting! You'll remember the coalescing operator `??` that we first saw in C
 `optional anytype ?? set of anytype -> set of anytype`
 
 So those are some ideas for how to set up your functions depending on how you think people might use them.
+
+We're coming up to an insert, so let's migrate the schema. Here are all the schema changes from the discussion so for in this chapter:
+
+```sdl
+abstract type HasCoffins {
+  required property coffins -> int16 {
+    default := 0;
+  }
+}
+
+abstract type Place extending HasCoffins {
+  required property name -> str {
+    delegated constraint exclusive;
+  };
+  property modern_name -> str;
+  property important_places -> array<str>;
+}
+
+type Ship extending HasCoffins {
+  property name -> str;
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
+
+function can_enter(person_name: str, place: HasCoffins) -> optional str
+  using (
+    with vampire := (select Person filter .name = person_name),
+    has_coffins := place.coffins > 0,
+      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+    );
+```
 
 Now let's give London some coffins. According to the book, our heroes destroyed 29 coffins at Carfax that night, which leaves 21 in London.
 
