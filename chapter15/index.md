@@ -169,18 +169,38 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 
 Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type, which we created many chapters ago. We only used it once as a test, because we don't have any players yet. We are still just using the book to populate the database with `NPC`s for our imaginary game. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
 
 ```sdl
 type PC extending Person {
   required property transport -> Transport;
+  property created_at -> datetime {
+    default := datetime_current()
+  }
+  required property number -> PCNumber {
+    default := sequence_next(introspect PCNumber);
+  }
   overloaded required property name -> str {
     constraint max_len_value(30);
   }
 }
 ```
 
-Then when we try to insert a `PC` with a name that is too long, it will refuse with `ERROR: ConstraintViolationError: name must be no longer than 30 characters.`
+And now `PC` objects like this one with names that are too long won't be able to be inserted anymore:
+
+```edgeql
+insert PC {
+ transport := Transport.Feet,
+ name := "Oh man, let me tell you about this PC and his name. It all began one day when.."
+};
+```
+
+The error is pretty nice and tells us everything we need to know:
+
+```
+edgedb error: ConstraintViolationError: name must be no longer than 30 characters.
+  Detail: `value of property 'name' of object type 'default`::`PC'` must be no longer than 30 characters.
+```
 
 Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `property title -> str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
@@ -190,7 +210,7 @@ property title -> str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Mr., Ph.D., etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Dr., Ph.D., etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
@@ -202,7 +222,7 @@ property month -> int64 {
 
 But that will depend on how the game works.
 
-Now let's learn about perhaps the most interesting constraint in EdgeDB:
+Now let's learn about perhaps the most interesting constraint in EdgeDB: an expression that we create ourselves!
 
 ## `expression on`: the most flexible constraint
 
