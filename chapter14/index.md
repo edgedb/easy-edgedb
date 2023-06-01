@@ -146,7 +146,7 @@ And here it is:
 
 A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
 
-There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
+There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index numbers and the items in set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
 First a simple example of how to use `enumerate()`:
 
@@ -187,38 +187,9 @@ Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person
 }
 ```
 
-There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
+There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up.
 
-```edgeql
-with
-  a := array_agg((select enumerate(Person.name))),
-  b:= array_agg((select enumerate(Crewman.number))),
-select (a, b);
-```
-
-(`array_agg()` is to avoid multiplying sets by sets, as we saw in Chapter 12)
-
-But the result is less than satisfying:
-
-```
-{
-  (
-    [
-      (0, 'Jonathan Harker'),
-      (1, 'Renfield'),
-      (2, 'The innkeeper'),
-      (3, 'Mina Murray'),
-      # snip
-      (16, 'The First Mate'),
-      (17, 'The Cook'),
-      (18, 'Emil Sinclair'),
-    ],
-    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)],
-  ),
-}
-```
-
-The `Crewman` types are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
+The `Crewman` types are now just numbers, so let's give them each a name based on their numbers. This will be easy:
 
 ```edgeql
 update Crewman
@@ -252,7 +223,7 @@ We could of course turn this into a function if we use it enough.
 
 ## Backlinks
 
-Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use it can take a bit of effort, but it's well worth it.
+Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.
 
 We know how to get Count Dracula's `slaves` by name with something like this:
 
