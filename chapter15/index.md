@@ -5,8 +5,10 @@ tags: Expression On, Error Messages
 # Chapter 15 - The vampire hunt begins
 
 > It's good that Jonathan is back, but he is still in shock. He doesn't know if the experience with Dracula was real or not, and thinks he might be crazy. But then Jonathan meets Van Helsing who tells him that it was all true. Now that he knows everything was true, Jonathan becomes strong and confident again.
->Our heroes begin the search for Dracula. The others learn that the Carfax mansion across from Dr. Seward's asylum is the one that Dracula bought. So that's why Renfield was so strongly affected!
->The heroes search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy them all in Carfax, but there are still many left in London. If they don't destroy the other boxes, Dracula will be able to rest in them during the day and terrorize London every night when the sun goes down.
+>
+> Our heroes begin the search for Dracula. The others learn that the Carfax mansion across from Dr. Seward's asylum is the one that Dracula bought. So that's why Renfield was so strongly affected!
+>
+> The heroes search the house when the sun is up and find boxes of earth in which Dracula sleeps. They destroy them all in Carfax, but there are still many left in London. If they don't destroy the other boxes, Dracula will be able to rest in them during the day and terrorize London every night when the sun goes down.
 
 ## More abstract types
 
