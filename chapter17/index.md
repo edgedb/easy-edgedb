@@ -84,13 +84,13 @@ select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character
 
 ## Putting abstract types together
 
-Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
+Wherever there are vampires, there are vampire hunters. Sometimes they will destroy a vampire's coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
 
 - the `HasCoffins` type is an abstract type, with one property: `coffins`
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
 - the best way to filter is by `.name`, but `HasCoffins` doesn't have this property.
 
-So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises.
+So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises. It's essentially a "Has name and can vampires terrorize it" property.
 
 Here is the type with its new property. We'll give it two constraints: `exclusive` and `max_len_value` to keep names from being too long.
 
@@ -150,6 +150,11 @@ function can_enter(person_name: str, place: str) -> optional str
     select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
   );
 ```
+
+And now let's do a migration. One of the migration questions will ask us what default name to give the existing objects, because `name` is a required property. We can just type `''` to give an empty string by default.
+
+Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::HasNameAndCoffins' required:
+fill_expr_2> ''
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
 
