@@ -302,15 +302,14 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Setting your own error messages
 
-Since `expression on` is so flexible, you can use it in almost any way you can imagine. But it's not certain that the user will know about this constraint - there's no message informing the user of this. Meanwhile, the automatically generated error message we have right now is not helping the user at all:
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. But it's not certain that the user will know how this constraint is meant to work - there's no message informing the user of this. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
 
-`ERROR: ConstraintViolationError: invalid Lord`
+```
+edgedb error: ConstraintViolationError: invalid Lord
+  Detail: invalid value of object type 'default::Lord'
+```
 
-So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
-
-Now the error becomes:
-
-`ERROR: ConstraintViolationError: All lords need 'Lord' in their name.`
+So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, all constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
 
 Here's the `Lord` type now:
 
@@ -321,6 +320,15 @@ type Lord extending Person {
   };
 };
 ```
+
+If you do a migration now and try to insert a `Lord` that is just called `Billy`, the error now tells us what to do:
+
+```
+`edgedb error: ConstraintViolationError: All lords need 'Lord' in their name
+  Detail: All lords need 'Lord' in their name`
+```
+
+Much better! 
 
 ## Links in two directions
 
