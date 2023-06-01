@@ -6,7 +6,7 @@ tags: Aliases, Named Tuples
 
 > Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that the heroes were destroying his coffins and decided to attack Mina. Dracula succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
 >
-> The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. Renfield had been in communication with Dracula because he wanted to become a vampire too, so he let Dracula into the house. But once inside Dracula ignored him, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting Mina, but Dracula was much stronger and won.
+> The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. Renfield had been in communication with Dracula because he wanted to become a vampire too, so he let Dracula into the house. But once inside Dracula ignored Renfield, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting Mina, but Dracula was much stronger and won.
 >
 > Mina has not given up though, and has a good idea. If she is now connected to Dracula, what happens if Van Helsing uses hypnotism on her? Could that work? He takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
 
@@ -33,7 +33,7 @@ with fighters := (
 select fight(fighters.0, fighters.1);
 ```
 
-That's not bad, but there is a way to make it clearer: we can give names to the items in the tuple instead of using `.0` and `.1`. It looks like a regular computed link or property, using `:=`:
+That's not bad, but we learned a few chapters ago about named tuples and this is a good place to use them. Now the query is even more readable:
 
 ```edgeql
 with fighters := (
@@ -76,13 +76,11 @@ select ( # Put the whole update inside
 
 This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
-One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this:
+One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return true:
 
 ```edgeql
 select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
-
-will return `{true}`.
 
 ## Putting abstract types together
 
