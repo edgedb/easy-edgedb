@@ -330,7 +330,7 @@ If you do a migration now and try to insert a `Lord` that is just called `Billy`
 
 Much better! 
 
-## Links in two directions
+## Putting backlinks into the schema
 
 Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
@@ -372,7 +372,7 @@ type MinorVampire extending Person {
 };
 ```
 
-Note that we have written `single link`, because backlinks are assumed to be `multi` by default. This makes sense, because we have less control over what objects link back to any certain object - there could be quite a few of them. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
+Here we have written `single link` to ensure that the backlink is not a `multi link`, which requires `assert_single()`. This might not be needed if our game allows vampires to share `MinorVampire` objects. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
 
 And if we still want to have a shortcut for `master_name`, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
@@ -384,7 +384,7 @@ type MinorVampire extending Person {
 };
 ```
 
-Now let's test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
+Now let's do a migration and test it out. We'll make a vampire named Kain, who has two `MinorVampire` slaves named Billy and Bob.
 
 ```edgeql
 insert Vampire {
