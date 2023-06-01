@@ -5,8 +5,8 @@ tags: Indexing, String Functions
 # Chapter 16 - Is Renfield telling the truth?
 
 > Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
-
-> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing. And one night, Renfield was very serious and asks them to let him leave. He says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
+> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing.
+>One night, Renfield becomes very serious and asks the men to let him leave. Renfield says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
 
 ## `index on` for quicker lookups
 
@@ -24,7 +24,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
+This is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
 
 ```sdl
 type BookExcerpt {
@@ -56,7 +56,7 @@ Finally, here are two times when you don't need to create an `index`:
 
 Indexes are automatically created in these two cases so you don't need to use indexes for them.
 
-So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
+So let's do a migration and insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
 ```edgeql
 insert BookExcerpt {
@@ -74,7 +74,7 @@ insert BookExcerpt {
 };
 ```
 
-Then later on we could do this sort of query to get all the entries in order and displayed as JSON.
+Then later on we could do this sort of query to get all the entries in order and displayed as JSON. Perhaps the `PC` objects can visit a library where they can search for game details, and this requires sending a message in JSON format to the software that displays it on the screen:
 
 ```edgeql
 select <json>(
@@ -88,12 +88,18 @@ select <json>(
 );
 ```
 
-Here's the JSON output with just a small part of the excerpts:
+Here's the JSON output (remember, set with '\set output-format json-pretty`) which looks pretty nice:
 
 ```
 {
-  "{\"date\": \"1893-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward's Diary.\\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\\\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\\\"\"}",
-  "{\"date\": \"1893-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.\"}",
+  "date": "1893-10-01T04:00:00",
+  "author": {"name": "John Seward"},
+  "excerpt": "Dr. Seward's Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\""
+}
+{
+  "date": "1893-10-01T05:00:00",
+  "author": {"name": "Jonathan Harker"},
+  "excerpt": "1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her."
 }
 ```
 
@@ -146,14 +152,32 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
 }
 ```
 
-Another way to make `the_date` is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string:
+Another way to make this `the_date` parameter is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string. This function also allows us to change the format of the date depending on how readable we want to make it:
 
 ```edgeql
 select BookExcerpt {
   excerpt,
   length := (<str>(select len(.excerpt)) ++ ' characters'),
-  the_date := (select to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
+  the_date := (select to_str(.date)),
+  the_date_pretty := (select to_str(.date, 'YYYY-MM-DD')),
+  the_date_time_pretty := (select to_str(.date, 'YYYY-MM-DD HH:MM:SS')),
+  the_date_verbose := (select to_str(.date, 'The DD of MM, YYYY'))
 } filter contains(str_lower(.excerpt), 'mina');
+```
+
+Here's the output for that long query:
+
+```
+{
+  default::BookExcerpt {
+    excerpt: '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
+    length: '182 characters',
+    the_date: '1893-10-01T05:00:00',
+    the_date_pretty: '1893-10-01',
+    the_date_time_pretty: '1893-10-01 05:10:00',
+    the_date_verbose: 'The 01 of 10, 1893',
+  },
+}
 ```
 
 Some other functions for strings are:
@@ -186,7 +210,7 @@ edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!
 }
 ```
 
-But this works too:
+But we can choose a letter to split at too:
 
 ```edgeql
 select MinorVampire {
@@ -198,10 +222,12 @@ Now, the names have been split into arrays at each instance of `n`:
 
 ```
 {
-  default::MinorVampire {names: ['Woma', ' 1']},
-  default::MinorVampire {names: ['Woma', ' 2']},
-  default::MinorVampire {names: ['Woma', ' 3']},
+  default::MinorVampire {names: ['Vampire Woma', ' 1']},
+  default::MinorVampire {names: ['Vampire Woma', ' 2']},
+  default::MinorVampire {names: ['Vampire Woma', ' 3']},
   default::MinorVampire {names: ['Lucy']},
+  default::MinorVampire {names: ['Billy']},
+  default::MinorVampire {names: ['Bob']},
 }
 ```
 
