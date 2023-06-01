@@ -275,9 +275,9 @@ select MinorVampire.<slaves[is Vampire] {
 };
 ```
 
-Because it goes in reverse order, it is selecting `Vampire` that has `.slaves` that are of type `MinorVampire`.
+Because it goes in reverse order, it is selecting `Vampire` that has a link called `slaves` that are of type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Select the name and age of the Vampire type with slaves that are of type MinorVampire" - from right to left.
+You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -294,7 +294,7 @@ select MinorVampire {
 };
 ```
 
-You could read `.<slaves[is Vampire] {name}` as "the name of the `Vampire` type that links back to `MinorVampire` through `.slaves`".
+And here is the human-readable version of `.<slaves[is Vampire] {name}` to help it stick in your memory: "the `Vampire` objects and their names that link back to `MinorVampire` through the link `slaves`".
 
 Here is the output:
 
@@ -306,6 +306,78 @@ Here is the output:
   default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```
+
+So why do we need `[is Vampire]` in the query anyway? We need this because there might be other objects of different types that link back to `MinorVampire` through a link called `slaves`. We can show this in a query on our `Place` type which is linked from quite a few types. What do you think this query will show?
+
+```edgeql
+select Place {
+ name,
+ visitors := .<places_visited
+ };
+```
+
+In this case, we are asking EdgeDB to show us each and every object that is linking to each `Place` object via a link called `places_visited`. The output is quite large, so here is just one part of it:
+
+```
+{
+  default::Country {
+    name: 'Romania',
+    visitors: {
+      default::Vampire {id: 41c0bdc4-fef1-11ed-a968-cb41382f27c2},
+      default::NPC {id: e03f804e-f9b4-11ed-86c0-835ec28e5d08},
+    },
+  },
+  default::City {
+    name: 'Munich',
+    visitors: {
+      default::PC {id: dfd4e9dc-f9b4-11ed-86c0-b32fa282657d},
+      default::NPC {id: e03f804e-f9b4-11ed-86c0-835ec28e5d08},
+    },
+  }
+}
+```
+
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object that links via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+
+```edgeql-repl
+db> select Place {
+.......  name,
+.......  visitors := .<places_visited {name}
+.......  };
+error: InvalidReferenceError: object type 'std::BaseObject' has no link or property 'name'
+  ┌─ <query>:3:32
+  │
+3 │  visitors := .<places_visited {name}
+  │                                ^^^^ error
+```
+
+But if we specify the type, EdgeDB will now be able to tell if it has a certain property or not.
+
+```edgeql
+select Place {
+  name,
+  vampire_visitors := .<places_visited[is Vampire] {name},
+  npc_visitors := .<places_visited[is NPC] {name}
+};
+```
+
+And with that we get a nice output that shows backlinks from multiple concrete types. Here is part of the output:
+
+```
+{
+  default::Country {
+    name: 'Romania',
+    vampire_visitors: {default::Vampire {name: 'Count Dracula'}},
+    npc_visitors: {default::NPC {name: 'Jonathan Harker'}},
+  },
+  default::City {
+    name: 'Munich',
+    vampire_visitors: {},
+    npc_visitors: {default::NPC {name: 'Jonathan Harker'}},
+  },
+}
+
+One final note: this is why backlinks in EdgeDB are `multi` by default, as opposed to regular links which are `single` by default. After all, there might be a lot of objects here and there in our database that link back and it makes sense to assume that there could be a lot of them. But you can declare a backlink in your schema to be `single` if you want to insist that there can only be one object in a backlink.
 
 [Here is all our code so far up to Chapter 14.](code.md)
 
