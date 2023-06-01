@@ -270,9 +270,16 @@ edgedb> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the doo
 {['Noo,'], ['door']}
 ```
 
+The `.` wildcard operator still determines the length of the slice of the string to match on, so you can use more of them to lengthen the part of the string in which we are looking for a match.
+
+```edgeql-repl
+edgedb> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
+{['the door?']}
+```
+
 ## Two more notes on `index on`
 
-By the way, `index on` can also be used on expressions that you make yourself. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+By the way, `index on` can also be used on expressions that you we make ourselves. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
 ```sdl
 type City extending Place {
