@@ -250,7 +250,9 @@ alias CrewmanInBulgaria := Crewman {
 };
 ```
 
-You'll notice right away that `name` and `strength` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. Let's now take a look at the error we get if we try to insert a `CrewmanInBulgaria`. Remember, it won't work because an alias is just an expression, not a type that can be inserted:
+You'll notice right away that `name` and `strength` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type.
+
+Let's do a schema migration and then take a look at the error we get if we try to insert a `CrewmanInBulgaria`. Remember, it won't work because an alias is just an expression, not a type that can be inserted:
 
 ```edgeql
 insert CrewmanInBulgaria {name := "New Crewman", number := 6};
@@ -264,7 +266,7 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 
 So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's now compare a `select` on the `Crewman` objects to a `select` with the `CrewmanInBulgaria` alias:
 
-```edgeql
+```edgeql-repl
 edgedb> select Crewman { name, strength };
 {
   default::Crewman {name: 'Crewman 1', strength: 1},

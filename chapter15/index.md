@@ -433,6 +433,22 @@ And the result:
 
 Beautiful! All the information is right there.
 
+We won't see Kain and his slaves anymore so let's get rid of them with a quick delete query. We can just filter on their names because we know that no other objects are called Kain, Billy or Bob.
+
+```edgeql
+delete Person filter .name in {'Kain', 'Billy', 'Bob'};
+```
+
+You should see the three `id`s of the three objects and their types to show us that the deletion has worked.
+
+```
+{
+  default::MinorVampire {id: d01726cc-ff45-11ed-8310-7f94ffdd6f3b},
+  default::MinorVampire {id: d01768da-ff45-11ed-8310-171ca2c022eb},
+  default::Vampire {id: d0170a16-ff45-11ed-8310-7b730ce4d4f2},
+}
+```
+
 [Here is all our code so far up to Chapter 15.](code.md)
 
 <!-- quiz-start -->
