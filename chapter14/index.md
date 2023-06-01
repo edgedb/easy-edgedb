@@ -4,9 +4,11 @@ tags: Type Annotations, Backlinks
 
 # Chapter 14 - A ray of hope
 
-> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons." Mina takes a train to the hospital where Jonathan was recovering, and they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it. Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
+> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+>Mina takes a train to the hospital where Jonathan is recovering, after which they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it.
+>Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
-So we have a new city called Exeter, and adding it is of course easy:
+Looks like we have a new city called Exeter, which is easy to add:
 
 ```edgeql
 insert City {
@@ -15,7 +17,7 @@ insert City {
 };
 ```
 
-That's the population of Exeter at the time, and it doesn't have a `modern_name` that is different from the one in the book.
+That's the population of Exeter at the time (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
 
 ## Adding annotations to types and using @
 
@@ -30,30 +32,30 @@ type City extending Place {
 }
 ```
 
-Now we can do an `introspect` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
+After migrating our schema, we can now do an `introspect` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
 
 ```edgeql
 select (introspect City) {
+  annotations: {name}
   name,
   properties: {name},
-  annotations: {name}
 };
 ```
 
-Uh oh, not quite:
+Uh oh, not quite. The `annotations` part of the `introspect` query just says `std::description`:
 
 ```
 {
   schema::ObjectType {
+    annotations: {schema::Annotation {name: 'std::description'}},
     name: 'default::City',
     properties: {
-      schema::Property {name: 'id'},
-      schema::Property {name: 'important_places'},
-      schema::Property {name: 'modern_name'},
       schema::Property {name: 'name'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'id'},
       schema::Property {name: 'population'},
     },
-    annotations: {schema::Annotation {name: 'std::description'}},
   },
 }
 ```
@@ -64,12 +66,12 @@ This is where `@` comes in. To get the value inside we write something else: `@v
 
 ```edgeql
 select (introspect City) {
+  annotations: {
+  name,
+  @value
+},
   name,
   properties: {name},
-  annotations: {
-    name,
-    @value
-  }
 };
 ```
 
@@ -78,25 +80,25 @@ Now we see the actual annotation:
 ```
 {
   schema::ObjectType {
-    name: 'default::City',
-    properties: {
-      schema::Property {name: 'id'},
-      schema::Property {name: 'important_places'},
-      schema::Property {name: 'modern_name'},
-      schema::Property {name: 'name'},
-      schema::Property {name: 'population'},
-    },
     annotations: {
       schema::Annotation {
         name: 'std::description',
         @value: 'Anything with 50 or more buildings is a city - anything else is an OtherPlace',
       },
     },
+    name: 'default::City',
+    properties: {
+      schema::Property {name: 'name'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'id'},
+      schema::Property {name: 'population'},
+    },
   },
 }
 ```
 
-What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning so that's what we'll call it:
+What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning for other developers to read so that's what we'll call it:
 
 ```sdl
 abstract annotation warning;
@@ -111,7 +113,7 @@ type OtherPlace extending Place {
 }
 ```
 
-Now let's do an introspect query on just its name and annotations:
+Now let's migrate the schema again and do an introspect query on just its name and annotations:
 
 ```edgeql
 select (introspect OtherPlace) {
@@ -127,8 +129,14 @@ And here it is:
   schema::ObjectType {
     name: 'default::OtherPlace',
     annotations: {
-      schema::Annotation {name: 'std::description', @value: 'A place with under 50 buildings - hamlets, small villages, etc.'},
-      schema::Annotation {name: 'default::warning', @value: 'Castles and castle towns do not count! Use the Castle type for that'},
+      schema::Annotation {
+        name: 'std::description',
+        @value: 'A place with under 50 buildings - hamlets, small villages, etc.',
+      },
+      schema::Annotation {
+        name: 'default::warning',
+        @value: 'Castles and castle towns do not count! Use the Castle type for that',
+      },
     },
   },
 }
