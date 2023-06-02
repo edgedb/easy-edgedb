@@ -22,7 +22,7 @@ tags: Backlinks, Schema Cleanup
 >
 > “Oh, yes!”
 >
-> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
+> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
@@ -45,9 +45,9 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna towards London.
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's do a migration, and then insert a few visits from the ships we know. The other ship that we saw in the book was called The Demeter and left from Varna towards Whitby.
 
-But first we'll insert a new `Ship` and two new places (`City`s) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
+But first we'll insert a new `Ship` and two new places (`City` objects) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
 ```edgeql
 insert Ship {
@@ -67,7 +67,7 @@ union (
 );
 ```
 
-The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to call them up? It looks like this:
+The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to look at the message inside an annotation? It looks like this:
 
 ```edgeql
 select (introspect OtherPlace) {
@@ -96,7 +96,7 @@ Let's look at the output to see what we wrote before to make sure that we should
 }
 ```
 
-Well, it's not a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
+Well, the Bosphorus isn't a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
 
 ```edgeql
 insert OtherPlace {
@@ -149,30 +149,80 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
 }
 ```
 
-While we're doing this, let's practice computed backlinks again on our visits. Here's one:
+While we're doing this, let's practice computed backlinks again on our visits. Our `Ship` type doesn't contain any information on the places that it visited:
 
-```edgeql
-select Ship.<ship[is Visit] {
-  place: {
-    name
-  },
-  ship: {
-    name
-  },
-  date
-} filter .place.name = 'Galatz';
+```sdl
+type Ship extending HasNameAndCoffins {
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
 ```
 
-`Ship.<ship[is Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, our filter is now on `Visit`'s `.place.name` instead of the properties inside `Ship`.
+But if we use a backlink we can see all of this information. Let's show all of the `Ship` objects, their name, sailors and crew, plus the place names and dates of all the visits they made.
 
-Here is the output:
+```edgeql
+select Ship {
+ name,
+ sailors: { name },
+ crew: { name },
+
+ # All of the Visit objects with a ship property
+ # that link to a Ship object
+ visits := .<ship[is Visit] {
+   place: {name},
+   date
+  }
+};
+```
+
+The output is pretty nice! It's basically a report on every ship, who is on them and where and when they visited.
 
 ```
 {
-  default::Visit {
-    place: default::City {name: 'Galatz'},
-    ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1893-10-28',
+  default::Ship {
+    name: 'The Demeter',
+    sailors: {
+      default::Sailor {name: 'The Captain'},
+      default::Sailor {name: 'Petrofsky'},
+      default::Sailor {name: 'The Second Mate'},
+      default::Sailor {name: 'The Cook'},
+    },
+    crew: {
+      default::Crewman {name: 'Crewman 1'},
+      default::Crewman {name: 'Crewman 2'},
+      default::Crewman {name: 'Crewman 3'},
+      default::Crewman {name: 'Crewman 4'},
+      default::Crewman {name: 'Crewman 5'},
+    },
+    visits: {
+      default::Visit {
+        place: default::City {name: 'Varna'},
+        date: <cal::local_date>'1893-07-06',
+      },
+      default::Visit {
+        place: default::OtherPlace {name: 'Bosphorus'},
+        date: <cal::local_date>'1893-07-11',
+      },
+      default::Visit {
+        place: default::City {name: 'Whitby'},
+        date: <cal::local_date>'1893-08-08',
+      },
+    },
+  },
+  default::Ship {
+    name: 'Czarina Catherine',
+    sailors: {},
+    crew: {},
+    visits: {
+      default::Visit {
+        place: default::City {name: 'London'},
+        date: <cal::local_date>'1893-10-05',
+      },
+      default::Visit {
+        place: default::City {name: 'Galatz'},
+        date: <cal::local_date>'1893-10-28',
+      },
+    },
   },
 }
 ```
