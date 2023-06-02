@@ -144,11 +144,7 @@ This is similar, just properties with strings. The book Dracula was published in
 
 ## Migration
 
-```{eval-rst}
-.. note::
-  Easy EdgeDB's instructions on migrations were written in 2020 and are somewhat out of date - they work, but are less convenient than the current options. As of May 2023 the preferred (and easiest) way to do a migration is by using the CLI commands at https://www.edgedb.com/docs/intro/quickstart. To start a project, just type 'edgedb project init'. And every time you change your schema, just type 'edgedb migration create' followed by 'edgedb migrate'. Easy EdgeDB's chapters will be updated with the easier migration tools very soon!
-
-  Another recent addition to EdgeDB is the interactive UI. To use it in an initialized project, just type 'edgedb ui' and it will open up in your browser. The UI is a great way to view your schema and play around with your data while you are still learning the EdgeQL query language that this book teaches you.
+Now let's do our first real migration with `edgedb migration create`. You will see a number of questions similar to the one below:
 
 ```
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
