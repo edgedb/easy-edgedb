@@ -227,7 +227,9 @@ The output is pretty nice! It's basically a report on every ship, who is on them
 }
 ```
 
-By the way, the heroes of the story found out about the Czarina Catherine thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
+## More cleaning up the schema
+
+The heroes of the story found out about when the Czarina Catherine arrived thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
 
 ```
 28 October.—Telegram. Rufus Smith, London, to Lord Godalming, care H. B. M. Vice Consul, Varna.
@@ -235,7 +237,7 @@ By the way, the heroes of the story found out about the Czarina Catherine thanks
 “Czarina Catherine reported entering Galatz at one o’clock to-day.”
 ```
 
-Remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
+Speaking of time, remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. It looks like this:
 
 ```sdl
 type Time { 
@@ -247,7 +249,7 @@ type Time {
 } 
 ```
 
-Now that we know that the time was one o'clock, let's put that into the query too - including the `sleep_state` property. Now it looks like this:
+Now that we know that the time was one o'clock, let's put that into a query to display some extra information on the visit. See if anything feels weird to you about this query.
 
 ```edgeql
 with time := (
@@ -255,7 +257,7 @@ with time := (
     clock := '13:00:00'
   }
 )
-select Ship.<ship[is Visit] {
+select Visit {
   place: {
     name
   },
@@ -267,12 +269,12 @@ select Ship.<ship[is Visit] {
     clock,
     clock_time,
     hour,
-    awake
+    sleep_state
   },
 } filter .place.name = 'Galatz';
 ```
 
-Here's the output, including whether vampires are awake or asleep.
+The output looks pretty good, including whether vampires were awake or asleep when the ship arrived:
 
 ```
 {
@@ -290,9 +292,19 @@ Here's the output, including whether vampires are awake or asleep.
 }
 ```
 
-## More cleaning up the schema
+However, the problem is that we now have a random `Time` type floating around that is not linked to anything. The `Time` type as it stands is essentially just an expression, and would be better as an alias or a function. As a function it would look like this and would not require inserting an object:
 
-It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Time` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Time` to improve the `Visit` type instead.
+```sdl
+function time(clock: str) -> tuple<cal::local_time, str, SleepState> using (
+  with local := <cal::local_time>clock,
+  hour := clock[0:2],
+  sleep_state := SleepState.Asleep if <int16>hour > 7 and <int16>hour < 19
+    else SleepState.Awake,
+    select(local, hour, sleep_state)
+);
+```
+
+So that could be an option for later. But for now, let's just steal all the properties from `Time` to improve the `Visit` type instead:
 
 ```sdl
 type Visit {
@@ -306,7 +318,7 @@ type Visit {
 }
 ```
 
-Then update the visit to Galatz to give it a `clock`:
+Then do a schema migration and update the visit to Galatz to give it a `clock`:
 
 ```edgeql
 update Visit filter .place.name = 'Galatz'
@@ -315,11 +327,11 @@ set {
 };
 ```
 
-Then we'll use the reverse query again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
+Then we'll query this `Visit` to Galatz again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```edgeql
 with duration := <duration>'2 hours, 5 minutes, 10 seconds',
-select Ship.<ship[is Visit] {
+select Visit {
   place: {name},
   ship: {name},
   date,
