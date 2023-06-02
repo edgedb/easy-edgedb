@@ -475,15 +475,20 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `create` to make a function whenever you need.
+We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL. Take this attempt to use DDL for example and the error output it generates:
 
-SDL: `function says_hi() -> str using('hi');`
+```edgeql-repl
+edgedb> create function hi() -> str using ("Hi");
+error: QueryError: bare DDL statements are not allowed in this database
+  ┌─ <query>:1:1
+  │
+1 │ create function hi() -> str using ("Hi");
+  │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use the migration commands instead.
+  │
+  = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.  The `edgedb migrate` command normally sets this to avoid accidental schema changes outside of the migration flow.
+```
 
-DDL: `create function says_hi() -> str using('hi')`
-
-And even the capitalization doesn't matter.
-
-But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Throughout this book, we have used the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools that make it possible to work with the schema using only SDL.
+If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run.
 
 ## EdgeDB lexical structure
 
