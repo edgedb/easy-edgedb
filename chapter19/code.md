@@ -481,13 +481,6 @@ select (
   name, 
   last_appearance
   };
-  
-create function fight_2(one: Person, two: Person) -> str
-  using (
-    select one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' if one.strength > two.strength 
-      else 
-    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
-);
 
 insert Pound {
  owner := (select Person filter .name = 'Count Dracula'),
