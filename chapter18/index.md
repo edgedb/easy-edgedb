@@ -4,7 +4,11 @@ tags: Complex Inserts, Schema Cleanup
 
 # Chapter 18 - Using Dracula's own weapon against him
 
-> Van Helsing was correct: Mina is connected to Dracula. He continues to use hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula. They find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Van Helsing was correct: Mina is connected to Dracula. Van Helsing continues to use hypnotism to find out more about where Dracula is and what he is doing. 
+>
+> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula.
+>
+> Our heroes eventually find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
 This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania, and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
@@ -70,7 +74,7 @@ type Pound extending Currency {
 }
 ```
 
-Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1893.
+Now let's do a schema migration and try it out. First we'll give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1893.
 
 ```edgeql
 insert Pound {
@@ -202,7 +206,7 @@ select (
 };
 ```
 
-Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
+Then the output would look like `{default::Dollar {total_money: 100.55}}`.
 
 Dollars won't be used in this game, but if they were, we'd create it with `type Dollar extending Currency`.
 
