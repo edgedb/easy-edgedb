@@ -359,7 +359,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
 }
 ```
 
-Since we are looking at `Place` again, now we can finish up the chapter by filling out the map with the `Region` type that we discussed. That's easy:
+Since we are looking at `Place` again, now we can finish up the chapter by filling out the map with the `Region` type that we discussed. We'll have the `Region` type link to cities, castles and other places, and then change our `Country` type to link to `Region` objects.
 
 ```sdl
 type Country extending Place {
@@ -424,7 +424,7 @@ insert Country {
 };
 ```
 
-With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. To get `Country` from `Region` we need to use a computed backlink:
+With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. And to get `Country` from `Region` we can just use a computed backlink:
 
 ```edgeql
 select Region {
