@@ -160,17 +160,11 @@ type Sailor extending Person {
   property rank -> Rank;
 }
 
-scalar type Transport extending enum<Feet, HorseDrawnCarriage, Train>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
 }
 ```
-
-枚举 `Transport` 在我们的游戏架构中从未被真正使用过，也可能还需要添加更多的运输类型，我们没有详细研究过，但在书中确实还有很多不同类型的传输方式。例如，在最后一章中，大家在瓦尔纳（Varna）等候的亚瑟（Arthur）时使用了一艘名为“蒸汽发射（steam launch）”的船，该船比“德米特（the Demeter）”号还要小，但我们在这里就不做过多扩展了。只是简单想象下，这个枚举可能会以下面的逻辑为我们的游戏所用：
-
-- 选择 `Feet` 会给角色一定的速度，而且不需要任何费用，
-- 选择 `HorseDrawnCarriage` 可以提高速度但会减少金钱，
-- 选择 `Train` 提速最多，同样会减少钱，但只能沿着铁路线行驶等。
 
 `Visit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `clock` 的属性，是一个字符串，并以下面的方式被使用：
 

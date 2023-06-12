@@ -175,7 +175,7 @@ There is one called `max_len_value` that makes sure that a string doesn't go ove
 
 ```sdl
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   property created_at -> datetime {
     default := datetime_current()
   }
@@ -192,7 +192,7 @@ And now `PC` objects like this one with names that are too long won't be able to
 
 ```edgeql
 insert PC {
- transport := Transport.Feet,
+ class := Class.Rogue,
  name := "Oh man, let me tell you about this PC and his name. It all began one day when.."
 };
 ```

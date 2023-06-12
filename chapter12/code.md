@@ -19,7 +19,7 @@ module default {
   }
 
   type PC extending Person {
-    required property transport -> Transport;
+    required property class -> Class;
     property created_at -> datetime {
       default := datetime_current()
   }
@@ -61,7 +61,7 @@ module default {
     property doors -> array<int16>;
   }
 
-  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
   scalar type SleepState extending enum <Asleep, Awake>;
   
@@ -151,12 +151,12 @@ insert City {
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 
 insert PC {
  name := 'Max Demian',
- transport := Transport.Train
+ class := Class.Mystic
 };
 
 insert Country {

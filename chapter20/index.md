@@ -162,10 +162,10 @@ type Sailor extending Person {
   property rank -> Rank;
 }
 
-scalar type Transport extending enum<Feet, HorseDrawnCarriage, Train>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
 scalar type PCNumber extending sequence;
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   property created_at -> datetime {
     default := datetime_current()
   }
@@ -177,12 +177,6 @@ type PC extending Person {
   }
 }
 ```
-
-The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
-
-- Choosing `Feet` gives the character a certain speed and costs nothing,
-- `HorseDrawnCarriage` increases speed but decreases money,
-- `Train` increases speed the most but decreases money and can only follow railway lines.
 
 The `PCNumber` type has been quite useful, allowing us to keep track of how many `PC` objects have been created even if some of them get deleted later. If you end up adding and deleting a lot of `PC` objects then the following query will show pretty different numbers between the latest sequence number and the total number of `PC` objects:
 

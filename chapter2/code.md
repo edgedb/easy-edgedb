@@ -8,7 +8,7 @@ module default {
   }
 
   type PC extending Person {
-    required property transport -> Transport;
+    required property class -> Class;
   }
 
   type NPC extending Person {
@@ -20,7 +20,7 @@ module default {
     property important_places -> array<str>;
   }
 
-  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
 }
 
 
@@ -49,7 +49,7 @@ insert NPC {
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 
 insert City {

@@ -141,7 +141,7 @@ Let's imagine how it would look if we put it inside the `Place` type. This is cl
 
 ```sdl
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   property created_at := datetime_current(); # this is new
 }
 ```
@@ -150,19 +150,19 @@ Because `created_at` is a computable here, and computables are calculated when y
 
 ```sdl
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   property created_at -> datetime {
     default := datetime_current()
   }
 }
 ```
 
-Let's do a migration and give this a try with a second PC. We'll call him Max Demian and choose a `transport` but nothing else, but thanks to `created_at` having a default value we don't need to specify it ourselves. Let's `select` Max Demian right after his creation to see the date he was made.
+Let's do a migration and give this a try with a second PC. We'll call him Max Demian and choose a `class` but nothing else, but thanks to `created_at` having a default value we don't need to specify it ourselves. Let's `select` Max Demian right after his creation to see the date he was made.
 
 ```edgeql
 with new_pc := (insert PC {
  name := 'Max Demian',
- transport := Transport.Train
+ class := Class.Mystic
  }),
  select new_pc {
  name,

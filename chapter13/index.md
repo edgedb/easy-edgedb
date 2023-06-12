@@ -447,7 +447,7 @@ Finally, let's change the schema for our `PC` type to include this number. We co
 scalar type PCNumber extending sequence;
 
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   property created_at -> datetime {
     default := datetime_current()
   }

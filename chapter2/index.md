@@ -7,7 +7,7 @@ leadImage: illustration_02.jpg
 
 We continue to read the story as we think about the database we need to store the information. The important information is in bold:
 
-> Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a **horse-driven carriage** to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
+> Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a horse-driven carriage to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
 Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
@@ -33,21 +33,21 @@ After this insert, our database will have two cities called Bistritz. To delete 
 
 ## Enums, scalar types, and extending
 
-We now have three types of transport in the book: walking, train, and horse-drawn carriage. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use types of transport that were available that year. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
+Our game is going to need to have player characters in it, which means that users of the game are going to have to choose what type of character they want to be. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use classes that make sense for this time period. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
 
 Here we see the word `scalar` for the first time: this is a `scalar type`, which means that it only holds a single value at a time. The other types (`City`, `NPC`) are `object types` because they can hold multiple values at the same time.
 
-The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This keyword gives you all the power of the type that you are extending, and lets you add more on top. We will write our `Transport` type like this:
+The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This keyword gives you all the power of the type that you are extending, and lets you add more on top. There will probably be more character classes in a real game, but for the moment we will write our `Class` type like this with three classes:
 
 ```sdl
-scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
 ```
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-To choose between the values (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Transport.Feet`, `Transport.Train`, or `Transport.HorseDrawnCarriage`.
+To choose between the values (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Class.Rogue`, `Class.Mystic`, or `Class.Merchant`.
 
-This `Transport` type is going to be for player characters in our game, not the people in the book (their stories and choices are already finished). That means that we will need both an `PC` type and an `NPC` type. These two types are pretty similar to each other: they both have a `name`, `places_visited`, and probably  some other properties that we will add later. This is a good case for an abstract type. Inside this abstract type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
+This `Class` type is going to be for player characters in our game, not the people in the book (their stories, choices and statistics are already decided). That means that we will need both an `PC` type and an `NPC` type. These two types are pretty similar to each other: they both have a `name`, `places_visited`, and probably  some other properties that we will add later. This is a good case for an abstract type. Inside this abstract type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
 
 So now this part of the schema looks like this:
 
@@ -58,7 +58,7 @@ abstract type Person {
 }
 
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
 }
 
 type NPC extending Person {
@@ -79,17 +79,17 @@ No problem - just change `Person` to `NPC` and it will work.
 
 However, `select` on an abstract type is just fine - it will select all the types that extend from it. Let's add a `PC` object now to make a `select` on the abstract `Person` type more interesting. 
 
-We'll make a `PC` called Emil Sinclair who starts out traveling by horse-drawn carriage. We'll also just give him `City` so he'll have all three cities.
+We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just give him `City` so he'll have all three cities.
 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 ```
 
-Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `HorseDrawnCarriage`, because we have to choose the enum `Transport` and then make a choice of one of the values.
+Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `Mystic`, because we have to choose the enum `Class` and then make a choice of one of the values.
 
 However, EdgeDB also allows you to choose an enum just by writing a string that matches the value. So this insert would have worked too:
 
@@ -97,14 +97,14 @@ However, EdgeDB also allows you to choose an enum just by writing a string that 
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := 'HorseDrawnCarriage',
+  class := 'Mystic',
 };
 ```
 
-But if you were to type `transport := 'rocket'` it wouldn't work:
+But if you were to type `class := 'wrestler'` it wouldn't work:
 
 ```
-edgedb error: InvalidValueError: invalid input value for enum 'default::Transport': "rocket"
+edgedb error: InvalidValueError: invalid input value for enum 'default::Class': "wrestler"
 ```
 
 Now let's do a select on the abstract type `Person` to see the objects inside, plus the properties common to both: `name` and `places_visited`.
