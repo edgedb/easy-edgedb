@@ -22,7 +22,7 @@ tags: Backlinks, Schema Cleanup
 >
 > “Oh, yes!”
 >
-> Now they know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
+> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
@@ -45,9 +45,9 @@ type Visit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's use that to insert a few visits from the ships we know. You'll remember that the other ship was called The Demeter and left from Varna towards London.
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's do a migration, and then insert a few visits from the ships we know. The other ship that we saw in the book was called The Demeter and left from Varna towards Whitby.
 
-But first we'll insert a new `Ship` and two new places (`City`s) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
+But first we'll insert a new `Ship` and two new places (`City` objects) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
 ```edgeql
 insert Ship {
@@ -67,7 +67,7 @@ union (
 );
 ```
 
-The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to call them up? It looks like this:
+The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to look at the message inside an annotation? It looks like this:
 
 ```edgeql
 select (introspect OtherPlace) {
@@ -96,7 +96,7 @@ Let's look at the output to see what we wrote before to make sure that we should
 }
 ```
 
-Well, it's not a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
+Well, the Bosphorus isn't a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
 
 ```edgeql
 insert OtherPlace {
@@ -108,11 +108,11 @@ That was easy. Now we can put the ship visits in.
 
 ```edgeql
 for visit in {
-    ('The Demeter', 'Varna', '1887-07-06'),
-    ('The Demeter', 'Bosphorus', '1887-07-11'),
-    ('The Demeter', 'Whitby', '1887-08-08'),
-    ('Czarina Catherine', 'London', '1887-10-05'),
-    ('Czarina Catherine', 'Galatz', '1887-10-28')
+    ('The Demeter', 'Varna', '1893-07-06'),
+    ('The Demeter', 'Bosphorus', '1893-07-11'),
+    ('The Demeter', 'Whitby', '1893-08-08'),
+    ('Czarina Catherine', 'London', '1893-10-05'),
+    ('Czarina Catherine', 'Galatz', '1893-10-28')
   }
 union (
   insert Visit {
@@ -123,7 +123,7 @@ union (
 );
 ```
 
-With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1887, we can see if there are any ships in town:
+With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1893, we can see if there are any ships in town:
 
 ```edgeql
 select Visit {
@@ -134,7 +134,7 @@ select Visit {
     name
   },
   date
-} filter .place.name = 'Galatz' and .date = <cal::local_date>'1887-10-28';
+} filter .place.name = 'Galatz' and .date = <cal::local_date>'1893-10-28';
 ```
 
 And it looks like there is a ship in town! It's the Czarina Catherine.
@@ -144,40 +144,92 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
   default::Visit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
   },
 }
 ```
 
-While we're doing this, let's practice computed backlinks again on our visits. Here's one:
+While we're doing this, let's practice computed backlinks again on our visits. Our `Ship` type doesn't contain any information on the places that it visited:
 
-```edgeql
-select Ship.<ship[is Visit] {
-  place: {
-    name
-  },
-  ship: {
-    name
-  },
-  date
-} filter .place.name = 'Galatz';
+```sdl
+type Ship extending HasNameAndCoffins {
+  multi link sailors -> Sailor;
+  multi link crew -> Crewman;
+}
 ```
 
-`Ship.<ship[is Visit]` refers to all the `Visits` with link `ship` to type `Ship`. Because we are selecting `Visit` and not `Ship`, our filter is now on `Visit`'s `.place.name` instead of the properties inside `Ship`.
+But if we use a backlink we can see all of this information. Let's show all of the `Ship` objects, their name, sailors and crew, plus the place names and dates of all the visits they made.
 
-Here is the output:
+```edgeql
+select Ship {
+ name,
+ sailors: { name },
+ crew: { name },
+
+ # All of the Visit objects with a ship property
+ # that link to a Ship object
+ visits := .<ship[is Visit] {
+   place: {name},
+   date
+  }
+};
+```
+
+The output is pretty nice! It's basically a report on every ship, who is on them and where and when they visited.
 
 ```
 {
-  default::Visit {
-    place: default::City {name: 'Galatz'},
-    ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+  default::Ship {
+    name: 'The Demeter',
+    sailors: {
+      default::Sailor {name: 'The Captain'},
+      default::Sailor {name: 'Petrofsky'},
+      default::Sailor {name: 'The Second Mate'},
+      default::Sailor {name: 'The Cook'},
+    },
+    crew: {
+      default::Crewman {name: 'Crewman 1'},
+      default::Crewman {name: 'Crewman 2'},
+      default::Crewman {name: 'Crewman 3'},
+      default::Crewman {name: 'Crewman 4'},
+      default::Crewman {name: 'Crewman 5'},
+    },
+    visits: {
+      default::Visit {
+        place: default::City {name: 'Varna'},
+        date: <cal::local_date>'1893-07-06',
+      },
+      default::Visit {
+        place: default::OtherPlace {name: 'Bosphorus'},
+        date: <cal::local_date>'1893-07-11',
+      },
+      default::Visit {
+        place: default::City {name: 'Whitby'},
+        date: <cal::local_date>'1893-08-08',
+      },
+    },
+  },
+  default::Ship {
+    name: 'Czarina Catherine',
+    sailors: {},
+    crew: {},
+    visits: {
+      default::Visit {
+        place: default::City {name: 'London'},
+        date: <cal::local_date>'1893-10-05',
+      },
+      default::Visit {
+        place: default::City {name: 'Galatz'},
+        date: <cal::local_date>'1893-10-28',
+      },
+    },
   },
 }
 ```
 
-By the way, the heroes of the story found out about the Czarina Catherine thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
+## More cleaning up the schema
+
+The heroes of the story found out about when the Czarina Catherine arrived thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
 
 ```
 28 October.—Telegram. Rufus Smith, London, to Lord Godalming, care H. B. M. Vice Consul, Varna.
@@ -185,18 +237,20 @@ By the way, the heroes of the story found out about the Czarina Catherine thanks
 “Czarina Catherine reported entering Galatz at one o’clock to-day.”
 ```
 
-Remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. You can see now that it's almost a function:
+Speaking of time, remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. It looks like this:
 
 ```sdl
-type Time {
-  required property clock -> str;
-  property clock_time := <cal::local_time>.clock;
-  property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-}
+type Time { 
+  required property clock -> str; 
+  property clock_time := <cal::local_time>.clock; 
+  property hour := .clock[0:2]; 
+  property sleep_state := 
+    SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    else SleepState.Awake;
+} 
 ```
 
-Now that we know that the time was one o'clock, let's put that into the query too - including the `sleep_state` property. Now it looks like this:
+Now that we know that the time was one o'clock, let's put that into a query to display some extra information on the visit. See if anything feels weird to you about this query.
 
 ```edgeql
 with time := (
@@ -204,7 +258,7 @@ with time := (
     clock := '13:00:00'
   }
 )
-select Ship.<ship[is Visit] {
+select Visit {
   place: {
     name
   },
@@ -216,32 +270,42 @@ select Ship.<ship[is Visit] {
     clock,
     clock_time,
     hour,
-    awake
+    sleep_state
   },
 } filter .place.name = 'Galatz';
 ```
 
-Here's the output, including whether vampires are awake or asleep.
+The output looks pretty good, including whether vampires were awake or asleep when the ship arrived:
 
 ```
 {
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     time_: default::Time {
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
       hour: '13',
-      sleep_state: 'asleep',
+      sleep_state: Asleep,
     },
   },
 }
 ```
 
-## More cleaning up the schema
+However, the problem is that we now have a random `Time` type floating around that is not linked to anything. The `Time` type as it stands is essentially just an expression, and would be better as an alias or a function. As a function it would look like this and would not require inserting an object:
 
-It is of course cool that we can do a quick insert in a query like this, but it's a bit weird. The problem is that we now have a random `Time` type floating around that is not linked to anything. Instead of that, let's just steal all the properties from `Time` to improve the `Visit` type instead.
+```sdl
+function time(clock: str) -> tuple<cal::local_time, str, SleepState> using (
+  with local := <cal::local_time>clock,
+  hour := clock[0:2],
+  sleep_state := SleepState.Asleep if <int16>hour > 7 and <int16>hour < 19
+    else SleepState.Awake,
+    select(local, hour, sleep_state)
+);
+```
+
+So that could be an option for later. But for now, let's just steal all the properties from `Time` to improve the `Visit` type instead:
 
 ```sdl
 type Visit {
@@ -255,7 +319,7 @@ type Visit {
 }
 ```
 
-Then update the visit to Galatz to give it a `clock`:
+Then do a schema migration and update the visit to Galatz to give it a `clock`:
 
 ```edgeql
 update Visit filter .place.name = 'Galatz'
@@ -264,11 +328,11 @@ set {
 };
 ```
 
-Then we'll use the reverse query again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
+Then we'll query this `Visit` to Galatz again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```edgeql
 with duration := <duration>'2 hours, 5 minutes, 10 seconds',
-select Ship.<ship[is Visit] {
+select Visit {
   place: {name},
   ship: {name},
   date,
@@ -287,7 +351,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     clock: '13:00:00',
     hour: '13',
     sleep_state: 'asleep',
@@ -296,7 +360,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
 }
 ```
 
-Since we are looking at `Place` again, now we can finish up the chapter by filling out the map with the `Region` type that we discussed. That's easy:
+Since we are looking at `Place` again, now we can finish up the chapter by filling out the map with the `Region` type that we discussed. We'll have the `Region` type link to cities, castles and other places, and then change our `Country` type to link to `Region` objects.
 
 ```sdl
 type Country extending Place {
@@ -312,7 +376,7 @@ type Region extending Place {
 
 That connects our types based on `Place` quite well.
 
-Now let's do a medium-sized entry that has `Country`, `Region`, and `City` all at the same time. We'll choose Germany in 1887 because Jonathan went through there first. It will have:
+Now let's do a medium-sized entry that has `Country`, `Region`, and `City` all at the same time. We'll choose Germany in 1893 because Jonathan went through there first. It will have:
 
 - One country: Germany,
 - Three regions: Prussia, Hesse, Saxony
@@ -361,7 +425,7 @@ insert Country {
 };
 ```
 
-With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. To get `Country` from `Region` we need to use a computed backlink:
+With this nice structure set up, we can do things like select a `Region` and see the cities inside it, plus the country it belongs to. And to get `Country` from `Region` we can just use a computed backlink:
 
 ```edgeql
 select Region {

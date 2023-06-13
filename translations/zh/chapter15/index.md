@@ -140,7 +140,7 @@ select can_enter('Count Dracula', (select City filter .name = 'London'));
 
 ```sdl
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
   overloaded required property name -> str {
     constraint max_len_value(30);
   }

@@ -7,7 +7,7 @@ leadImage: illustration_02.jpg
 
 在这一章中，我们将继续阅读这个故事，并思考需要将哪些信息存入数据库。下面叙述中的粗体文字均为重要的信息：
 
-> 乔纳森·哈克（Jonathan Harker）在 **比斯特里茨（Bistritz）** 发现了一家酒店, 叫做 **金克朗酒店（Golden Krone Hotel）**。他在酒店里收到了一封来自德古拉（Dracula）的欢迎信，信中提到德古拉正在 **城堡（castle）** 里等他。乔纳森·哈克第二天不得不搭乘 **马车（horse-driven carriage）** 才能到达那里。同时我们还了解到乔纳森·哈克来自 **伦敦（London）**。金克朗酒店（Golden Krone Hotel）的老板似乎很害怕德古拉。他不想让乔纳森（Jonathan）离开并表示前往城堡会很危险，但乔纳森并没有听进去。一位老太太给了乔纳森一个金色的十字架，说十字架可以保护他。乔纳森感到很尴尬，认为这可能是出于礼貌，他并不知道之后这会对他有多大的帮助。
+> 乔纳森·哈克（Jonathan Harker）在 **比斯特里茨（Bistritz）** 发现了一家酒店, 叫做 **金克朗酒店（Golden Krone Hotel）**。他在酒店里收到了一封来自德古拉（Dracula）的欢迎信，信中提到德古拉正在 **城堡（castle）** 里等他。乔纳森·哈克第二天不得不搭乘马车才能到达那里。同时我们还了解到乔纳森·哈克来自 **伦敦（London）**。金克朗酒店（Golden Krone Hotel）的老板似乎很害怕德古拉。他不想让乔纳森（Jonathan）离开并表示前往城堡会很危险，但乔纳森并没有听进去。一位老太太给了乔纳森一个金色的十字架，说十字架可以保护他。乔纳森感到很尴尬，认为这可能是出于礼貌，他并不知道之后这会对他有多大的帮助。
 
 现在我们开始看一下比斯特里茨（Bistritz）这座城市的细节。通过阅读上面的情节，你可能会想到我们可以给 `City` 添加一个叫做 `important_places` 的属性。它可以是像 **金克朗酒店（Golden Krone Hotel）** 这样的地方。虽然我们尚不确定这些地方在将来是否会拥有属于自己的类型，但至少现在不需要，所以我们暂时只是将它定义为一个字符串的数组：`property important_places -> array<str>;` 然后我们则可以把这些重要地点的名字放进去。也许之后还会发展出更多的内容，但目前为止，`City` 的定义暂时如下所示：
 
@@ -31,21 +31,23 @@ insert City {
 
 ## 枚举、标量类型及类型扩展
 
-到目前位置，我们在书中提到了两种交通工具：火车和马车。这本书以 1887 年为背景，因此游戏中我们将让角色使用当年可用的交通工具。这里用 `enum`（枚举）可能是最好的选择，因为 `enum` 可以提供多个选项，供使用者选择一个所需的。枚举的变量需要用大写驼峰式（UpperCamelCase）进行书写。
+在我们的游戏中，必须有玩家角色类。这本书以 1893 年为背景，所以我们的玩家角色将拥有适合 19 世纪后期的色类。这里用 `enum`（枚举）可能是最好的选择，因为 `enum` 可以提供多个选项，供使用者选择一个所需的。枚举的变量需要用大写驼峰式（UpperCamelCase）进行书写。
 
-这里，我们将第一次看到关键词 `scalar`：它是一个“标量类型”（`scalar type`），因为一次只保存一个值。而其他类型（如 `City`、`Person`）属于“对象类型”（`object types`），因为他们能够同时保存多个值。
+这里，我们将第一次看到关键词 `scalar`：它是一个“标量类型”（`scalar type`），因为一次只保存一个值。而其他类型（如 `City`、`NPC`）属于“对象类型”（`object types`），因为他们能够同时保存多个值。
 
-另一个我们将第一次看到的关键词是 `extending`：它是指以一个类型作为基础并对其进行扩展。这不仅为你提供了你想要扩展的类型的所有功能，并允许你添加更多选项。因此，我们将这样定义 `Transport` 类型：
+另一个我们将第一次看到的关键词是 `extending`：它是指以一个类型作为基础并对其进行扩展。这不仅为你提供了你想要扩展的类型的所有功能，并允许你添加更多选项。因此，我们将这样定义 `Class` 类型：
 
 ```sdl
-scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
 ```
+
+(Rogue, Mystic, Merchant就是盗贼、神秘主义者、商人呢)
 
 你是否留意到 `scalar type` 的定义是以一个分号结尾的，而其他类型并非如此？这是因为其他类型用 `{}` 构成了一个完整的表达式。但是这里的单行代码我们并没有 `{}`，所以在这里我们需要用分号来说明表达式的结束。
 
-要在枚举中的变体（选项）间进行选择，只需用 `.`。对于上面的枚举，这意味着我们可以选择 `Transport.Feet`、`Transport.Train` 或 `Transport.HorseDrawnCarriage`。
+要在枚举中的变体（选项）间进行选择，只需用 `.`。对于上面的枚举，这意味着我们可以选择 `Class.Rogue`、`Class.Mystic` 或 `Class.Merchant`。
 
-现在设定这个 `Transport` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型，但我们的 `Person` 类型也应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
+现在设定这个 `Class` 类型将被我们的游戏玩家所扮演的角色使用，而不是被书中已有的故事人物所使用（因为他们的故事和选择已成定局）。这意味着我们需要一个 `PC` 类型和一个 `NPC` 类型。因为`PC`和`NPC`彼此非常相似，我们可以创造一个 `abstract type Person`（抽象类型）。我们的 `Person` 类型应该保留——我们可以将它用作两者的基本类型。为此，我们可以让 `Person` 成为一个 `abstract type`（抽象类型）而不仅仅是一个 `type`。有了这个抽象类型，我们可以对 `PC` 和 `NPC` 类型的定义使用关键字 `extending`。
 
 因此，现在这部分结构看起来像这样：
 
@@ -56,18 +58,18 @@ abstract type Person {
 }
 
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
 }
 
 type NPC extending Person {
 }
 ```
 
-现在书中的角色都将是 `NPC`（非玩家角色）类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 现在是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
+现在书中的角色都将是 `NPC`类型，而 `PC` 是在考虑到这是个游戏的情况下设定的。`Person` 是一个抽象类型，因此我们不能再对其进行直接的插入。如果你尝试执行 `insert Person {name := 'Mr. HasAName'};`，你将会收到错误提示：
 
 ```
-error: cannot insert into abstract object type 'default::Person'
-  ┌─ query:1:8
+error: QueryError: cannot insert into abstract object type 'default::Person'
+  ┌─ <query>:1:8
   │
 1 │ insert Person {name := 'Mr. HasAName'};
   │        ^^^^^^ error
@@ -77,19 +79,19 @@ error: cannot insert into abstract object type 'default::Person'
 
 此外，`select` 一个抽象类型是没有问题的，它会选择出所有从该抽象类型扩展出来的类型。
 
-现在让我们也来操作一下玩家角色。我们创建一个名叫 Emil Sinclair 的人，他开始乘坐马车旅行。我们也将 `City` 直接赋值给他的 `places_visited`，于是他也拥有了那三个乔纳森造访过的城市。
+现在让我们也来操作一下玩家角色。我们创建一个名叫 Emil Sinclair 的人，他是一个神秘主义者。我们也将 `City` 直接赋值给他的 `places_visited`，于是他也拥有了那三个乔纳森造访过的城市。
 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 ```
 
 `places_visited := City` 是对 `places_visited := (select City)` 的简写，你不是必须每次都输入 `select` 部分。
 
-请注意，我们并没有只写 `HorseDrawnCarriage`，我们必须写明枚举类型 `Transport` 并选择其中一个枚举值。
+请注意，我们并没有只写 `Mystic`，我们必须写明枚举类型 `Class` 并选择其中一个枚举值。
 
 ## 类型转换
 
@@ -252,11 +254,11 @@ ERROR: InvalidValueError: string index 18 is out of bounds
 因此语句：
 
 ```edgeql
-select 1887#0503 is the first day of the book Dracula when...
+select 1893#0503 is the first day of the book Dracula when...
 ;
 ```
 
-只是会返回 `{1887}`.
+只是会返回 `{1893}`.
 
 [→ 点击这里查看到第 2 章为止的所有代码](code.md)
 

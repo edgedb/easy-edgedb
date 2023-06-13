@@ -4,7 +4,11 @@ tags: Writing Functions, Multiplication, Coalescing
 
 # Chapter 11 - What's wrong with Lucy?
 
-> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and put garlic everywhere. They are confused, but Dr. Seward tells them to listen: Dr. Van Helsing is the smartest person he knows. It works, and Lucy gets better. But one night Lucy's mother walks into the room and thinks: "This place smells terrible! I'll open the windows for some fresh air." The next day Lucy wakes up pale and sick again. Every time someone makes a mistake like this Dracula gets in her room, and every time the men give Lucy their blood to help her get better. Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. Then one day he didn't want to talk, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
+> Dr. Van Helsing thinks that Lucy is being visited by a vampire. He doesn't tell the others yet because they won't believe him, but says they should close the windows and place garlic flowers everywhere in Lucy's room. They are confused, but Dr. Seward tells them to listen: Dr. Van Helsing is the smartest person he knows. It works, and Lucy gets better.
+>
+> But one night Lucy's mother walks into the room and thinks: "This place smells terrible! I'll open the windows for some fresh air." The next day Lucy wakes up pale and sick again. Every time someone makes a mistake like this Dracula gets in her room, and every time the men give Lucy their blood to help her get better. But Lucy is getting weaker and weaker as the days go by.
+>
+> Meanwhile, Renfield continues to try to eat living things and Dr. Seward can't understand him. Then one day Renfield doesn't want to talk at all, only saying: “I don’t want to talk to you: you don’t count now; the Master is at hand.”
 
 We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. In our game, we could use a sort of `Event` type to group everything together: the people, the time, the place, and so on.
 
@@ -17,33 +21,36 @@ type Event {
   required property end_time -> cal::local_datetime;
   required multi link place -> Place;
   required multi link people -> Person;
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' 
-  ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' 
+    ++ <str>.location.0 ++ '_N_' 
+    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
 You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
 
-The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example:
+The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
-`https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E`
+```
+https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E
+```
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
-(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if exact_location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
 
-Let's insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```edgeql
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 ```
@@ -58,15 +65,12 @@ select Event {
   start_time,
   end_time,
   place: {
-    __type__: {
-      name
-    },
     name
   },
   people: {
     name
   },
-  exact_location,
+  location,
   url
 } filter .description ilike '%garlic flowers%';
 ```
@@ -77,17 +81,15 @@ It generates a nice output that shows us everything about the event:
 {
   default::Event {
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    start_time: <cal::local_datetime>'1887-09-11T18:00:00',
-    end_time: <cal::local_datetime>'1887-09-11T23:00:00',
-    place: {
-      default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
-    },
+    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
+    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
+    place: {default::City {name: 'Whitby'}},
     people: {
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Abraham Van Helsing'},
     },
-    exact_location: (54.4858, 0.6206),
+    location: (54.4858, 0.6206),
     url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
   },
 }
@@ -122,7 +124,26 @@ function make_string(input: int64) -> str
 
 That's all there is to it!
 
-Now let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+
+```sdl
+function get_url() -> str
+  using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required multi link place -> Place;
+  required multi link people -> Person;
+  property location -> tuple<float64, float64>;
+  property east -> bool;
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
+  ++ '_' ++ ('E' if .east else 'W');
+}
+```
+
+Next, let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
 
 ```sdl
 function fight(one: Person, two: Person) -> str
@@ -153,12 +174,10 @@ To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which i
 Here is a quick example:
 
 ```edgeql-repl
-edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
+db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
-The empty set is on the left, but since it _is_ the empty set, it doesn't get the nod from the coalescing operator. Instead, this query will produce the string to the right of the coalescing operator: `{'Count Dracula is now in Whitby'}`
-
-If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
+Since the set on the left is empty, the coalescing operator turns its attention to the set on the right and returns that: `{'Count Dracula is now in Whitby'}` If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
 
 Here's how we can use the coalescing operator to fix our function:
 
@@ -171,7 +190,9 @@ function fight(one: Person, two: Person) -> str
   );
 ```
 
-Now, EdgeDB has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+With this change, EdgeDB now has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+
+Now that our function works, let's do a migration.
 
 So far only Jonathan and Renfield have the property `strength`, so let's put them up against each other in this new `fight()` function:
 
@@ -190,7 +211,7 @@ It might also be a good idea to add `assert_single()` when doing a filter for th
 
 ## Cartesian multiplication
 
-Cartesian multiplication sounds intimidating but it really just means "join every item in one set to every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+Cartesian multiplication sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![A chart displaying the Cartesian product of 1, 2, 3 multiplied by x, y, and z](cartesian_product.svg)
 
@@ -198,7 +219,9 @@ Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_produ
 
 This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
-- `{the number of items in the first set}` \* `{the number of items in the second set}`
+```
+{the number of items in the first set}` \* `{the number of items in the second set}
+```
 
 So if there are two in the first set, and three in the second, it will run the function six times.
 
@@ -215,10 +238,13 @@ We'll also make the output a little more clear:
 
 ```edgeql
 with
-  first_group := (select Person filter .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  second_group := (select Person filter .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+  first_group := (select Person filter .name in 
+    {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (select Person filter .name in 
+    {'Renfield', 'Mina Murray', 'The innkeeper'}),
 select (
-  first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
+  first_group.name ++ ' fights against ' ++ second_group.name 
+    ++ '. ' ++ fight(first_group, second_group)
 );
 ```
 
@@ -238,9 +264,16 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 }
 ```
 
-And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, displaying this after showing you 100 results:
+And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, eventually displaying this after the first 100 results:
 
-`` ... (further results hidden `\set limit 100`)``
+```edgeql-repl
+# First 98 results...
+'Count Dracula wins!',
+'Fighter 2 wins!',
+ ... (further results hidden `\set limit 100`)
+```
+
+If you want to display more or less than a maximum of 100 (the default), just type `\set limit` followed by whichever number you like.
 
 [Here is all our code so far up to Chapter 11.](code.md)
 
@@ -257,7 +290,9 @@ And if you take out the filter and just write `select Person` for the function, 
 3. What will the output of this be?
 
    ```edgeql
-   select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+   select {'Jonathan', 'Arthur'} ++ {' loves '} 
+     ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} 
+     ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
    ```
 
 4. How would you make a function that tells you how many times larger one city is than another?

@@ -41,14 +41,14 @@ type Vampire extending Person {
 }
 ```
 
-#### 4. 如何更新所有的 `Person` 类型的对象，表明他们都死于 1887 年 9 月 11 日？
+#### 4. 如何更新所有的 `Person` 类型的对象，表明他们都死于 1893 年 9 月 11 日？
 
 如下所示，你将对每一个 `Person` 的 `last_appearance` 进行更新：
 
 ```edgeql
 update Person
 set {
-  last_appearance := <cal::local_date>'1887-09-11'
+  last_appearance := <cal::local_date>'1893-09-11'
 };
 ```
 

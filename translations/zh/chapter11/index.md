@@ -17,9 +17,9 @@ type Event {
   required property end_time -> cal::local_datetime;
   required multi link place -> Place;
   required multi link people -> Person;
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -31,18 +31,18 @@ type Event {
 
 对我们来说，幸运的是书中的事件都发生在地球的北部。所以 `N` 总是会在那里。但有时他们在格林威治东部，有时在西部。为了说明是东方还是西方，我们可以使用一个简单的 `bool`。然后在 `url` 属性中，我们将所有相关属性放在一起以创建链接，如果 `east` 为 `true`，则以 `'E'` 结束，否则以 `'W'` 结束。
 
-（当然，如果我们接收的经度是简单的正负数（+ 表示东，- 表示西），那么 `east` 也可以是一个计算（computed）属性：`property east := true if exact_location.0 > 0 else false`。但是对于我们的架构，我们会假设我们可以从某个地方以类似 `[50.6, 70.1, true]` 的这种格式获取到位置信息，然后直接赋予 `exact_location` 和 `east`）
+（当然，如果我们接收的经度是简单的正负数（+ 表示东，- 表示西），那么 `east` 也可以是一个计算（computed）属性：`property east := true if location.0 > 0 else false`。但是对于我们的架构，我们会假设我们可以从某个地方以类似 `[50.6, 70.1, true]` 的这种格式获取到位置信息，然后直接赋予 `location` 和 `east`）
 
 现在，让我们来插入本章中的一个事件。它发生在 9 月 11 日晚上，当时范海辛医生（Dr. Van Helsing）正试图帮助露西（Lucy）。你可以看到 `description` 属性只是我们编写的一个字符串，以便于之后进行搜索。它可长可短，这取决于你，我们甚至可以把书中的某些部分粘贴进去。
 
 ```edgeql
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 ```
@@ -57,15 +57,12 @@ select Event {
   start_time,
   end_time,
   place: {
-    __type__: {
-      name
-    },
     name
   },
   people: {
     name
   },
-  exact_location,
+  location,
   url
 } filter .description ilike '%garlic flowers%';
 ```
@@ -76,17 +73,15 @@ select Event {
 {
   default::Event {
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    start_time: <cal::local_datetime>'1887-09-11T18:00:00',
-    end_time: <cal::local_datetime>'1887-09-11T23:00:00',
-    place: {
-      default::City {__type__: schema::ObjectType {name: 'default::City'}, name: 'Whitby'},
-    },
+    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
+    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
+    place: {default::City {name: 'Whitby'}},
     people: {
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Abraham Van Helsing'},
     },
-    exact_location: (54.4858, 0.6206),
+    location: (54.4858, 0.6206),
     url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
   },
 }
@@ -121,6 +116,25 @@ function make_string(input: int64) -> str
 
 就是这样！
 
+Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+
+```sdl
+function get_url() -> str
+  using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
+type Event {
+  required property description -> str;
+  required property start_time -> cal::local_datetime;
+  required property end_time -> cal::local_datetime;
+  required multi link place -> Place;
+  required multi link people -> Person;
+  property location -> tuple<float64, float64>;
+  property east -> bool;
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
+  ++ '_' ++ ('E' if .east else 'W');
+}
+```
+
 现在让我们来编写一个函数用于两个角色之间的战斗。我们将使逻辑尽可能简单：即具有更多力量的角色获胜，如果他们的力量相同，则第二个玩家获胜。
 
 ```sdl
@@ -152,7 +166,7 @@ InvalidFunctionDefinitionError: return cardinality mismatch in function
 下面是一个简单的例子：
 
 ```edgeql-repl
-edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
+db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 `??` 的左边是空集，因为它 _是_ 空集，所以合并运算符在这里将放弃使用它，转而去查看右边的内容，因此，这个查询结果将使用合并运算符右侧生成的字符串：`{'Count Dracula is now in Whitby'}`

@@ -108,11 +108,11 @@ insert OtherPlace {
 
 ```edgeql
 for visit in {
-    ('The Demeter', 'Varna', '1887-07-06'),
-    ('The Demeter', 'Bosphorus', '1887-07-11'),
-    ('The Demeter', 'Whitby', '1887-08-08'),
-    ('Czarina Catherine', 'London', '1887-10-05'),
-    ('Czarina Catherine', 'Galatz', '1887-10-28')
+    ('The Demeter', 'Varna', '1893-07-06'),
+    ('The Demeter', 'Bosphorus', '1893-07-11'),
+    ('The Demeter', 'Whitby', '1893-08-08'),
+    ('Czarina Catherine', 'London', '1893-10-05'),
+    ('Czarina Catherine', 'Galatz', '1893-10-28')
   }
 union (
   insert Visit {
@@ -123,7 +123,7 @@ union (
 );
 ```
 
-有了这些数据，我们在游戏中可以随时查看特定日期下各城市的船只停泊情况了。例如，假设一个角色进入了加拉茨（Galatz）。如果日期是 1887 年 10 月 28 日，我们则可以通过下面的语句查看当地是否有船只停靠：
+有了这些数据，我们在游戏中可以随时查看特定日期下各城市的船只停泊情况了。例如，假设一个角色进入了加拉茨（Galatz）。如果日期是 1893 年 10 月 28 日，我们则可以通过下面的语句查看当地是否有船只停靠：
 
 ```edgeql
 select Visit {
@@ -134,7 +134,7 @@ select Visit {
     name
   },
   date
-} filter .place.name = 'Galatz' and .date = <cal::local_date>'1887-10-28';
+} filter .place.name = 'Galatz' and .date = <cal::local_date>'1893-10-28';
 ```
 
 看起来镇上确实有一艘船！正是沙皇凯瑟琳（Czarina Catherine）。
@@ -144,7 +144,7 @@ select Visit {
   default::Visit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
   },
 }
 ```
@@ -172,7 +172,7 @@ select Ship.<ship[is Visit] {
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
   },
 }
 ```
@@ -228,7 +228,7 @@ select Ship.<ship[is Visit] {
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     time_: default::Time {
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
@@ -289,7 +289,7 @@ select Ship.<ship[is Visit] {
   default::Visit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1887-10-28',
+    date: <cal::local_date>'1893-10-28',
     clock: '13:00:00',
     hour: '13',
     sleep_state: 'asleep',
@@ -314,7 +314,7 @@ type Region extending Place {
 
 它将很好地连接我们基于 `Place` 扩展出的各个类型。
 
-现在让我们来做一条同时包含 `Country`、`Region` 和 `City` 的数据。我们将选择 1887 年的德国，因为故事的最初乔纳森就经过了那里。它将有：
+现在让我们来做一条同时包含 `Country`、`Region` 和 `City` 的数据。我们将选择 1893 年的德国，因为故事的最初乔纳森就经过了那里。它将有：
 
 - 1 个国家：德国（Germany），
 - 3 个地区：普鲁士（Prussia）、黑森（Hesse）、萨克森（Saxony），

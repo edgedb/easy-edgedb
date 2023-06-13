@@ -5,7 +5,7 @@ leadImage: illustration_01.jpg
 
 # Chapter 1 - Jonathan Harker travels to Transylvania
 
-In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan doesn't yet know that Count Dracula is a vampire, so he's enjoying the trip to a new part of Europe. The book begins with Jonathan writing in his journal as he travels. The parts that are good for a database are in **bold**:
+In the beginning of the book we see the main character Jonathan Harker, a young lawyer who is going to meet a client. The client is a rich man named Count Dracula who lives somewhere in Eastern Europe. Jonathan is enjoying the trip to a new part of Europe, completely unaware that Count Dracula is actually a vampire. The book begins with Jonathan writing in his journal as he travels. The parts to note when thinking about a database are in **bold**:
 
 > **3 May**. **Bistritz**.—Left **Munich** at **8:35 P.M.**, on **1st May**, arriving at **Vienna** early next morning; should have arrived at 6:46, but train was an hour late. **Buda-Pesth** seems a wonderful place, from the glimpse which I got of it from the train...
 
@@ -13,29 +13,116 @@ In the beginning of the book we see the main character Jonathan Harker, a young 
 
 This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is {ref}`SDL (schema definition language)<docs:ref_eql_sdl>` that makes migration easy, and which we will learn in this book. So far our schema needs the following:
 
-- Some kind of City or Location type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
-- Some kind of Person type. We need it to have a name, and also a way to track the places that the person visited.
+- Some kind of `City` or `Location` type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
+- Some kind of `NPC` type to represent the people in the book. We need it to have a name, and also a way to track the places that the person visited.
 
-To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `Person` type will start out like this:
+To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `NPC` type will start out like this:
 
 ```sdl
-type Person {
+type NPC {
 }
 ```
 
-That's all you need to create a type, but there's nothing inside there yet. Inside the brackets we add the properties for our `Person` type. Use `required property` if the type needs it, and just `property` if it is optional.
+That's all you need to create a type.
+
+But hold on, where is our schema? The best way to create a schema is to start an EdgeDB project. It is quite easy.
+
+* First make sure you have [EdgeDB installed on your computer](https://www.edgedb.com/install). You will now have the EdgeDB CLI installed which allows you to make new projects and apply migrations (among other things).
+* Once this is done, make an empty directory where you want to hold your project. Now open up a command line. If you are on Windows and haven't opened a command line before, type the Windows key and `cmd`, then click on Command Prompt. Then type `cd c:/easy-edgedb` or whatever the name of your directory is.
+* Type `edgedb project init`. The EdgeDB CLI will now ask you a few questions. The output should look something like this:
+
+```
+No `edgedb.toml` found in `\\?\C:\easy-edgedb` or above
+Do you want to initialize a new project? [Y/n]
+> Y
+Specify the name of EdgeDB instance to use with this project [default: easy_edgedb]:
+> easy_edgedb
+Checking EdgeDB versions...
+Specify the version of EdgeDB to use with this project [default: 2.14]:
+> 2.14
+┌─────────────────────┬─────────────────────────────────────┐
+│ Project directory   │ \\?\C:\easy-edgedb             │
+│ Project config      │ \\?\C:\easy-edgedb\edgedb.toml │
+│ Schema dir (empty)  │ \\?\C:\easy-edgedb\dbschema    │
+│ Installation method │ WSL                                 │
+│ Version             │ 2.14+7aec755                        │
+│ Instance name       │ easy                                │
+└─────────────────────┴─────────────────────────────────────┘
+Version 2.14+7aec755 is already downloaded
+Initializing EdgeDB instance...
+Applying migrations...
+Everything is up to date. Revision initial
+Project initialized.
+To connect to easy_edgedb, run `edgedb`
+```
+
+That was easy! Now try typing `edgedb`. This will take you into the EdgeDB REPL. Now type `select 'Jonathan Harker';` and hit enter. You should see the following output:
+
+```
+db> select "Jonathan Harker";
+{'Jonathan Harker'}
+db>
+```
+
+You just made your first query in EdgeDB. Now type `\quit` to escape the REPL and get back to the command line.
+
+So now let's take a look at the schema so we can create our `NPC` type. The CLI has already let us know that the schema is inside the `\edgedb\dbschema` directory, so go inside there and look for a file called `default.esdl`. This is your schema. At the moment, all it holds is a module called `default`:
 
 ```sdl
-type Person {
+module default {
+
+}
+```
+
+This module is where we will hold the types for our database, including our `NPC` type. Let's give it a try! Add the `NPC` type that we made above, as follows:
+
+```sdl
+module default {
+  type NPC {
+  }
+}
+```
+
+Make sure the file is saved, then type `edgedb migration create`. You should see some output that looks like the following:
+
+```
+Created c:\easy-edgedb\dbschema\migrations\00001.edgeql, id: m14c35zu7lzg46r2337nwehaihkv6d4xwcatu6ulogd5kqafjtrnra
+```
+
+Now type `edgedb migrate`. The CLI will apply the migration with the following output:
+
+```
+Applied m14c35zu7lzg46r2337nwehaihkv6d4xwcatu6ulogd5kqafjtrnra (00001.edgeql)
+```
+
+And you are done!
+
+To sum up, an EdgeDB migration simply consists of the following:
+
+* Changing your schema,
+* Typing `edgedb migration create`,
+* Typing `edgedb migrate`.
+
+We will be doing a lot of that in this book! Even by the second chapter you will be very used to this process.
+
+```{eval-rst}
+.. note::
+  The CLI creates a new file upon each migration to generate the commands to change the schema to the one we want. The first file will be called 00001.edgeql, the second will be 00002.edgeql, and so on. These files are quite readable so feel free to take a look at if you are curious. But note that they use a syntax called DDL (Data Definition Language) that gives commands to EdgeDB one at a time, and you do not need to learn it. Human users of EdgeDB use a language called SDL (Schema Definition Language) that simply declares what a schema will look like. The CLI then automatically creates DDL commands to make it happen.
+```
+
+Now that we know how to do a schema migration, let's add some properties to our `NPC` type. Use `required property` if the type needs it, and just `property` if it is optional. Let's give the `NPC` type a name and an array (a collection) of places visited:
+
+```sdl
+type NPC {
   required property name -> str;
   property places_visited -> array<str>;
 }
 ```
 
-With `required property name` our `Person` objects are always guaranteed to have a name - you can't make a `Person` object without it. Here's the error message if you try:
+With `required property name` our `NPC` objects are always guaranteed to have a name - you can't make an `NPC` object without it. Here's the error message if you try:
 
 ```
-MissingRequiredError: missing value for required property default::Person.name
+edgedb error: MissingRequiredError: missing value for required property 'name' of object type 'default::NPC'
 ```
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
@@ -57,53 +144,49 @@ This is similar, just properties with strings. The book Dracula was published in
 
 ## Migration
 
-```{eval-rst}
-.. note::
-  Easy EdgeDB's instructions on migrations were written in 2020 and are somewhat out of date - they work, but are less convenient than the current options. As of May 2023 the preferred (and easiest) way to do a migration is by using the CLI commands at https://www.edgedb.com/docs/intro/quickstart. To start a project, just type 'edgedb project init'. And every time you change your schema, just type 'edgedb migration create' followed by 'edgedb migrate'. Easy EdgeDB's chapters will be updated with the easier migration tools very soon!
+Now let's do our first real migration with `edgedb migration create`. You will see a number of questions similar to the one below:
 
-  Another recent addition to EdgeDB is the interactive UI. To use it in an initialized project, just type 'edgedb ui' and it will open up in your browser. The UI is a great way to view your schema and play around with your data while you are still learning the EdgeQL query language that this book teaches you.
-
-  And now back to the book...
+```
+Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
+>
 ```
 
-We haven't created our database yet, though. There are two small steps that we need to do first [after installing EdgeDB](https://www.edgedb.com/download). First we create a {ref}`"project" <docs:ref_quickstart_createdb>` that makes it easier to keep track of the schema and deal with migrations. Then we just open a console to our database by running `edgedb`, which will connect us to the default database called "edgedb". We'll use that a lot for experimenting.
+The CLI does this to make sure that it is applying the right changes to the schema, and to give us the opportunity to make changes if it has misunderstood anything. Most of the time you will just end up clicking `y` over and over again for each change. But there are other possible answers we can give. Type `?` if you want to see those.
 
-Sometimes it's useful to create a whole new database to try something out. You can do that with the `create database` keyword and our name for it:
+One of those is `l`, which means:
 
-```edgeql
-create database dracula;
+```
+l or list - list the DDL statements associated with prompt
 ```
 
-Then we type `\c dracula` to connect to it. And you can type `\c edgedb` to get back to the default one.
+Sure, let's be curious and try typing `l` to see what commands will be generated to create our `City` type. If we type `l` we will see the following:
 
-Lastly, we need to do a migration. This will give the database the structure we need to start interacting with it.
-
-- First you start them with `start migration to {}`
-- Inside this you add at least one `module`, so your types can be accessed. A module is a namespace, a place where similar types go together. The part on the left side of the `::` is the name of the module, and the type inside is to the right. If you wrote `module default` and then `type Person`, the type `Person` would be at `default::Person`. So when you see a type like `std::bytes` for example, this means the type `bytes` inside `std` (the standard library).
-- Then you add the types we mentioned above, and finish up the block by ending with a `}`. Then outside of that, type `populate migration` to add the data.
-- Finally, you type `commit migration` and the migration is done.
-
-Putting all of that together we get:
-```edgeql
-start migration to {
-  module default {
-    type Person {
-      required property name -> str;
-      property places_visited -> array<str>;
-    }
-
-    type City {
-      required property name -> str;
-      property modern_name -> str;
-    }
-  }
-};
-
-populate migration;
-commit migration;
+```edgeql-repl
+Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
+> l
+The following DDL statements will be applied:
+    CREATE TYPE default::City {
+        CREATE PROPERTY modern_name -> std::str;
+        CREATE REQUIRED PROPERTY name -> std::str;
+    };
 ```
 
-There are a lot of other commands beyond this, though we won't need them for this book. You could bookmark these four pages for later use, however:
+Looks good! It's a type `City` inside the module `default`, it has a `required property name` and a `property modern_name`. Let's now just type `y` for everything. After typing `y` two times, the CLI asks us a sudden question:
+
+```
+Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
+> y
+Did you alter object type 'default::NPC'? [y,n,l,c,b,s,q,?]
+> y
+Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::NPC' required:
+fill_expr>
+```
+
+The CLI is essentially saying: "There might be `NPC` objects in the database already. But now they all need to have a `name` property, which wasn't required before. How should I decide what `name` to give them?"
+
+Fortunately, the expression here is pretty simple: let's just give them all an empty string. Type `''` and hit enter, and the CLI will now be happy with the migration. Don't forget to complete the migration with `edgedb migration`, and we are done!
+
+There are a lot of other commands beyond the commands for migration, though we won't need them for this book. You could bookmark these four pages for later use, however:
 
 - {ref}`Admin commands <docs:ref_cheatsheet_admin>`: Creating user roles, setting passwords, configuring ports, etc.
 - {ref}`CLI commands <docs:ref_cheatsheet_cli>`: Creating databases, roles, setting passwords for roles, connecting to databases, etc.
@@ -112,20 +195,13 @@ There are a lot of other commands beyond this, though we won't need them for thi
 
 There are also a few places to download packages to highlight your syntax if you like. EdgeDB has these packages available for [Atom](https://atom.io/packages/edgedb), [Visual Studio Code](https://marketplace.visualstudio.com/itemdetails?itemName=magicstack.edgedb), [Sublime Text](https://packagecontrol.io/packages/EdgeDB), and [Vim](https://github.com/edgedb/edgedb-vim).
 
-So here's the `City` type we just made:
-
-```edgeql
-type City {
-  required property name -> str;
-  property modern_name -> str;
-}
-```
+Now let's start playing with some data!
 
 ## Selecting
 
 The `select` keyword is the main query command in EdgeDB, and you use it to see results based on the input that comes after it. Keywords in EdgeDB are case insensitive, so `select`, `SELECT` and `SeLeCT` are all the same.
 
-Let's give `select` a try with something really easy: just selecting a string.
+Let's give `select` a try with something really easy: just selecting a string. Type `edgedb` to log into the REPL and give this a try:
 
 ```edgeql
 select 'Jonathan Harker begins his journey.';
@@ -158,9 +234,9 @@ The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' 
 
 ## Inserting objects
 
-Let's get back to the schema. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `insert`.
+Let's start inserting some objects with the schema we already have. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `insert`.
 
-Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. EdgeDB also prefers two spaces for indentation.
+Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. Indentation isn't relevant like it is in languages such as Python and F#, but EdgeDB prefers two spaces for indentation.
 
 ```edgeql
 insert City {
@@ -180,51 +256,53 @@ insert City {
 
 Note that a comma after the last item is optional - you can put it in or leave it out. Here we put a comma at the end sometimes and left it out at other times to show this.
 
-Finally, the `Person` insert would look like this:
+Finally, the `NPC` insert would look like this, but don't insert it yet:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
 ```
 
-But hold on a second. That insert won't link it to any of the `City` inserts that we already did. Here's where our schema needs some improvement:
+Because hold on a second...that insert won't link an `NPC` object it to any of the `City` inserts that we already did. Here's where our schema needs some improvement:
 
-- We have a `Person` type and a `City` type,
-- The `Person` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
+- We have an `NPC` type and a `City` type,
+- The `NPC` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
-So let's not do that `Person` insert. We'll fix the `Person` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
+So let's not do that `NPC` insert. We'll fix the `NPC` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
 
 But first let's look a bit closer at what happens when we use `insert`.
 
-As you can see, strings (`str`) are fine with unicode letters like ț. Even emojis and special characters are just fine: you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
+As you can see, strings (`str`) are fine with unicode letters like ț. Even emojis and special characters are just fine, so you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
 
 EdgeDB also has a byte literal type that gives you the bytes of a string. This is mainly for raw data that humans don't need to view such when saving to files. They must be characters that are 1 byte long.
 
 You create byte literals by adding a `b` in front of the string:
 
 ```edgeql-repl
-edgedb> select b'Bistritz';
+db> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
 ```edgeql-repl
-edgedb> select b'Bistrița';
-error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
-  ┌─ query:1:8
+db> select b'Bistrița';
+error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
+  ┌─ <query>:1:8
   │
 1 │ select b'Bistrița';
   │        ^ error
 ```
 
-Every time you `insert` an item, EdgeDB gives you a `uuid` back. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
+Every time you `insert` an item, EdgeDB gives you a `uuid` back. The `uuid` there is the reply from the server showing which object was just created and that we were successful. UUID stands for [Universally Unique IDentifier](https://en.wikipedia.org/wiki/Universally_unique_identifier), and is used widely to make identifiers that won't be used anywhere else. It will look like this:
 
 ```
-{default::Person {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
+{default::NPC {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
 ```
+
+You probably noticed this already when we inserted our first three `City` objects.
 
 It is also what shows up when you use `select` to select a type. Just typing `select` with a type will show you all the `uuid`s for the type. Let's look at all the cities we have so far:
 
@@ -283,7 +361,7 @@ This gives the output:
 }
 ```
 
-If you just want to return a single part of a type without the object structure, you can use `.` after the type name. For example, `select City.modern_name` will give this output:
+If you just want to return a single property or link of an object, you can use `.` after the type name. For example, `select City.modern_name` will return a set of strings for all of the `City` objects in the database so far. It will give this output:
 
 ```
 {'Budapest', 'Bistrița'}
@@ -346,7 +424,17 @@ And here is the output:
 }
 ```
 
-This brings up an interesting discussion about type safety. EdgeDB is strongly typed, meaning that everything needs a type and it will not try to mix different types together. So if you write `select 'Jonathan Harker' + 8;` it will simply refuse with an error: `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'. But we didn't declare a type for `oh_and_by_the_way`, so how did EdgeDB know that it was a `str`?
+This brings up an interesting discussion about type safety. EdgeDB is strongly typed, meaning that everything needs a type and it will not try to mix different types together. So this query will not work: 
+
+```edgeql
+db> select City {
+  name_in_dracula := .name,
+  name_today := .modern_name,
+  oh_and_by_the_way := 'This is a city in the book Dracula written in the year' + 1897
+ };
+```
+
+EdgeDB refuses with the message `operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'`. But we didn't declare a type for `oh_and_by_the_way`, so how did EdgeDB know that it was a `str`?
 
 EdgeDB uses what is known as "type inference" to guess the type, meaning that it can usually figure out the type itself. That is what happens here: EdgeDB knows that we are creating a `str` because we enclosed it in quotes. In other words, the type is still a concrete `str` even if we didn't specify that it was.
 
@@ -374,49 +462,66 @@ There is a way to change one type to another that we will learn in the next chap
 
 ## Links
 
-So now the last thing left to do is to change our `property` in `Person` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `Person` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `Person`. We'll change `Person` to look like this:
+So now the last thing left to do is to change our `property` in `NPC` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `NPC` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `NPC`. We'll change `NPC` to look like this:
 
 ```sdl
-type Person {
+type NPC {
   required property name -> str;
   multi link places_visited -> City;
 }
 ```
 
-We wrote `multi` in front of `link` because one `Person` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
+We wrote `multi` in front of `link` because one `NPC` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
 
-Now when we insert Jonathan Harker, he will be connected to the type `City`. Don't forget that `places_visited` is not `required`, so we can still insert with just his name to create him:
+And now do a migration with `edgedb migration create` and `edgedb migrate`. The CLI questions this time are pretty easy:
+
+```
+c:\easy-edgedb>edgedb migration create
+Connecting to an EdgeDB instance at localhost:10716...
+Did you drop property 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
+> y
+Did you create link 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
+> y
+```
+
+When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi link` just means that an `NPC` _can_ link to one or more `City` types, but they don't have to.
+
+Now when we insert Jonathan Harker, he can be connected to one or more `City` objects. Don't forget that `places_visited` is not `required`, so we could do an `insert` with just his name to create him. It would look like this:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
 };
 ```
 
-But this would only create a `Person` type connected to the `City` type but with nothing in it. Let's see what's inside:
+If we were to do that, it would only create an `NPC` type connected to the `City` type but with nothing in it. And if we did a query on the `NPC` type as follows:
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
 ```
 
-Here is the output: `{default::Person {name: 'Jonathan Harker', places_visited: {}}}`
+Then the output wouldn't show any links to any `City` objects:
 
-But we want to have Jonathan be connected to the cities he has traveled to. We'll change `places_visited` when we `insert` to `places_visited := City`:
+```
+{default::NPC {name: 'Jonathan Harker', places_visited: {}}}
+```
+
+But we want to have Jonathan be connected to the cities he has traveled to. So instead of just giving him a `name`, we'll also give him a `places_visited` multi link when we `insert` by writing `places_visited := City`:
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
 ```
 
-Now let's see the places that Jonathan has visited. The code below is almost but not quite what we need:
+Now let's see the places that Jonathan has visited. The query below is almost but not quite what we need:
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
@@ -426,7 +531,7 @@ Here is the output:
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {id: 4ba1074e-ff3f-11eb-aeb7-cf15feb714ef},
@@ -440,7 +545,7 @@ Here is the output:
 Close! But we didn't mention any properties inside `City` so we just got the object id numbers. Now we just need to let EdgeDB know that we want to see the `name` property of the `City` type. To do that, add a colon and then put `name` inside curly brackets.
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited: {
     name
@@ -452,7 +557,7 @@ Success! Now we get the output we wanted:
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {name: 'Munich'},
@@ -463,9 +568,9 @@ Success! Now we get the output we wanted:
 }
 ```
 
-Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects, so this is no problem yet. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
+Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects and one `NPC` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
 
-Note that if you have inserted "Johnathan Harker" multiple times, you will have multiple `Person` objects with that name corresponding to each `insert` command. This is OK for now. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `Person` with the same name.
+Note that if you inserted "Jonathan Harker" multiple times (or any other `NPC` objects with the same name), you will now have multiple `NPC` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `NPC` with the same name.
 
 [Here is all our code so far up to Chapter 1.](code.md)
 

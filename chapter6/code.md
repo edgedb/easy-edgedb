@@ -9,7 +9,7 @@ module default {
   }
 
   type PC extending Person {
-    required property transport -> Transport;
+    required property class -> Class;
   }
 
   scalar type HumanAge extending int16 {
@@ -34,20 +34,25 @@ module default {
     property important_places -> array<str>;
   }
 
+  type Castle extending Place;
+
   type City extending Place;
 
   type Country extending Place;
 
   type OtherPlace extending Place;
 
-  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
-  type Time {
-    required property clock -> str;
-    property clock_time := <cal::local_time>.clock;
-    property hour := .clock[0:2];
-    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-  }
+  scalar type SleepState extending enum <Asleep, Awake>;
+  
+  type Time { 
+    required property clock -> str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
 }
 
 
@@ -71,7 +76,7 @@ insert City {
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 
 insert Country {
@@ -90,7 +95,7 @@ insert Country {
   name := 'Slovakia'
 };
 
-insert OtherPlace {
+insert Castle {
   name := 'Castle Dracula'
 };
 
@@ -128,13 +133,13 @@ insert Vampire {
   age := 800,
   slaves := {
     (insert MinorVampire {
-      name := 'Woman 1',
+      name := 'Vampire Woman 1',
   }),
     (insert MinorVampire {
-     name := 'Woman 2',
+     name := 'Vampire Woman 2',
   }),
     (insert MinorVampire {
-     name := 'Woman 3',
+     name := 'Vampire Woman 3',
   }),
  },
    places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})

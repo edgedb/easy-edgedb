@@ -32,8 +32,9 @@ type Crewman extending HasNumber, Person {
 现在我们有了 `Crewman` 并且不需要为他们赋予名字，只需要给他们一个编号，而函数 `count()` 可以使我们对船员的插入变得很容易。我们只需要重复执行五次下面的语句：
 
 ```edgeql
-insert Crewman {
-  number := count(detached Crewman) + 1
+with next_number := count(Crewman) + 1,
+  insert Crewman {
+  number := next_number
 };
 ```
 
@@ -261,7 +262,7 @@ select Person {
 那么对于更简单的标量类型会怎样？我们知道 EdgeDB 在整数、浮点数等不同类型方面是非常精确的，但是如果你只是想知道一个数字是否是整数呢？我们同样可以使用 `IS`，但看起来有点冗余：
 
 ```edgeql
-with year := 1887,
+with year := 1893,
 select year is int16 or year is int32 or year is int64;
 ```
 
@@ -269,7 +270,7 @@ select year is int16 or year is int32 or year is int64;
 
 幸运的是，`int16` 这些类型都是从 {ref}`抽象类型 <docs:ref_std_abstract_types>` 扩展出来的，我们可以使用这些抽象类型，它们都以 `any` 开头，包括 `anytype`，`anyscalar`，`anyenum`，`anytuple`，`anyint`，`anyfloat`，`anyreal`。唯一可能让你不确定的是 `anyreal`：它意味着任何实数，包括整型和浮点型，以及 `decimal` 类型。
 
-因此，你可以将上述输入简化为 `select 1887 is anyint` 并获得 `{true}`。
+因此，你可以将上述输入简化为 `select 1893 is anyint` 并获得 `{true}`。
 
 ## Multi 的使用
 

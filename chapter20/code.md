@@ -28,11 +28,19 @@ module default {
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
 
+  scalar type PCNumber extending sequence;
+
   type PC extending Person {
-    required property transport -> Transport;
-      overloaded required property name -> str {
-        constraint max_len_value(30);
-      }
+    required property class -> Class;
+    property created_at -> datetime {
+      default := datetime_current()
+    }
+    required property number -> PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
+    overloaded required property name -> str {
+      constraint max_len_value(30);
+    }
   }
 
   type Lord extending Person {
@@ -66,7 +74,7 @@ module default {
   }
 
   type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
     index on (.name ++ ': ' ++ <str>.population);
   }
@@ -92,14 +100,17 @@ module default {
     property doors -> array<int16>;
   }
 
-  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
-  type Time {
-    required property clock -> str;
-    property clock_time := <cal::local_time>.clock;
-    property hour := .clock[0:2];
-    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-  }
+  scalar type SleepState extending enum <Asleep, Awake>;
+  
+  type Time { 
+    required property clock -> str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
 
   abstract type HasNumber {
     required property number -> int16;
@@ -142,6 +153,9 @@ module default {
     required link author -> Person
   }
 
+  function get_url() -> str
+    using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
   type Event {
     required property description -> str;
     required property start_time -> cal::local_datetime;
@@ -149,9 +163,9 @@ module default {
     required multi link place -> Place;
     required multi link people -> Person;
     multi link excerpt -> BookExcerpt;
-    property exact_location -> tuple<float64, float64>;
+    property location -> tuple<float64, float64>;
     property east -> bool;
-    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+    property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
   abstract type Currency {
@@ -251,7 +265,7 @@ insert City {
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
 };
 
 for country_name in {'Hungary', 'Romania', 'France', 'Slovakia', 'Bulgaria'}
@@ -317,8 +331,8 @@ insert Ship {
     union (
       insert Crewman {
         number := n,
-        first_appearance := cal::to_local_date(1887, 7, 6),
-        last_appearance := cal::to_local_date(1887, 7, 16),
+        first_appearance := cal::to_local_date(1893, 7, 6),
+        last_appearance := cal::to_local_date(1893, 7, 16),
       }
     )
   )
@@ -355,7 +369,7 @@ update NPC filter .name in {'John Seward', 'Quincey Morris'}
 
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 
@@ -379,23 +393,23 @@ insert NPC {
 
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 
 update Person
-  filter not exists .strength
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
   set {
     strength := <int16>round(random() * 5)
-};
+  };
 
 update Person filter .name = 'Lucy Westenra'
   set {
-  last_appearance := cal::to_local_date(1887, 9, 20)
+  last_appearance := cal::to_local_date(1893, 9, 20)
 };
 
 with lucy := assert_single((select Person filter .name = 'Lucy Westenra'))
@@ -405,16 +419,16 @@ insert Vampire {
   strength := 20,
   slaves := {
     (insert MinorVampire {
-     name := 'Woman 1',
-     strength := 9,
+     name := 'Vampire Woman 1',
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
-     name := 'Woman 2',
-     strength := 9,
+     name := 'Vampire Woman 2',
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
-     name := 'Woman 3',
-     strength := 9,
+     name := 'Vampire Woman 3',
+     strength := <int16>round(random() * 5) + 5,
   }),
     (insert MinorVampire {
      name := 'Lucy',
@@ -442,13 +456,13 @@ update City filter .name = 'London'
  };
 
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 4, 0, 0),
   author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
 
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 5, 0, 0),
   author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
@@ -456,19 +470,12 @@ insert BookExcerpt {
 select (
   update NPC filter .name = 'Renfield'
     set {
-  last_appearance := <cal::local_date>'1887-10-03'
+  last_appearance := <cal::local_date>'1893-10-03'
 })
   {
   name,
   last_appearance
   };
-
-create function fight_2(one: Person, two: Person) -> str
-  using (
-    select one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!' if one.strength > two.strength
-      else
-    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
-);
 
 insert Pound {
  owner := (select Person filter .name = 'Count Dracula'),
@@ -511,11 +518,11 @@ insert OtherPlace {
 };
 
 for visit in {
-    ('The Demeter', 'Varna', '1887-07-06'),
-    ('The Demeter', 'Bosphorus', '1887-07-11'),
-    ('The Demeter', 'Whitby', '1887-08-08'),
-    ('Czarina Catherine', 'London', '1887-10-05'),
-    ('Czarina Catherine', 'Galatz', '1887-10-28')}
+    ('The Demeter', 'Varna', '1893-07-06'),
+    ('The Demeter', 'Bosphorus', '1893-07-11'),
+    ('The Demeter', 'Whitby', '1893-08-08'),
+    ('Czarina Catherine', 'London', '1893-10-05'),
+    ('Czarina Catherine', 'Galatz', '1893-10-28')}
 union (
  insert Visit {
    ship := (select Ship filter .name = visit.0),
@@ -569,6 +576,6 @@ insert Country {
 
 update MinorVampire filter .name != 'Lucy'
 set {
-  last_appearance := <cal::local_date>'1887-11-05'
+  last_appearance := <cal::local_date>'1893-11-05'
 };
 ```

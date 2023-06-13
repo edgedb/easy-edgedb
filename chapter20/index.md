@@ -6,7 +6,9 @@ tags: Ddl, Sdl, Edgedb Community
 
 You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
 
-> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin. Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
+> Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin.
+>
+> Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) and search for "the look of hate in them turned to triumph".
 
@@ -15,7 +17,7 @@ We are sure that the vampire women have been destroyed, however, so we can do on
 ```edgeql
 update MinorVampire filter .name != 'Lucy'
 set {
-  last_appearance := <cal::local_date>'1887-11-05'
+  last_appearance := <cal::local_date>'1893-11-05'
 };
 ```
 
@@ -25,7 +27,7 @@ Depending on what happens in the last battle, we might have to do the same for D
 
 [Here's the schema and inserted data we have up to Chapter 20.](code.md)
 
-Now that you've made it through 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
+Now that you've made it through all 20 chapters, you should have a good understanding of the schema that we put together and how to work with it. Let's take a look at it one more time from top to bottom. We'll make sure that we fully understand it and think about which parts are good, and which need improvement, for an actual game.
 
 First let's start with the schema in general.
 
@@ -38,7 +40,7 @@ Here's an example with `Person`, which starts like this and shows us the module 
 
 For a real game our schema would probably be a lot larger with various modules. We might see types in different modules like `abstract type characters::Person` and `abstract type places::Place`.
 
-Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game
+Our first type is called `HasNameAndCoffins`, which is abstract because we don't want any actual objects of this type. Instead, it is extended by types like `Place` because every place in our game:
 
 1. has a name, and
 2. has a number of coffins (which is important because places without coffins are safer from vampires).
@@ -69,7 +71,8 @@ abstract type Person {
     delegated constraint exclusive;
   }
   property age -> int16;
-  property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+  property conversational_name := .title ++ ' ' ++ .name 
+    if exists .title else .name;
   property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   property strength -> int16;
   multi link places_visited -> Place;
@@ -88,17 +91,18 @@ Every property has a type (like `str`, `bigint`, etc.). Computed properties have
 The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
-error: possibly more than one element returned by an expression for a computed link 'former_self' declared as 'single'
+error: possibly more than one element returned by an expression
+for a computed link 'former_self' declared as 'single'
 ```
 
-This could be what you want for `lover`, but it wouldn't work well for `places_visited`.
+This could be what you want for `lover`, but it wouldn't work well for `places_visited`. And backlinks have the opposite behavior: a backlink is a `multi link` by default, meaning that you have to write `single link` otherwise.
 
-For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and always ISO8601 compliant.
+For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and ISO8601 compliant.
 
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
-edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -152,7 +156,7 @@ select Person {
 
 In our case, that's just Lucy: `{default::NPC {name: 'Lucy Westenra', vampire_name: {'Lucy'}}}` But if we wanted, we could extend the game back before the events of the book and link the vampire women to an `NPC` type. That would become their `former_self`.
 
-Our two enums were used for the `PC` and `Sailor` types:
+The `PC` and `Sailor` types show two enums and one sequence that we used:
 
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
@@ -160,19 +164,30 @@ type Sailor extending Person {
   property rank -> Rank;
 }
 
-scalar type Transport extending enum<Feet, HorseDrawnCarriage, Train>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
+scalar type PCNumber extending sequence;
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
+  property created_at -> datetime {
+    default := datetime_current()
+  }
+  required property number -> PCNumber {
+    default := sequence_next(introspect PCNumber);
+  }
+  overloaded required property name -> str {
+    constraint max_len_value(30);
+  }
 }
 ```
 
-The enum `Transport` never really got used, and needs some more transportation types. We didn't look at these in detail, but in the book there are a lot of different types of transport. In the last chapter, Arthur's team that waited at Varna used a boat called a "steam launch" which is smaller than the boat "The Demeter", for example. This enum would probably be used in the game logic itself in this sort of way:
+The `PCNumber` type has been quite useful, allowing us to keep track of how many `PC` objects have been created even if some of them get deleted later. If you end up adding and deleting a lot of `PC` objects then the following query will show pretty different numbers between the latest sequence number and the total number of `PC` objects:
 
-- Choosing `Feet` gives the character a certain speed and costs nothing,
-- `HorseDrawnCarriage` increases speed but decreases money,
-- `Train` increases speed the most but decreases money and can only follow railway lines.
+```edgeql
+with latest := (select <str>max(PC.number)),
+select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
+```
 
-`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but never used. In it, we have a `clock` property that is just a string, but gets used in this way:
+`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `Visit` type we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
@@ -186,7 +201,8 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property sleep_state := 'asleep' 
+    if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
@@ -251,7 +267,7 @@ type Lord extending Person {
 };
 ```
 
-(We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc.)
+We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc.
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
@@ -326,15 +342,80 @@ type Event {
   required multi link place -> Place;
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt;
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 ++ '_N_' 
+    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
-This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property makes it easy for usersof the database to find events. It might contain something like `'The Demeter arrives at Whitby, crashing on the beach'`.
+This one is probably closest to an actual usable type for a real game. With `start_time` and `end_time`, `place` and `people` (plus `url`) we can properly arrange which characters are at which locations, and when. The `description` property makes it easy for users of the database to find events. It might contain something like `'The Demeter arrives at Whitby, crashing on the beach'`.
 
-The last two types in our schema, `Currency` and `Pound`, were created two chapters ago so we won't review them here.
+And the output for the `Event` type is especially nice as JSON. You can imagine how useful this might be for our game setting:
+
+```
+{
+  "id": "d80dde9c-fec9-11ed-9c27-bffd94675ea1",
+  "description": "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
+  "east": false,
+  "location": [54.4858, 0.6206],
+  "url": "https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W54.4858_N_0.6206_W",
+  "end_time": "1893-09-11T23:00:00",
+  "start_time": "1893-09-11T18:00:00",
+  "people": [
+    {
+      "strength": 4,
+      "id": "f22b1910-fd08-11ed-ab09-9b95a39d5d69",
+      "first_appearance": null,
+      "last_appearance": "1893-09-20",
+      "name": "Lucy Westenra",
+      "age": null,
+      "title": null,
+      "conversational_name": "Lucy Westenra",
+      "degrees": null,
+      "pen_name": "Lucy Westenra"
+    },
+    {
+      "strength": 2,
+      "id": "dea9080a-fe8b-11ed-9759-f3313536553b",
+      "first_appearance": null,
+      "last_appearance": null,
+      "name": "John Seward",
+      "age": null,
+      "title": null,
+      "conversational_name": "John Seward",
+      "degrees": null,
+      "pen_name": "John Seward"
+    },
+    {
+      "strength": 4,
+      "id": "70bad6e0-fea2-11ed-97e2-ef3281250140",
+      "first_appearance": null,
+      "last_appearance": null,
+      "name": "Abraham Van Helsing",
+      "age": null,
+      "title": "Dr.",
+      "conversational_name": "Dr. Abraham Van Helsing",
+      "degrees": "M.D., Ph. D. Lit., etc.",
+      "pen_name": "Abraham Van Helsing, M.D., Ph. D. Lit., etc."
+    }
+  ],
+  "place": [
+    {
+      "id": "d64af6d0-fec9-11ed-9c27-a3cf8be8d973",
+      "important_places": null,
+      "modern_name": null,
+      "name": "Whitby",
+      "coffins": 0
+    }
+  ],
+  "excerpt": []
+}
+```
+
+You'll notice that the `excerpt` part is empty. To fix this, we could add a computed property to `Event` that links to any `BookExcerpt` objects that have a `date` that falls between the `start_time` and `end_time` for `Event`.
+
+The last two types in our schema, `Currency` and `Pound`, were created just two chapters ago so they are still fresh in our Mind. We won't review them here.
 
 ## Navigating EdgeDB documentation
 
@@ -392,15 +473,20 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-DDL is something you'll see mainly when dealing with migrations because it's good for expressing incremental changes. Up to now, we've only mentioned DDL for functions because it's so easy to just add `create` to make a function whenever you need.
+We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL. Take this attempt to use DDL for example and the error output it generates:
 
-SDL: `function says_hi() -> str using('hi');`
+```edgeql-repl
+db> create function hi() -> str using ("Hi");
+error: QueryError: bare DDL statements are not allowed in this database
+  ┌─ <query>:1:1
+  │
+1 │ create function hi() -> str using ("Hi");
+  │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use the migration commands instead.
+  │
+  = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.  The `edgedb migrate` command normally sets this to avoid accidental schema changes outside of the migration flow.
+```
 
-DDL: `create function says_hi() -> str using('hi')`
-
-And even the capitalization doesn't matter.
-
-But for types, DDL requires a lot more typing, using keywords like `create`, `set`, `alter`, and so on. Throughout this book, we have used the {ref}` ``edgedb migration`` <docs:ref_cli_edgedb_migration>` tools that make it possible to work with the schema using only SDL.
+If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run.
 
 ## EdgeDB lexical structure
 

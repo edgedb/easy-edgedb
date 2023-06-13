@@ -30,19 +30,25 @@ insert Country {
 
 （在第 9 章中，我们将学习如何只用一个 `insert` 来做到同时插入多个对象！）
 
-现在，我们接着为既不是城市也不是国家的地方创建一个名为 `OtherPlace` 的新类型。这很容易做到：`type OtherPlace extending Place;`。
+现在，我们接着为既不是城市也不是国家的地方创建二个名为 `Castle` 和 `OtherPlace` 的新类型。这很容易做到：
 
-然后，插入我们的第一个 `OtherPlace`：
-
-```edgeql
-insert OtherPlace {
-  name := 'Castle Dracula'
-};
+```sdl
+type Castle extending Place;
+type OtherPlace extending Place;
 ```
 
-`OtherPlace` 可以为我们存储大量来自 `Place` 类型但不属于 `City` 类型的地点。
+然后，我们要更新已插入 Count Dracula 的 `Castle`：
 
-回到乔纳森：在我们的数据库中，他去过四个城市、一个国家和一个 `OtherPlace`……但他没有去过斯洛伐克（Slovakia）或法国（France），所以我们不能直接用 `places_visited := select Place` 对其进行插入。但我们可以根据他访问过的地方的名称对 `Place` 进行过滤。像这样：
+```edgeql
+update Castle filter .name = 'Castle Dracula'
+  set {
+    doors := [6, 9, 10]
+  };
+```
+
+然后 `OtherPlace` 可以为我们存储大量来自 `Place` 类型但不属于 `City` 类型的地点。
+
+回到乔纳森：在我们的数据库中，他去过四个城市、一个国家和一个 `Castle`……但他没有去过斯洛伐克（Slovakia）或法国（France），所以我们不能直接用 `places_visited := select Place` 对其进行插入。但我们可以根据他访问过的地方的名称对 `Place` 进行过滤。像这样：
 
 ```edgeql
 insert NPC {
@@ -145,10 +151,10 @@ type Vampire extending Person {
 - 如果这两种类型相互链接，我们将无法在需要时删除它们。删除时的错误提示如下所示：
 
 ```edgeql-repl
-edgedb> delete MinorVampire;
+db> delete MinorVampire;
 ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
   Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
-edgedb> delete Vampire;
+db> delete Vampire;
 ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
@@ -168,13 +174,13 @@ insert Vampire {
   age := 800,
   slaves := {
     (insert MinorVampire {
-      name := 'Woman 1',
+      name := 'Vampire Woman 1',
     }),
     (insert MinorVampire {
-      name := 'Woman 2',
+      name := 'Vampire Woman 2',
     }),
     (insert MinorVampire {
-      name := 'Woman 3',
+      name := 'Vampire Woman 3',
     }),
   }
 };
@@ -200,9 +206,9 @@ select Vampire {
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
     },
   },
 }
@@ -245,27 +251,27 @@ select <json>Vampire {
 
 ## 从 JSON 转换回来
 
-那么反过来呢，就是把 JSON 转回成 EdgeDB 的类型呢？这也是可行的，但要当心 JSON 数据的类型，因为 EdgeDB 讲究转换的对称性：转成 JSON 前是什么类型，转回来还应该是什么类型。比如，《德古拉》里出现的第一个日期字符串是 `'18870503'`，如果我们尝试将它的 JSON 值转换为一个 `int64`，它将无法正常工作：
+那么反过来呢，就是把 JSON 转回成 EdgeDB 的类型呢？这也是可行的，但要当心 JSON 数据的类型，因为 EdgeDB 讲究转换的对称性：转成 JSON 前是什么类型，转回来还应该是什么类型。比如，《德古拉》里出现的第一个日期字符串是 `'18930503'`，如果我们尝试将它的 JSON 值转换为一个 `int64`，它将无法正常工作：
 
 ```edgeql
-select <int64><json>'18870503';
+select <int64><json>'18930503';
 ```
 
 问题出在从 JSON 字符串到 EdgeDB `int64` 的转换，错误提示为：`ERROR: InvalidValueError: expected json number or null; got json string`。也就是说，EdgeDB `str` 转换为 JSON 字符串后，又试图转换为 EdgeDB `int64`，这是不可行的。（除非是 EdgeDB 数字类型转换为 JSON 数字，才可再转换回 EdgeDB 数字类型。）因此，这里为了保持对称，你需要先将 JSON 字符串转换为 EdgeDB 的 `str`，然后再转换为 `int64`：
 
 ```edgeql
-select <int64><str><json>'18870503';
+select <int64><str><json>'18930503';
 ```
 
-现在它正常工作了：我们可以得到 `{18870503}`，过程是 EdgeDB `str`，变成了 JSON 字符串，然后又回到 EdgeDB `str`，最后被转换为 `int64`。
+现在它正常工作了：我们可以得到 `{18930503}`，过程是 EdgeDB `str`，变成了 JSON 字符串，然后又回到 EdgeDB `str`，最后被转换为 `int64`。
 
 接下来，我们再来看下面的列子，即把《德古拉》里出现的第一个日期字符串转换成 JSON 字符串后再转换回成 `cal::local_date` 类型：
 
 ```edgeql
-select <cal::local_date><json>'18870503';
+select <cal::local_date><json>'18930503';
 ```
 
-你会发现它是可以正确执行的，结果是 `{<cal::local_date>'1887-05-03'}`。因为 `<json>` 将 `'18870503'` 转换为了 JSON 字符串，且 `cal::local_date` 可以接收 JSON 字符串以进行创建。换句话说，当你对 EdgeDB 的 `cal::local_date` 进行 JSON 转换时，你将得到一个 JSON 字符串，因此反之，你固然可以将符合日期格式的 JSON 字符串直接转换回 `cal::local_date`。
+你会发现它是可以正确执行的，结果是 `{<cal::local_date>'1893-05-03'}`。因为 `<json>` 将 `'18930503'` 转换为了 JSON 字符串，且 `cal::local_date` 可以接收 JSON 字符串以进行创建。换句话说，当你对 EdgeDB 的 `cal::local_date` 进行 JSON 转换时，你将得到一个 JSON 字符串，因此反之，你固然可以将符合日期格式的 JSON 字符串直接转换回 `cal::local_date`。
 
 关于 JSON 的文档 {ref}`documentation on JSON <docs:ref_std_json>` 解释了哪些 JSON 类型可以转换为哪些 EdgeDB 类型，列出了可以处理 JSON 值的函数，如果在你的应用中需要对 JSON 进行大量转换，可以将其添加至书签。
 

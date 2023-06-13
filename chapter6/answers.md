@@ -51,9 +51,9 @@ And should display these characters we've inserted so far:
 
 ```
 {
-  Object {name: 'Woman 1'},
-  Object {name: 'Woman 2'},
-  Object {name: 'Woman 3'},
+  Object {name: 'Vampire Woman 1'},
+  Object {name: 'Vampire Woman 2'},
+  Object {name: 'Vampire Woman 3'},
   Object {name: 'Jonathan Harker'},
   Object {name: 'Count Dracula'},
 }
@@ -107,7 +107,7 @@ set {
 };
 ```
 
-Now their names are 'Woman 1 the Great', 'Mina Murray the Great', and so on.
+Now their names are 'Vampire Woman 1 the Great', 'Mina Murray the Great', and so on.
 
 **Bonus question**: to undo this, just set `name` to the same string minus the last 10 characters using `[0:-10]`:
 

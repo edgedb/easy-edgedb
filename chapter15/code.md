@@ -24,11 +24,19 @@ module default {
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
 
+  scalar type PCNumber extending sequence;
+
   type PC extending Person {
-    required property transport -> Transport;
-      overloaded required property name -> str {
-        constraint max_len_value(30);
-      }
+    required property class -> Class;
+    property created_at -> datetime {
+      default := datetime_current()
+    }
+    required property number -> PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
+    overloaded required property name -> str {
+      constraint max_len_value(30);
+    }
   }
 
   type Lord extending Person {
@@ -65,7 +73,7 @@ module default {
   }
 
   type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
   }
 
@@ -82,14 +90,17 @@ module default {
     property doors -> array<int16>;
   }
 
-  scalar type Transport extending enum<Feet, Train, HorseDrawnCarriage>;
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
-  type Time {
-    required property clock -> str;
-    property clock_time := <cal::local_time>.clock;
-    property hour := .clock[0:2];
-    property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
-  }
+  scalar type SleepState extending enum <Asleep, Awake>;
+  
+  type Time { 
+    required property clock -> str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
 
   abstract type HasNumber {
     required property number -> int16;
@@ -110,15 +121,19 @@ module default {
     multi link crew -> Crewman;
   }
 
+  function get_url() -> str
+    using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+
   type Event {
     required property description -> str;
     required property start_time -> cal::local_datetime;
     required property end_time -> cal::local_datetime;
     required multi link place -> Place;
     required multi link people -> Person;
-    property exact_location -> tuple<float64, float64>;
+    property location -> tuple<float64, float64>;
     property east -> bool;
-    property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+    property url := get_url() ++ <str>.location.0 ++ '_N_' 
+    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
   function fight(one: Person, two: Person) -> str
@@ -172,7 +187,12 @@ insert City {
 insert PC {
   name := 'Emil Sinclair',
   places_visited := City,
-  transport := Transport.HorseDrawnCarriage,
+  class := Class.Mystic,
+};
+
+insert PC {
+ name := 'Max Demian',
+ class := Class.Mystic
 };
 
 insert Country {
@@ -250,8 +270,8 @@ for n in {1, 2, 3, 4, 5}
   union (
   insert Crewman {
   number := n,
-  first_appearance := cal::to_local_date(1887, 7, 6),
-  last_appearance := cal::to_local_date(1887, 7, 16),
+  first_appearance := cal::to_local_date(1893, 7, 6),
+  last_appearance := cal::to_local_date(1893, 7, 16),
 });
 
 insert Ship {
@@ -291,7 +311,7 @@ update NPC filter .name in {'John Seward', 'Quincey Morris'}
 
 insert NPC {
   name := 'Renfield',
-  first_appearance := cal::to_local_date(1887, 5, 26),
+  first_appearance := cal::to_local_date(1893, 5, 26),
   strength := 10,
 };
 
@@ -315,23 +335,23 @@ insert NPC {
 
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
-  start_time := cal::to_local_datetime(1887, 9, 11, 18, 0, 0),
-  end_time := cal::to_local_datetime(1887, 9, 11, 23, 0, 0),
+  start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
+  end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  exact_location := (54.4858, 0.6206),
+  location := (54.4858, 0.6206),
   east := false
 };
 
 update Person
-  filter not exists .strength
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
   set {
     strength := <int16>round(random() * 5)
-};
+  };
 
 update Person filter .name = 'Lucy Westenra'
   set {
-  last_appearance := cal::to_local_date(1887, 9, 20)
+  last_appearance := cal::to_local_date(1893, 9, 20)
 };
 
 with lucy := assert_single((select Person filter .name = 'Lucy Westenra'))
@@ -341,13 +361,13 @@ insert Vampire {
   strength := 20,
   slaves := {
     (insert MinorVampire {
-      name := 'Woman 1',
+      name := 'Vampire Woman 1',
   }),
     (insert MinorVampire {
-     name := 'Woman 2',
+     name := 'Vampire Woman 2',
   }),
     (insert MinorVampire {
-     name := 'Woman 3',
+     name := 'Vampire Woman 3',
   }),
     (insert MinorVampire {
      name := 'Lucy',

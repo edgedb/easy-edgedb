@@ -70,7 +70,7 @@ type Pound extending Currency {
 }
 ```
 
-现在，让我们来给德古拉分配一些钱：2500 英镑、50 先令和 200 便士。在 1887 年这也许是一大笔钱了。
+现在，让我们来给德古拉分配一些钱：2500 英镑、50 先令和 200 便士。在 1893 年这也许是一大笔钱了。
 
 ```edgeql
 insert Pound {
@@ -272,8 +272,8 @@ for n in {1, 2, 3, 4, 5}
 union (
   insert Crewman {
     number := n,
-    first_appearance := cal::to_local_date(1887, 7, 6),
-    last_appearance := cal::to_local_date(1887, 7, 16),
+    first_appearance := cal::to_local_date(1893, 7, 6),
+    last_appearance := cal::to_local_date(1893, 7, 16),
   }
 );
 
@@ -332,8 +332,8 @@ insert Ship {
     union (
       insert Crewman {
         number := n,
-        first_appearance := cal::to_local_date(1887, 7, 6),
-        last_appearance := cal::to_local_date(1887, 7, 16),
+        first_appearance := cal::to_local_date(1893, 7, 6),
+        last_appearance := cal::to_local_date(1893, 7, 16),
       }
     )
   )
@@ -359,9 +359,9 @@ insert Ship {
    下面是他们的数据（姓名、出生日期（`first_appearance`）、变成 MinorVampire 的日期（`last_appearance`））：
 
    ```
-   ('Fritz Frosch', '1850-01-15', '1887-09-11'),
-   ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
-   ('김훈', '1860-09-09', '1887-09-11'),
+   ('Fritz Frosch', '1850-01-15', '1893-09-11'),
+   ('Levanta Sinyeva', '1862-02-24', '1893-09-11'),
+   ('김훈', '1860-09-09', '1893-09-11'),
    ```
 
 [点击这里查看答案](answers.md)

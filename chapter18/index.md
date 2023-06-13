@@ -4,7 +4,11 @@ tags: Complex Inserts, Schema Cleanup
 
 # Chapter 18 - Using Dracula's own weapon against him
 
-> Van Helsing was correct: Mina is connected to Dracula. He continues to use hypnotism to find out more about where he is and what he is doing. Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula. They find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Van Helsing was correct: Mina is connected to Dracula. Van Helsing continues to use hypnotism to find out more about where Dracula is and what he is doing. 
+>
+> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula.
+>
+> Our heroes eventually find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
 This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania, and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
 
@@ -70,7 +74,7 @@ type Pound extending Currency {
 }
 ```
 
-Now let's give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1887.
+Now let's do a schema migration and try it out. First we'll give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1893.
 
 ```edgeql
 insert Pound {
@@ -86,7 +90,8 @@ Then we can use the conversion rates to display the total amount he owns in poun
 ```edgeql
 select Currency {
   owner: {name},
-  total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
+  total := .major_amount + (.minor_amount / .minor_conversion) 
+    + (.sub_minor_amount / .sub_minor_conversion)
 };
 ```
 
@@ -113,7 +118,8 @@ That signature has an extra `d: int64` part for the number of decimal places we 
 All together, it looks like this:
 
 ```edgeql
-select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+select (for character in {'Jonathan Harker', 'Mina Murray',
+  'The innkeeper', 'Emil Sinclair'}
   union (
     insert Pound {
       owner := assert_single((select Person filter .name = character)),
@@ -202,7 +208,7 @@ select (
 };
 ```
 
-Here's the output: `{default::Dollar {total_money: 100.55}}`. Perfect!
+Then the output would look like `{default::Dollar {total_money: 100.55}}`.
 
 Dollars won't be used in this game, but if they were, we'd create it with `type Dollar extending Currency`.
 
@@ -272,8 +278,8 @@ for n in {1, 2, 3, 4, 5}
 union (
   insert Crewman {
     number := n,
-    first_appearance := cal::to_local_date(1887, 7, 6),
-    last_appearance := cal::to_local_date(1887, 7, 16),
+    first_appearance := cal::to_local_date(1893, 7, 6),
+    last_appearance := cal::to_local_date(1893, 7, 16),
   }
 );
 
@@ -332,8 +338,8 @@ insert Ship {
     union (
       insert Crewman {
         number := n,
-        first_appearance := cal::to_local_date(1887, 7, 6),
-        last_appearance := cal::to_local_date(1887, 7, 16),
+        first_appearance := cal::to_local_date(1893, 7, 6),
+        last_appearance := cal::to_local_date(1893, 7, 16),
       }
     )
   )
@@ -359,9 +365,9 @@ Much better!
    Here is their data (name, date of birth (`first_appearance`), date turned into a MinorVampire (`last_appearance`)):
 
    ```
-   ('Fritz Frosch', '1850-01-15', '1887-09-11'),
-   ('Levanta Sinyeva', '1862-02-24', '1887-09-11'),
-   ('김훈', '1860-09-09', '1887-09-11'),
+   ('Fritz Frosch', '1850-01-15', '1893-09-11'),
+   ('Levanta Sinyeva', '1862-02-24', '1893-09-11'),
+   ('김훈', '1860-09-09', '1893-09-11'),
    ```
 
 [See the answers here.](answers.md)

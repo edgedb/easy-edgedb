@@ -6,27 +6,29 @@ tags: Overloading Functions, Coalescing
 
 There is no good news for our heroes this chapter:
 
-> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive. Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife. He cuts him with it, and the moment he sees Dr. Seward's blood he stops and tries to drink it, repeating: “The blood is the life! The blood is the life!”. The asylum security men take Renfield away and Dr. Seward is left confused and trying to understand him. He thinks there is a connection between him and the other events. That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again...
+> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive.
+>
+> Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife, causing him to bleed. The moment Renfield sees Dr. Seward's blood he stops and tries to drink it, repeating: “The blood is the life! The blood is the life!”. The asylum security men take Renfield away and Dr. Seward is left confused and trying to understand him. Dr. Seward thinks there is a connection between him and the other events.
+>
+> That night, a wolf controlled by Dracula breaks the windows of Lucy's room and Dracula is able to get in again...
 
 But there is good news for us, because we are going to keep learning about Cartesian products, plus how to overload a function.
 
 ## Overloading functions
 
+Functions can be overloaded in EdgeDB. Overloading a function means to give a function with the same name more than one signature, allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
+
+```
+cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
+cal::to_local_date(dt: datetime, zone: str) -> local_date
+cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
+```
+
 Last chapter, we gave every character a strength of 5 and used the `fight()` function for a few of them. That's why the Innkeeper defeated Dracula, which is obviously not what would really happen. We should give Dracula a more realistic strength, and randomize some of the strength values for some of our characters.
 
-Jonathan Harker is just a human but is still quite strong. We'll give him a strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - he gets 10. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. We can do this with three quick updates:
+Jonathan Harker is just a human but is still quite strong. We'll let him keep his strength of 5. We'll treat that as the maximum strength for a human, except Renfield who is a bit unique - we gave him a strength of 10 when we inserted him. And we'll make sure Count Dracula gets 20 strength, because he's Dracula. So we only have to update Count Dracula's strength:
 
 ```edgeql
-update NPC
-filter .name = 'Jonathan Harker'
-set {
-  strength := 5
-};
-update NPC
-filter .name = 'Renfield'
-set {
-  strength := 10
-};
 update Vampire
 filter .name = 'Count Dracula'
 set {
@@ -34,13 +36,13 @@ set {
 };
 ```
 
-Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Our input looks like this:
+Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
 
 ```edgeql
 select <int16>round(random() * 5);
 ```
 
-So now we'll use this to update our `Person` types and give them all a random strength.
+So now we'll use it to update our `Person` objects (except for Jonathan, Dracula and Renfield) and give them all a random strength.
 
 ```edgeql
 update Person
@@ -50,10 +52,19 @@ update Person
   };
 ```
 
+The vampire women are also pretty strong. Let's give them a random strength plus 5. This will ensure that they are stronger than average humans but not as strong as Dracula:
+
+```edgeql
+update MinorVampire
+  set {
+    strength := <int16>round(random() * 5) + 5
+  };
+```
+
 Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
 
 ```
-{3, 3, 3, 2, 3, 2, 2, 2, 3, 3, 3, 3, 4, 1, 5, 10, 4, 4, 20, 4, 4, 4, 4}
+{1, 1, 7, 8, 10, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
 ```
 
 Looks like it worked.
@@ -74,7 +85,7 @@ function fight(people_names: array<str>, opponent: Person) -> str
   );
 ```
 
-With this overload, we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
+With this overloaded function we accept two arguments: an array of the names of the fighters and a `Person` object that is their opponent. You're seeing a couple of new standard library functions in use here that we'll dig into more later. For now, here are the basics you need to know:
 
 - We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
 - `sum` in the next line of our `select` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
@@ -92,7 +103,16 @@ If we tried to overload our function with an input of `(Person, Person)`, it wou
 
 The function name is the same, but to call it, we enter an array of the fighters' names and the `Person` they are fighting.
 
-Now Jonathan and Renfield are going to try to fight Dracula together. Good luck!
+Let's do a migration now and see what happens if Jonathan and Renfield try to fight Dracula together. The migration output is a little interesting, as EdgeDB simply asks us if we created a function `default::fight` - it doesn't ask us if we overloaded a function. For humans the function looks the same because of the function name (which is what makes overloading convenient), but as far as EdgeDB is concerned this simply an entirely new function.
+
+```
+c:\easy-edgedb>edgedb migration create
+Connecting to an EdgeDB instance at localhost:10716...
+did you create function 'default::fight'? [y,n,l,c,b,s,q,?]
+> y
+```
+
+Now it's time to join together to fight Dracula. Good luck!
 
 ```edgeql
 with
@@ -107,22 +127,22 @@ So did they...
 {'Count Dracula wins!'}
 ```
 
-No, they didn't win. How about four people?
+No, they didn't win. How about five people?
 
 ```edgeql
 with
-  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper'],
+  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper', 'Lucy Westenra'],
   dracula := (select Person filter .name = 'Count Dracula'),
 select fight(party , dracula);
 ```
 
-Much better:
+At this point it is most likely that the random `strength` values for everyone together will be greater than 20 and they will finally win. Then we will see the following output:
 
 ```
-{'Renfield, The innkeeper, Arthur Holmwood, Jonathan Harker win!'}
+{'Jonathan Harker, Renfield, Arthur Holmwood, The innkeeper, Lucy Westenra win!'}
 ```
 
-That's how function overloading works - you can create functions with the same name as long as the signature is different.
+So that's how function overloading works - you can create functions with the same name as long as the signature is different.
 
 You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which we used earlier to get our party strength. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
@@ -138,12 +158,12 @@ function visited(person: str, city: str) -> bool
   );
 ```
 
-Now our queries are much shorter:
+Pretty simple! Let's add it to the schema and do a migration. Now our queries are much shorter:
 
 ```edgeql-repl
-edgedb> select visited('Mina Murray', 'London');
+db> select visited('Mina Murray', 'London');
 {true}
-edgedb> select visited('Mina Murray', 'Bistritz');
+db> select visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
@@ -152,7 +172,8 @@ Thanks to the function, even more complicated queries are still quite readable:
 ```edgeql
 select (
   'Did Mina visit Bistritz? ' ++ <str>visited('Mina Murray', 'Bistritz'),
-  'What about Jonathan and Romania? ' ++ <str>visited('Jonathan Harker', 'Romania')
+  'What about Jonathan and Romania? ' 
+    ++ <str>visited('Jonathan Harker', 'Romania')
 );
 ```
 
@@ -162,12 +183,12 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
-Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to add the names of places that start with b and those that start with f.
+Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to concatenate the names of places that start with b with those that start with x.
 
 ```edgeql
 with b_places := (select Place filter Place.name ilike 'b%'),
-     f_places := (select Place filter Place.name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name;
+     x_places := (select Place filter Place.name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name;
 ```
 
 The result may not be what you'd expect.
@@ -176,7 +197,7 @@ The result may not be what you'd expect.
 {}
 ```
 
-Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's see if the same works when we concatenate with `++` as well.
+Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's make sure that the output is the same when we manually type out the city names:
 
 ```edgeql
 select {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -189,15 +210,18 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   ┌─ query:1:8
   │
 1 │ select {'Buda-Pesth', 'Bistritz'} ++ {};
-  │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider 
+using an explicit type cast or a conversion function.
 ```
 
-Another surprise! This is an important point though: EdgeDB requires a cast for an empty set, because it won't try to guess at what type it is. There's no way to guess the type of an empty set if all we give it is `{}`, so EdgeDB won't try. You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+Ah, that's right - we saw one example of an empty set with a cast in the last chapter when we tried the query `select <str>{} ?? 'Count Dracula is now in Whitby';`. EdgeDB requires a cast for an empty set, because there's no way to know the type of a set if all EdgeDB sees is `{}`.
+
+You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```edgeql-repl
-edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 
@@ -212,10 +236,10 @@ To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
-     f_places := (select Place filter .name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name
-  if exists b_places.name and exists f_places.name
-  else b_places.name ?? f_places.name;
+     x_places := (select Place filter .name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name
+  if exists b_places.name and exists x_places.name
+  else b_places.name ?? x_places.name;
 ```
 
 This returns:
@@ -277,7 +301,7 @@ select has_either.name;
 This gives us the result:
 
 ```
-{'Slovakia', 'Buda-Pesth', 'Castle Dracula'}
+{'Slovakia', 'France', 'Castle Dracula', 'Buda-Pesth'}
 ```
 
 Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
@@ -288,19 +312,13 @@ with cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
 select cities1 ?= cities2;
 ```
 
-and get the output
-
-```
-{false, false, false}
-```
-
-instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query:
+This will return the output `{false, false, false}` instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
 
 ```edgeql
-select Vampire.lover.name ?= Crewman.name;
+select Vampire.lovers.name ?= Crewman.name;
 ```
 
-will return `{true}`. (Because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`.)
+It returns `{true}` because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
 
 [Here is all our code so far up to Chapter 12.](code.md)
 

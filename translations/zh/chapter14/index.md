@@ -25,7 +25,7 @@ insert City {
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
 }
 ```
@@ -89,7 +89,7 @@ select (introspect City) {
     annotations: {
       schema::Annotation {
         name: 'std::description',
-        @value: 'Anything with 50 or more buildings is a city - anything else is an OtherPlace',
+        @value: 'A place with 50 or more buildings. Anything else is an OtherPlace',
       },
     },
   },
@@ -166,9 +166,9 @@ select enumerate(three_things);
   (6, 'Arthur Holmwood'),
   (7, 'Abraham Van Helsing'),
   (8, 'Lucy Westenra'),
-  (9, 'Woman 1'),
-  (10, 'Woman 2'),
-  (11, 'Woman 3'),
+  (9, 'Vampire Woman 1'),
+  (10, 'Vampire Woman 2'),
+  (11, 'Vampire Woman 3'),
   (12, 'Lucy'),
   (13, 'Count Dracula'),
   (14, 'The Captain'),
@@ -223,7 +223,7 @@ set {
 
 ```edgeql
 with p := (select Person),
-     date := <cal::local_date>'1887-08-16',
+     date := <cal::local_date>'1893-08-16',
 select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
@@ -231,12 +231,12 @@ select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date
 
 ```
 {
-  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1887-08-16? false'),
-  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Lucy Westenra', <cal::local_date>'1893-09-20', 'Dead on 1893-08-16? false'),
+  ('Crewman 1', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 2', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 3', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 4', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 5', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
 }
 ```
 
@@ -264,9 +264,9 @@ select Vampire {
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
       default::MinorVampire {name: 'Lucy'},
     },
   },
@@ -321,9 +321,9 @@ select MinorVampire {
 
 ```
 {
-  default::MinorVampire {name: 'Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
   default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```

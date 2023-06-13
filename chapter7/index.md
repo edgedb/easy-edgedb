@@ -4,11 +4,18 @@ tags: Constraint Delegation, $ Parameters
 
 # Chapter 7 - Jonathan finally "leaves" the castle
 
-> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire. A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped. Later, Jonathan hears Dracula tell the vampire women he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women. He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
+> Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire.
+>
+> A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped.
+>
+> Later, Jonathan hears Dracula tell the vampire women that he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women.
+>He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
 
 ## More constraints
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120. For `name` we can give it another one called `constraint exclusive` which prevents two objects of the same type from having the same name. You can put a `constraint` in a block after the property, like this:
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120: `constraint max_value(120);`.
+
+We can give `name` a constraint too called `constraint exclusive` which prevents two objects of the same type from having the same name. Like the other constraint we added, you put it `constraint` in a block after the property, like this:
 
 ```sdl
 abstract type Person {
@@ -30,6 +37,12 @@ abstract type Place {
   property modern_name -> str;
   property important_places -> array<str>;
 }
+```
+
+Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we had two `MinorVampire` objects with the same name, it would give this output:
+
+```
+Detail: value of property 'name' of object type 'default::MinorVampire' violates exclusivity constraint
 ```
 
 ## Passing constraints with delegated
@@ -68,9 +81,9 @@ abstract type Place {
 Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
 
 - Doors have a strength, and people have strength as well.
-- If a person has greater strength than the door, then he or she can open it.
+- A `Person` with greater strength than the door will be able to open it.
 
-So we'll create a type `Castle` and give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
+So we will change our `Castle` type to give it some doors. For now we only want to give it some "strength" numbers, so we'll just make it an `array<int16>`:
 
 ```sdl
 type Castle extending Place {
@@ -78,18 +91,20 @@ type Castle extending Place {
 }
 ```
 
-Then we'll imagine that there are three main doors to enter and leave Castle Dracula, so we `insert` them as follows:
+Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
+
+Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First let's update the schema with `edgedb migration create` and `edgedb migrate` as usual.
+
+Now we have to add the doors to Castla Dracula, so let's update it:
 
 ```edgeql
-insert Castle {
-  name := 'Castle Dracula',
-  doors := [6, 19, 10],
-};
+update Castle filter .name = 'Castle Dracula'
+  set {
+    doors := [6, 9, 10]
+  };
 ```
 
-Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book...though later on we could make it required if the game needs it.
-
-Now we'll give Jonathan a strength of 5. That's easy with `update` and `set` like before:
+Now we'll give Jonathan a strength of 5.  And now we can update Jonathan with `update` and `set` like before:
 
 ```edgeql
 update Person filter .name = 'Jonathan Harker'
@@ -98,7 +113,7 @@ set {
 };
 ```
 
-Great. We know that Jonathan can't break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of a door. Or in other words, he needs a greater strength than the weakest door.
+Great. We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
 
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
@@ -112,7 +127,8 @@ select jonathan_strength > min(castle_doors);
 Here's the error:
 
 ```
-error: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
+error: InvalidTypeError: operator '>' cannot be applied to 
+operands of type 'std::int16' and 'array<std::int16>'
 ```
 
 We can {eql:func}`look at the function signature <docs:std::min>` to see the problem:
@@ -129,9 +145,9 @@ Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::ar
 
 ```edgeql
 with
-  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
-  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
-select jonathan_strength > min(array_unpack(castle_doors));
+  jonathan := (select Person filter .name = 'Jonathan Harker'),
+  castle := (select Castle filter .name = 'Castle Dracula'),
+  select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
@@ -155,12 +171,13 @@ Don't forget that we need to cast with `<str>` because `len()` returns an intege
 The other example is with `count()`, which also has a cast to a `<str>`:
 
 ```edgeql
-select 'There are ' ++ <str>(select count(Place) - count(Castle)) ++ ' more places than castles';
+select 'There are ' ++ <str>(select count(Place) 
+      - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 8 more places than castles'}`.
+It prints: `{'There are 8 more places than castles'}`. (The number 8 might be a bit different from yours if you have been experimenting with inserting `Place` objects.)
 
-In a few chapters we will learn how to create our own functions to make queries shorter.
+In a few chapters we will learn how to create our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
 
 ## Using $ to set parameters
 
@@ -173,11 +190,15 @@ select City {
 } filter .name ilike '%i%' and exists (.modern_name);
 ```
 
-This works fine, returning one city: `{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}`.
+This works fine, returning one city:
 
-But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again.
+```
+{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
+```
 
-This could be a good time to add parameters to a query by using `$`. With that we can give them a name, and EdgeDB will ask us for every query what value to give it. Let's start with something very simple:
+But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) and would like to pass in parameters instead of rewriting the query every time.
+
+This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and on the REPL it will ask us what value to give it. Let's start with something very simple:
 
 ```edgeql
 select City {
@@ -193,7 +214,17 @@ select City {
 } filter .name = $name;
 ```
 
-The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: missing a type cast before the parameter`. So because it's a string, we'll cast with `<str>`:
+The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error gives us a hint for what to do:
+
+```
+error: QueryError: missing a type cast before the parameter
+  ┌─ <query>:3:18
+  │
+3 │ } filter .name = $name;
+  │                  ^^^^^ error
+```
+
+In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
 
 ```edgeql
 select City {
@@ -201,7 +232,19 @@ select City {
 } filter .name = <str>$name;
 ```
 
-When we do that, we get a prompt asking us to enter the value: `Parameter <str>$name:` Just type London, with no quotes because it already knows that it's a string. The result: `{default::City {name: 'London'}}`
+When we do that, we get a prompt asking us to enter the value:
+
+```
+Parameter <str>$name:
+```
+
+Just typing London and hitting enter will lead to this expected result:
+
+```
+{default::City {name: 'London'}}
+```
+
+Note that on the REPL it knows to expect a string so you don't need to type `'London'`. Give `'London'` a try though! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
 
 Now let's take that to make a much more complicated (and useful) query, using two parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
 
@@ -222,7 +265,7 @@ Parameter <str>$name: b
 Parameter <bool>$has_modern_name: true
 ```
 
-So that will give all `City` type objects with "b" in the name and that have a different modern name. The result:
+So that will give all `City` type objects with "b" in the name and that have a different modern name. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
 
 ```
 {
@@ -233,17 +276,18 @@ So that will give all `City` type objects with "b" in the name and that have a d
 
 Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
-```edgeql
-select (
-  insert Time {
-    clock := <str>$hour ++ <str>$minute ++ <str>$second
-  }
-) {
-  clock,
-  clock_time,
-  hour,
-  sleep_state
-};
+```edgeql-repl
+with time := (
+   insert Time {
+     clock := <str>$hour ++ <str>$minute ++ <str>$second
+   }
+ ),
+ select time {
+ clock,
+ clock_time,
+ hour,
+ sleep_state
+ };
 Parameter <str>$hour: 10
 Parameter <str>$minute: 09
 Parameter <str>$second: 09
@@ -264,24 +308,23 @@ Here's the output:
 
 Note that the cast means you can just type 10, not '10'.
 
-So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name in the cast (inside the `<>` brackets). So the insert above would look like this if you wanted everything optional:
+## Optional parameters
+
+So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `City` object names above to allow a second filter for letters in the name:
 
 ```edgeql
-select (
-  insert Time {
-    clock := <optional str>$hour ++ <optional str>$minute ++ <optional str>$second
-  }
-) {
-  clock,
-  clock_time,
-  hour,
-  sleep_state
-};
+select City {
+  name,
+  modern_name
+} filter
+    .name ilike '%' ++ <str>$input1 ++ '%'
+  and
+  .name ilike '%' ++ <optional str>$input2 ++ '%';
 ```
 
-Of course, the `Time` type needs the proper formatting for the `clock` property so this is a bad idea. But that's how you would do it.
+In this case you could search for cities containing both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or just search for cities containing `B` and not enter anything for the second input.
 
-The opposite of `optional` is `required`, but it's the default so you don't need to write it.
+The opposite of `optional` is `required`, but `required` is the default so you don't need to write it.
 
 The `update` keyword that we learned last chapter can also take parameters, so that's four in total where you can use them: `select`, `insert`, `update`, and `delete`.
 

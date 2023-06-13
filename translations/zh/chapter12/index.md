@@ -129,9 +129,9 @@ function visited(person: str, city: str) -> bool
 现在，我们的查询变得方便得多了：
 
 ```edgeql-repl
-edgedb> select visited('Mina Murray', 'London');
+db> select visited('Mina Murray', 'London');
 {true}
-edgedb> select visited('Mina Murray', 'Bistritz');
+db> select visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
@@ -183,12 +183,12 @@ fight(names: str, one: int16, two: str) -> str
 
 现在让我们来更多地了解 EdgeDB 中的笛卡尔乘积。你可能还记得上一章中我们提到，即使只有一个输入为 `{}`，也会导致输出为 `{}`，这就是为什么我们不得不使用上一章中的合并运算符来修改我们的 `fight()` 函数。现在，让我们更深入地研究一下为什么会这样。
 
-请记住，`{}` 的长度为 0，任何乘以 0 的值也是 0。例如，让我们尝试将以 b 开头的地名和以 f 开头的地名加在一起。
+请记住，`{}` 的长度为 0，任何乘以 0 的值也是 0。例如，让我们尝试将以 b 开头的地名和以 x 开头的地名加在一起。
 
 ```edgeql
 with b_places := (select Place filter Place.name ilike 'b%'),
-     f_places := (select Place filter Place.name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name;
+     x_places := (select Place filter Place.name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name;
 ```
 
 结果可能不是你所期待的：
@@ -197,7 +197,7 @@ select b_places.name ++ ' ' ++ f_places.name;
 {}
 ```
 
-蛤？是一个空集！虽然我们并没有以 f 开头的地方，但是搜索以“b”开头的地方，我们明明会得到 `{'Buda-Pesth', 'Bistritz'}`。那么让我们直接用 `++` 连接 `{'Buda-Pesth', 'Bistritz'}` 和 `{}`，看看是否会是同样的效果。
+蛤？是一个空集！虽然我们并没有以 x 开头的地方，但是搜索以“b”开头的地方，我们明明会得到 `{'Buda-Pesth', 'Bistritz'}`。那么让我们直接用 `++` 连接 `{'Buda-Pesth', 'Bistritz'}` 和 `{}`，看看是否会是同样的效果。
 
 ```edgeql
 select {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -218,7 +218,7 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
 好的，让我们再试一次，这次确保 `{}` 空集是 `str` 类型：
 
 ```edgeql-repl
-edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 
@@ -233,10 +233,10 @@ edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
-     f_places := (select Place filter .name ilike 'f%'),
-select b_places.name ++ ' ' ++ f_places.name
-  if exists b_places.name and exists f_places.name
-  else b_places.name ?? f_places.name;
+     x_places := (select Place filter .name ilike 'x%'),
+select b_places.name ++ ' ' ++ x_places.name
+  if exists b_places.name and exists x_places.name
+  else b_places.name ?? x_places.name;
 ```
 
 得到返回：

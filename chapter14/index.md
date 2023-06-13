@@ -4,9 +4,13 @@ tags: Type Annotations, Backlinks
 
 # Chapter 14 - A ray of hope
 
-> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons." Mina takes a train to the hospital where Jonathan was recovering, and they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it. Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
+> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+>
+> Mina takes a train to the hospital where Jonathan is recovering, after which they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it.
+>
+> Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
-So we have a new city called Exeter, and adding it is of course easy:
+Looks like we have a new city called Exeter, which is easy to add:
 
 ```edgeql
 insert City {
@@ -15,7 +19,7 @@ insert City {
 };
 ```
 
-That's the population of Exeter at the time, and it doesn't have a `modern_name` that is different from the one in the book.
+That's the population of Exeter at the time (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
 
 ## Adding annotations to types and using @
 
@@ -25,35 +29,35 @@ Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
 }
 ```
 
-Now we can do an `introspect` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
+After migrating our schema, we can now do an `introspect` query on it. We know how to do this from the last chapter - just add `: {name}` everywhere to get the inner details. Ready!
 
 ```edgeql
 select (introspect City) {
+  annotations: {name}
   name,
   properties: {name},
-  annotations: {name}
 };
 ```
 
-Uh oh, not quite:
+Uh oh, not quite. The `annotations` part of the `introspect` query just says `std::description`:
 
 ```
 {
   schema::ObjectType {
+    annotations: {schema::Annotation {name: 'std::description'}},
     name: 'default::City',
     properties: {
-      schema::Property {name: 'id'},
-      schema::Property {name: 'important_places'},
-      schema::Property {name: 'modern_name'},
       schema::Property {name: 'name'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'id'},
       schema::Property {name: 'population'},
     },
-    annotations: {schema::Annotation {name: 'std::description'}},
   },
 }
 ```
@@ -64,12 +68,12 @@ This is where `@` comes in. To get the value inside we write something else: `@v
 
 ```edgeql
 select (introspect City) {
+  annotations: {
+  name,
+  @value
+},
   name,
   properties: {name},
-  annotations: {
-    name,
-    @value
-  }
 };
 ```
 
@@ -78,25 +82,25 @@ Now we see the actual annotation:
 ```
 {
   schema::ObjectType {
-    name: 'default::City',
-    properties: {
-      schema::Property {name: 'id'},
-      schema::Property {name: 'important_places'},
-      schema::Property {name: 'modern_name'},
-      schema::Property {name: 'name'},
-      schema::Property {name: 'population'},
-    },
     annotations: {
       schema::Annotation {
         name: 'std::description',
-        @value: 'Anything with 50 or more buildings is a city - anything else is an OtherPlace',
+        @value: 'A place with 50 or more buildings. Anything else is an OtherPlace',
       },
+    },
+    name: 'default::City',
+    properties: {
+      schema::Property {name: 'name'},
+      schema::Property {name: 'modern_name'},
+      schema::Property {name: 'important_places'},
+      schema::Property {name: 'id'},
+      schema::Property {name: 'population'},
     },
   },
 }
 ```
 
-What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning so that's what we'll call it:
+What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning for other developers to read so that's what we'll call it:
 
 ```sdl
 abstract annotation warning;
@@ -111,7 +115,7 @@ type OtherPlace extending Place {
 }
 ```
 
-Now let's do an introspect query on just its name and annotations:
+Now let's migrate the schema again and do an introspect query on just its name and annotations:
 
 ```edgeql
 select (introspect OtherPlace) {
@@ -127,8 +131,14 @@ And here it is:
   schema::ObjectType {
     name: 'default::OtherPlace',
     annotations: {
-      schema::Annotation {name: 'std::description', @value: 'A place with under 50 buildings - hamlets, small villages, etc.'},
-      schema::Annotation {name: 'default::warning', @value: 'Castles and castle towns do not count! Use the Castle type for that'},
+      schema::Annotation {
+        name: 'std::description',
+        @value: 'A place with under 50 buildings - hamlets, small villages, etc.',
+      },
+      schema::Annotation {
+        name: 'default::warning',
+        @value: 'Castles and castle towns do not count! Use the Castle type for that',
+      },
     },
   },
 }
@@ -138,7 +148,7 @@ And here it is:
 
 A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
 
-There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index and the set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
+There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index numbers and the items in set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
 
 First a simple example of how to use `enumerate()`:
 
@@ -166,9 +176,9 @@ Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person
   (6, 'Arthur Holmwood'),
   (7, 'Abraham Van Helsing'),
   (8, 'Lucy Westenra'),
-  (9, 'Woman 1'),
-  (10, 'Woman 2'),
-  (11, 'Woman 3'),
+  (9, 'Vampire Woman 1'),
+  (10, 'Vampire Woman 2'),
+  (11, 'Vampire Woman 3'),
   (12, 'Lucy'),
   (13, 'Count Dracula'),
   (14, 'The Captain'),
@@ -179,38 +189,9 @@ Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person
 }
 ```
 
-There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up. How can we get them in the query? We could of course try something fancy like this:
+There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up.
 
-```edgeql
-with
-  a := array_agg((select enumerate(Person.name))),
-  b:= array_agg((select enumerate(Crewman.number))),
-select (a, b);
-```
-
-(`array_agg()` is to avoid multiplying sets by sets, as we saw in Chapter 12)
-
-But the result is less than satisfying:
-
-```
-{
-  (
-    [
-      (0, 'Jonathan Harker'),
-      (1, 'Renfield'),
-      (2, 'The innkeeper'),
-      (3, 'Mina Murray'),
-      # snip
-      (16, 'The First Mate'),
-      (17, 'The Cook'),
-      (18, 'Emil Sinclair'),
-    ],
-    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)],
-  ),
-}
-```
-
-The `Crewman` types are now just numbers, which doesn't look good. Let's give up on fancy queries and just update them with names based on the numbers instead. This will be easy:
+The `Crewman` types are now just numbers, so let's give them each a name based on their numbers. This will be easy:
 
 ```edgeql
 update Crewman
@@ -223,20 +204,21 @@ So now that everyone has a name, let's use that to see if they are dead or not. 
 
 ```edgeql
 with p := (select Person),
-     date := <cal::local_date>'1887-08-16',
-select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
+     date := <cal::local_date>'1893-08-16',
+select (p.name, p.last_appearance, 
+  'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
 Here is the output:
 
 ```
 {
-  ('Lucy Westenra', <cal::local_date>'1887-09-20', 'Dead on 1887-08-16? false'),
-  ('Crewman 1', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1887-07-16', 'Dead on 1887-08-16? true'),
+  ('Lucy Westenra', <cal::local_date>'1893-09-20', 'Dead on 1893-08-16? false'),
+  ('Crewman 1', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 2', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 3', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 4', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
+  ('Crewman 5', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
 }
 ```
 
@@ -244,7 +226,7 @@ We could of course turn this into a function if we use it enough.
 
 ## Backlinks
 
-Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use it can take a bit of effort, but it's well worth it.
+Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.
 
 We know how to get Count Dracula's `slaves` by name with something like this:
 
@@ -264,9 +246,9 @@ That shows us the following:
   default::Vampire {
     name: 'Count Dracula',
     slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
+      default::MinorVampire {name: 'Vampire Woman 1'},
+      default::MinorVampire {name: 'Vampire Woman 2'},
+      default::MinorVampire {name: 'Vampire Woman 3'},
       default::MinorVampire {name: 'Lucy'},
     },
   },
@@ -296,9 +278,9 @@ select MinorVampire.<slaves[is Vampire] {
 };
 ```
 
-Because it goes in reverse order, it is selecting `Vampire` that has `.slaves` that are of type `MinorVampire`.
+Because it goes in reverse order, it is selecting `Vampire` that has a link called `slaves` that are of type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Select the name and age of the Vampire type with slaves that are of type MinorVampire" - from right to left.
+You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -315,18 +297,94 @@ select MinorVampire {
 };
 ```
 
-You could read `.<slaves[is Vampire] {name}` as "the name of the `Vampire` type that links back to `MinorVampire` through `.slaves`".
+And here is the human-readable version of `.<slaves[is Vampire] {name}` to help it stick in your memory: "the `Vampire` objects and their names that link back to `MinorVampire` through the link `slaves`".
 
 Here is the output:
 
 ```
 {
-  default::MinorVampire {name: 'Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 1', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 2', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 3', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Lucy', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```
+
+So why do we need `[is Vampire]` in the query anyway? We need this because there might be other objects of different types that link back to `MinorVampire` through a link called `slaves`. We can show this in a query on our `Place` type which is linked from quite a few types. What do you think this query will show?
+
+```edgeql
+select Place {
+ name,
+ visitors := .<places_visited
+ };
+```
+
+In this case, we are asking EdgeDB to show us each and every object that is linking to each `Place` object via a link called `places_visited`. The output is quite large, so here is just one part of it:
+
+```
+{
+  default::Country {
+    name: 'Romania',
+    visitors: {
+      default::Vampire {id: 41c0bdc4-fef1-11ed-a968-cb41382f27c2},
+      default::NPC {id: e03f804e-f9b4-11ed-86c0-835ec28e5d08},
+    },
+  },
+  default::City {
+    name: 'Munich',
+    visitors: {
+      default::PC {id: dfd4e9dc-f9b4-11ed-86c0-b32fa282657d},
+      default::NPC {id: e03f804e-f9b4-11ed-86c0-835ec28e5d08},
+    },
+  }
+}
+```
+
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object that links via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+
+```edgeql-repl
+db> select Place {
+.......  name,
+.......  visitors := .<places_visited {name}
+.......  };
+error: InvalidReferenceError: object type 'std::BaseObject' has no link or property 'name'
+  ┌─ <query>:3:32
+  │
+3 │  visitors := .<places_visited {name}
+  │                                ^^^^ error
+```
+
+But if we specify the type, EdgeDB will now be able to tell if it has a certain property or not.
+
+```edgeql
+select Place {
+  name,
+  vampire_visitors := .<places_visited[is Vampire] {name},
+  npc_visitors := .<places_visited[is NPC] {name}
+};
+```
+
+And with that we get a nice output that shows backlinks from multiple concrete types. Here is part of the output:
+
+```
+{
+  default::Country {
+    name: 'Romania',
+    vampire_visitors: {default::Vampire {name: 'Count Dracula'}},
+    npc_visitors: {default::NPC {name: 'Jonathan Harker'}},
+  },
+  default::City {
+    name: 'Munich',
+    vampire_visitors: {},
+    npc_visitors: {default::NPC {name: 'Jonathan Harker'}},
+  },
+}
+
+One final note: this is why backlinks in EdgeDB are `multi` by default, as opposed to regular links which are `single` by default. After all, there might be a lot of objects here and there in our database that link back and it makes sense to assume that there could be a lot of them. But you can declare a backlink in your schema to be `single` if you want to insist that there can only be one object in a backlink.
 
 [Here is all our code so far up to Chapter 14.](code.md)
 

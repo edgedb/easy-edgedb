@@ -4,7 +4,9 @@ tags: Tuples, Computed Properties, Math
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside. One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
+> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
+>
+> One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
 The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
@@ -14,7 +16,7 @@ type City extending Place {
 }
 ```
 
-By the way, here are the approximate populations for our three cities at the time of the book. They are much smaller back in 1887:
+By the way, here are the approximate populations for our five cities at the time of the book. They are much smaller back in 1893:
 
 - Buda-Pesth (Budapest): 402706
 - London: 3500000
@@ -22,7 +24,9 @@ By the way, here are the approximate populations for our three cities at the tim
 - Whitby: 14400
 - Bistritz (Bistrița): 9100
 
-Inserting Whitby is easy enough:
+Now let's do a migration.
+
+Whitby is the only one of the five that isn't in our database already. Inserting it is easy enough:
 
 ```edgeql
 insert City {
@@ -35,15 +39,21 @@ But for the rest of them it would be nice to update everything at the same time.
 
 ## Working with tuples and arrays
 
-If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that we have some data inside a tuple, which seems similar to an array but is quite different. One big difference is that a tuple can hold different types, so this is okay:
+If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that the city data we have inside tuples, which seem similar to arrays but are quite different. One big difference is that a tuple can hold different types, so this is okay:
 
-`('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
+```
+('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)
+```
 
 In this case, the type is called a `tuple<str, int64>`.
 
-Before we start using these tuples, let's make sure that we understand the difference between the two. To start, let's look at slicing arrays and strings in a bit more detail.
+Before we start using these tuples, let's make sure that we understand the difference between tuplys and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
 
-You'll remember that we use square brackets to access part of an array or a string. So `select ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+Previously we learned how to use square brackets to access part of an array or a string. So this query:
+
+```select ['Mina Murray', 'Lucy Westenra'][1];```
+
+will give the output `{'Lucy Westenra'}` (that's index number 1).
 
 You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
@@ -72,7 +82,7 @@ But the same can be done with a negative number if you want to start from the in
 select NPC.name[2:-2];
 ```
 
-This prints from index 2 up to 2 indexes away from the end (it'll cut off the first two letters on each side). Here's the output:
+This prints from index 2 up to 2 indexes away from the end (in other words, it'll cut off two letters from each side). Here's the output:
 
 ```
 {
@@ -87,20 +97,23 @@ This prints from index 2 up to 2 indexes away from the end (it'll cut off the fi
 }
 ```
 
-Tuples are quite different: they behave more like object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+Tuples are very different. You can think of them as similar to object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
 
 So this is completely fine:
 
 ```edgeql
-select {('Bistritz', 9100, cal::to_local_date(1887, 5, 6)), ('Munich', 230023, cal::to_local_date(1887, 5, 8))};
+select {
+('Bistritz', 9100, cal::to_local_date(1893, 5, 6)),
+('Munich', 230023, cal::to_local_date(1893, 5, 8))
+};
 ```
 
 The output is:
 
 ```
 {
-  ('Bistritz', 9100, <cal::local_date>'1887-05-06'),
-  ('Munich', 230023, <cal::local_date>'1887-05-08'),
+  ('Bistritz', 9100, <cal::local_date>'1893-05-06'),
+  ('Munich', 230023, <cal::local_date>'1893-05-08'),
 }
 ```
 
@@ -113,16 +126,27 @@ select {(1, 2, 3), (4, 5, '6')};
 EdgeDB will give an error because it won't try to work with tuples that are of different types. It complains:
 
 ```
-ERROR: QueryError: operator 'union' cannot be applied to operands of type 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
-  Hint: Consider using an explicit type cast or a conversion function.
+error: InvalidTypeError: set constructor has arguments of incompatible types 
+'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+  ┌─ <query>:1:8
+  │
+1 │ select {(1, 2, 3), (4, 5, '6')};
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
 ```
 
-In the above example we could easily just cast the last string into an integer and EdgeDB will be happy again: `select {(1, 2, 3), (4, 5, <int64>'6')};`.
-
-To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. Now that we know all this, we can update all our cities at the same time. It looks like this:
+You'll notice that the error suggests that we cast one of the items inside one of the tuples to match the other. Doing so removes the error and EdgeDB is happy again:
 
 ```edgeql
-for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+select {(1, 2, 3), (4, 5, <int64>'6')};
+```
+
+To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. This makes sense if you remember that tuples are like object types, which as we know use a `.` in front of the names of their properties.
+
+Now that we know all this, we can update all our cities at the same time. It looks like this:
+
+```edgeql
+for data in {('Buda-Pesth', 402706), ('London', 3500000),
+  ('Munich', 230023), ('Bistritz', 9100)}
 union (
   update City filter .name = data.0
   set {
@@ -132,6 +156,51 @@ union (
 ```
 
 So it sends each tuple into the `for` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+
+You can actually choose to give names to the items inside tuples if you like. Here are the same cities except now we can access them by name:
+
+```edgeql
+with cities := 
+(
+  (name := 'Buda-Pesth', pop := 402706), 
+  (name := 'London', pop := 3500000), 
+  (name := 'Munich', pop := 230023),
+  (name := 'Bistritz', pop := 9100)
+),
+  select cities.1.pop;
+```
+
+This returns `{3500000}`, the population of London.
+
+Similarly, we can give each of the tuples inside the `cities` tuple a name too!
+
+```edgeql
+with cities := 
+(
+  budapest := (name := 'Buda-Pesth', pop := 402706), 
+  london := (name := 'London', pop := 3500000), 
+  munich := (name := 'Munich', pop := 230023),
+  bistritz := (name := 'Bistritz', pop := 9100)
+  ),
+  select cities.munich.pop;
+```
+
+Now we get `{230023}`, the population of Munich.
+
+You can still access items inside tuples by numbers even if they have a name:
+
+```edgeql-repl
+db> select (name := 'Jonathan Harker', age := 25).0;
+{'Jonathan Harker'}
+db> select (name := 'Jonathan Harker', age := 25).name;
+{'Jonathan Harker'}
+```
+
+And also note that if you choose to name the items inside a tuple you have to name them all. So this won't work:
+
+```edgeql
+select ('Jonathan Harker', age := 25).age;
+```
 
 Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`, like this:
 
@@ -143,17 +212,20 @@ select <tuple<json, int32>>london;
 That gives us this output:
 
 ```
-{("\"London\"", 3500000)}
+{(Json("\"London\""), 3500000)}
 ```
 
 Here's another example if we need to do some math with floats on London's population:
 
 ```edgeql
-with london := <tuple<json, float64>>('London', 3500000),
-  select (london.0, london.1 / 23);
+with london := <tuple<str, float64>>('London', 3500000),
+# London after a population increase
+  london_after := (london.1 * 1.035),
+  select (london.0, <int32>london_after);
+{('London', 3622500)}
 ```
 
-The output is `{("\"London\"", 152173.91304347827)}`.
+The output is `{3605000}`.
 
 ## Ordering results and using math
 
@@ -185,17 +257,17 @@ For some actual math, you can check out the functions in `std` {eql:func}`here <
 ```edgeql
 with cities := City.population
 select (
-  'Number of cities: ' ++ <str>count(cities),
+  'Number of cities with population data: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
-  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
   'Average population: ' ++ <str>math::mean(cities),
-  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
   'Standard deviation: ' ++ <str>math::stddev(cities)
 );
 ```
 
-This used quite a few functions:
+This used quite a few functions, all of which work on sets:
 
 - `count()` to count the number of items,
 - `all()` to return `{true}` if all items match and `{false}` otherwise,
@@ -211,12 +283,12 @@ The output also makes it clear how they work:
 ```
 {
   (
-    'Number of cities: 5',
+    'Number of cities with population data: 5',
     'All cities have more than 50,000 people: false',
     'Total population: 4156229',
-    'Smallest and largest population: 9100, 3500000',
+    'Smallest/largest population: 9100, 3500000',
     'Average population: 831245.8',
-    'At least one city has more than 5 million people: false',
+    'Any cities with more than 5 million people? false',
     'Standard deviation: 1500876.8248',
   ),
 }
@@ -229,28 +301,27 @@ The output also makes it clear how they work:
 You can use the `with` keyword to import modules too. In the example above we used two functions from EdgeDB's `math` module: `math::mean()` and `math::stddev()`. Just writing `mean()` and `stddev()` would produce this error:
 
 ```
-ERROR: InvalidReferenceError: function 'default::mean' does not exist
+edgedb error: InvalidReferenceError: function 'default::mean' does not exist
 ```
 
 If you don't want to write the module name every time you can just import the module after `with`. Let's slip that into the query we just used. See if you can see what's changed:
 
 ```edgeql
-with cities := City.population,
-  module math
+with cities := City.population
 select (
-  'Number of cities: ' ++ <str>count(cities),
+  'Number of cities with population data: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
-  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
   'Average population: ' ++ <str>mean(cities),
-  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
   'Standard deviation: ' ++ <str>stddev(cities)
 );
 ```
 
 The output is the same, but we added an import of the `math` module, letting us just write `mean()` and `stddev()`.
 
-You can also use `AS` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
+You can also use `as` to rename a module (well, to _alias_ a module) in the same way that you can rename a type. So this will work too:
 
 ```edgeql
 with M as module math,
@@ -276,22 +347,30 @@ The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interestin
 
 Title | First name | Last name | Degree
 
-So there is 'Count Dracula' (title and name), 'Dr. Seward' (title and name), 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees), and so on.
+So there is:
 
-That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+* 'Count Dracula' (title + name),
+* 'Dr. Seward' (title + name),
+* 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees)
 
-We could try a middle of the road approach instead. We'll keep `name`, and add some properties to `Person`:
+And so on.
+
+That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+
+We could try a middle of the road approach  for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
 
 ```sdl
 property title -> str;
 property degrees -> str;
-property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
-property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
+property conversational_name := .title ++ ' ' 
+  ++ .name if exists .title else .name;
+property pen_name := .name ++ ', ' 
+  ++ .degrees if exists .degrees else .name;
 ```
 
 We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
 
-Now it's time to insert Van Helsing:
+Let's do a migration now, and try an insert for Van Helsing...or rather, Dr. Van Helsing!
 
 ```edgeql
 insert NPC {
@@ -308,7 +387,8 @@ with helsing := (select NPC filter .name ilike '%helsing%')
 select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
+  'Letter from ' ++ helsing.pen_name 
+    ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
 );
 ```
 
@@ -327,20 +407,27 @@ This gives us:
 }
 ```
 
-In a standard database with users it's much simpler: get users to enter their first names, last names etc. and make each one a property.
+If this were just a standard database with website users it would be much simpler: get users to enter their first names and last names and then use these two properties to compute a full name. But the setting in Bram Stoker's Dracula is much more complex than that!
 
 ## Other escape characters and raw strings
 
-Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` is a good example of one that might be useful.
+Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` and unicode escape character with `\u` are two that might be useful.
 
-If you want to ignore escape characters, put an `r` in front of the quote. Let's try it with the example above. Only the last part has an `r`:
+Try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
+
+```edgeql
+select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D\u0020\u006E\u006F\u0074\u0020\u006A\u0065\u0073\u0074\u0069\u006E\u0067\u002E\u0020\u0054\u0068\u0069\u0073\u0020\u0069\u0073\u0020\u006E\u006F\u0020\u006A\u0065\u0073\u0074\u002C\u0020\u0062\u0075\u0074\u0020\u006C\u0069\u0066\u0065\u0020\u0061\u006E\u0064\u0020\u0064\u0065\u0061\u0074\u0068\u002C\u0020\u0070\u0065\u0072\u0068\u0061\u0070\u0073\u0020\u006D\u006F\u0072\u0065\u002E\u2019';
+```
+
+If you want to ignore escape characters, put an `r` (which stands for _raw_) in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
 ```edgeql
 with helsing := (select NPC filter .name ilike '%helsing%')
 select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
+  'Letter from ' ++ helsing.pen_name 
+    ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
 );
 ```
 
@@ -356,7 +443,7 @@ Now we get:
 }
 ```
 
-Finally, there is a raw string literal that uses `$$` on each side. Anything inside this will ignore any and all quotation marks, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
+Finally, there is a raw string literal that uses `$$` on each side thas is useful if you want an entire raw string. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
 select $$ 
@@ -366,11 +453,17 @@ but he'd sound crazy."
 $$;
 ```
 
-Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error.
+Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error:
 
-## All the scalar types
-
-You now have an understanding of all the EdgeDB scalar types. Summed up, they are: `int16`, `int32`, `int64`, `float32`, `float64`, `bigint`, `decimal`, `sequence`, `str`, `bool`, `datetime`, `duration`, `cal::local_datetime`, `cal::local_date`, `cal::local_time`, `cal::relative_duration`, `cal::date_duration`, `uuid`, `json`, and `enum`. You can see the documentation for them {ref}`here <docs:ref_datamodel_scalar_types>`.
+```
+"Dr. Van Helsing would like to tell "
+them
+" about "
+vampires
+" and how to "
+kill
+" them, but he'd sound crazy."
+```
 
 ## Using `unless conflict on` + `else` + `update`
 
@@ -382,7 +475,10 @@ insert NPC {
 };
 ```
 
-But if we try again we will get this error: `ERROR: ConstraintViolationError: name violates exclusivity constraint`
+But if we try again we will get this error:
+
+```
+edgedb error: ConstraintViolationError: name violates exclusivity constraint
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 
@@ -393,10 +489,10 @@ But sometimes just generating an error isn't enough - maybe we want something el
 insert City {
   name := 'Munich',
   population := 261023
-}
+};
 ```
 
-However, we can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
+However, we also can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
 
 Here is how we would do it for Munich:
 
@@ -425,11 +521,11 @@ With this, we are guaranteed to get a `City` object called Munich with a populat
 
 1. Try inserting two `NPC` types in one insert with the following `name`, `first_appearance` and `last_appearance` information.
 
-   `{('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')}`
+   `{('Jimmy the Bartender', '1893-09-10', '1893-09-11'), ('Some friend of Jonathan Harker', '1893-07-08', '1893-07-09')}`
 
 2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
 
-   `{('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})}`
+   `{('Dracula\'s Castle visitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05-08', {})}`
 
 3. How would you order the `Person` types by last letter of their names?
 

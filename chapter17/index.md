@@ -6,7 +6,7 @@ tags: Aliases, Named Tuples
 
 > Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that the heroes were destroying his coffins and decided to attack Mina. Dracula succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
 >
-> The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. Renfield had been in communication with Dracula because he wanted to become a vampire too, so he let Dracula into the house. But once inside Dracula ignored him, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting Mina, but Dracula was much stronger and won.
+> The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. Renfield had been in communication with Dracula because he wanted to become a vampire too, so he let Dracula into the house. But once inside Dracula ignored Renfield, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting Mina, but Dracula was much stronger and won.
 >
 > Mina has not given up though, and has a good idea. If she is now connected to Dracula, what happens if Van Helsing uses hypnotism on her? Could that work? He takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
 
@@ -33,7 +33,7 @@ with fighters := (
 select fight(fighters.0, fighters.1);
 ```
 
-That's not bad, but there is a way to make it clearer: we can give names to the items in the tuple instead of using `.0` and `.1`. It looks like a regular computed link or property, using `:=`:
+That's not bad, but we learned a few chapters ago about named tuples and this is a good place to use them. Now the query is even more readable:
 
 ```edgeql
 with fighters := (
@@ -56,7 +56,7 @@ select (minor_vampires.women.name, minor_vampires.lucy.name);
 The output is:
 
 ```
-{('Woman 1', 'Lucy'), ('Woman 2', 'Lucy'), ('Woman 3', 'Lucy')}
+{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'), ('Vampire Woman 3', 'Lucy')}
 ```
 
 Renfield is no longer alive, so we need to use `update` to give him a `last_appearance`. Let's do a fancy one again where we `select` the update we just made and display that information:
@@ -65,7 +65,7 @@ Renfield is no longer alive, so we need to use `update` to give him a `last_appe
 select ( # Put the whole update inside
   update NPC filter .name = 'Renfield'
   set {
-    last_appearance := <cal::local_date>'1887-10-03'
+    last_appearance := <cal::local_date>'1893-10-03'
   }
 ) # then use it to call up name and last_appearance
 {
@@ -74,25 +74,25 @@ select ( # Put the whole update inside
 };
 ```
 
-This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1887-10-03'}}`
+This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
-One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this:
+One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return true:
 
 ```edgeql
-select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
+select 
+  ('Lucy Westenra', 'Renfield') 
+  = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
-
-will return `{true}`.
 
 ## Putting abstract types together
 
-Wherever there are vampires, there are vampire hunters. Sometimes they will destroy their coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
+Wherever there are vampires, there are vampire hunters. Sometimes they will destroy a vampire's coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
 
 - the `HasCoffins` type is an abstract type, with one property: `coffins`
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
 - the best way to filter is by `.name`, but `HasCoffins` doesn't have this property.
 
-So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises.
+So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises. It's essentially a "Has name and can vampires terrorize it" property.
 
 Here is the type with its new property. We'll give it two constraints: `exclusive` and `max_len_value` to keep names from being too long.
 
@@ -133,7 +133,8 @@ function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
     with vampire := (select Person filter .name = person_name),
     has_coffins := place.coffins > 0,
-      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+      select vampire.name ++ ' can enter.'
+        if has_coffins else vampire.name ++ ' cannot enter.'
     );
 ```
 
@@ -149,25 +150,33 @@ function can_enter(person_name: str, place: str) -> optional str
       enter_place := assert_single(
         (select HasNameAndCoffins filter .name = place)
       )
-    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 
+      else vampire.name ++ ' cannot enter.'
   );
+```
+
+And now let's do a migration. One of the migration questions will ask us what default name to give the existing objects, because `name` is a required property. We can just type `''` to give an empty string by default.
+
+```edgeql-repl
+Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::HasNameAndCoffins' required:
+fill_expr_2> ''
 ```
 
 And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
 
-Finally, we can make our generic update for changing the number of coffins. It's easy:
+Finally, we can put together a query that takes arguments to change the number of coffins in a number of places. It's easy:
 
 ```edgeql
 update HasNameAndCoffins filter .name = <str>$place_name
 set {
   coffins := .coffins + <int16>$number
-}
+};
 ```
 
 Now let's give the ship `The Demeter` some coffins.
 
 ```edgeql-repl
-edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number
 ....... };
@@ -175,16 +184,37 @@ Parameter <str>$place_name: The Demeter
 Parameter <int16>$number: 10
 ```
 
-Then we'll make sure that it got them:
+Castle Dracula naturally should have some coffins too. Let's go with 50.
 
-```edgeql
-select Ship {
-  name,
-  coffins,
-};
+```edgeql-repl
+db> update HasNameAndCoffins filter .name = <str>$place_name
+....... set {
+.......   coffins := .coffins + <int16>$number
+....... };
+Parameter <str>$place_name: Castle Dracula
+Parameter <int16>$number: 50
 ```
 
-We get: `{default::Ship {name: 'The Demeter', coffins: 10}}`. The Demeter got its coffins!
+Then we'll make sure that these places got them:
+
+```edgeql
+select HasNameAndCoffins { 
+  name, 
+  coffins } 
+filter .coffins > 0;
+```
+
+And the result:
+
+```
+{
+  default::Castle {name: 'Castle Dracula', coffins: 50},
+  default::Ship {name: 'The Demeter', coffins: 20},
+  default::City {name: 'London', coffins: 21},
+}
+```
+
+Looks like the Demeter and Castle Dracula got their coffins!
 
 ## Aliases: creating subtypes when you need them
 
@@ -224,7 +254,9 @@ alias CrewmanInBulgaria := Crewman {
 };
 ```
 
-You'll notice right away that `name` and `strength` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type. Let's now take a look at the error we get if we try to insert a `CrewmanInBulgaria`. Remember, it won't work because an alias is just an expression, not a type that can be inserted:
+You'll notice right away that `name` and `strength` inside the alias are separated by commas, not semicolons. That's a clue that this isn't creating a new type: it's just creating a _shape_ on top of the existing `Crewman` type.
+
+Let's do a schema migration and then take a look at the error we get if we try to insert a `CrewmanInBulgaria`. Remember, it won't work because an alias is just an expression, not a type that can be inserted:
 
 ```edgeql
 insert CrewmanInBulgaria {name := "New Crewman", number := 6};
@@ -238,8 +270,8 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 
 So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's now compare a `select` on the `Crewman` objects to a `select` with the `CrewmanInBulgaria` alias:
 
-```edgeql
-edgedb> select Crewman { name, strength };
+```edgeql-repl
+db> select Crewman { name, strength };
 {
   default::Crewman {name: 'Crewman 1', strength: 1},
   default::Crewman {name: 'Crewman 2', strength: 2},
@@ -247,7 +279,7 @@ edgedb> select Crewman { name, strength };
   default::Crewman {name: 'Crewman 4', strength: 2},
   default::Crewman {name: 'Crewman 5', strength: 5},
 }
-edgedb> select CrewmanInBulgaria { original_name, name, strength };
+db> select CrewmanInBulgaria { original_name, name, strength };
 {
   default::Crewman {original_name: 'Crewman 1', name: 'Gospodin Crewman 1', strength: 2},
   default::Crewman {original_name: 'Crewman 2', name: 'Gospodin Crewman 2', strength: 3},
@@ -263,174 +295,136 @@ Aliases can be used in a number of other ways too, such as on scalar types. The 
 
 ## Creating new names for types in a query (local expression aliases)
 
-It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `with` and then give a new name for an existing type. (In fact, the keyword `with` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`"). Take a simple query like this that shows Count Dracula and the names of his slaves:
+It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `with` and then give a new name for an existing type. (In fact, the keyword `with` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`").
 
-```edgeql
-select Vampire {
-  name,
-  slaves: {
-    name
-  }
-};
+Let's say that we want to compare the strengths of all our `MinorVampire` objects. This first query won't quite work, and you can probably guess why:
+
+```
+select MinorVampire.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' 
+++ <str>(MinorVampire.name > MinorVampire.name);
 ```
 
-If we wanted to use `with` to create a new type that is identical to `Vampire`, we would just do this.
-
-```edgeql
-with Drac := Vampire,
-select Drac {
-  name,
-  slaves: {
-    name
-  }
-};
-```
-
-So far this is nothing special, because the output is the same:
+It doesn't work because we are simply comparing one object against itself every time.
 
 ```
 {
-  default::Vampire {
-    name: 'Count Dracula',
-    slaves: {
-      default::MinorVampire {name: 'Woman 1'},
-      default::MinorVampire {name: 'Woman 2'},
-      default::MinorVampire {name: 'Woman 3'},
-      default::MinorVampire {name: 'Lucy'},
-    },
-  },
+  'Vampire Woman 1 is stronger than Vampire Woman 1? false',
+  'Vampire Woman 2 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 3 is stronger than Vampire Woman 3? false',
+  'Lucy is stronger than Lucy? false',
 }
 ```
 
-But where it becomes useful is when using this new type to perform operations or comparisons on the type it is created from. It's the same as `detached`, but we give it a name and have some more flexibility to use it.
-
-So let's give this a try. We'll pretend that we are testing out our game engine. Right now our `fight()` function is ridiculously simple, but let's pretend that it's complicated and needs a lot of testing. Here's the variant we would use:
-
-```sdl
-function fight(one: Person, two: Person) -> str
-  using (
-    one.name ++ ' wins!' if one.strength > two.strength else
-    two.name ++ ' wins!'
-  );
-```
-
-But for debugging purposes it would be nice to have some more info. Let's create the same function but call it `fight_2()` and add some more information on who is fighting who.
+We know that the `detached` keyword can help by pulling up a separate set of objects for a type. It won't help us here though unfortunately as we have to use it twice: once two concatenate the names, and again to compare strengths:
 
 ```edgeql
-create function fight_2(one: Person, two: Person) -> str
-  using (
-    one.name ++ ' fights ' ++ two.name ++ '. ' ++ one.name ++ ' wins!'
-    if one.strength > two.strength else
-    one.name ++ ' fights ' ++ two.name ++ '. ' ++ two.name ++ ' wins!'
-  );
+select MinorVampire.name ++ ' is stronger than ' ++ detached MinorVampire.name ++ '? '
+++ <str>(MinorVampire.name > detached MinorVampire.name);
 ```
 
-So let's make our `MinorVampire` types fight each other and see what output we get. We have four of them (the three vampire women plus Lucy). Let's make sure that all vampires have strength 9 unless otherwise specified:
-
-```edgeql
-update MinorVampire filter not exists .strength
-set {
-  strength := 9
-};
-```
-
-First let's just put the `MinorVampire` type into the function and see what we get. What do you think the output will be?
-
-```edgeql
-select fight_2(MinorVampire, MinorVampire);
-```
-
-So the output for this is...
-
-...
+Just a small portion of the output shows what the problem is here: using `detached` pulls up a separate set of `MinorVampire` objects each time. Every time `detached` is used, the number of objects doubles!
 
 ```
 {
-  'Lucy fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Vampire Woman 1 is stronger than Vampire Woman 1? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 1? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 1? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 1? true',
+  'Vampire Woman 1 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 2? false',
 }
 ```
 
-The function only gets used four times because a set with only a single object goes in every time...and each `MinorVampire` is fighting itself. That's probably not what we wanted. Now let's try our local type alias again.
+Instead, we can use an alias for a set of `MinorVampire` objects and use that to compare:
 
 ```edgeql
 with M := MinorVampire,
-select fight_2(M, MinorVampire);
+select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ <str>(M.strength
+> MinorVampire.strength);
 ```
 
-By the way, so far this is exactly the same as:
-
-```edgeql
-select fight_2(MinorVampire, detached MinorVampire);
-```
-
-The output is too long now:
+The output is now closer to what we want, except that we are still comparing the same objects with each other. Here is part of the output (it's still pretty long):
 
 ```
 {
-  'Lucy fights Lucy. Lucy wins!',
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 1. Woman 1 wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 2. Woman 2 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
-  'Woman 3 fights Woman 3. Woman 3 wins!',
+  'Vampire Woman 1 is stronger than Vampire Woman 1? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 3? false',
+  'Vampire Woman 1 is stronger than Lucy? false',
+  'Vampire Woman 2 is stronger than Vampire Woman 1? true',
+  'Vampire Woman 2 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 2 is stronger than Vampire Woman 3? false',
+  'Vampire Woman 2 is stronger than Lucy? false',
 }
 ```
 
-We succeeded at getting each `MinorVampire` type to fight the other one, but there are still `MinorVampire`s fighting themselves (Lucy vs. Lucy, Woman 1 vs. Woman 1, etc.). This is where the convenience of the local type alias comes in: we can filter on it, for example. Now we'll filter to only use `fight_2()` with objects that are not identical to each other:
+And since we are using `M` as an expression alias, we can use it to filter. Let's filter out the objects that share the same id.
 
 ```edgeql
 with M := MinorVampire,
-select fight_2(M, MinorVampire) filter M != MinorVampire;
+select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ <str>(M.strength > MinorVampire.strength) filter M.id != MinorVampire.id;
 ```
 
-And now we finally have every combination of `MinorVampire` fighting the other one, with no duplicates.
+And now we no longer have any duplicate names.
 
 ```
 {
-  'Lucy fights Woman 1. Lucy wins!',
-  'Lucy fights Woman 2. Lucy wins!',
-  'Lucy fights Woman 3. Lucy wins!',
-  'Woman 1 fights Lucy. Lucy wins!',
-  'Woman 1 fights Woman 2. Woman 2 wins!',
-  'Woman 1 fights Woman 3. Woman 3 wins!',
-  'Woman 2 fights Lucy. Lucy wins!',
-  'Woman 2 fights Woman 1. Woman 1 wins!',
-  'Woman 2 fights Woman 3. Woman 3 wins!',
-  'Woman 3 fights Lucy. Lucy wins!',
-  'Woman 3 fights Woman 1. Woman 1 wins!',
-  'Woman 3 fights Woman 2. Woman 2 wins!',
+  'Vampire Woman 1 is stronger than Vampire Woman 2? false',
+  'Vampire Woman 1 is stronger than Vampire Woman 3? false',
+  'Vampire Woman 1 is stronger than Lucy? false',
+  'Vampire Woman 2 is stronger than Vampire Woman 1? true',
+  'Vampire Woman 2 is stronger than Vampire Woman 3? false',
+  'Vampire Woman 2 is stronger than Lucy? false',
+  'Vampire Woman 3 is stronger than Vampire Woman 1? true',
+  'Vampire Woman 3 is stronger than Vampire Woman 2? true',
+  'Vampire Woman 3 is stronger than Lucy? false',
+  'Lucy is stronger than Vampire Woman 1? true',
+  'Lucy is stronger than Vampire Woman 2? true',
+  'Lucy is stronger than Vampire Woman 3? false',
 }
 ```
 
-Perfect!
+But we aren't limited to just writing `:= MinorVampire` either. Because an alias is simply an expression, we can make some modifications to the set of objects we have been calling `M`. Let's make a set of `MinorVampire` objects that have a bit more strength than the regular set and compare them to the regular set of `MinorVampire` objects. While we're at it, let's change their names a bit too. The query now looks like this:
 
-With just `detached` this wouldn't work: `select fight_2(MinorVampire, detached MinorVampire) filter MinorVampire != detached MinorVampire;` won't do it because the first `detached MinorVampire` isn't a variable name. Without that name to access, the next `detached MinorVampire` is just a new `detached MinorVampire` with no relation to the other one.
+```edgeql
+with PumpedUp := MinorVampire {
+name := 'Pumped up ' ++ .name,
+strength := .strength + <int16>2
+ },
+select PumpedUp.name ++ ' is stronger than ' ++ MinorVampire.name ++
+'? ' ++ <str>(PumpedUp.strength > MinorVampire.strength) filter PumpedUp.id != MinorVampire.id;
+```
+
+Now the expression returns a lot more `true`, because the chance of having greater strength than the other object is that much greater.
+
+```
+{
+  'Pumped up Vampire Woman 1 is stronger than Vampire Woman 2? true',
+  'Pumped up Vampire Woman 1 is stronger than Vampire Woman 3? false',
+  'Pumped up Vampire Woman 1 is stronger than Lucy? false',
+  'Pumped up Vampire Woman 2 is stronger than Vampire Woman 1? true',
+  'Pumped up Vampire Woman 2 is stronger than Vampire Woman 3? true',
+  'Pumped up Vampire Woman 2 is stronger than Lucy? true',
+  'Pumped up Vampire Woman 3 is stronger than Vampire Woman 1? true',
+  'Pumped up Vampire Woman 3 is stronger than Vampire Woman 2? true',
+  'Pumped up Vampire Woman 3 is stronger than Lucy? true',
+  'Pumped up Lucy is stronger than Vampire Woman 1? true',
+  'Pumped up Lucy is stronger than Vampire Woman 2? true',
+  'Pumped up Lucy is stronger than Vampire Woman 3? true',
+}
+```
 
 So how about adding links and properties in the same way that we did to our `CrewmanInBulgaria` alias? We can do that too by using `select` and then adding any new links and properties you want inside `{}`. Here's a simple example:
 
 ```edgeql
-with NPCExtraInfo := (
-    select NPC {
-      would_win_against_dracula := .strength > Vampire.strength
-    }
-  )
-select NPCExtraInfo {
-  name,
-  would_win_against_dracula
-};
+with NPCExtraInfo := NPC {
+    would_win_against_dracula := .strength > Vampire.strength
+  }
+  select NPCExtraInfo {
+    name,
+    would_win_against_dracula
+  };
 ```
 
 And here's the result. Looks like nobody wins:
@@ -449,7 +443,7 @@ And here's the result. Looks like nobody wins:
 }
 ```
 
-Let's create a quick type alias where Dracula has achieved all his goals and now rules London. We'll create a quick new type called `DraculaKingOfLondon` with a better name, and a link to `subjects` (= people under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
+Finally, let's create a quick type alias where Dracula has achieved all his goals and now rules London. We can give it the alias `DraculaKingOfLondon`, and a link to `subjects` (= people under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
 
 ```edgeql
 with DraculaKingOfLondon := (
@@ -473,7 +467,6 @@ Here's the output:
     name: 'Count Dracula, King of London',
     subjects: {
       default::NPC {name: 'Jonathan Harker'},
-      default::NPC {name: 'The innkeeper'},
       default::NPC {name: 'Mina Murray'},
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Quincey Morris'},
@@ -481,6 +474,7 @@ Here's the output:
       default::NPC {name: 'Abraham Van Helsing'},
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'Renfield'},
+      default::NPC {name: 'Lord Billy'},
     },
     number_of_subjects: 9,
   },

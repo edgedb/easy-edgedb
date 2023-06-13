@@ -15,7 +15,7 @@ tags: Ddl, Sdl, Edgedb Community
 ```edgeql
 update MinorVampire filter .name != 'Lucy'
 set {
-  last_appearance := <cal::local_date>'1887-11-05'
+  last_appearance := <cal::local_date>'1893-11-05'
 };
 ```
 
@@ -98,7 +98,7 @@ error: possibly more than one element returned by an expression for a computed l
 所以对于用户遍布全球的数据库来说，`datetime` 通常是最好的选择。然后，你可以使用 {eql:func}`docs:std::to_datetime` 之类的函数将五个 `int64`、一个 `float64`（用于秒）和一个 `str`（用于 [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)）转换为一个总是作为 UTC 返回的 `datetime`：
 
 ```edgeql-repl
-edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -160,17 +160,11 @@ type Sailor extending Person {
   property rank -> Rank;
 }
 
-scalar type Transport extending enum<Feet, HorseDrawnCarriage, Train>;
+scalar type Class extending enum<Rogue, Mystic, Merchant>;
 type PC extending Person {
-  required property transport -> Transport;
+  required property class -> Class;
 }
 ```
-
-枚举 `Transport` 在我们的游戏架构中从未被真正使用过，也可能还需要添加更多的运输类型，我们没有详细研究过，但在书中确实还有很多不同类型的传输方式。例如，在最后一章中，大家在瓦尔纳（Varna）等候的亚瑟（Arthur）时使用了一艘名为“蒸汽发射（steam launch）”的船，该船比“德米特（the Demeter）”号还要小，但我们在这里就不做过多扩展了。只是简单想象下，这个枚举可能会以下面的逻辑为我们的游戏所用：
-
-- 选择 `Feet` 会给角色一定的速度，而且不需要任何费用，
-- 选择 `HorseDrawnCarriage` 可以提高速度但会减少金钱，
-- 选择 `Train` 提速最多，同样会减少钱，但只能沿着铁路线行驶等。
 
 `Visit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `clock` 的属性，是一个字符串，并以下面的方式被使用：
 
@@ -328,9 +322,9 @@ type Event {
   required multi link place -> Place;
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt;
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 

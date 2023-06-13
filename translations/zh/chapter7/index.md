@@ -129,9 +129,9 @@ std::min(values: set of anytype) -> optional anytype
 
 ```edgeql
 with
-  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
-  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
-select jonathan_strength > min(array_unpack(castle_doors));
+  jonathan := (select Person filter .name = 'Jonathan Harker'),
+  castle := (select Castle filter .name = 'Castle Dracula'),
+  select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
 于是，我们将得到 `{false}`。很好！现在我们成功展示了乔纳森不能打开任何门的事实。他将不得不从窗户爬出去。

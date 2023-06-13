@@ -16,26 +16,26 @@ leadImage: illustration_01.jpg
 - 城市或位置类型。我们可以创建的这些类型称为对象类型 {ref}`object types <docs:ref_datamodel_object_types>`，由属性和链接组成。一个城市类型应该有什么样的属性呢？可能有名字、地理位置、以及有时会使用的其他名称或拼写。比如，Bistritz（比斯特里察）现在叫做 Bistrița（该城市在罗马尼亚），而 Buda-Pesth（布达佩斯）现在会被写为 Budapest。
 - 人类类型。目前一个人类类型需要属性“姓名”以及一种方式去追踪他所访问过的地方。
 
-创建一个类型，只需要使用关键字 `type` 并跟随对应的类型名及花括号 `{}`。类型 `Person`（人）的创建如下所示：
+创建一个类型，只需要使用关键字 `type` 并跟随对应的类型名及花括号 `{}`。类型 `NPC`（非玩家角色/书中人物）的创建如下所示：
 
 ```sdl
-type Person {
+type NPC {
 }
 ```
 
-现在你已经完成了一个类型的创建，但里面还什么都没有。我们可以在花括号中为 `Person` 类型添加属性。如果属性是必须的，我们要在属性名前使用 `required property`；如果属性是可选的，我们使用 `property`。
+现在你已经完成了一个类型的创建，但里面还什么都没有。我们可以在花括号中为 `NPC` 类型添加属性。如果属性是必须的，我们要在属性名前使用 `required property`；如果属性是可选的，我们使用 `property`。
 
 ```sdl
-type Person {
+type NPC {
   required property name -> str;
   property places_visited -> array<str>;
 }
 ```
 
-属性 `required property name` 意味着：使用 `Person` 这个类型创建的对象必须保证拥有一个“姓名（name）”，即你不能创建一个没有名称/姓名的 `Person` 的对象，否则你会看到这样的错误提示：
+属性 `required property name` 意味着：使用 `NPC` 这个类型创建的对象必须保证拥有一个“姓名（name）”，即你不能创建一个没有名称/姓名的 `NPC` 的对象，否则你会看到这样的错误提示：
 
 ```
-MissingRequiredError: missing value for required property default::Person.name
+MissingRequiredError: missing value for required property default::NPC.name
 ```
 
 `str` 是指一个字符串，可以包含在单引号内：`'Jonathan Harker'` 或双引号内：`"Jonathan Harker"`。引号前使用转义字符 `\` 可使 EdgeDB 将引号视为一个字母打印出来，如：`'Jonathan Harker\'s journal'`。
@@ -70,7 +70,7 @@ create database dracula;
 最后，我们需要做一个迁移。这将为数据库提供我们可以开始与之交互所需的结构。使用 EdgeDB 的内置工具 {ref}`built-in tools <docs:ref_cli_edgedb_migration>` 使得迁移并不困难。但是，这里我们将使用控制台快捷方式 {ref}`console shortcut <docs:ref_eql_ddl_migrations>` 来完成迁移：
 
 - 首先，键入 `start migration to {}`。
-- 在这个里面你至少要添加一个 `module`，你的类型才可以被访问。一个模块是一个命名空间，是相似类型聚集在一起的地方。`::` 左边的部分是模块的名称，右边是模块里包含的类型。如果你写了 `module default`，然后写 `type Person`，`Person` 类型将是 `default::Person`。因此，例如，当你看到像 `std::bytes` 这样的类型时，它是指 `std`（标准库）中的类型 `bytes`。
+- 在这个里面你至少要添加一个 `module`，你的类型才可以被访问。一个模块是一个命名空间，是相似类型聚集在一起的地方。`::` 左边的部分是模块的名称，右边是模块里包含的类型。如果你写了 `module default`，然后写 `type NPC`，`NPC` 类型将是 `default::NPC`。因此，例如，当你看到像 `std::bytes` 这样的类型时，它是指 `std`（标准库）中的类型 `bytes`。
 - 然后添加我们上面提及的类型，并以 `}` 结尾来结束该表达块。然后在此之外，键入 `populate migration` 以添加数据。
 - 最后，键入 `commit migration`，从而完成迁移。
 
@@ -78,7 +78,7 @@ create database dracula;
 ```edgeql
 start migration to {
   module default {
-    type Person {
+    type NPC {
       required property name -> str;
       property places_visited -> array<str>;
     }
@@ -173,10 +173,10 @@ insert City {
 
 注意：花括号里最后一项末尾的逗号是可选的——你可以加上逗号，也可以不加逗号。本书里，我们有时会在末尾添加一个逗号，有时也会将其省略。
 
-最后，`Person` 的插入如下所示：
+最后，`NPC` 的插入如下所示：
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := ["Bistritz", "Munich", "Buda-Pesth"],
 };
@@ -184,10 +184,10 @@ insert Person {
 
 但是稍等，这个插入将不会链接到任何我们已经插入到数据库里的 `City`。这是我们的架构需要改进的地方：
 
-- 我们有一个 `Person` 类型和一个 `City` 类型，
-- `Person` 类型含有属性 `places_visited`，用来展示访问过的城市的名称，但它们只是数组中的字符串。我们最好能以某种方式将这个属性链接到 `City` 类型上。
+- 我们有一个 `NPC` 类型和一个 `City` 类型，
+- `NPC` 类型含有属性 `places_visited`，用来展示访问过的城市的名称，但它们只是数组中的字符串。我们最好能以某种方式将这个属性链接到 `City` 类型上。
 
-所以这里我们先不急于做 `Person` 的插入。我们先来调整一下 `Person` 类型的定义，将 `array<str>` 从 `property` 更改为指向 `City` 类型的 `multi link`。这将使 `Person` 和 `City` 连接起来。
+所以这里我们先不急于做 `NPC` 的插入。我们先来调整一下 `NPC` 类型的定义，将 `array<str>` 从 `property` 更改为指向 `City` 类型的 `multi link`。这将使 `NPC` 和 `City` 连接起来。
 
 但首先让我们先仔细看看当我们使用 `insert` 时到底发生了什么。
 
@@ -198,14 +198,14 @@ EdgeDB 还有一种字节字面量类型，可以用来创建用字符串表示�
 你可以通过在字符串前添加一个 `b` 来创建一个字节文字：
 
 ```edgeql-repl
-edgedb> select b'Bistritz';
+db> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 因为每个字符必须是 1 个字节，因此只有 ASCII 才适用于这种类型。所以如果 `modern_name` 是字节类型且名字中有类似 `ț` 这样的字符，将会产生错误：
 
 ```edgeql-repl
-edgedb> select b'Bistrița';
+db> select b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
   ┌─ query:1:8
   │
@@ -216,7 +216,7 @@ error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are
 每当你 `insert` 一个项目（an item，一条数据）时，EdgeDB 都会给你一个 `uuid`。这是每个项目的唯一编号，类似于：
 
 ```
-{default::Person {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
+{default::NPC {id: 462b29ea-ff3d-11eb-aeb7-b3cf3ba28fb9}}
 ```
 
 当你使用 `select` 选择一个类型时也会显示类似的内容。只需键入 `select` 和相应类型就会显示该类型下所有的 `uuid`。让我们看看到目前为止创建的所有城市：
@@ -346,40 +346,40 @@ select City {
 
 ## 链接
 
-所以现在剩下要做的最后一件事是将 `Person` 中名为 `places_visited` 的 `property` 更改为 `link`。现在，`places_visited` 为我们提供了我们想要的城市名称，但将 `Person` 和 `City` 链接在一起才更有意义。毕竟，`City` 类型里面有 `.name`，链接它们比重写 `Person` 中的所有内容更好些。我们将把 `Person` 改成这样：
+所以现在剩下要做的最后一件事是将 `NPC` 中名为 `places_visited` 的 `property` 更改为 `link`。现在，`places_visited` 为我们提供了我们想要的城市名称，但将 `NPC` 和 `City` 链接在一起才更有意义。毕竟，`City` 类型里面有 `.name`，链接它们比重写 `NPC` 中的所有内容更好些。我们将把 `NPC` 改成这样：
 
 ```sdl
-type Person {
+type NPC {
   required property name -> str;
   multi link places_visited -> City;
 }
 ```
 
-我们在 `link` 前写了 `multi`，因为一个 `Person` 应该可以链接不止一个 `City`。`multi` 的相反是 `single`，使用 `single` 意味着仅允许链接一个对象。因为 `single` 是默认的，所以如果你仅仅写 `link`，EdgeDB 将把它视为 `single`。
+我们在 `link` 前写了 `multi`，因为一个 `NPC` 应该可以链接不止一个 `City`。`multi` 的相反是 `single`，使用 `single` 意味着仅允许链接一个对象。因为 `single` 是默认的，所以如果你仅仅写 `link`，EdgeDB 将把它视为 `single`。
 
 现在当我们插入乔纳森·哈克（Jonathan Harker）时，他将被链接到类型 `City`。别忘了属性 `places_visited` 不是 `required` 的，所以我们仍然可以在插入时仅使用他的名字进行创建：
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
 };
 ```
 
-这会生成一个 `Person` 类型的对象，其 `places_visited` 属性被链接到 `City` 类型且没有任何内容。让我们看看里面是什么：
+这会生成一个 `NPC` 类型的对象，其 `places_visited` 属性被链接到 `City` 类型且没有任何内容。让我们看看里面是什么：
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
 ```
 
-执行后会输出：`{default::Person {name: 'Jonathan Harker', places_visited: {}}}`
+执行后会输出：`{default::NPC {name: 'Jonathan Harker', places_visited: {}}}`
 
 但是我们想要把乔纳森（Jonathan）关联到他所去过的城市。我们在做 `insert` 的时候，可以将 `places_visited` 变为 `places_visited := City`：
 
 ```edgeql
-insert Person {
+insert NPC {
   name := 'Jonathan Harker',
   places_visited := City,
 };
@@ -388,7 +388,7 @@ insert Person {
 我们没有做任何过滤，所以 EdgeDB 会把所有 `City` 类型的对象都放进来。现在让我们看看乔纳森（Jonathan）都去了哪些地方。尝试一下下面的代码，你会发现这还不完全是我们需要的：
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited
 };
@@ -398,7 +398,7 @@ select Person {
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {id: 4ba1074e-ff3f-11eb-aeb7-cf15feb714ef},
@@ -412,7 +412,7 @@ select Person {
 这和我们理想的结果已经很接近了！因为我们没有提到 `City` 里的任何属性，所以我们只能得到一堆 Object ID。现在我们仅仅需要让 EdgeDB 知道我们实际上是想看到 `City` 类型中的 `name` 属性。为了得到想要的结果，我们需要在 `places_visited` 后面添加一个冒号，并将 `name` 放到随后的花括号中：
 
 ```edgeql
-select Person {
+select NPC {
   name,
   places_visited: {
     name
@@ -424,7 +424,7 @@ select Person {
 
 ```
 {
-  default::Person {
+  default::NPC {
     name: 'Jonathan Harker',
     places_visited: {
       default::City {name: 'Munich'},
@@ -437,7 +437,7 @@ select Person {
 
 当然，乔纳森·哈克（Jonathan Harker）已经成功被插入到数据库中并关联了每一个造访过的城市。现在我们只有三个 `City` 对象，所以这还没有什么问题。但是稍后我们将有更多的城市，并且不能对其他所有角色都使用 `places_visited := City`（因为他们造访过的城市列表并不一样）。为此，我们将需要用到 ``，我们将在下一章中学习如何使用它。
 
-注意：如果你在这里多次插入了“Johnathan Harker”，你将会得到多个名为“Johnathan Harker”的 `Person` 对象。你可能觉得这不太合理，但我们暂时先允许这样做，我们将会在[第七章](../chapter7/index.md)中学习如何限制数据库中不出现多个使用相同姓名的 `Person`。
+注意：如果你在这里多次插入了“Jonathan Harker”，你将会得到多个名为“Jonathan Harker”的 `NPC` 对象。你可能觉得这不太合理，但我们暂时先允许这样做，我们将会在[第七章](../chapter7/index.md)中学习如何限制数据库中不出现多个使用相同姓名的 `NPC`。
 
 [→ 点击这里查看到第 1 章为止的所有代码](code.md)
 

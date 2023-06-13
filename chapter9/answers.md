@@ -41,14 +41,14 @@ type Vampire extending Person {
 }
 ```
 
-#### 4. How would you update all the `Person` types to show that they died on September 11, 1887?
+#### 4. How would you update all the `Person` types to show that they died on September 11, 1893?
 
 You could give them each a `last_appearance` using the `to_local_date` function that we used a lot in this chapter:
 
 ```edgeql
 update Person
 set {
-  last_appearance := cal::to_local_date(1887, 9, 11),
+  last_appearance := cal::to_local_date(1893, 9, 11),
 };
 ```
 
@@ -57,7 +57,7 @@ Or you could just cast to a `cal::local_date` from a string:
 ```edgeql
 update Person
 set {
-  last_appearance := <cal::local_date>'1887-09-11'
+  last_appearance := <cal::local_date>'1893-09-11'
 };
 ```
 

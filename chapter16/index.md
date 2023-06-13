@@ -5,8 +5,10 @@ tags: Indexing, String Functions
 # Chapter 16 - Is Renfield telling the truth?
 
 > Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
-
-> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing. And one night, Renfield was very serious and asks them to let him leave. He says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
+>
+> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing.
+>
+> ne night, Renfield becomes very serious and asks the men to let him leave. Renfield says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
 
 ## `index on` for quicker lookups
 
@@ -24,7 +26,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is very convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
+This is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
 
 ```sdl
 type BookExcerpt {
@@ -56,11 +58,11 @@ Finally, here are two times when you don't need to create an `index`:
 
 Indexes are automatically created in these two cases so you don't need to use indexes for them.
 
-So let's insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
+So let's do a migration and insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
 ```edgeql
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 4, 0, 0),
   author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
@@ -68,13 +70,13 @@ insert BookExcerpt {
 
 ```edgeql
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 5, 0, 0),
   author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 ```
 
-Then later on we could do this sort of query to get all the entries in order and displayed as JSON.
+Then later on we could do this sort of query to get all the entries in order and displayed as JSON. Perhaps the `PC` objects can visit a library where they can search for game details, and this requires sending a message in JSON format to the software that displays it on the screen:
 
 ```edgeql
 select <json>(
@@ -88,12 +90,18 @@ select <json>(
 );
 ```
 
-Here's the JSON output with just a small part of the excerpts:
+Here's the JSON output (remember, set with '\set output-format json-pretty`) which looks pretty nice:
 
 ```
 {
-  "{\"date\": \"1887-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward's Diary.\\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\\\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\\\"\"}",
-  "{\"date\": \"1887-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.\"}",
+  "date": "1893-10-01T04:00:00",
+  "author": {"name": "John Seward"},
+  "excerpt": "Dr. Seward's Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\""
+}
+{
+  "date": "1893-10-01T05:00:00",
+  "author": {"name": "Jonathan Harker"},
+  "excerpt": "1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her."
 }
 ```
 
@@ -107,9 +115,10 @@ type Event {
   required multi link place -> Place;
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt; # Only this is new
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 
+    ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -120,7 +129,7 @@ You can see that `description` is a short string that we write, while `excerpt` 
 The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```edgeql-repl
-edgedb> select str_lower('RENFIELD WAS HERE');
+db> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
@@ -141,19 +150,37 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
   default::BookExcerpt {
     excerpt: '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
     length: '182 characters',
-    the_date: '1887-10-01',
+    the_date: '1893-10-01',
   },
 }
 ```
 
-Another way to make `the_date` is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string:
+Another way to make this `the_date` parameter is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string. This function also allows us to change the format of the date depending on how readable we want to make it:
 
 ```edgeql
 select BookExcerpt {
   excerpt,
   length := (<str>(select len(.excerpt)) ++ ' characters'),
-  the_date := (select to_str(.date, 'YYYY-MM-DD')), # Only this part is different, and you don't have to pass the second parameter.
+  the_date := (select to_str(.date)),
+  the_date_pretty := (select to_str(.date, 'YYYY-MM-DD')),
+  the_date_time_pretty := (select to_str(.date, 'YYYY-MM-DD HH:MM:SS')),
+  the_date_verbose := (select to_str(.date, 'The DD of MM, YYYY'))
 } filter contains(str_lower(.excerpt), 'mina');
+```
+
+Here's the output for that long query:
+
+```
+{
+  default::BookExcerpt {
+    excerpt: '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
+    length: '182 characters',
+    the_date: '1893-10-01T05:00:00',
+    the_date_pretty: '1893-10-01',
+    the_date_time_pretty: '1893-10-01 05:10:00',
+    the_date_verbose: 'The 01 of 10, 1893',
+  },
+}
 ```
 
 Some other functions for strings are:
@@ -165,7 +192,7 @@ Some other functions for strings are:
 - `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
 
 ```edgeql-repl
-edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+db> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -186,7 +213,7 @@ edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!
 }
 ```
 
-But this works too:
+But we can choose a letter to split at too:
 
 ```edgeql
 select MinorVampire {
@@ -198,10 +225,12 @@ Now, the names have been split into arrays at each instance of `n`:
 
 ```
 {
-  default::MinorVampire {names: ['Woma', ' 1']},
-  default::MinorVampire {names: ['Woma', ' 2']},
-  default::MinorVampire {names: ['Woma', ' 3']},
+  default::MinorVampire {names: ['Vampire Woma', ' 1']},
+  default::MinorVampire {names: ['Vampire Woma', ' 2']},
+  default::MinorVampire {names: ['Vampire Woma', ' 3']},
   default::MinorVampire {names: ['Lucy']},
+  default::MinorVampire {names: ['Billy']},
+  default::MinorVampire {names: ['Bob']},
 }
 ```
 
@@ -224,7 +253,9 @@ The output is an array of the text split by line:
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
 
 ```edgeql-repl
-edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+db> select re_match_all('[Tt]o-?night', 'Dracula is an old book,
+so the word tonight is written to-night.
+Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
@@ -240,17 +271,24 @@ Here is the output: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-
 And to match anything, you can use the wildcard character: `.`
 
 ```edgeql-repl
-edgedb> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
+db> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
 {['Noo,'], ['door']}
+```
+
+The `.` wildcard operator still determines the length of the slice of the string to match on, so you can use more of them to lengthen the part of the string in which we are looking for a match.
+
+```edgeql-repl
+db> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
+{['the door?']}
 ```
 
 ## Two more notes on `index on`
 
-By the way, `index on` can also be used on expressions that you make yourself. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+By the way, `index on` can also be used on expressions that you we make ourselves. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
   index on (.name ++ ': ' ++ <str>.population);
 }
@@ -260,7 +298,7 @@ Also don't forget that you can add add an annotation to this as well. `(.name ++
 
 ```
 type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for use in game function get_city_names';

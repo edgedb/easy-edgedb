@@ -57,7 +57,7 @@ type BookExcerpt {
 
 ```edgeql
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 4, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 4, 0, 0),
   author := assert_single((select Person filter .name = 'John Seward')),
   excerpt := 'Dr. Seward\'s Diary.\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once..."You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night."',
 };
@@ -65,7 +65,7 @@ insert BookExcerpt {
 
 ```edgeql
 insert BookExcerpt {
-  date := cal::to_local_datetime(1887, 10, 1, 5, 0, 0),
+  date := cal::to_local_datetime(1893, 10, 1, 5, 0, 0),
   author := assert_single((select Person filter .name = 'Jonathan Harker')),
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
@@ -89,8 +89,8 @@ select <json>(
 
 ```
 {
-  "{\"date\": \"1887-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward's Diary.\\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\\\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\\\"\"}",
-  "{\"date\": \"1887-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.\"}",
+  "{\"date\": \"1893-10-01T04:00:00\", \"author\": {\"name\": \"John Seward\"}, \"excerpt\": \"Dr. Seward's Diary.\\n 1 October, 4 a.m. -- Just as we were about to leave the house, an urgent message was brought to me from Renfield to know if I would see him at once...\\\"You will, I trust, Dr. Seward, do me the justice to bear in mind, later on, that I did what I could to convince you to-night.\\\"\"}",
+  "{\"date\": \"1893-10-01T05:00:00\", \"author\": {\"name\": \"Jonathan Harker\"}, \"excerpt\": \"1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.\"}",
 }
 ```
 
@@ -104,9 +104,9 @@ type Event {
   required multi link place -> Place;
   required multi link people -> Person;
   multi link excerpt -> BookExcerpt; # Only this is new
-  property exact_location -> tuple<float64, float64>;
+  property location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.exact_location.0 ++ '_N_' ++ <str>.exact_location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -117,7 +117,7 @@ type Event {
 {ref}`字符串函数 <docs:ref_std_string>` 在对我们的 `BookExcerpt` 类型（或通过 `Event` 的 `BookExcerpt`）进行查询时特别有用。其中一个实用的函数是 {eql:func}`docs:std::str_lower`，它可以使字符串的字母都变为小写：
 
 ```edgeql-repl
-edgedb> select str_lower('RENFIELD WAS HERE');
+db> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
@@ -142,7 +142,7 @@ select BookExcerpt {
   default::BookExcerpt {
     excerpt: '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
     length: '182 characters',
-    the_date: '1887-10-01',
+    the_date: '1893-10-01',
   },
 }
 ```
@@ -166,7 +166,7 @@ select BookExcerpt {
 - `str_split()`：该函数可以将字符串以你想要的方式进行拆分并转变为数组。最常见的是用 `' '` 作为分割符来分隔单词：
 
 ```edgeql-repl
-edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+db> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -225,7 +225,7 @@ let me go!', '\n');
 - `re_match()`（用于第一次匹配）和 `re_match_all()]`（用于所有匹配）：如果你对如何使用 [正则表达式](https://en.wikipedia.org/wiki/Regular_expression) 有所了解，并想使用它们，这俩函数可能会很有用。小说《德古拉》写于 100 多年前，因此有些单词的拼写已经不大一样了。例如，`tonight` 这个词在《德古拉》中总是使用较旧的 `to-night` 拼写。为了处理这样的问题，我们就可以使用这两个函数：
 
 ```edgeql-repl
-edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+db> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
@@ -246,7 +246,7 @@ edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
   index on (.name ++ ': ' ++ <str>.population);
 }
@@ -256,7 +256,7 @@ type City extending Place {
 
 ```
 type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for use in game function get_city_names';

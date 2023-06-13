@@ -5,7 +5,7 @@
 It would look like this:
 
 ```edgeql
-for person in {('Jimmy the Bartender', '1887-09-10', '1887-09-11'), ('Some friend of Jonathan Harker', '1887-07-08', '1887-07-09')}
+for person in {('Jimmy the Bartender', '1893-09-10', '1893-09-11'), ('Some friend of Jonathan Harker', '1893-07-08', '1893-07-09')}
 union (
   insert NPC {
     name := person.0,
@@ -17,7 +17,7 @@ union (
 
 #### 2. Here are two more `NPC`s to insert, except the last one has an empty set (she's not dead). What problem are we going to have?
 
-The problem is that EdgeDB doesn't know what type the last `{}` is. You can see it by doing a quick `select {('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', {})}`:
+The problem is that EdgeDB doesn't know what type the last `{}` is. You can see it by doing a quick `select {('Dracula\'s Castle visitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05-08', {})}`:
 
 The output is:
 
@@ -29,7 +29,7 @@ ERROR: QueryError: operator 'union' cannot be applied to operands of type 'tuple
 A cast to `<str>{}` is an option, but we could do something more robust. First change the `{}` to an empty string, and then specify that `last_appearance` has to have a length of 10, and otherwise make it `<cal::local_date>{}`:
 
 ```edgeql
-for person in {('Dracula\'s Castle visitor', '1887-09-10', '1887-09-11'), ('Old lady from Bistritz', '1887-05-08', '')}
+for person in {('Dracula\'s Castle visitor', '1893-09-10', '1893-09-11'), ('Old lady from Bistritz', '1893-05-08', '')}
 union (
   insert NPC {
     name := person.0,
@@ -91,17 +91,17 @@ else (
 );
 ```
 
-Then even if his data has a conflicting name (like 'Woman 1'), it will still update with their correct strength instead of just giving up:
+Then even if his data has a conflicting name (like 'Vampire Woman 1'), it will still update with their correct strength instead of just giving up:
 
 ```edgeql
 insert MinorVampire {
-  name := 'Woman 1',
+  name := 'Vampire Woman 1',
   strength := 7,
 } unless conflict on .name
 else (
   update MinorVampire
   set {
-    name := 'Woman 1',
+    name := 'Vampire Woman 1',
     strength := 7,
   }
 );
