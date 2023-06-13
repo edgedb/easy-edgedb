@@ -90,7 +90,8 @@ Then we can use the conversion rates to display the total amount he owns in poun
 ```edgeql
 select Currency {
   owner: {name},
-  total := .major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)
+  total := .major_amount + (.minor_amount / .minor_conversion) 
+    + (.sub_minor_amount / .sub_minor_conversion)
 };
 ```
 
@@ -117,7 +118,8 @@ That signature has an extra `d: int64` part for the number of decimal places we 
 All together, it looks like this:
 
 ```edgeql
-select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
+select (for character in {'Jonathan Harker', 'Mina Murray',
+  'The innkeeper', 'Emil Sinclair'}
   union (
     insert Pound {
       owner := assert_single((select Person filter .name = character)),

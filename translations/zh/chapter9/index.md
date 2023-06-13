@@ -87,7 +87,7 @@ type NPC extending Person {
 这里介绍一个方便实用的的函数，即 {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`，它可以给出当前的日期时间。让我们试试看：
 
 ```edgeql-repl
-edgedb> select datetime_current();
+db> select datetime_current();
 {<datetime>'2020-11-17T06:13:24.418765000Z'}
 ```
 

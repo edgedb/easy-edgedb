@@ -127,7 +127,8 @@ select jonathan_strength > min(castle_doors);
 Here's the error:
 
 ```
-error: InvalidTypeError: operator '>' cannot be applied to operands of type 'std::int16' and 'array<std::int16>'
+error: InvalidTypeError: operator '>' cannot be applied to 
+operands of type 'std::int16' and 'array<std::int16>'
 ```
 
 We can {eql:func}`look at the function signature <docs:std::min>` to see the problem:
@@ -170,7 +171,8 @@ Don't forget that we need to cast with `<str>` because `len()` returns an intege
 The other example is with `count()`, which also has a cast to a `<str>`:
 
 ```edgeql
-select 'There are ' ++ <str>(select count(Place) - count(Castle)) ++ ' more places than castles';
+select 'There are ' ++ <str>(select count(Place) 
+      - count(Castle)) ++ ' more places than castles';
 ```
 
 It prints: `{'There are 8 more places than castles'}`. (The number 8 might be a bit different from yours if you have been experimenting with inserting `Place` objects.)
@@ -188,7 +190,11 @@ select City {
 } filter .name ilike '%i%' and exists (.modern_name);
 ```
 
-This works fine, returning one city: `{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}`.
+This works fine, returning one city:
+
+```
+{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
+```
 
 But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) and would like to pass in parameters instead of rewriting the query every time.
 
@@ -208,7 +214,17 @@ select City {
 } filter .name = $name;
 ```
 
-The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error tells us too: `error: QueryError: missing a type cast before the parameter`. In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
+The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error gives us a hint for what to do:
+
+```
+error: QueryError: missing a type cast before the parameter
+  ┌─ <query>:3:18
+  │
+3 │ } filter .name = $name;
+  │                  ^^^^^ error
+```
+
+In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
 
 ```edgeql
 select City {
@@ -218,9 +234,15 @@ select City {
 
 When we do that, we get a prompt asking us to enter the value:
 
-`Parameter <str>$name:`
+```
+Parameter <str>$name:
+```
 
-Just typing London and hitting enter will lead to this expected result: `{default::City {name: 'London'}}`
+Just typing London and hitting enter will lead to this expected result:
+
+```
+{default::City {name: 'London'}}
+```
 
 Note that on the REPL it knows to expect a string so you don't need to type `'London'`. Give `'London'` a try though! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
 

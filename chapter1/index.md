@@ -59,9 +59,9 @@ To connect to easy_edgedb, run `edgedb`
 That was easy! Now try typing `edgedb`. This will take you into the EdgeDB REPL. Now type `select 'Jonathan Harker';` and hit enter. You should see the following output:
 
 ```
-edgedb> select "Jonathan Harker";
+db> select "Jonathan Harker";
 {'Jonathan Harker'}
-edgedb>
+db>
 ```
 
 You just made your first query in EdgeDB. Now type `\quit` to escape the REPL and get back to the command line.
@@ -161,7 +161,7 @@ l or list - list the DDL statements associated with prompt
 
 Sure, let's be curious and try typing `l` to see what commands will be generated to create our `City` type. If we type `l` we will see the following:
 
-```edgeql
+```edgeql-repl
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
 > l
 The following DDL statements will be applied:
@@ -281,14 +281,14 @@ EdgeDB also has a byte literal type that gives you the bytes of a string. This i
 You create byte literals by adding a `b` in front of the string:
 
 ```edgeql-repl
-edgedb> select b'Bistritz';
+db> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
 ```edgeql-repl
-edgedb> select b'Bistrița';
+db> select b'Bistrița';
 error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
   ┌─ <query>:1:8
   │
@@ -427,7 +427,7 @@ And here is the output:
 This brings up an interesting discussion about type safety. EdgeDB is strongly typed, meaning that everything needs a type and it will not try to mix different types together. So this query will not work: 
 
 ```edgeql
-edgedb> select City {
+db> select City {
   name_in_dracula := .name,
   name_today := .modern_name,
   oh_and_by_the_way := 'This is a city in the book Dracula written in the year' + 1897

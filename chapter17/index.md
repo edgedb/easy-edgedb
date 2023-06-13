@@ -79,7 +79,9 @@ This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_da
 One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return true:
 
 ```edgeql
-select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character2 := 'Renfield');
+select 
+  ('Lucy Westenra', 'Renfield') 
+  = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
 
 ## Putting abstract types together
@@ -131,7 +133,8 @@ function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
     with vampire := (select Person filter .name = person_name),
     has_coffins := place.coffins > 0,
-      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+      select vampire.name ++ ' can enter.'
+        if has_coffins else vampire.name ++ ' cannot enter.'
     );
 ```
 
@@ -147,7 +150,8 @@ function can_enter(person_name: str, place: str) -> optional str
       enter_place := assert_single(
         (select HasNameAndCoffins filter .name = place)
       )
-    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
+    select vampire.name ++ ' can enter.' if enter_place.coffins > 0 
+      else vampire.name ++ ' cannot enter.'
   );
 ```
 
@@ -172,7 +176,7 @@ set {
 Now let's give the ship `The Demeter` some coffins.
 
 ```edgeql-repl
-edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number
 ....... };
@@ -183,7 +187,7 @@ Parameter <int16>$number: 10
 Castle Dracula naturally should have some coffins too. Let's go with 50.
 
 ```edgeql-repl
-edgedb> update HasNameAndCoffins filter .name = <str>$place_name
+db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number
 ....... };
@@ -267,7 +271,7 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's now compare a `select` on the `Crewman` objects to a `select` with the `CrewmanInBulgaria` alias:
 
 ```edgeql-repl
-edgedb> select Crewman { name, strength };
+db> select Crewman { name, strength };
 {
   default::Crewman {name: 'Crewman 1', strength: 1},
   default::Crewman {name: 'Crewman 2', strength: 2},
@@ -275,7 +279,7 @@ edgedb> select Crewman { name, strength };
   default::Crewman {name: 'Crewman 4', strength: 2},
   default::Crewman {name: 'Crewman 5', strength: 5},
 }
-edgedb> select CrewmanInBulgaria { original_name, name, strength };
+db> select CrewmanInBulgaria { original_name, name, strength };
 {
   default::Crewman {original_name: 'Crewman 1', name: 'Gospodin Crewman 1', strength: 2},
   default::Crewman {original_name: 'Crewman 2', name: 'Gospodin Crewman 2', strength: 3},

@@ -244,7 +244,8 @@ type Time {
   required property clock -> str; 
   property clock_time := <cal::local_time>.clock; 
   property hour := .clock[0:2]; 
-  property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+  property sleep_state := 
+    SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
 } 
 ```

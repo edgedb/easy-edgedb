@@ -23,8 +23,9 @@ type Event {
   required multi link people -> Person;
   property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := 'https://geohack.toolforge.org/geohack.php?params=' ++ <str>.location.0 ++ '_N_' 
-  ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := 'https://geohack.toolforge.org/geohack.php?params=' 
+    ++ <str>.location.0 ++ '_N_' 
+    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -32,7 +33,9 @@ You can see that most of the properties are `required`, because an `Event` type 
 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
-`https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E`
+```
+https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E
+```
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
 
@@ -171,7 +174,7 @@ To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which i
 Here is a quick example:
 
 ```edgeql-repl
-edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
+db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 Since the set on the left is empty, the coalescing operator turns its attention to the set on the right and returns that: `{'Count Dracula is now in Whitby'}` If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
@@ -216,7 +219,9 @@ Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_produ
 
 This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
-- `{the number of items in the first set}` \* `{the number of items in the second set}`
+```
+{the number of items in the first set}` \* `{the number of items in the second set}
+```
 
 So if there are two in the first set, and three in the second, it will run the function six times.
 
@@ -233,10 +238,13 @@ We'll also make the output a little more clear:
 
 ```edgeql
 with
-  first_group := (select Person filter .name in {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
-  second_group := (select Person filter .name in {'Renfield', 'Mina Murray', 'The innkeeper'}),
+  first_group := (select Person filter .name in 
+    {'Jonathan Harker', 'Count Dracula', 'Arthur Holmwood'}),
+  second_group := (select Person filter .name in 
+    {'Renfield', 'Mina Murray', 'The innkeeper'}),
 select (
-  first_group.name ++ ' fights against ' ++ second_group.name ++ '. ' ++ fight(first_group, second_group)
+  first_group.name ++ ' fights against ' ++ second_group.name 
+    ++ '. ' ++ fight(first_group, second_group)
 );
 ```
 
@@ -282,7 +290,9 @@ If you want to display more or less than a maximum of 100 (the default), just ty
 3. What will the output of this be?
 
    ```edgeql
-   select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+   select {'Jonathan', 'Arthur'} ++ {' loves '} 
+     ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} 
+     ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
    ```
 
 4. How would you make a function that tells you how many times larger one city is than another?

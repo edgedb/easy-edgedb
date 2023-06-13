@@ -161,9 +161,9 @@ function visited(person: str, city: str) -> bool
 Pretty simple! Let's add it to the schema and do a migration. Now our queries are much shorter:
 
 ```edgeql-repl
-edgedb> select visited('Mina Murray', 'London');
+db> select visited('Mina Murray', 'London');
 {true}
-edgedb> select visited('Mina Murray', 'Bistritz');
+db> select visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
@@ -172,7 +172,8 @@ Thanks to the function, even more complicated queries are still quite readable:
 ```edgeql
 select (
   'Did Mina visit Bistritz? ' ++ <str>visited('Mina Murray', 'Bistritz'),
-  'What about Jonathan and Romania? ' ++ <str>visited('Jonathan Harker', 'Romania')
+  'What about Jonathan and Romania? ' 
+    ++ <str>visited('Jonathan Harker', 'Romania')
 );
 ```
 
@@ -209,7 +210,8 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
   ┌─ query:1:8
   │
 1 │ select {'Buda-Pesth', 'Bistritz'} ++ {};
-  │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Consider 
+using an explicit type cast or a conversion function.
 ```
 
 Ah, that's right - we saw one example of an empty set with a cast in the last chapter when we tried the query `select <str>{} ?? 'Count Dracula is now in Whitby';`. EdgeDB requires a cast for an empty set, because there's no way to know the type of a set if all EdgeDB sees is `{}`.
@@ -219,7 +221,7 @@ You can probably guess that the same is true for array constructors too, so `sel
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
 ```edgeql-repl
-edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 

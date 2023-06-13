@@ -71,7 +71,8 @@ abstract type Person {
     delegated constraint exclusive;
   }
   property age -> int16;
-  property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+  property conversational_name := .title ++ ' ' ++ .name 
+    if exists .title else .name;
   property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   property strength -> int16;
   multi link places_visited -> Place;
@@ -90,7 +91,8 @@ Every property has a type (like `str`, `bigint`, etc.). Computed properties have
 The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
-error: possibly more than one element returned by an expression for a computed link 'former_self' declared as 'single'
+error: possibly more than one element returned by an expression
+for a computed link 'former_self' declared as 'single'
 ```
 
 This could be what you want for `lover`, but it wouldn't work well for `places_visited`. And backlinks have the opposite behavior: a backlink is a `multi link` by default, meaning that you have to write `single link` otherwise.
@@ -100,7 +102,7 @@ For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_d
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
 ```edgeql-repl
-edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```
@@ -199,7 +201,8 @@ type Visit {
   property clock -> str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property sleep_state := 'asleep' 
+    if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
 }
 ```
 
@@ -341,7 +344,8 @@ type Event {
   multi link excerpt -> BookExcerpt;
   property location -> tuple<float64, float64>;
   property east -> bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 ++ '_N_' 
+    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -472,7 +476,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL. Take this attempt to use DDL for example and the error output it generates:
 
 ```edgeql-repl
-edgedb> create function hi() -> str using ("Hi");
+db> create function hi() -> str using ("Hi");
 error: QueryError: bare DDL statements are not allowed in this database
   ┌─ <query>:1:1
   │

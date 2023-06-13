@@ -28,34 +28,34 @@ One other way to get a `datetime` is to use the `to_datetime()` function. {eql:f
 Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
 
 ```edgeql-repl
-edgedb> select 6.777777777777777; # Good so far
+db> select 6.777777777777777; # Good so far
 {6.777777777777777}
-edgedb> select 6.7777777777777777; # Add one more digit...
+db> select 6.7777777777777777; # Add one more digit...
 {6.777777777777778} # Where did the 8 come from?!
 ```
 
 If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
 
 ```edgeql-repl
-edgedb> select 6.7777777777777777n;
+db> select 6.7777777777777777n;
 {6.7777777777777777n}
-edgedb> select 6.7777777777777777777777777777777777777777777777777n;
+db> select 6.7777777777777777777777777777777777777777777777777n;
 {6.7777777777777777777777777777777777777777777777777n}
 ```
 
 Similarly, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
 
 ```edgeql-repl
-edgedb> select 9223372036854775807; # Good so far...
+db> select 9223372036854775807; # Good so far...
 {9223372036854775807}
-edgedb> select 9223372036854775808; # But add 1 and it will fail
+db> select 9223372036854775808; # But add 1 and it will fail
 edgedb error: NumericOutOfRangeError: std::int64 out of range
 ```
 
 Here as well you can just add an `n` and it will create a `bigint` that can accommodate any size.
 
 ```edgeql-repl
-edgedb> select 9223372036854775808n;
+db> select 9223372036854775808n;
 {9223372036854775808n}
 ```
 
@@ -64,7 +64,8 @@ Now that we know all the numeric types, let's get back to the six signatures for
 ```
 std::to_datetime(s: str, fmt: optional str = {}) -> datetime
 std::to_datetime(local: cal::local_datetime, zone: str) -> datetime
-std::to_datetime(year: int64, month: int64, day: int64, hour: int64, min: int64, sec: float64, timezone: str) -> datetime
+std::to_datetime(year: int64, month: int64, day: int64,
+  hour: int64, min: int64, sec: float64, timezone: str) -> datetime
 std::to_datetime(epochseconds: decimal) -> datetime
 std::to_datetime(epochseconds: float64) -> datetime
 std::to_datetime(epochseconds: int64) -> datetime
@@ -87,7 +88,8 @@ The `07:35:00` part shows that it was automatically converted to UTC, which is L
 We can also use this to see the duration between events. EdgeDB has a `duration` type that you can get by subtracting a datetime from another one. Let's practice by calculating the exact number of seconds between one date in Central Europe and another in Korea:
 
 ```edgeql
-select to_datetime(2003, 5, 12, 8, 15, 15, 'CET') - to_datetime(2003, 5, 12, 6, 10, 0, 'KST');
+select to_datetime(2003, 5, 12, 8, 15, 15, 'CET')
+     - to_datetime(2003, 5, 12, 6, 10, 0,  'KST');
 ```
 
 This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 2003 6:10 in Korean Standard Time. The result is: `{<duration>'10:05:15'}`, so 10 hours, 5 minutes, and 15 seconds.
@@ -95,7 +97,8 @@ This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 
 Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
 
 ```edgeql
-select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST') - to_datetime(1893, 5, 12, 6, 10, 0, 'UTC');
+select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST')
+     - to_datetime(1893, 5, 12, 6, 10, 0,  'UTC');
 ```
 
 The answer is 1 hour and 25 minutes: `{<duration>'1:25:00'}`.
@@ -154,7 +157,7 @@ select today - game_start;
 That gives us a duration of `{<duration>'296:28:17'}`. That's very precise, but it would be nice to show the player these units in more readable units. EdgeDB added a type called `relative_duration` in 2021 to do exactly this. A relative_duration will show up when you add or subtract local dates and local datetimes. Here is a quick example:
 
 ```edgeql
-edgedb> select <cal::local_datetime>'2023-05-18T08:00:00' - <cal::local_datetime>'2023-05-16T04:06:55';
+db> select <cal::local_datetime>'2023-05-18T08:00:00' - <cal::local_datetime>'2023-05-16T04:06:55';
 ```
 
 This gives the output `{<cal::relative_duration>'P2DT3H53M5S'}`, which has done all the calculating for us and is easy to split up into parts. Adding a few spaces makes it easy to read: `P 2D T 3H 53M 5S`. In other words:
@@ -224,7 +227,8 @@ insert MinorVampire {
 The error is due to the fact that there might be more than one `Vampire` object with the name 'Count Dracula', because at the moment our schema allows this. And EdgeDB rightfully disallows us from trying to return a result that might be multiple links instead of a single link:
 
 ```
-error: QueryError: possibly more than one element returned by an expression for a link 'master' declared as 'single'
+error: QueryError: possibly more than one element returned by an expression 
+for a link 'master' declared as 'single'
   ┌─ <query>:3:3
   │
 3 │   master := (select Vampire filter .name = 'Count Dracula')

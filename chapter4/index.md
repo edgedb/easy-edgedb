@@ -193,8 +193,10 @@ select <cal::local_time>'9:55:05';
 It gives this error:
 
 ```
-edgedb error: InvalidValueError: invalid input syntax for type cal::local_time: '9:55:05'
-Hint: Please use ISO8601 format. Examples: 18:43:27 or 18:43 Alternatively "to_local_time" function provides custom formatting options.
+edgedb error: InvalidValueError: invalid input syntax
+for type cal::local_time: '9:55:05'
+Hint: Please use ISO8601 format. Examples: 18:43:27 or 18:43
+Alternatively "to_local_time" function provides custom formatting options.
 ```
 
 Because of that, we are sure that slicing from index 0 to 2 will give us two numbers that indicate the hour of the day.
@@ -219,7 +221,9 @@ select Time {
 
 That gives us a nice output that shows everything, including the hour:
 
-`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09'}}`.
+```
+{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09'}}
+```
 
 Finally, we can add some logic to the `Time` type to see if vampires are awake or asleep. Since this property requires choosing between one of multiple choices, an enum seems like a good choice.
 
@@ -264,7 +268,7 @@ default::Time {
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
 
-```
+```sdl
 property sleep_state := 
   SleepState.JustWakingUp if <int16>.hour = 19 else
   SleepState.GoingToBed if <int16>.hour = 6 else

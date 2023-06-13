@@ -56,7 +56,7 @@ module default {
   }
 
   type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
   }
 

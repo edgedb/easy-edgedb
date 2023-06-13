@@ -129,9 +129,9 @@ function visited(person: str, city: str) -> bool
 现在，我们的查询变得方便得多了：
 
 ```edgeql-repl
-edgedb> select visited('Mina Murray', 'London');
+db> select visited('Mina Murray', 'London');
 {true}
-edgedb> select visited('Mina Murray', 'Bistritz');
+db> select visited('Mina Murray', 'Bistritz');
 {false}
 ```
 
@@ -218,7 +218,7 @@ error: operator '++' cannot be applied to operands of type 'std::str' and 'anyty
 好的，让我们再试一次，这次确保 `{}` 空集是 `str` 类型：
 
 ```edgeql-repl
-edgedb> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
+db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 

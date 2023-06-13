@@ -93,9 +93,13 @@ select Vampire {
 };
 ```
 
-This gives us: `{default::Vampire {places_visited: {default::Country {name: 'Romania'}}}}`
+This query gives us the following:
 
-Perfect.
+```
+{default::Vampire {places_visited: {default::Country {name: 'Romania'}}}}
+```
+
+Perfect!
 
 ## Adding constraints
 
@@ -156,8 +160,10 @@ delete Country;
 We got an error telling us that deleting a `Country` is not possible because it is still referenced by `places_visited` of a `Person`.
 
 ```
-edgedb error: ConstraintViolationError: deletion of default::Country (e9e8acda-f2d2-11ed-86e2-4bed5b30457e) is prohibited by link target policy
-  Detail: Object is still referenced in link places_visited of default::Person (ce8146ea-f2d3-11ed-92a8-237b79022c26).
+edgedb error: ConstraintViolationError: deletion of default::Country
+(e9e8acda-f2d2-11ed-86e2-4bed5b30457e) is prohibited by link target policy
+Detail: Object is still referenced in link places_visited of 
+default::Person (ce8146ea-f2d3-11ed-92a8-237b79022c26).
 ```
 
 That's Count Dracula who visited Romania getting in the way. Let's delete him first then:

@@ -117,7 +117,8 @@ type Event {
   multi link excerpt -> BookExcerpt; # Only this is new
   property location -> tuple<float64, float64>;
   property east_west -> bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  property url := get_url() ++ <str>.location.0 
+    ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
 
@@ -128,7 +129,7 @@ You can see that `description` is a short string that we write, while `excerpt` 
 The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```edgeql-repl
-edgedb> select str_lower('RENFIELD WAS HERE');
+db> select str_lower('RENFIELD WAS HERE');
 {'renfield was here'}
 ```
 
@@ -191,7 +192,7 @@ Some other functions for strings are:
 - `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
 
 ```edgeql-repl
-edgedb> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
+db> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
 {
   [
     'Oh,',
@@ -252,7 +253,9 @@ The output is an array of the text split by line:
 - Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
 
 ```edgeql-repl
-edgedb> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word tonight is written to-night. Tonight we know how to write both tonight and to-night.');
+db> select re_match_all('[Tt]o-?night', 'Dracula is an old book,
+so the word tonight is written to-night.
+Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
@@ -268,14 +271,14 @@ Here is the output: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-
 And to match anything, you can use the wildcard character: `.`
 
 ```edgeql-repl
-edgedb> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
+db> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?');
 {['Noo,'], ['door']}
 ```
 
 The `.` wildcard operator still determines the length of the slice of the string to match on, so you can use more of them to lengthen the part of the string in which we are looking for a match.
 
 ```edgeql-repl
-edgedb> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
+db> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
 {['the door?']}
 ```
 
@@ -285,7 +288,7 @@ By the way, `index on` can also be used on expressions that you we make ourselve
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
   index on (.name ++ ': ' ++ <str>.population);
 }
@@ -295,7 +298,7 @@ Also don't forget that you can add add an annotation to this as well. `(.name ++
 
 ```
 type City extending Place {
-    annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     property population -> int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for use in game function get_city_names';

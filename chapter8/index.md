@@ -168,7 +168,13 @@ select Person {
 };
 ```
 
-The error is `error: InvalidReferenceError: object type 'default::Person' has no link or property 'age'`. The only property of the three that we can put in this query is `name`. That feels pretty limiting!
+The error is:
+
+```
+error: InvalidReferenceError: object type 'default::Person' has no link or property 'age'
+```
+
+It looks like the only property of the three that we can put in this query is `name`. That feels pretty limiting!
 
 ```edgeql
 select Person {

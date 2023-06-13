@@ -186,7 +186,7 @@ And you will get `18`, a 64-bit integer.
 Of course, a cast won't work if the input is invalid:
 
 ```edgeql
-edgedb> select <int64>"Hi I'm a number please add me to" + 9;
+db> select <int64>"Hi I'm a number please add me to" + 9;
 edgedb error: InvalidValueError: invalid input syntax for type std::int64: "Hi I'm a number please add me to"
 ```
 
@@ -198,7 +198,13 @@ select <str><int64><str><int32>50 is str;
 
 That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
 
-Casting works from right to left, with the final cast on the far left. So `<str><int64><str><int32>50` can be read as "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+Casting works from right to left, with the final cast on the far left. Take the following example with a lot of casting:
+
+```edgeql
+select <str><int64><str><int32>50;
+```
+
+You can read it as "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
 
 Also note that casting is only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into each other.
 
@@ -291,7 +297,7 @@ Let's try to make that error happen.
 First we will insert a `City` object with '' for a name:
 
 ```edgeql
-edgedb> insert City {
+db> insert City {
  name := ''
  };
 {default::City {id: 5d01e634-f2c7-11ed-87af-d7dfced50628}}
@@ -300,7 +306,7 @@ edgedb> insert City {
 And now our former query doesn't work, because EdgeDB will come across a `City` object with a name property that it can't index into.
 
 ```edgeql
-edgedb> select City {
+db> select City {
   name,
   modern_name,
  } filter .name[0] = 'B';
@@ -312,7 +318,7 @@ So a good rule of thumb is to not use raw indexes when filtering unless you are 
 So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` instead. If you replace the `.name[0]` part in the query above with `.name ilike 'B%'` we don't get an error, and the query still checks to see if there is a 'B' at index 0.
 
 ```edgeql
-edgedb> select City {
+db> select City {
   name,
   modern_name,
  } filter .name ilike 'B%';
@@ -339,39 +345,39 @@ Slices represent a part of a string that starts at one index and ends _before_ a
 In the same way, selecting a slice of 'Jonathan' up to index 7 will show up to and including index 6:
 
 ```edgeql
-edgedb> select 'Jonathan'[0:7];
+db> select 'Jonathan'[0:7];
 {'Jonatha'}
 ```
 
 In this case, you could search up to index 8. You could even search up to index 1000, as slicing doesn't involve trying to directly access an index so it won't generate an error if there is no value at that index. Or you can use `[0:]` for an open-ended slice that starts at 0 and ends when the string ends. So all three of these queries will work without generating an error:
 
 ```edgeql
-edgedb> select 'Jonathan'[0:8];
+db> select 'Jonathan'[0:8];
 {'Jonathan'}
-edgedb> select 'Jonathan'[0:1000];
+db> select 'Jonathan'[0:1000];
 {'Jonathan'}
-edgedb> select 'Jonathan'[0:];
+db> select 'Jonathan'[0:];
 {'Jonathan'}
 ```
 
 This also means that you can use slicing to safely search for values at a certain index even if the value might be an empty string. At the moment we have a `City` object in the database with a `name` of `''`, so `select City.name[0]` generates an error:
 
 ```edgeql
-edgedb> select City.name[0];
+db> select City.name[0];
 edgedb error: InvalidValueError: string index 0 is out of bounds (on line 1, column 18)
 ```
 
-However, if we change the query to `edgedb> select City.name[0:1];` then it will look for a slice instead of an exact character index, and the query will work:
+However, if we change the query to `db> select City.name[0:1];` then it will look for a slice instead of an exact character index, and the query will work:
 
 ```
-edgedb> select City.name[0:1];
+db> select City.name[0:1];
 {'M', 'B', 'B', ''}
 ```
 
 You can also use negative numbers to slice from the other end of a string. Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7. Let's prove this with a query:
 
 ```edgeql
-edgedb> select {'Jonathan'[7] = 'Jonathan'[-1]};
+db> select {'Jonathan'[7] = 'Jonathan'[-1]};
 {true}
 ```
 

@@ -166,7 +166,7 @@ InvalidFunctionDefinitionError: return cardinality mismatch in function
 下面是一个简单的例子：
 
 ```edgeql-repl
-edgedb> select <str>{} ?? 'Count Dracula is now in Whitby';
+db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 `??` 的左边是空集，因为它 _是_ 空集，所以合并运算符在这里将放弃使用它，转而去查看右边的内容，因此，这个查询结果将使用合并运算符右侧生成的字符串：`{'Count Dracula is now in Whitby'}`

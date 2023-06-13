@@ -151,10 +151,10 @@ type Vampire extending Person {
 - 如果这两种类型相互链接，我们将无法在需要时删除它们。删除时的错误提示如下所示：
 
 ```edgeql-repl
-edgedb> delete MinorVampire;
+db> delete MinorVampire;
 ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
   Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
-edgedb> delete Vampire;
+db> delete Vampire;
 ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```

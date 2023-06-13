@@ -109,9 +109,9 @@ function two_cities(city_one: str, city_two: str) -> float64
 然后我们会像下面一样使用它：
 
 ```edgeql-repl
-edgedb> select two_cities('Munich', 'Bistritz');
+db> select two_cities('Munich', 'Bistritz');
 {25.277252747252746}
-edgedb> select two_cities('Munich', 'London');
+db> select two_cities('Munich', 'London');
 {0.06572085714285714}
 ```
 

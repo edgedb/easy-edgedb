@@ -173,7 +173,10 @@ type MinorVampire extending Person {
 Be careful when using this! Using `delete source` can result in quite a few automatic deletions, so be sure to double check which types are linking and being linked to. As the EdgeDB documentation states:
 
 ```
-If a link uses the `delete source` policy, then deleting a target of the link will also delete the object that links to it (the source). This behavior can be used to implement cascading deletes; be careful with this power!
+If a link uses the `delete source` policy, then deleting a target 
+of the link will also delete the object that links to it (the source).
+This behavior can be used to implement cascading deletes;
+be careful with this power!
 ```
 
 Now let's look at some tips for making queries.
@@ -190,7 +193,13 @@ Change it to `select distinct Person.strength;` and the output will now be:
 
 `{0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 20}`
 
-Note that `distinct` works by item and doesn't unpack or aggregate, so something like a set of arrays will check to see if the entire array is distinct or not, not each of the values inside. So `select distinct {[7, 8], [7, 8], [9]};` will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
+Note that `distinct` works by item and doesn't unpack or aggregate, so something like a set of arrays will check to see if the entire array is distinct or not, not each of the values inside. Thus the following query:
+
+```edgeql
+select distinct {[7, 8], [7, 8], [9]};
+```
+
+Will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
 
 ## Getting `__type__` all the time
 
@@ -230,8 +239,10 @@ This shows us the objects that match, and of course they are `NPC` and `MinorVam
 
 ```
 {
-  default::NPC {__type__: schema::ObjectType {name: 'default::NPC'}, name: 'Lucy Westenra'},
-  default::MinorVampire {__type__: schema::ObjectType {name: 'default::MinorVampire'}, name: 'Lucy'},
+  default::NPC {__type__: schema::ObjectType 
+    {name: 'default::NPC'}, name: 'Lucy Westenra'},
+  default::MinorVampire {__type__: schema::ObjectType 
+    {name: 'default::MinorVampire'}, name: 'Lucy'},
 }
 ```
 
@@ -253,7 +264,13 @@ First, here is the simplest `introspect` query:
 select (introspect Ship);
 ```
 
-This query isn't very useful to us but it does show how it works: it returns `{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}`. Note that `introspect` and the type go inside brackets; it's sort of a `select` expression for types that you then select again to capture.
+This query isn't very useful to us but it does show how it works: it returns the following.
+
+```
+{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}
+```
+
+Note that `introspect` and the type go inside brackets; it's sort of a `select` expression for types that you then select again to capture.
 
 Now let's put `name`, `properties` and `links` inside the introspection:
 
@@ -319,13 +336,18 @@ With all that together, we get something readable and useful. The output looks l
   schema::ObjectType {
     name: 'default::Ship',
     properties: {
-      schema::Property {name: 'id', target: schema::ScalarType {name: 'std::uuid'}},
-      schema::Property {name: 'name', target: schema::ScalarType {name: 'std::str'}},
+      schema::Property {name: 'id', 
+        target: schema::ScalarType {name: 'std::uuid'}},
+      schema::Property {name: 'name', 
+        target: schema::ScalarType {name: 'std::str'}},
     },
     links: {
-      schema::Link {name: '__type__', target: schema::ObjectType {name: 'schema::Type'}},
-      schema::Link {name: 'crew', target: schema::ObjectType {name: 'default::Crewman'}},
-      schema::Link {name: 'sailors', target: schema::ObjectType {name: 'default::Sailor'}},
+      schema::Link {name: '__type__', 
+        target: schema::ObjectType {name: 'schema::Type'}},
+      schema::Link {name: 'crew', 
+        target: schema::ObjectType {name: 'default::Crewman'}},
+      schema::Link {name: 'sailors', 
+        target: schema::ObjectType {name: 'default::Sailor'}},
     },
   },
 }
@@ -425,19 +447,19 @@ Success! Just add `introspect` and the `sequence_next()` and `sequence_reset()` 
 Let's play around with this sequence number of ours for a bit. As you can see, it can be incremented or reset, but can't be reset to anything less than 1.
 
 ```edgeql-repl
-edgedb> select sequence_next(introspect SomeSequenceNumber);
+db> select sequence_next(introspect SomeSequenceNumber);
 {2}
-edgedb> select sequence_next(introspect SomeSequenceNumber);
+db> select sequence_next(introspect SomeSequenceNumber);
 {3}
-edgedb> select sequence_next(introspect SomeSequenceNumber);
+db> select sequence_next(introspect SomeSequenceNumber);
 {4}
-edgedb> select sequence_next(introspect SomeSequenceNumber);
+db> select sequence_next(introspect SomeSequenceNumber);
 {5}
-edgedb> select sequence_reset(introspect SomeSequenceNumber, 10);
+db> select sequence_reset(introspect SomeSequenceNumber, 10);
 {10}
-edgedb> select sequence_reset(introspect SomeSequenceNumber, 0);
+db> select sequence_reset(introspect SomeSequenceNumber, 0);
 edgedb error: NumericOutOfRangeError: setval: value 0 is out of bounds for sequence "6f7e322d-ff25-11ed-95e6-558fd8f3e188_sequence" (1..9223372036854775807)
-edgedb> select sequence_reset(introspect SomeSequenceNumber, 1);
+db> select sequence_reset(introspect SomeSequenceNumber, 1);
 {1}
 ```
 

@@ -41,13 +41,19 @@ But for the rest of them it would be nice to update everything at the same time.
 
 If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that the city data we have inside tuples, which seem similar to arrays but are quite different. One big difference is that a tuple can hold different types, so this is okay:
 
-`('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)`
+```
+('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)
+```
 
 In this case, the type is called a `tuple<str, int64>`.
 
 Before we start using these tuples, let's make sure that we understand the difference between tuplys and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
 
-Previously we learned how to use square brackets to access part of an array or a string. So `select ['Mina Murray', 'Lucy Westenra'][1];` will give the output `{'Lucy Westenra'}` (that's index number 1).
+Previously we learned how to use square brackets to access part of an array or a string. So this query:
+
+```select ['Mina Murray', 'Lucy Westenra'][1];```
+
+will give the output `{'Lucy Westenra'}` (that's index number 1).
 
 You'll also remember that we can separate the starting and ending index with a colon, like in this example:
 
@@ -120,7 +126,8 @@ select {(1, 2, 3), (4, 5, '6')};
 EdgeDB will give an error because it won't try to work with tuples that are of different types. It complains:
 
 ```
-error: InvalidTypeError: set constructor has arguments of incompatible types 'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+error: InvalidTypeError: set constructor has arguments of incompatible types 
+'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
   ┌─ <query>:1:8
   │
 1 │ select {(1, 2, 3), (4, 5, '6')};
@@ -138,7 +145,8 @@ To access the fields of a tuple you still start from the number 0, but you write
 Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```edgeql
-for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
+for data in {('Buda-Pesth', 402706), ('London', 3500000),
+  ('Munich', 230023), ('Bistritz', 9100)}
 union (
   update City filter .name = data.0
   set {
@@ -182,9 +190,9 @@ Now we get `{230023}`, the population of Munich.
 You can still access items inside tuples by numbers even if they have a name:
 
 ```edgeql-repl
-edgedb> select (name := 'Jonathan Harker', age := 25).0;
+db> select (name := 'Jonathan Harker', age := 25).0;
 {'Jonathan Harker'}
-edgedb> select (name := 'Jonathan Harker', age := 25).name;
+db> select (name := 'Jonathan Harker', age := 25).name;
 {'Jonathan Harker'}
 ```
 
@@ -249,12 +257,12 @@ For some actual math, you can check out the functions in `std` {eql:func}`here <
 ```edgeql
 with cities := City.population
 select (
-  'Number of cities: ' ++ <str>count(cities),
+  'Number of cities with population data: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
-  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
   'Average population: ' ++ <str>math::mean(cities),
-  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
   'Standard deviation: ' ++ <str>math::stddev(cities)
 );
 ```
@@ -275,12 +283,12 @@ The output also makes it clear how they work:
 ```
 {
   (
-    'Number of cities: 5',
+    'Number of cities with population data: 5',
     'All cities have more than 50,000 people: false',
     'Total population: 4156229',
-    'Smallest and largest population: 9100, 3500000',
+    'Smallest/largest population: 9100, 3500000',
     'Average population: 831245.8',
-    'At least one city has more than 5 million people: false',
+    'Any cities with more than 5 million people? false',
     'Standard deviation: 1500876.8248',
   ),
 }
@@ -299,15 +307,14 @@ edgedb error: InvalidReferenceError: function 'default::mean' does not exist
 If you don't want to write the module name every time you can just import the module after `with`. Let's slip that into the query we just used. See if you can see what's changed:
 
 ```edgeql
-with cities := City.population,
-  module math
+with cities := City.population
 select (
-  'Number of cities: ' ++ <str>count(cities),
+  'Number of cities with population data: ' ++ <str>count(cities),
   'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
   'Total population: ' ++ <str>sum(cities),
-  'Smallest and largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
+  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
   'Average population: ' ++ <str>mean(cities),
-  'At least one city has more than 5 million people: ' ++ <str>any(cities > 5000000),
+  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
   'Standard deviation: ' ++ <str>stddev(cities)
 );
 ```
@@ -355,8 +362,10 @@ We could try a middle of the road approach  for our `Person` type instead. We'll
 ```sdl
 property title -> str;
 property degrees -> str;
-property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
-property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
+property conversational_name := .title ++ ' ' 
+  ++ .name if exists .title else .name;
+property pen_name := .name ++ ', ' 
+  ++ .degrees if exists .degrees else .name;
 ```
 
 We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
@@ -378,7 +387,8 @@ with helsing := (select NPC filter .name ilike '%helsing%')
 select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
+  'Letter from ' ++ helsing.pen_name 
+    ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
 );
 ```
 
@@ -416,7 +426,8 @@ with helsing := (select NPC filter .name ilike '%helsing%')
 select (
   'There goes ' ++ helsing.name ++ '.',
   'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
+  'Letter from ' ++ helsing.pen_name 
+    ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
 );
 ```
 
@@ -464,7 +475,10 @@ insert NPC {
 };
 ```
 
-But if we try again we will get this error: `edgedb error: ConstraintViolationError: name violates exclusivity constraint`
+But if we try again we will get this error:
+
+```
+edgedb error: ConstraintViolationError: name violates exclusivity constraint
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 

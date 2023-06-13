@@ -67,7 +67,8 @@ function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
     with vampire := (select Person filter .name = person_name),
     has_coffins := place.coffins > 0,
-      select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+      select vampire.name ++ ' can enter.' 
+        if has_coffins else vampire.name ++ ' cannot enter.'
     );
 ```
 
@@ -82,7 +83,11 @@ function can_enter(vampire: Vampire, place: HasCoffins) -> optional str
 function can_enter(vampire: MinorVampire, place: HasCoffins) -> optional str
 ```
 
-- Create an abstract type (like `type AnyVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: `function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str`
+- Create an abstract type (like `type AnyVampire`) and extend it for `Vampire` and `MinorVampire`. Then `can_enter` can have this signature: 
+
+```sdl
+function can_enter(vampire: AnyVampire, place: HasCoffins) -> optional str
+```
 
 Let's learn a bit more about the `optional` keyword. Without it, you need to trust the users that the input argument will be there, because a function won't be called if the input is empty. We can illustrate this point with this simple function:
 
@@ -93,9 +98,21 @@ function try(place: City) -> str
   );
 ```
 
-If we call it with: `select try((select City filter .name = 'London'));`, the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
+If we call it with this:
 
-So far so good, but the input is not optional so what happens if we type `select try((select City filter .name = 'Beijing'));` instead? Now the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
+```edgeql
+select try((select City filter .name = 'London'));`
+```
+
+Then the output is `Called!` as we expected. The function requires a City as an argument, and then ignores it and returns 'Called!' instead. 
+
+So far so good, but the input is not optional so what happens if we type this instead?
+
+```
+select try((select City filter .name = 'Beijing'));
+```
+
+Now the output will be {} because we've never inserted any data for the city 'Beijing' in our database (nobody in Bram Stoker's Dracula ever goes to Beijing). So what if we want the function to be called in any case? We can put the keyword `optional` in front of the parameter like this:
 
 ```sdl
 function try(place: optional City) -> str
@@ -106,7 +123,12 @@ function try(place: optional City) -> str
 
 In this case we are still ignoring the argument `place` (the `City` type) but making it optional lets the function select 'Called!' regardless of whether it finds an argument or not. Having a City type and not having a City type are both acceptable in this case, and the function gets called in either case.
 
-{ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: `the function is called normally when the corresponding argument is empty`. And: `A notable example of a function that gets called on empty input is the coalescing operator.`
+{ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: 
+
+```
+...the function is called normally when the corresponding argument is empty...
+A notable example of a function that gets called on empty input is the coalescing operator.
+```
 
 Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
 
@@ -165,7 +187,11 @@ We get `{'Count Dracula can enter.'}`.
 Some other possible ideas for improvement later on for `can_enter()` are:
 
 - Move the property `name` from `Place` and `Ship` over to `HasCoffins`. Then the user could just enter a string. The function would then use it to `select` the type and then display its name, giving a result like "Count Dracula can enter London."
-- Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like `vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`.
+- Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like the following:
+
+```
+vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`
+```
 
 ## More constraints
 

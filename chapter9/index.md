@@ -329,13 +329,12 @@ ALTER TYPE default::Person {
 In this case the schema migration would still have worked, but the `lover` data would now be gone. Then we would have had to update the three men again to give them Lucy back:
 
 ```edgeql
-update NPC filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+update NPC filter .name in 
+ {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
  set {
  lovers := (select Person filter .name = 'Lucy Westenra')
  };
 ```
-
-
 
 Here is our update for her:
 
@@ -343,7 +342,8 @@ Here is our update for her:
 update NPC filter .name = 'Lucy Westenra'
 set {
   lovers := (
-    select Person filter .name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
+    select Person filter .name in
+      {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
   )
 };
 ```

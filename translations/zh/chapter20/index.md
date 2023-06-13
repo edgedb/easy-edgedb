@@ -98,7 +98,7 @@ error: possibly more than one element returned by an expression for a computed l
 所以对于用户遍布全球的数据库来说，`datetime` 通常是最好的选择。然后，你可以使用 {eql:func}`docs:std::to_datetime` 之类的函数将五个 `int64`、一个 `float64`（用于秒）和一个 `str`（用于 [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)）转换为一个总是作为 UTC 返回的 `datetime`：
 
 ```edgeql-repl
-edgedb> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
+db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
 ```

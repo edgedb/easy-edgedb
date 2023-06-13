@@ -29,7 +29,7 @@ Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `
 
 ```sdl
 type City extending Place {
-  annotation description := 'Anything with 50 or more buildings is a city - anything else is an OtherPlace';
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
   property population -> int64;
 }
 ```
@@ -85,7 +85,7 @@ Now we see the actual annotation:
     annotations: {
       schema::Annotation {
         name: 'std::description',
-        @value: 'Anything with 50 or more buildings is a city - anything else is an OtherPlace',
+        @value: 'A place with 50 or more buildings. Anything else is an OtherPlace',
       },
     },
     name: 'default::City',
@@ -205,7 +205,8 @@ So now that everyone has a name, let's use that to see if they are dead or not. 
 ```edgeql
 with p := (select Person),
      date := <cal::local_date>'1893-08-16',
-select (p.name, p.last_appearance, 'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
+select (p.name, p.last_appearance, 
+  'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
 ```
 
 Here is the output:
@@ -302,10 +303,14 @@ Here is the output:
 
 ```
 {
-  default::MinorVampire {name: 'Vampire Woman 1', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Vampire Woman 2', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Vampire Woman 3', master: {default::Vampire {name: 'Count Dracula'}}},
-  default::MinorVampire {name: 'Lucy', master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 1', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 2', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Vampire Woman 3', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
+  default::MinorVampire {name: 'Lucy', 
+    master: {default::Vampire {name: 'Count Dracula'}}},
 }
 ```
 

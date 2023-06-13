@@ -55,7 +55,8 @@ So back to Jonathan: in our database, he's been to four cities, one country, and
 insert NPC {
   name := 'Jonathan Harker',
   places_visited := (
-    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 
+    'London', 'Romania', 'Castle Dracula'}
   )
 };
 ```
@@ -208,7 +209,8 @@ One other operator is `++`, which does concatenation (joining together) instead 
 You can do simple operations with it like: `select 'My name is ' ++ 'Jonathan Harker';` which gives `{'My name is Jonathan Harker'}`. Or you can do more complicated concatenations as long as you continue to join strings to strings:
 
 ```edgeql
-select 'A character from the book: ' ++ (select NPC.name) ++ ', who is not ' ++ (select Vampire.name);
+select 'A character from the book: ' ++ (select NPC.name) 
+       ++ ', who is not ' ++ (select Vampire.name);
 ```
 
 This prints:
@@ -221,7 +223,17 @@ This prints:
 }
 ```
 
-(The concatenation operator works on arrays too, putting them into a single array. So `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` gives `{['I', 'am', 'Jonathan', 'Harker']}`.)
+The concatenation operator works on arrays too, putting them into a single array. So the output of:
+
+```edgeql
+select ['I', 'am'] ++ ['Jonathan', 'Harker'];
+```
+
+Will be:
+
+```
+{['I', 'am', 'Jonathan', 'Harker']}
+```
 
 The last type that the concatenation operator works on is bytes.
 
@@ -242,11 +254,14 @@ Then we can `insert` the `MinorVampire` type at the same time as we insert the i
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
 ```edgeql-repl
-edgedb> delete MinorVampire;
-ERROR: ConstraintViolationError: deletion of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
-  Detail: Object is still referenced in link slave of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
-edgedb> delete Vampire;
-ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
+db> delete MinorVampire;
+  ERROR: ConstraintViolationError: deletion of default::MinorVampire
+  (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy
+  Detail: Object is still referenced in link slave of default::Vampire
+  (e5ef5bc6-006f-11ec-93a9-77e907d251d6).
+db> delete Vampire;
+ERROR: ConstraintViolationError: deletion of default::Vampire
+  (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
 
