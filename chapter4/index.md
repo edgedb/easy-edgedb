@@ -11,9 +11,9 @@ First let's create Jonathan's girlfriend, Mina Murray. It would be nice to repre
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Place;
+  lover: Person;
 }
 ```
 
@@ -131,9 +131,9 @@ We could also put the computed property in the type itself. Here's the same comp
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Place;
+  lover: Person;
   property is_single := not exists .lover;
 }
 ```
@@ -176,7 +176,7 @@ We will imagine that our game engine has a clock that gives the time as a `str`,
 
 ```sdl
 type Time { 
-  required property clock -> str; 
+  required clock: str; 
   property clock_time := <cal::local_time>.clock; 
   property hour := .clock[0:2]; 
 } 
@@ -231,7 +231,7 @@ Finally, we can add some logic to the `Time` type to see if vampires are awake o
 scalar type SleepState extending enum <Asleep, Awake>;
 
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19

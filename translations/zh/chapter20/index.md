@@ -45,10 +45,10 @@ set {
 
 ```sdl
 abstract type HasNameAndCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
     constraint max_len_value(30);
   }
@@ -61,21 +61,21 @@ abstract type HasNameAndCoffins {
 
 ```sdl
 abstract type Person {
-  property first -> str;
-  property last -> str;
-  property title -> str;
-  property degrees -> str;
-  required property name -> str {
+  first: str;
+  last: str;
+  title: str;
+  degrees: str;
+  required name: str {
     delegated constraint exclusive;
   }
-  property age -> int16;
+  age: int16;
   property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
   property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  property strength -> int16;
-  multi link places_visited -> Place;
-  multi link lovers -> Person;
-  property first_appearance -> cal::local_date;
-  property last_appearance -> cal::local_date;
+  strength: int16;
+  multi places_visited: Place;
+  multi lovers: Person;
+  first_appearance: cal::local_date;
+  last_appearance: cal::local_date;
 }
 ```
 
@@ -107,7 +107,7 @@ db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -133,11 +133,11 @@ set {
 
 ```sdl
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -157,27 +157,27 @@ select Person {
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
 type PC extending Person {
-  required property class -> Class;
+  required class: Class;
 }
 ```
 
-`Visit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `clock` 的属性，是一个字符串，并以下面的方式被使用：
+`ShipVisit` 是我们架构中“最酷炫”的两个类型之一。我们把之前创建但从未使用过的 `Time` 类型中的大部分内容都给了它。其中，有一个叫做 `clock` 的属性，是一个字符串，并以下面的方式被使用：
 
 - 将其转换为 {eql:type}`docs:cal::local_time` 并赋予属性 `clock_time`，
 - 使用切片获取它的前两个字符来并赋予属性 `hour`。因为它是一个字符串，所以即使像 `1` 这样的单个数字也需要用两位数书写，即“01”，以适应“小时数”的获取方式，
 - 由另一个名为 `sleep_state` 的计算（computed）属性决定此时的吸血鬼状态是 'asleep' 还是 'awake'，这取决于我们上一条中的 `hour` 属性，且需要将其先转换为 `<int16>`。
 
 ```sdl
-type Visit {
-  required link ship -> Ship;
-  required link place -> Place;
-  required property date -> cal::local_date;
-  property clock -> str;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
+  clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
@@ -191,7 +191,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -201,8 +201,8 @@ type NPC extending Person {
 
 ```sdl
 abstract type Place extending HasNameAndCoffins {
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -265,7 +265,7 @@ type Lord extending Person {
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -305,9 +305,9 @@ error: operator '=' cannot be applied to operands of type 'array<std::int64>' an
 
 ```sdl
 type BookExcerpt {
-  required property date -> cal::local_datetime;
-  required link author -> Person;
-  required property excerpt -> str;
+  required date: cal::local_datetime;
+  required author: Person;
+  required excerpt: str;
   index on (.excerpt);
 }
 ```
@@ -316,14 +316,14 @@ type BookExcerpt {
 
 ```sdl
 type Event {
-  required property description -> str;
-  required property start_time -> cal::local_datetime;
-  required property end_time -> cal::local_datetime;
-  required multi link place -> Place;
-  required multi link people -> Person;
-  multi link excerpt -> BookExcerpt;
-  property location -> tuple<float64, float64>;
-  property east -> bool;
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  multi excerpt: BookExcerpt;
+  location: tuple<float64, float64>;
+  east: bool;
   property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
@@ -371,9 +371,9 @@ module ModuleName "{"
 
 ```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
-  property name
-  [ extending base [, ...] ] -> type
+  [ property ] name : type
   [ "{"
+      [ extending base [, ...] ; ]
       [ default := expression ; ]
       [ readonly := {true | false} ; ]
       [ annotation-declarations ]

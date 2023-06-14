@@ -13,9 +13,9 @@ leadImage: illustration_03.jpg
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
-  property age -> int16;
+  required name: str;
+  multi places_visited: City;
+  age: int16;
 }
 ```
 
@@ -25,7 +25,7 @@ abstract type Person {
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
+  age: int16;
 }
 ```
 
@@ -33,9 +33,9 @@ type Vampire extending Person {
 
 ```sdl
 abstract type Place {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 
 type City extending Place;
@@ -47,8 +47,8 @@ type Country extending Place;
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
+  required name: str;
+  multi places_visited: Place;
 }
 ```
 
@@ -117,7 +117,7 @@ scalar type HumanAge extending int16 {
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
+  age: HumanAge;
 }
 ```
 

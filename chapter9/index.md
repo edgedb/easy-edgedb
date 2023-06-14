@@ -77,8 +77,8 @@ Let's first see what error EdgeDB gives us if we forget the `overloaded` keyword
 
 ```sdl
 type NPC extending Person {
-property age -> HumanAge;
-multi link places_visited -> Place {
+age: HumanAge;
+multi places_visited: Place {
   default := (select City filter .name = 'London');
   }
 }
@@ -90,7 +90,7 @@ Impressive! It not only gives an error but tells us exactly what to do.
 error: link 'places_visited' of object type 'default::NPC' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
    ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:27:3
    │
-27 │ ╭   multi link places_visited -> Place {
+27 │ ╭   multi places_visited: Place {
 28 │ │     default := (select City filter .name = 'London');
 29 │ │   }
    │ ╰───^ error
@@ -102,8 +102,8 @@ With `default` and `overloaded` added, it now looks like this:
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
-  overloaded multi link places_visited -> Place {
+  age: HumanAge;
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -141,7 +141,7 @@ Let's imagine how it would look if we put it inside the `Place` type. This is cl
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
+  required class: Class;
   property created_at := datetime_current(); # this is new
 }
 ```
@@ -150,8 +150,8 @@ Because `created_at` is a computable here, and computables are calculated when y
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
+  required class: Class;
+  created_at: datetime {
     default := datetime_current()
   }
 }
@@ -391,7 +391,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -401,8 +401,8 @@ This is convenient because we can delete `age` from `Vampire` too. We don't need
 
 ```sdl
 type Vampire extending Person {
-  # property age -> int16; **Deleted now
-  multi link slaves -> MinorVampire;
+  # age: int16; **Deleted now
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -466,15 +466,15 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
    ```sdl
    abstract type Person {
-     required property name -> str {
+     required name: str {
        delegated constraint exclusive;
      }
-     property age -> int16;
-     property strength -> int16;
-     multi link places_visited -> Place;
-     multi link lovers -> Person;
-     property first_appearance -> cal::local_date;
-     property last_appearance -> cal::local_date;
+     age: int16;
+     strength: int16;
+     multi places_visited: Place;
+     multi lovers: Person;
+     first_appearance: cal::local_date;
+     last_appearance: cal::local_date;
    }
    ```
 

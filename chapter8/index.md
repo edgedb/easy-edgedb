@@ -24,7 +24,7 @@ We'll try some multiple inheritance with the ship's crew. The book doesn't give 
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -47,7 +47,7 @@ And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
 
 ```sdl
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 ```
 
@@ -55,9 +55,9 @@ Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `
 
 ```sdl
 type Ship {
-  required property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -326,7 +326,7 @@ We've seen `multi link` quite a bit already, and you might be wondering if `mult
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -334,7 +334,7 @@ But it could do something similar like this:
 
 ```sdl
 type Castle extending Place {
-  multi property doors -> int16;
+  multi doors: int16;
 }
 ```
 

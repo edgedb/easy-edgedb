@@ -136,7 +136,7 @@ select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
 
 ```sdl
 type MinorVampire extending Person {
-  required link master -> Vampire;
+  required master: Vampire;
 }
 ```
 
@@ -186,7 +186,7 @@ error: possibly more than one element returned by an expression for a link 'mast
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required link master -> default::Vampire;
+    required link master: default::Vampire;
 };',
 }
 ```

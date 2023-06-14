@@ -9,13 +9,13 @@ We continue to read the story as we think about the database we need to store th
 
 > Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a horse-driven carriage to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
-Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
+Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `important_places: array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
 ```sdl
 type City {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -53,12 +53,12 @@ So now this part of the schema looks like this:
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 
 type PC extending Person {
-  required property class -> Class;
+  required class: Class;
 }
 
 type NPC extending Person {
@@ -406,7 +406,7 @@ returns `{1893}`.
 
    ```sdl
    abstract type HasAString {
-     property string -> str
+     string: str
    };
    ```
 

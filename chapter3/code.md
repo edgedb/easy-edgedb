@@ -3,12 +3,12 @@
 
 module default {
   abstract type Person {
-    required property name -> str;
-    multi link places_visited -> Place;
+    required name: str;
+    multi places_visited: Place;
   }
 
   type PC extending Person {
-    required property class -> Class;
+    required class: Class;
   }
 
   scalar type HumanAge extending int16 {
@@ -16,17 +16,17 @@ module default {
   }
 
   type NPC extending Person {
-    property age -> HumanAge;
+    age: HumanAge;
   }
 
   type Vampire extending Person {
-    property age -> int16;
+    age: int16;
   }
   
   abstract type Place {
-    required property name -> str;
-    property modern_name -> str;
-    property important_places -> array<str>;
+    required name: str;
+    modern_name: str;
+    important_places: array<str>;
   }
 
   type City extending Place;

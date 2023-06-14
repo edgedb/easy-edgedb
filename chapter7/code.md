@@ -3,16 +3,16 @@
 
 module default {
   abstract type Person {
-    required property name -> str {
+    required name: str {
       delegated constraint exclusive;
     }
-    multi link places_visited -> Place;
-    link lover -> Person;
-    property strength -> int16;
+    multi places_visited: Place;
+    lover: Person;
+    strength: int16;
   }
 
   type PC extending Person {
-    required property class -> Class;
+    required class: Class;
   }
 
   scalar type HumanAge extending int16 {
@@ -20,23 +20,23 @@ module default {
   }
 
   type NPC extending Person {
-    property age -> HumanAge;
+    age: HumanAge;
   }
 
   type Vampire extending Person {
-    property age -> int16;
-    multi link slaves -> MinorVampire;
+    age: int16;
+    multi slaves: MinorVampire;
   }
 
   type MinorVampire extending Person {
   }
   
   abstract type Place {
-    required property name -> str {
+    required name: str {
       delegated constraint exclusive;
     }
-    property modern_name -> str;
-    property important_places -> array<str>;
+    modern_name: str;
+    important_places: array<str>;
   }
 
   type City extending Place;
@@ -46,7 +46,7 @@ module default {
   type OtherPlace extending Place;
 
   type Castle extending Place {
-    property doors -> array<int16>;
+    doors: array<int16>;
   }
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
@@ -54,7 +54,7 @@ module default {
   scalar type SleepState extending enum <Asleep, Awake>;
   
   type Time { 
-    required property clock -> str; 
+    required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
     property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19

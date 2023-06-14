@@ -1,12 +1,12 @@
 # Chapter 15 Questions and Answers
 
-#### 1. 如何创建一个名为“Horse”的类型，且其属性 `required property name -> str` 的值只能是“Horse”？
+#### 1. 如何创建一个名为“Horse”的类型，且其属性 `required name: str` 的值只能是“Horse”？
 
 使用 `expression on` 则很容易，并用 `__subject__.name` 来引用我们要插入的对象的名称：
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse');
 };
 ```
@@ -17,7 +17,7 @@ type Horse {
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse') {
     errmessage := 'All Horses must be named \'Horse\''
   }
@@ -33,7 +33,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -49,7 +49,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }

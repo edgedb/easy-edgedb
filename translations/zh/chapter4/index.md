@@ -11,9 +11,9 @@ leadImage: illustration_04.jpg
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Places;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Places;
+  lover: Person;
 }
 ```
 
@@ -121,9 +121,9 @@ select Person {
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Places;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Places;
+  lover: Person;
   property is_single := not exists .lover;
 }
 ```
@@ -166,7 +166,7 @@ select <cal::local_time>('15:44:56');
 
 ```sdl
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
 }
@@ -215,7 +215,7 @@ select Time {
 
 ```sdl
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19

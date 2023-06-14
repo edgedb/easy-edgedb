@@ -47,10 +47,10 @@ Our first type is called `HasNameAndCoffins`, which is abstract because we don't
 
 ```sdl
 abstract type HasNameAndCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
     constraint max_len_value(30);
   }
@@ -63,22 +63,22 @@ Next is `abstract type Person`. This type is by far the largest, and does most o
 
 ```sdl
 abstract type Person {
-  property first -> str;
-  property last -> str;
-  property title -> str;
-  property degrees -> str;
-  required property name -> str {
+  first: str;
+  last: str;
+  title: str;
+  degrees: str;
+  required name: str {
     delegated constraint exclusive;
   }
-  property age -> int16;
+  age: int16;
   property conversational_name := .title ++ ' ' ++ .name 
     if exists .title else .name;
   property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  property strength -> int16;
-  multi link places_visited -> Place;
-  multi link lovers -> Person;
-  property first_appearance -> cal::local_date;
-  property last_appearance -> cal::local_date;
+  strength: int16;
+  multi places_visited: Place;
+  multi lovers: Person;
+  first_appearance: cal::local_date;
+  last_appearance: cal::local_date;
 }
 ```
 
@@ -111,7 +111,7 @@ A similar abstract type to `HasNameAndCoffins` is this one:
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -137,11 +137,11 @@ Our vampire types extend `Person`, while `MinorVampire` also has an optional (si
 
 ```sdl
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -161,20 +161,20 @@ The `PC` and `Sailor` types show two enums and one sequence that we used:
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
 scalar type PCNumber extending sequence;
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
+  required class: Class;
+  created_at: datetime {
     default := datetime_current()
   }
-  required property number -> PCNumber {
+  required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
-  overloaded required property name -> str {
+  overloaded required name: str {
     constraint max_len_value(30);
   }
 }
@@ -187,18 +187,18 @@ with latest := (select <str>max(PC.number)),
 select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
 ```
 
-`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `Visit` type we have a `clock` property that is just a string, but gets used in this way:
+`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computed property called `sleep_state` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
 ```sdl
-type Visit {
-  required link ship -> Ship;
-  required link place -> Place;
-  required property date -> cal::local_date;
-  property clock -> str;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
+  clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' 
@@ -213,7 +213,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -223,8 +223,8 @@ Our `Place` type shows that you can extend as many times as you want. It's an `a
 
 ```sdl
 abstract type Place extending HasNameAndCoffins {
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -287,7 +287,7 @@ Our next types extending `Place` including `Country` and `Region` were looked at
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -325,9 +325,9 @@ Our next type is `BookExcerpt`, which we imagined being useful for the humans cr
 
 ```sdl
 type BookExcerpt {
-  required property date -> cal::local_datetime;
-  required link author -> Person;
-  required property excerpt -> str;
+  required date: cal::local_datetime;
+  required author: Person;
+  required excerpt: str;
   index on (.excerpt);
 }
 ```
@@ -336,14 +336,14 @@ Next is our other fun and hacky type, `Event`.
 
 ```sdl
 type Event {
-  required property description -> str;
-  required property start_time -> cal::local_datetime;
-  required property end_time -> cal::local_datetime;
-  required multi link place -> Place;
-  required multi link people -> Person;
-  multi link excerpt -> BookExcerpt;
-  property location -> tuple<float64, float64>;
-  property east -> bool;
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  multi excerpt: BookExcerpt;
+  location: tuple<float64, float64>;
+  east: bool;
   property url := get_url() ++ <str>.location.0 ++ '_N_' 
     ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
@@ -456,9 +456,9 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
 
 ```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
-  property name
-  [ extending base [, ...] ] -> type
+  [ property ] name : type
   [ "{"
+      [ extending base [, ...] ; ]
       [ default := expression ; ]
       [ readonly := {true | false} ; ]
       [ annotation-declarations ]

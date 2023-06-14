@@ -140,8 +140,8 @@ select 'A character from the book: ' ++ (select NPC.name) ++ ', who is not ' ++ 
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
-  multi link slaves -> MinorVampire;
+  age: int16;
+  multi slaves: MinorVampire;
 }
 ```
 

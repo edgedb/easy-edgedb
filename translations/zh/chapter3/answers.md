@@ -23,7 +23,7 @@ type City extending Place;
 
 ```sdl
 type City extending Place {
-  required property population -> int32
+  required population: int32;
 };
 ```
 

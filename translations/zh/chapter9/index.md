@@ -75,8 +75,8 @@ insert NPC {
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
-  overloaded multi link places_visited -> Place {
+  age: HumanAge;
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -95,11 +95,11 @@ db> select datetime_current();
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
   property post_date := datetime_current(); # this is new
 }
 ```
@@ -108,12 +108,12 @@ abstract type Place {
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date -> datetime {
+  modern_name: str;
+  important_places: array<str>;
+  post_date: datetime {
     default := datetime_current()
   }
 }
@@ -272,7 +272,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -282,8 +282,8 @@ type NPC extending Person {
 
 ```sdl
 type Vampire extending Person {
-  # property age -> int16; **Delete this one now**
-  multi link slaves -> MinorVampire;
+  # age: int16; **Delete this one now**
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -348,15 +348,15 @@ insert NPC {
 
    ```sdl
    abstract type Person {
-     required property name -> str {
+     required name: str {
        delegated constraint exclusive;
      }
-     property age -> int16;
-     property strength -> int16;
-     multi link places_visited -> Place;
-     multi link lovers -> Person;
-     property first_appearance -> cal::local_date;
-     property last_appearance -> cal::local_date;
+     age: int16;
+     strength: int16;
+     multi places_visited: Place;
+     multi lovers: Person;
+     first_appearance: cal::local_date;
+     last_appearance: cal::local_date;
    }
    ```
 

@@ -16,7 +16,7 @@ tags: Multiple Inheritance, Polymorphism
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -60,7 +60,7 @@ scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
 ```sdl
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 ```
 
@@ -68,9 +68,9 @@ type Sailor extending Person {
 
 ```sdl
 type Ship {
-  required property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -152,7 +152,7 @@ EdgeDB 有一个叫做 {eql:type}`docs:std::sequence` 的类型，它对于给�
 
 ```sdl
 type Townsperson extending Person {
-  property number -> sequence;
+  number: sequence;
 }
 ```
 
@@ -162,7 +162,7 @@ type Townsperson extending Person {
 scalar type TownspersonNumber extending sequence;
 
 type Townsperson extending Person {
-  property number -> TownspersonNumber;
+  number: TownspersonNumber;
 }
 ```
 
@@ -278,7 +278,7 @@ select year is int16 or year is int32 or year is int64;
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -286,7 +286,7 @@ type Castle extending Place {
 
 ```sdl
 type Castle extending Place {
-  multi property doors -> int16;
+  multi doors: int16;
 }
 ```
 

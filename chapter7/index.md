@@ -19,11 +19,11 @@ We can give `name` a constraint too called `constraint exclusive` which prevents
 
 ```sdl
 abstract type Person {
-  required property name -> str { ## Add a block
+  required name: str { ## Add a block
       constraint exclusive;       ## and the constraint
   }
-  multi link places_visited -> Place;
-  link lover -> Person;
+  multi places_visited: Place;
+  lover: Person;
 }
 ```
 
@@ -31,11 +31,11 @@ Now we know that there will only be one `Jonathan Harker`, one `Mina Murray`, an
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
       constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -53,12 +53,12 @@ Fortunately there's an easy way to get around this: the keyword `delegated` in f
 
 ```sdl
 abstract type Person {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  multi link places_visited -> Place;
-  link lover -> Person;
-  property strength -> int16;
+  multi places_visited: Place;
+  lover: Person;
+  strength: int16;
 }
 ```
 
@@ -68,11 +68,11 @@ Also, the `delegated constraint` applies to `Place`, since for example `Country`
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
       delegated constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -87,11 +87,11 @@ So we will change our `Castle` type to give it some doors. For now we only want 
 
 ```sdl
 type Castle extending Place {
-    property doors -> array<int16>;
+    doors: array<int16>;
 }
 ```
 
-Then we will also add a `property strength -> int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
+Then we will also add a `strength: int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
 
 Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First let's update the schema with `edgedb migration create` and `edgedb migrate` as usual.
 

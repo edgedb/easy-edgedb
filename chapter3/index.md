@@ -13,9 +13,9 @@ Now we are completely inside Dracula's castle, so this is a good time to create 
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
-  property age -> int16;
+  required name: str;
+  multi places_visited: City;
+  age: int16;
 }
 ```
 
@@ -25,7 +25,7 @@ But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's remove `a
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
+  age: int16;
 }
 ```
 
@@ -33,9 +33,9 @@ Now we can create Count Dracula. We know that he lives in Romania, but that isn'
 
 ```sdl
 abstract type Place {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 
 type City extending Place;
@@ -47,8 +47,8 @@ We will also need to change `places_visited` in `Person` from `City` to `Place` 
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
+  required name: str;
+  multi places_visited: Place;
 }
 ```
 
@@ -123,7 +123,7 @@ Remember, it's a scalar type because it can only have one value. Then we'll add 
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
+  age: HumanAge;
 }
 ```
 

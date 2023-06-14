@@ -34,7 +34,7 @@ Since `strength` comes from `abstract type Person`, you would need to overload i
 
 ```sdl
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
   overloaded property strength {
     constraint min_value(10)
   }

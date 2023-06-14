@@ -243,8 +243,8 @@ Let's also change the `Vampire` type to link it to `MinorVampire` from that side
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
-  multi link slaves -> MinorVampire;
+  age: int16;
+  multi slaves: MinorVampire;
 }
 ```
 

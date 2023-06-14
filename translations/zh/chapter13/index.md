@@ -21,7 +21,7 @@ type MinorVampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -108,7 +108,7 @@ select (select Person filter .name like 'Lucy%') is NPC | MinorVampire | Vampire
 
 ```
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -116,7 +116,7 @@ type Vampire extending Person {
 
 ```
 type Vampire extending Person {
-  multi link slaves -> MinorVampire | Vampire;
+  multi slaves: MinorVampire | Vampire;
 }
 ```
 
@@ -132,7 +132,7 @@ type Vampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person {
+  former_self: Person {
     on target delete restrict;
   }
 }
@@ -220,9 +220,9 @@ select Person {
 
 ```sdl
 type Ship {
-  property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -288,7 +288,7 @@ select (introspect Ship) {
 于是，我们将得到：
 
 1. `Ship` 的类型名称，
-2. `Ship` 所含属性及其名称。同时我们也使用了 `target` 以获取属性指向的内容（即 `->` 之后的部分）。例如，`property name -> str` 的目标是 `std::str`。这里我们也想要了解目标类型的名称，因此我们同样对 `target` 使用了 `name`；如果没有 `name` 部分，我们将得到类似 `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}` 的输出（不具可读性）。
+2. `Ship` 所含属性及其名称。同时我们也使用了 `target` 以获取属性指向的内容（即 `:` 之后的部分）。例如，`name: str` 的目标是 `std::str`。这里我们也想要了解目标类型的名称，因此我们同样对 `target` 使用了 `name`；如果没有 `name` 部分，我们将得到类似 `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}` 的输出（不具可读性）。
 3. `Ship` 所含链接及其名称，以及链接的目标……以及目标的名称。
 
 所有这些结合在一起，我们得到了一些可读和有用的东西。输出如下所示：

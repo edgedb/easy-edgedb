@@ -77,7 +77,7 @@ The best way is `describe type as sdl`, which doesn't have all the extra info th
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required link master -> default::Vampire;
+    required master: default::Vampire;
 };',
 }
 ```

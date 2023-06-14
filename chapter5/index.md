@@ -201,7 +201,7 @@ Now we need to make a type for the three female vampires. We'll call it `MinorVa
 
 ```sdl
 type MinorVampire extending Person {
-  required link master -> Vampire;
+  required master: Vampire;
 }
 ```
 
@@ -282,7 +282,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required link master -> default::Vampire;
+    required master: default::Vampire;
 };',
 }
 ```

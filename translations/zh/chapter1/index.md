@@ -27,8 +27,8 @@ type NPC {
 
 ```sdl
 type NPC {
-  required property name -> str;
-  property places_visited -> array<str>;
+  required name: str;
+  places_visited: array<str>;
 }
 ```
 
@@ -48,8 +48,8 @@ MissingRequiredError: missing value for required property default::NPC.name
 
 ```sdl
 type City {
-  required property name -> str;
-  property modern_name -> str;
+  required name: str;
+  modern_name: str;
 }
 ```
 
@@ -79,13 +79,13 @@ create database dracula;
 start migration to {
   module default {
     type NPC {
-      required property name -> str;
-      property places_visited -> array<str>;
+      required name: str;
+      places_visited: array<str>;
     }
 
     type City {
-      required property name -> str;
-      property modern_name -> str;
+      required name: str;
+      modern_name: str;
     }
   }
 };
@@ -107,8 +107,8 @@ commit migration;
 
 ```edgeql
 type City {
-  required property name -> str;
-  property modern_name -> str;
+  required name: str;
+  modern_name: str;
 }
 ```
 
@@ -350,8 +350,8 @@ select City {
 
 ```sdl
 type NPC {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 ```
 

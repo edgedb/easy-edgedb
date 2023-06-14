@@ -10,7 +10,7 @@ tags: Tuples, Computed Properties, Math
 
 ```sdl
 type City extending Place {
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -283,8 +283,8 @@ Title（头衔） | First name（名） | Last name（姓） | Degree（学位�
 我们可以尝试采用中间方法。保留 `name`，并为 `Person` 添加一些可选属性：
 
 ```sdl
-property title -> str;
-property degrees -> str;
+title: str;
+degrees: str;
 property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
 property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
 ```
