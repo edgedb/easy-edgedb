@@ -91,7 +91,7 @@ type Castle extending Place {
 }
 ```
 
-Then we will also add a `strength: int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required property`, we would have to choose a default strength for every `Person` object that we already have.
+Then we will also add a `strength: int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required` property, we would have to choose a default strength for every `Person` object that we already have.
 
 Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First let's update the schema with `edgedb migration create` and `edgedb migrate` as usual.
 

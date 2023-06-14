@@ -6,13 +6,13 @@
 
 ```sdl
 type Goldmark extending Currency {
-  overloaded required property major {
+  overloaded required major {
     default := 'Mark'
   }
-  overloaded required property minor {
+  overloaded required minor {
     default := 'Pfennig'
   }
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion {
     default := 100
   }
 }
@@ -30,13 +30,13 @@ type Goldmark extending Currency {
 type Goldmark extending Currency {
   annotation description := 'One Mark = 100 Pfennig';
   annotation note := 'Coin types: 1 Pfennig, 2 Pfennig, 5 Pfennig, 10 Pfennig, 20 Pfennig, 25 Pfennig';
-  overloaded required property major {
+  overloaded required major {
     default := 'Mark';
   };
-  overloaded required property minor {
+  overloaded required minor {
     default := 'Pfennig';
   };
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion {
     default := 100;
   };
 }

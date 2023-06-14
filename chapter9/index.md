@@ -388,7 +388,7 @@ You will remember that we made this type because vampires can live forever, but 
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age {
     constraint max_value(120)
   }
   overloaded multi places_visited: Place {

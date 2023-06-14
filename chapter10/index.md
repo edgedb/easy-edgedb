@@ -8,7 +8,7 @@ tags: Tuples, Computed Properties, Math
 >
 > One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
-The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
+The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `population` property which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
 ```sdl
 type City extending Place {

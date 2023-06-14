@@ -207,7 +207,7 @@ type MinorVampire extending Person {
 
 Now let's do a migration to add `MinorVampire` to the schema.
 
-With `master` as a `required link`, we can't insert a `MinorVampire` with just a name:
+With `master` as a `required` link, we can't insert a `MinorVampire` with just a name:
 
 ```edgeql
 insert MinorVampire {
@@ -268,7 +268,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 ```
 {
   'create type default::MinorVampire extending default::Person {
-    create required link master -> default::Vampire;
+    create required link master: default::Vampire;
 };',
 }
 ```

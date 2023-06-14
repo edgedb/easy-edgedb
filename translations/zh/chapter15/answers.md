@@ -30,7 +30,7 @@ type Horse {
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age {
     constraint max_value(120)
   }
   overloaded multi places_visited: Place {
@@ -43,10 +43,10 @@ type NPC extending Person {
 
 ```sdl
 type NPC extending Person {
-  overloaded property name {
+  overloaded name {
     constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
-  overloaded property age {
+  overloaded age {
     constraint max_value(120)
   }
   overloaded multi places_visited: Place {

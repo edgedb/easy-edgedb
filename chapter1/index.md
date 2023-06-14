@@ -11,9 +11,9 @@ In the beginning of the book we see the main character Jonathan Harker, a young 
 
 ## Schema, object types
 
-This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. Inside it is {ref}`SDL (schema definition language)<docs:ref_eql_sdl>` that makes migration easy, and which we will learn in this book. So far our schema needs the following:
+This is already a lot of information, and it helps us start to think about our database schema. The language used for EdgeDB is called EdgeQL, and is used to define, mutate, and query data. The schema in your database uses {ref}`SDL (schema definition language)<docs:ref_eql_sdl>` that makes migration easy, and which we will learn in this book. We'll start with our schema, which schema needs the following:
 
-- Some kind of `City` or `Location` type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links. What properties should a City type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
+- Some kind of `City` or `Location` type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links to other objects. What properties should a `City` type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
 - Some kind of `NPC` type to represent the people in the book. We need it to have a name, and also a way to track the places that the person visited.
 
 To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `NPC` type will start out like this:
@@ -164,13 +164,35 @@ Sure, let's be curious and try typing `l` to see what commands will be generated
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
 > l
 The following DDL statements will be applied:
-    CREATE TYPE default::City {
-        CREATE PROPERTY modern_name -> std::str;
-        CREATE REQUIRED PROPERTY name -> std::str;
-    };
+  CREATE TYPE default::City {
+      CREATE PROPERTY modern_name: std::str;
+      CREATE REQUIRED PROPERTY name: std::str;
+  };
 ```
 
-Looks good! It's a type `City` inside the module `default`, it has a `required property name` and a `property modern_name`. Let's now just type `y` for everything. After typing `y` two times, the CLI asks us a sudden question:
+Looks good! It's a type called `City` inside the module `default`, it has a required property called `name` and a property called `modern_name`.
+
+So why didn't we need to write `property` inside the `City` type? Let's look at it again:
+
+```sdl
+type City {
+  required name: str;
+  modern_name: str;
+}
+```
+
+In the past you did have to write the `property` keyword for properties, and EdgeDB used a `->` (an arrow) instead of a `:` (a colon) after properties and links. Since EdgeDB 3.0 this is no longer required. So if you see any syntax that looks like the following, just keep in mind that it is pre-3.0 syntax:
+
+```sdl
+type City {
+  # required name: str;            <-- Current syntax
+  required property name -> str; # <-- Old syntax
+  # modern name: str;              <-- Current syntax
+  property modern_name -> str;   # <-- Old syntax
+}
+```
+
+Now back to the schema. Let's now just type `y` for every question that the CLI gives us to see what it does. After typing `y` two times, the CLI asks us a sudden question:
 
 ```
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]

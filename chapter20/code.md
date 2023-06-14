@@ -50,7 +50,7 @@ module default {
   };
 
   type NPC extending Person {
-    overloaded property age {
+    overloaded age {
       constraint max_value(120)
   }
     overloaded multi places_visited: Place {
@@ -193,19 +193,19 @@ module default {
   }
 
   type Pound extending Currency {
-    overloaded required property major {
+    overloaded required major {
         default := 'pound'
     }
-    overloaded required property minor {
+    overloaded required minor {
         default := 'shilling'
     }
-    overloaded required property minor_conversion {
+    overloaded required minor_conversion {
         default := 20
     }
-    overloaded property sub_minor {
+    overloaded sub_minor {
         default := 'pence'
     }
-    overloaded property sub_minor_conversion {
+    overloaded sub_minor_conversion {
         default := 240
     }
   }

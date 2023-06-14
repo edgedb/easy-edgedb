@@ -19,7 +19,7 @@ abstract type Person {
 }
 ```
 
-`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required property`, because we don't care about everybody's age.
+`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required` property, because we don't care about everybody's age.
 
 But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's remove `age` from the abstract `Person` type and give it only to `Vampire` now. We will think about the other types later. We'll make `Vampire` a type that extends `Person`, and adds age:
 

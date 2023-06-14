@@ -20,7 +20,7 @@ select get_lucies() {
 };
 ```
 
-There is an exclusive constraint on the .name property for NPC, so only one NPC can have the name 'Lucy Westenra'. However, the constraint is delegated from the abstract type Person, meaning that each concrete type that extends Person will have that constraint separately. This means that you can add 'Lucy Westenra' the `Sailor` and then this function will return both the Sailor and the NPC named 'Lucy Westenra'.
+There is an exclusive constraint on the `name` property for NPC, so only one NPC can have the name 'Lucy Westenra'. However, the constraint is delegated from the abstract type Person, meaning that each concrete type that extends Person will have that constraint separately. This means that you can add 'Lucy Westenra' the `Sailor` and then this function will return both the Sailor and the NPC named 'Lucy Westenra'.
 
 #### 2. How would you write a function that takes two strings and returns `Person` types with names that match it?
 
