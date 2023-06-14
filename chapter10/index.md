@@ -12,7 +12,7 @@ The city of Whitby is in the northeast of England. Right now our `City` type jus
 
 ```sdl
 type City extending Place {
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -360,8 +360,8 @@ That would lead us to think that we should have titles like `first_name`, `last_
 We could try a middle of the road approach  for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
 
 ```sdl
-property title -> str;
-property degrees -> str;
+title: str;
+degrees: str;
 property conversational_name := .title ++ ' ' 
   ++ .name if exists .title else .name;
 property pen_name := .name ++ ', ' 

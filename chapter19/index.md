@@ -30,18 +30,18 @@ We have another ship moving around the map in this chapter. Last time, we made a
 
 ```sdl
 type Ship extending HasNameAndCoffins {
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
 That's not bad, but we can build on it a bit more in this chapter. Right now, it doesn't have any information about visits made by which ship to where. Let's make a quick type that contains all the information on ship visits. Each visit will have a link to a `Ship` and a `Place`, and a `cal::local_date`. It looks like this:
 
 ```sdl
-type Visit {
-  required link ship -> Ship;
-  required link place -> Place;
-  required property date -> cal::local_date;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
 }
 ```
 
@@ -96,7 +96,7 @@ Let's look at the output to see what we wrote before to make sure that we should
 }
 ```
 
-Well, the Bosphorus isn't a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` -> `Region` -> `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
+Well, the Bosphorus isn't a castle and it isn't actually a place with buildings, so it should work. Soon we will create a `Region` type so that we can have a `Country` → `Region` → `City` layout. In that case, `OtherPlace` might be linked to from `Country` or `Region`. But in the meantime we'll add it without being linked to anything:
 
 ```edgeql
 insert OtherPlace {
@@ -115,7 +115,7 @@ for visit in {
     ('Czarina Catherine', 'Galatz', '1893-10-28')
   }
 union (
-  insert Visit {
+  insert ShipVisit {
     ship := (select Ship filter .name = visit.0),
     place := (select Place filter .name = visit.1),
     date := <cal::local_date>visit.2
@@ -126,7 +126,7 @@ union (
 With this data, now our game can have certain ships in cities at certain dates. For example, imagine that a character has entered the city of Galatz. If the date is 28 October 1893, we can see if there are any ships in town:
 
 ```edgeql
-select Visit {
+select ShipVisit {
   ship: {
     name
   },
@@ -141,7 +141,7 @@ And it looks like there is a ship in town! It's the Czarina Catherine.
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
     date: <cal::local_date>'1893-10-28',
@@ -153,8 +153,8 @@ While we're doing this, let's practice computed backlinks again on our visits. O
 
 ```sdl
 type Ship extending HasNameAndCoffins {
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -166,9 +166,9 @@ select Ship {
  sailors: { name },
  crew: { name },
 
- # All of the Visit objects with a ship property
+ # All of the ShipVisit objects with a ship property
  # that link to a Ship object
- visits := .<ship[is Visit] {
+ visits := .<ship[is ShipVisit] {
    place: {name},
    date
   }
@@ -195,15 +195,15 @@ The output is pretty nice! It's basically a report on every ship, who is on them
       default::Crewman {name: 'Crewman 5'},
     },
     visits: {
-      default::Visit {
+      default::ShipVisit {
         place: default::City {name: 'Varna'},
         date: <cal::local_date>'1893-07-06',
       },
-      default::Visit {
+      default::ShipVisit {
         place: default::OtherPlace {name: 'Bosphorus'},
         date: <cal::local_date>'1893-07-11',
       },
-      default::Visit {
+      default::ShipVisit {
         place: default::City {name: 'Whitby'},
         date: <cal::local_date>'1893-08-08',
       },
@@ -214,11 +214,11 @@ The output is pretty nice! It's basically a report on every ship, who is on them
     sailors: {},
     crew: {},
     visits: {
-      default::Visit {
+      default::ShipVisit {
         place: default::City {name: 'London'},
         date: <cal::local_date>'1893-10-05',
       },
-      default::Visit {
+      default::ShipVisit {
         place: default::City {name: 'Galatz'},
         date: <cal::local_date>'1893-10-28',
       },
@@ -241,7 +241,7 @@ Speaking of time, remember our `Time` type? We made it so that we could enter a 
 
 ```sdl
 type Time { 
-  required property clock -> str; 
+  required clock: str; 
   property clock_time := <cal::local_time>.clock; 
   property hour := .clock[0:2]; 
   property sleep_state := 
@@ -258,7 +258,7 @@ with time := (
     clock := '13:00:00'
   }
 )
-select Visit {
+select ShipVisit {
   place: {
     name
   },
@@ -279,7 +279,7 @@ The output looks pretty good, including whether vampires were awake or asleep wh
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1893-10-28',
@@ -305,14 +305,14 @@ function time(clock: str) -> tuple<cal::local_time, str, SleepState> using (
 );
 ```
 
-So that could be an option for later. But for now, let's just steal all the properties from `Time` to improve the `Visit` type instead:
+So that could be an option for later. But for now, let's just steal all the properties from `Time` to improve the `ShipVisit` type instead:
 
 ```sdl
-type Visit {
-  link ship -> Ship;
-  link place -> Place;
-  required property date -> cal::local_date;
-  property clock -> str;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
+  clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
@@ -322,17 +322,17 @@ type Visit {
 Then do a schema migration and update the visit to Galatz to give it a `clock`:
 
 ```edgeql
-update Visit filter .place.name = 'Galatz'
+update ShipVisit filter .place.name = 'Galatz'
 set {
   clock := '13:00:00'
 };
 ```
 
-Then we'll query this `Visit` to Galatz again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
+Then we'll query this `ShipVisit` to Galatz again. Let's add a computed property for fun, assuming that it took two hours, five minutes and ten seconds for Arthur to get the telegram. We'll cast the string to a `cal::local_time` and then add a `duration` to it.
 
 ```edgeql
 with duration := <duration>'2 hours, 5 minutes, 10 seconds',
-select Visit {
+select ShipVisit {
   place: {name},
   ship: {name},
   date,
@@ -348,7 +348,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1893-10-28',
@@ -364,13 +364,13 @@ Since we are looking at `Place` again, now we can finish up the chapter by filli
 
 ```sdl
 type Country extending Place {
-  multi link regions -> Region;
+  multi regions: Region;
 }
 
 type Region extending Place {
-  multi link cities -> City;
-  multi link other_places -> OtherPlace;
-  multi link castles -> Castle;
+  multi cities: City;
+  multi other_places: OtherPlace;
+  multi castles: Castle;
 }
 ```
 

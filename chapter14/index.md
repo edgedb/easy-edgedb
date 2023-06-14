@@ -30,7 +30,7 @@ Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `
 ```sdl
 type City extending Place {
   annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -265,7 +265,7 @@ select MinorVampire {
 }
 ```
 
-Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
+Since there's no `master: Vampire` link, how do we go backwards to see the `Vampire` type that links to it?
 
 This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[is Vampire]`.
 

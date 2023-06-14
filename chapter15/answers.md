@@ -1,12 +1,12 @@
 # Chapter 15 Questions and Answers
 
-#### 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
+#### 1. How would you create a type called Horse with a `required name: str` that can only be 'Horse'?
 
 This is easy with `expression on` and using `__subject__.name` to refer to the name of the object we are inserting:
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse');
 };
 ```
@@ -17,7 +17,7 @@ Just put it inside the `constraint` like this:
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse') {
     errmessage := 'All Horses must be named \'Horse\''
   }
@@ -33,7 +33,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -49,7 +49,7 @@ type NPC extending Person {
   overloaded property age {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }

@@ -25,7 +25,7 @@ So instead of trying to change the `NPC` type, we can just give `MinorVampire` a
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -119,7 +119,7 @@ One cool thing about the type union operator is that you can also add it to link
 
 ```
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -127,7 +127,7 @@ So to represent this change, you could just use `|` and add another type:
 
 ```
 type Vampire extending Person {
-  multi link slaves -> MinorVampire | Vampire;
+  multi slaves: MinorVampire | Vampire;
 }
 ```
 
@@ -145,7 +145,7 @@ So if you declared `MinorVampire` like this:
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person {
+  former_self: Person {
     on target delete restrict;
   }
 }
@@ -163,8 +163,8 @@ So if you wanted to have all the `MinorVampire` types automatically deleted when
 
 ```edgeql
 type MinorVampire extending Person {
-  link former_self -> Person;
-  link master -> Vampire {
+  former_self: Person;
+  master: Vampire {
     on target delete delete source
   }
 }
@@ -252,9 +252,9 @@ The word introspect literally means to "look inside", and is also an EdgeDB keyw
 
 ```sdl
 type Ship {
-  property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -326,7 +326,7 @@ select (introspect Ship) {
 So what this will give is:
 
 1. The type name for `Ship`,
-2. The properties, and their names. But we also use `target`, which is what a property points to (the part after the `->`). For example, the target of `property name -> str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
+2. The properties, and their names. But we also use `target`, which is what a property points to (the part after the `:`). For example, the target of `name: str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
 3. The links and their names, and the targets to the links...and the names of _their_ targets too.
 
 With all that together, we get something readable and useful. The output looks like this:
@@ -396,10 +396,10 @@ scalar type SomeSequenceNumber extending sequence;
 
 type SomeType {
   # This wouldn't work
-  # required property number -> sequence;
+  # required number: sequence;
 
-  # But this would
-  required property number -> SomeSequenceNumber;
+  # But this will
+  required number: SomeSequenceNumber;
 }
 ```
 
@@ -469,11 +469,11 @@ Finally, let's change the schema for our `PC` type to include this number. We co
 scalar type PCNumber extending sequence;
 
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
+  required class: Class;
+  created_at: datetime {
     default := datetime_current()
   }
-  required property number -> PCNumber {
+  required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
 }

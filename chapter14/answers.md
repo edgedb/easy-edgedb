@@ -129,7 +129,7 @@ After that you would just put it into the `MinorVampire` type and it's done!
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
   annotation note := 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type';
 }
 ```

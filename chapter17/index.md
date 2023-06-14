@@ -98,10 +98,10 @@ Here is the type with its new property. We'll give it two constraints: `exclusiv
 
 ```sdl
 abstract type HasNameAndCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
     constraint max_len_value(30);
   }
@@ -112,8 +112,8 @@ So now we can change our `Ship` type (notice that we removed `name`)
 
 ```sdl
 type Ship extending HasNameAndCoffins {
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -121,8 +121,8 @@ And the `Place` type. It's much simpler now.
 
 ```sdl
 abstract type Place extending HasNameAndCoffins {
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 

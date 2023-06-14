@@ -20,31 +20,31 @@ Now, there is one difficulty: in the 1800s, monetary systems were more complicat
 
 (There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
 
-To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
+To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus an `owner: Person` link. So `Currency` will look like this:
 
 ```sdl
 abstract type Currency {
-  required link owner -> Person;
+  required owner: Person;
 
-  required property major -> str;
-  required property major_amount -> int64 {
+  required major: str;
+  required major_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
 
-  property minor -> str;
-  property minor_amount -> int64 {
+  minor: str;
+  minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property minor_conversion -> int64;
+  minor_conversion: int64;
 
-  property sub_minor -> str;
-  property sub_minor_amount -> int64 {
+  sub_minor: str;
+  sub_minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property sub_minor_conversion -> int64;
+  sub_minor_conversion: int64;
 }
 ```
 
@@ -175,14 +175,14 @@ And then it will give a result similar to this with our collections of money, ea
 
 (If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float64>`.)
 
-You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required link owner -> Person;` to `optional link owner -> Person;` if it's possible for a character in the game to lose them.
+You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required owner: Person;` to `optional owner: Person;` if it's possible for a character in the game to lose them.
 
 Of course, if we only had one type of money then it would be simpler to just put it inside the `Person` type. We won't do this in our schema, but let's imagine how to do it. If the game were only inside the United States, it would be easier to just do this without an abstract `Currency` type:
 
 ```sdl
 type Dollar {
-  required property dollars -> int64;
-  required property cents -> int64;
+  required dollars: int64;
+  required cents: int64;
   property total_money := .dollars + (.cents / 100)
 }
 ```

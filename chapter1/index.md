@@ -38,17 +38,15 @@ Do you want to initialize a new project? [Y/n]
 Specify the name of EdgeDB instance to use with this project [default: easy_edgedb]:
 > easy_edgedb
 Checking EdgeDB versions...
-Specify the version of EdgeDB to use with this project [default: 2.14]:
-> 2.14
 ┌─────────────────────┬─────────────────────────────────────┐
-│ Project directory   │ \\?\C:\easy-edgedb             │
-│ Project config      │ \\?\C:\easy-edgedb\edgedb.toml │
-│ Schema dir (empty)  │ \\?\C:\easy-edgedb\dbschema    │
+│ Project directory   │ \\?\C:\easy-edgedb                  │
+│ Project config      │ \\?\C:\easy-edgedb\edgedb.toml      │
+│ Schema dir (empty)  │ \\?\C:\easy-edgedb\dbschema         │
 │ Installation method │ WSL                                 │
-│ Version             │ 2.14+7aec755                        │
-│ Instance name       │ easy                                │
+│ Version             │ 3.0-rc.2+02561bd                    │
+│ Instance name       │ easy_edgedb                         │
 └─────────────────────┴─────────────────────────────────────┘
-Version 2.14+7aec755 is already downloaded
+Version 3.0-rc.2+02561bd is already downloaded
 Initializing EdgeDB instance...
 Applying migrations...
 Everything is up to date. Revision initial
@@ -110,19 +108,20 @@ We will be doing a lot of that in this book! Even by the second chapter you will
   The CLI creates a new file upon each migration to generate the commands to change the schema to the one we want. The first file will be called 00001.edgeql, the second will be 00002.edgeql, and so on. These files are quite readable so feel free to take a look at if you are curious. But note that they use a syntax called DDL (Data Definition Language) that gives commands to EdgeDB one at a time, and you do not need to learn it. Human users of EdgeDB use a language called SDL (Schema Definition Language) that simply declares what a schema will look like. The CLI then automatically creates DDL commands to make it happen.
 ```
 
-Now that we know how to do a schema migration, let's add some properties to our `NPC` type. Use `required property` if the type needs it, and just `property` if it is optional. Let's give the `NPC` type a name and an array (a collection) of places visited:
+Now that we know how to do a schema migration, let's add some properties to our `NPC` type. Use `required` if the type needs it, and just the property name if it is optional. Let's give the `NPC` type a name and an array (a collection) of places visited:
 
 ```sdl
 type NPC {
-  required property name -> str;
-  property places_visited -> array<str>;
+  required name: str;
+  places_visited: array<str>;
 }
 ```
 
-With `required property name` our `NPC` objects are always guaranteed to have a name - you can't make an `NPC` object without it. Here's the error message if you try:
+With `required name` our `NPC` objects are always guaranteed to have a name - you can't make an `NPC` object without it. Here's the error message if you try:
 
 ```
-edgedb error: MissingRequiredError: missing value for required property 'name' of object type 'default::NPC'
+edgedb error: MissingRequiredError: 
+missing value for required property 'name' of object type 'default::NPC'
 ```
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
@@ -135,8 +134,8 @@ Now for our City type:
 
 ```sdl
 type City {
-  required property name -> str;
-  property modern_name -> str;
+  required name: str;
+  modern_name: str;
 }
 ```
 
@@ -466,8 +465,8 @@ So now the last thing left to do is to change our `property` in `NPC` called `pl
 
 ```sdl
 type NPC {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 ```
 
