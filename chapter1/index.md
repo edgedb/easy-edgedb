@@ -247,8 +247,7 @@ This just returns what we gave it: `{'Jonathan Harker'}`. But this time it's a s
 Now let's do something with this variable. We can use the keyword `select` to use this variable and then compare it to `'Count Dracula'`:
 
 ```edgeql
-select jonathans_name := 'Jonathan Harker',
-select jonathans_name != 'Count Dracula';
+select jonathans_name := 'Jonathan Harker' != 'Count Dracula';
 ```
 
 The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' != 'Count Dracula'` for the same result. Soon we will do more complex operations with the variables that we assign with `:=`.
