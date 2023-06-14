@@ -151,7 +151,7 @@ insert MinorVampire {
 };
 ```
 
-如前面所学到的，你需要将获取“Count Dracula”数据的查询语句放到圆括号中，然后将其放入 `assert_single()` 函数中。该函数会检查确保查询结果中只有一个元素。这是必要的，因为 EdgeDB 不知道我们是否只有一个叫做德古拉伯爵（Count Dracula）的 `Vampire`，但这里我们只需要提供一个吸血鬼作为“master”（请记住：`required link` 是 `required single link` 的缩写）。如果我们在没有 `assert_single()` 函数的情况下尝试上面的语句，我们将会得到以下错误：
+如前面所学到的，你需要将获取“Count Dracula”数据的查询语句放到圆括号中，然后将其放入 `assert_single()` 函数中。该函数会检查确保查询结果中只有一个元素。这是必要的，因为 EdgeDB 不知道我们是否只有一个叫做德古拉伯爵（Count Dracula）的 `Vampire`，但这里我们只需要提供一个吸血鬼作为“master”（请记住：`required` link 是 `required single` link 的缩写）。如果我们在没有 `assert_single()` 函数的情况下尝试上面的语句，我们将会得到以下错误：
 
 ```
 error: possibly more than one element returned by an expression for a link 'master' declared as 'single'

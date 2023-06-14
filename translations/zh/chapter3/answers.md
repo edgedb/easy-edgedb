@@ -11,7 +11,7 @@ select NPC {
 };
 ```
 
-#### 2. 如果 `City` 类型需要一个名为 `population` 的 `required property` 属性，它会是什么样子？“population”会是什么类型？
+#### 2. 如果 `City` 类型需要一个名为 `population` 的 `required` property 属性，它会是什么样子？“population”会是什么类型？
 
 现在 `City` 只是扩展了 `Place`：
 
@@ -19,7 +19,7 @@ select NPC {
 type City extending Place;
 ```
 
-因此它需要一个 `required property` 的“population”属性:
+因此它需要一个 `required` 的“population”属性:
 
 ```sdl
 type City extending Place {

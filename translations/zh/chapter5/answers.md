@@ -64,7 +64,7 @@ select duration_to_seconds(uzbek_time - turkmen_time);
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required link master -> default::Vampire;
+    required link master: default::Vampire;
 };',
 }
 ```

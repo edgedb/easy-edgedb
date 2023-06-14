@@ -35,7 +35,7 @@ select (
 ```sdl
 type Vampire extending Person {
   multi slaves: MinorVampire;
-  overloaded property strength {
+  overloaded strength {
     constraint min_value(10)
   }
 }
