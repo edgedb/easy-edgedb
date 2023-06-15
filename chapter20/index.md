@@ -247,7 +247,7 @@ type OtherPlace extending Place {
 }
 ```
 
-So in a real game we would create some other smaller location types and make them a link from the `property important_places` inside `City`. We might also move `important_places` to `Place` so that types like `Region` could link from it too.
+So in a real game we would create some other smaller location types and make them a link from the `important_places` property inside `City`. We might also move `important_places` to `Place` so that types like `Region` could link from it too.
 
 Annotations: we used `abstract annotation` to add a new annotation:
 
@@ -271,7 +271,7 @@ We might remove this in a real game, or maybe it would become type Lord extendin
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
-Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
+Another possible way to create a `Lord` is to do it this way, since `Person` has a property called `title`:
 
 ```sdl
 type Lord extending Person {

@@ -64,7 +64,7 @@ abstract type Person {
 
 With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
-Also, the `delegated constraint` applies to `Place`, since for example `Country` can have the same name as `City`. So let's update `name` property for the `Place` type:
+Also, the `delegated constraint` applies to `Place`, since for example `Country` can have the same name as `City`. So let's update the `name` property for the `Place` type:
 
 ```sdl
 abstract type Place {

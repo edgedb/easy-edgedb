@@ -31,7 +31,7 @@ type City extending Place {
 
 #### 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
-You can access `property name` twice by giving it a different name the second time. Let's call it name2:
+You can access the `name` property twice by giving it a different name the second time. Let's call it name2:
 
 ```edgeql
 select Person {

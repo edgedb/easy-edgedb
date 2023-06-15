@@ -347,19 +347,19 @@ insert Castle {
 };
 ```
 
-The next question of course is which is best to use: `multi property`, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
+The next question of course is which is best to use: `multi` for a multi property, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
 
-- `multi property` vs. arrays:
+- `multi` property vs. arrays:
 
-  How large is the data you are working with? A `multi property` is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi property`.
+  How large is the data you are working with? A `multi` property is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi` property.
 
-  If you want to use indexes and constraints on individual elements, then you should use a `multi property`. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
+  If you want to use indexes and constraints on individual elements, then you should use a `multi` property. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
 
   If order is important, than an array may be better. It's easier to keep the original order of items in an array.
 
-- `multi property` vs. objects (via `link`)
+- `multi` property vs. linking to objects
 
-  Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
+  Here we'll start with two areas where a `multi` property is better, and then two areas where objects are better.
 
   First negative for objects: objects are always larger, and here's why. Remember `describe type as text`? Let's look at one of our types with that again. Here's the `Castle` type:
 
@@ -382,7 +382,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   You'll remember seeing the `readonly := true` properties, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
-  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
+  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a `multi` property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
 
   Having said that, now here are two positives for objects in comparison.
 

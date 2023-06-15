@@ -482,7 +482,7 @@ There is a way to change one type to another that we will learn in the next chap
 
 ## Links
 
-So now the last thing left to do is to change our `property` in `NPC` called `places_visited` to a `link`. Right now, `places_visited` gives us the names we want, but it makes more sense to link `NPC` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `NPC`. We'll change `NPC` to look like this:
+So now the last thing left to do is to change our property in `NPC` called `places_visited` to a link. Right now, `places_visited` gives us the names we want, but it makes more sense to link `NPC` and `City` together. After all, the `City` type has `.name` inside it which is better to link to than rewriting everything inside `NPC`. We'll change `NPC` to look like this:
 
 ```sdl
 type NPC {

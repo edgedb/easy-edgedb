@@ -303,7 +303,7 @@ db> insert City {
 {default::City {id: 5d01e634-f2c7-11ed-87af-d7dfced50628}}
 ```
 
-And now our former query doesn't work, because EdgeDB will come across a `City` object with a name property that it can't index into.
+And now our former query doesn't work, because EdgeDB will come across a `City` object with a `name` property that it can't index into.
 
 ```edgeql
 db> select City {

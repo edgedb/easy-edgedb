@@ -32,7 +32,7 @@ type NPC {
 }
 ```
 
-属性 `required property name` 意味着：使用 `NPC` 这个类型创建的对象必须保证拥有一个“姓名（name）”，即你不能创建一个没有名称/姓名的 `NPC` 的对象，否则你会看到这样的错误提示：
+属性 `required name` 意味着：使用 `NPC` 这个类型创建的对象必须保证拥有一个“姓名（name）”，即你不能创建一个没有名称/姓名的 `NPC` 的对象，否则你会看到这样的错误提示：
 
 ```
 MissingRequiredError: missing value for required property default::NPC.name
