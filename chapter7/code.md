@@ -8,6 +8,7 @@ module default {
     }
     multi places_visited: Place;
     lover: Person;
+    property is_single := not exists .lover;
     strength: int16;
   }
 

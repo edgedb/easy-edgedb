@@ -18,6 +18,7 @@ module default {
     }
     multi places_visited: Place;
     multi lovers: Person;
+    property is_single := not exists .lovers;
     strength: int16;
     first_appearance: cal::local_date;
     last_appearance: cal::local_date;

@@ -138,7 +138,7 @@ abstract type Person {
 }
 ```
 
-We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
+You'll notice that we have written `property is_single` this time instead of just `is_single`. With computed properties and links we need to give EdgeDB a little bit more help by letting it know whether the computed expression will result in a `property` or a `link`. So if you are working on your schema and the property or link uses a `:=` to make it computed, don't forget to choose between `property` or `link`!
 
 You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. Computed links also don't specify the type because the expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
 

@@ -203,7 +203,7 @@ Please specify an expression to populate existing objects in order to make prope
 fill_expr>
 ```
 
-The CLI is essentially saying: "There might be `NPC` objects in the database already. But now they all need to have a `name` property, which wasn't required before. How should I decide what `name` to give them?"
+The CLI is essentially saying: "There might be `NPC` objects in the database already. But now they all need to have a property called `name`, which wasn't required before. How should I decide what `name` to give them?"
 
 Fortunately, the expression here is pretty simple: let's just give them all an empty string. Type `''` and hit enter, and the CLI will now be happy with the migration. Don't forget to complete the migration with `edgedb migration`, and we are done!
 
@@ -256,7 +256,7 @@ The output is `{true}`. Of course, you can just write `select 'Jonathan Harker' 
 
 Let's start inserting some objects with the schema we already have. Later on we can think about adding time zones and locations for the cities for our imaginary game. But in the meantime, we will add some items to the database using `insert`.
 
-Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. Indentation isn't relevant like it is in languages such as Python and F#, but EdgeDB prefers two spaces for indentation.
+Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. Indentation isn't relevant in EdgeQL like it is in languages such as Python and F#, but EdgeDB prefers two spaces for indentation.
 
 ```edgeql
 insert City {
@@ -290,7 +290,7 @@ Because hold on a second...that insert won't link an `NPC` object it to any of t
 - We have an `NPC` type and a `City` type,
 - The `NPC` type has the property `places_visited` with the names of the cities, but they are just strings in an array. It would be better to link this property to the `City` type somehow.
 
-So let's not do that `NPC` insert. We'll fix the `NPC` type soon by changing `array<str>` from a `property` to a `multi link` to the `City` type. This will actually join them together.
+So let's not do that `NPC` insert. We'll fix the `NPC` type soon by changing `array<str>` to a `multi City`, which will create a link to one or more `City` objects. This will actually join them together.
 
 But first let's look a bit closer at what happens when we use `insert`.
 
@@ -491,7 +491,7 @@ type NPC {
 }
 ```
 
-We wrote `multi` in front of `link` because one `NPC` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `link` then EdgeDB will treat it as `single`.
+We wrote `multi` in front of `places_visited` because one `NPC` should be able to link to more than one `City`. The opposite of `multi` is `single`, which only allows one object to link to it. But `single` is the default, so if you just write `places_visited: City` then EdgeDB will treat it as `single` link.
 
 And now do a migration with `edgedb migration create` and `edgedb migrate`. The CLI questions this time are pretty easy:
 
@@ -504,7 +504,7 @@ Did you create link 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s
 > y
 ```
 
-When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi link` just means that an `NPC` _can_ link to one or more `City` types, but they don't have to.
+When we drop a property it also drops all the data for the property, so the CLI doesn't need to ask us for an expression. And adding a `multi` link just means that an `NPC` _can_ link to one or more `City` types, but they don't have to.
 
 Now when we insert Jonathan Harker, he can be connected to one or more `City` objects. Don't forget that `places_visited` is not `required`, so we could do an `insert` with just his name to create him. It would look like this:
 

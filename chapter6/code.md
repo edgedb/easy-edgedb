@@ -6,6 +6,7 @@ module default {
     required name: str;
     multi places_visited: Place;
     lover: Person;
+    property is_single := not exists .lover;
   }
 
   type PC extending Person {
