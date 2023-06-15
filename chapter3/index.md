@@ -65,7 +65,7 @@ insert Country {
 };
 ```
 
-(By the way, you might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi link`. That's true, though in this tutorial we never end up using it and it just stays in the schema as an array. If this were a schema for a real game, it would probably either end up turned to a `multi link` or removed if we decide we don't need it.)
+(By the way, you might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi` link. That's true, though in this tutorial we never end up using it and it just stays in the schema as an array. If this were a schema for a real game, it would probably either end up turned to a `multi` link or removed if we decide we don't need it.)
 
 ## Capturing a select expression
 

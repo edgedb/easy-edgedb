@@ -218,7 +218,7 @@ union output-expr ;
 
 最重要的部分是 *iterator-expr*，它需要一个简单的表达式，返回某个集合。通常是置于 `{` 和 `}` 中的一个集合。也可以是返回集合的一个路径，例如 `NPC.places_visited`，也可以是返回集合的一个函数调用，例如 `array_unpack()`。对于更复杂的表达来说，要放置于圆括号中引用。
 
-现在是时候更新露西（Lucy）的情人链接了（但她有三个情人）。露西已经破坏了我们将 `lover` 仅仅作为一个 `link`（即 `single link`）的设定。我们不得不将其变更为 `multi link`，这样我们就可以同时添加他们三个人给露西了。这里是我们对露西的更新：
+现在是时候更新露西（Lucy）的情人链接了（但她有三个情人）。露西已经破坏了我们将 `lover` 仅仅作为一个 `link`（即 `single link`）的设定。我们不得不将其变更为 `multi` 链接，这样我们就可以同时添加他们三个人给露西了。这里是我们对露西的更新：
 
 ```edgeql
 update NPC filter .name = 'Lucy Westenra'

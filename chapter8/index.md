@@ -322,7 +322,7 @@ So with that you can change the above input to `select 1893 is anyint` and get `
 
 ## Array vs. multi property vs. multi link
 
-We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
+We've seen `multi` links quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi` property is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
 
 ```sdl
 type Castle extending Place {
@@ -386,7 +386,7 @@ The next question of course is which is best to use: `multi property`, `array`, 
 
   Having said that, now here are two positives for objects in comparison.
 
-  Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi link`, for example.
+  Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi` link, for example.
 
   Using objects with an `exclusive` constraint is more efficient when there is a lot of property value duplication.
 

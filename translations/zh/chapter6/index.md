@@ -136,7 +136,7 @@ select 'A character from the book: ' ++ (select NPC.name) ++ ', who is not ' ++ 
 
 （这个级联运算符也适用于数组，它可以将被操作的数组合并放入到一个数组中。所以执行 `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` 的结果是 `{['I', 'am', 'Jonathan', 'Harker']}`。）
 
-现在，让我们再来更改一下 `Vampire` 类型，使其拥有一个新链接，并指向其所掌控的 `MinorVampire`。你应该还记得德古拉伯爵是游戏中唯一一个真正的吸血鬼，而其他吸血鬼都是 `MinorVampire` 类型。这意味着我们需要一个 `multi link`：
+现在，让我们再来更改一下 `Vampire` 类型，使其拥有一个新链接，并指向其所掌控的 `MinorVampire`。你应该还记得德古拉伯爵是游戏中唯一一个真正的吸血鬼，而其他吸血鬼都是 `MinorVampire` 类型。这意味着我们需要一个 `multi` 链接：
 
 ```sdl
 type Vampire extending Person {

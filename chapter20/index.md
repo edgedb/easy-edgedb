@@ -88,14 +88,14 @@ Properties like `conversational_name` are {ref}`computed properties <docs:ref_da
 
 Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
 
-The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
+The two links are `multi` links, without which a link is to only one object: without the keyword `multi` it will be a single link. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
 error: possibly more than one element returned by an expression
 for a computed link 'former_self' declared as 'single'
 ```
 
-This could be what you want for `lover`, but it wouldn't work well for `places_visited`. And backlinks have the opposite behavior: a backlink is a `multi link` by default, meaning that you have to write `single link` otherwise.
+Meanwhile, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
 
 For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and ISO8601 compliant.
 
@@ -238,7 +238,7 @@ insert City {
 };
 ```
 
-and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the {ref}`annotation <docs:ref_eql_sdl_annotations>` shows:
+and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi` link. Even our `OtherPlace` type is not quite the right type for this, as the {ref}`annotation <docs:ref_eql_sdl_annotations>` shows:
 
 ```sdl
 type OtherPlace extending Place {

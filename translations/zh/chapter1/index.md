@@ -187,7 +187,7 @@ insert NPC {
 - 我们有一个 `NPC` 类型和一个 `City` 类型，
 - `NPC` 类型含有属性 `places_visited`，用来展示访问过的城市的名称，但它们只是数组中的字符串。我们最好能以某种方式将这个属性链接到 `City` 类型上。
 
-所以这里我们先不急于做 `NPC` 的插入。我们先来调整一下 `NPC` 类型的定义，将 `array<str>` 从 `property` 更改为指向 `City` 类型的 `multi link`。这将使 `NPC` 和 `City` 连接起来。
+所以这里我们先不急于做 `NPC` 的插入。我们先来调整一下 `NPC` 类型的定义，将 `array<str>` 从 `property` 更改为指向 `City` 类型的 `multi` 链接。这将使 `NPC` 和 `City` 连接起来。
 
 但首先让我们先仔细看看当我们使用 `insert` 时到底发生了什么。
 

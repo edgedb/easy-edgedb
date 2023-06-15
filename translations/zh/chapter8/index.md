@@ -274,7 +274,7 @@ select year is int16 or year is int32 or year is int64;
 
 ## Multi 的使用
 
-我们已经看到过很多次 `multi link` 了，你可能想知道 `multi` 是否也可以用在其他地方。答案是肯定的。比如 `multi property`，它与任何属性并无二致，但它可以有多个值。例如，我们的 `Castle` 类型有一个用于 `doors` 属性的 `array<int16>`：
+我们已经看到过很多次 `multi` 链接了，你可能想知道 `multi` 是否也可以用在其他地方。答案是肯定的。比如 `multi`的 property，它与任何属性并无二致，但它可以有多个值。例如，我们的 `Castle` 类型有一个用于 `doors` 属性的 `array<int16>`：
 
 ```sdl
 type Castle extending Place {
@@ -299,7 +299,7 @@ insert Castle {
 };
 ```
 
-接下来你可能会问，使用哪种方法更好？`multi property` 还是 `array`？或是使用 `multi link` 链接到对象。答案是……视情况而定。但是这里有一些很好的经验法则可以帮助你做决定。
+接下来你可能会问，使用哪种方法更好？`multi property` 还是 `array`？或是使用 `multi` 链接到对象。答案是……视情况而定。但是这里有一些很好的经验法则可以帮助你做决定。
 
 - `multi property` 与数组：
 
@@ -334,11 +334,11 @@ insert Castle {
 
   你一定看到过 `readonly := true` 的类型，你创建的每个对象类型都会有它们。`__type__` 链接和 `id` 属性分别都是 16 字节。
 
-  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi link` 需要额外的“连接（join）”（链接表 + 对象表），但 `multi property` 并不需要。此外，“反向链接“（backlink）（你将在第 14 章中学习到）也需要更多类似的额外工作。
+  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi` 链接需要额外的“连接（join）”（链接表 + 对象表），但 `multi property` 并不需要。此外，“反向链接“（backlink）（你将在第 14 章中学习到）也需要更多类似的额外工作。
 
   现在，我们来介绍一下经过对比后，使用对象的两个好处：
 
-  是否有其他类型需要引用相同的值？如果是这样，那么最好使用对象来保持一致。这就是为什么我们最终将 `places_visited` 设为 `multi link` 的原因。
+  是否有其他类型需要引用相同的值？如果是这样，那么最好使用对象来保持一致。这就是为什么我们最终将 `places_visited` 设为 `multi` 链接的原因。
 
   如果你需要为每个对象设置多个值，则使用对象更容易进行迁移/变更（migrate）。
 

@@ -85,13 +85,13 @@ abstract type Person {
 
 每个属性都有一个类型（如 `str`、`bigint` 等）。 计算（computed）属性也有，但我们不需要告诉 EdgeDB 需要什么类型，因为计算式表达本身就构成了类型。例如，`pen_name` 用到了 `str` 类型的 `.name`，并添加更多其他的字符串，这当然会产生一个 `str`。其中用于将它们连接在一起的 `++` 称为级联 {eql:op}`concatenation <docs:strplus>`。
 
-其中有两个链接是 `multi link`，如果没有 `multi`，则一个 `link` 只能指向一个对象。如果你仅写 `link`，它将是一个 `single link`，也意味着你可能需要在创建链接时使用 `assert_single()`，否则会出现类似的错误提示：
+其中有两个链接是 `multi` 链接，如果没有 `multi`，则一个 `link` 只能指向一个对象。如果你不写 `multi`，它将是一个 `single link`，也意味着你可能需要在创建链接时使用 `assert_single()`，否则会出现类似的错误提示：
 
 ```
 error: possibly more than one element returned by an expression for a computed link 'former_self' declared as 'single'
 ```
 
-你也可以将 `lover` 改为 `single link`，这取决于你的设定，但因为书中设定一个角色可能造访多个地点，因此 `places_visited` 必须是 `multi link`。
+你也可以将 `lover` 改为 `single` link，这取决于你的设定，但因为书中设定一个角色可能造访多个地点，因此 `places_visited` 必须是 `multi` 链接。
 
 对于 `first_appearance` 和 `last_appearance`，我们使用的是 {eql:type}`docs:cal::local_date`，因为我们的游戏设定在了特定时期内且仅在欧洲的一部分地区活动。而对于现代的用户数据库，我们更喜欢用 {eql:type}`docs:std::datetime`，因为它是感知时区且总是符合 ISO8601 的。
 
@@ -216,7 +216,7 @@ insert City {
 };
 ```
 
-`important_places` 现在只是一个数组。我们可以保持这样的设定，因为我们还没有为酒店和公园等非常小的地方创建类型的需求。但是如果我们打算为这些地方创建一个新类型，那么我们应该把 `important_places` 变成一个 `multi link`，而我们的 `OtherPlace` 类型甚至可能也不再是完全准确的类型了，如 {ref}`annotation <docs:ref_eql_sdl_annotations>` 所示：
+`important_places` 现在只是一个数组。我们可以保持这样的设定，因为我们还没有为酒店和公园等非常小的地方创建类型的需求。但是如果我们打算为这些地方创建一个新类型，那么我们应该把 `important_places` 变成一个 `multi` 链接，而我们的 `OtherPlace` 类型甚至可能也不再是完全准确的类型了，如 {ref}`annotation <docs:ref_eql_sdl_annotations>` 所示：
 
 ```sdl
 type OtherPlace extending Place {
