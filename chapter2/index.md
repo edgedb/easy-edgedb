@@ -101,10 +101,11 @@ insert PC {
 };
 ```
 
-But if you were to type `class := 'wrestler'` it wouldn't work:
+But if you were to type `class := 'Wrestler'` it wouldn't work:
 
 ```
-edgedb error: InvalidValueError: invalid input value for enum 'default::Class': "wrestler"
+edgedb error: InvalidValueError: invalid input value for enum 
+'default::Class': "Wrestler"
 ```
 
 Now let's do a select on the abstract type `Person` to see the objects inside, plus the properties common to both: `name` and `places_visited`.
@@ -187,7 +188,8 @@ Of course, a cast won't work if the input is invalid:
 
 ```edgeql
 db> select <int64>"Hi I'm a number please add me to" + 9;
-edgedb error: InvalidValueError: invalid input syntax for type std::int64: "Hi I'm a number please add me to"
+edgedb error: InvalidValueError: invalid input syntax for type std::int64:
+"Hi I'm a number please add me to"
 ```
 
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
@@ -287,7 +289,8 @@ select City {
 That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`filter .name[18] = 'B';`), we'll get this error:
 
 ```
-edgedb error: InvalidValueError: string index 18 is out of bounds (on line 4, column 16)
+edgedb error: InvalidValueError: string index 18 is out of bounds
+(on line 4, column 16)
 ```
 
 Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
@@ -310,7 +313,8 @@ db> select City {
   name,
   modern_name,
  } filter .name[0] = 'B';
-edgedb error: InvalidValueError: string index 0 is out of bounds (on line 4, column 16)
+edgedb error: InvalidValueError: string index 0 is out of bounds
+(on line 4, column 16)
 ```
 
 So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough. In the next chapter we will learn how to use _constraints_ to ensure that your data matches certain expectations you have, such as minimum length.
@@ -364,7 +368,8 @@ This also means that you can use slicing to safely search for values at a certai
 
 ```edgeql
 db> select City.name[0];
-edgedb error: InvalidValueError: string index 0 is out of bounds (on line 1, column 18)
+edgedb error: InvalidValueError: string index 0 is out of bounds
+(on line 1, column 18)
 ```
 
 However, if we change the query to `db> select City.name[0:1];` then it will look for a slice instead of an exact character index, and the query will work:
