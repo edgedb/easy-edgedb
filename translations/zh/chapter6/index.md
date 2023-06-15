@@ -103,7 +103,7 @@ set {
 };
 ```
 
-这里我们需要使用 `detached Person`，与我们在之前的章节中用 `insert NPC` 创建 Mina Murray 并指定她爱人时使用了 `detached` 的理由一样。我们要在一个 `Person` 上使用 `update`，同时还需要 `select` 另一个 `Person` 作为其爱人。现在，Jonathan 的 `link lover` 终于显示了 Mina 而不再是空的 `{}`。
+这里我们需要使用 `detached Person`，与我们在之前的章节中用 `insert NPC` 创建 Mina Murray 并指定她爱人时使用了 `detached` 的理由一样。我们要在一个 `Person` 上使用 `update`，同时还需要 `select` 另一个 `Person` 作为其爱人。现在，Jonathan 的 `lover` 链接终于显示了 Mina 而不再是空的 `{}`。
 
 当然，如果你在没有 `filter` 的情况下使用了 `update`，它将对所有对象进行相同的更改。例如，下面的语句会在数据库里把所有 `Place` 更新进每一个 `Person` 对象的 `places_visited` 属性中：
 
@@ -159,7 +159,7 @@ ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11e
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
 
-因此，我们先简单地将 `MinorVampire` 改为没有 `link master` 的 `Person` 扩展类型：
+因此，我们先简单地将 `MinorVampire` 改为没有 `master` 链接的 `Person` 扩展类型：
 
 ```sdl
 type MinorVampire extending Person {

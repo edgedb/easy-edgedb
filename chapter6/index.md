@@ -248,7 +248,7 @@ type Vampire extending Person {
 }
 ```
 
-Then we can `insert` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove `link master` from `MinorVampire`, because we don't want two objects linking to each other in this way. There are two reasons for that:
+Then we can `insert` the `MinorVampire` type at the same time as we insert the information for Count Dracula. But first let's remove the `master` link from `MinorVampire`, because we don't want two objects linking to each other in this way. There are two reasons for that:
 
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required` link) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:

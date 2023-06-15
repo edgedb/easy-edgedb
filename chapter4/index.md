@@ -17,7 +17,7 @@ abstract type Person {
 }
 ```
 
-With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link`. But `link` is the short form of `single link` so we only need to write `link`.
+With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a single link. If we wanted `lover` to be a multi link, we would have written `multi lover` instead.
 
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
@@ -83,7 +83,7 @@ This gives us:
 }
 ```
 
-We can see that Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first when Mina Murray didn't exist yet. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
+We can see that Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first when Mina Murray didn't exist yet. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for the `lover` link.
 
 Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can put a computed property in the query, using `exists`. We'll call it `is_single`, but since it's not in the schema for the `Person` type we could call it anything we like here. The keyword `not exists` will return `false` if a set is returned, and `true` if it gets `{}` (if there is nothing). This is once again one of the nice things about using empty sets in EdgeDB instead of null. It looks like this:
 

@@ -360,7 +360,7 @@ Much better!
 
 ## Putting backlinks into the schema
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
+Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
@@ -428,7 +428,7 @@ insert Vampire {
 };
 ```
 
-Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
+Now if the `MinorVampire` type works as it should, we should be able to see Kain via the `master` link inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
 select MinorVampire {

@@ -269,7 +269,7 @@ type Lord extending Person {
 
 ## 双向关联
 
-回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `link master`。我们删除 `link master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `delete` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
+回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `master` 链接。我们删除 `master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `delete` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
 
 （注意：我们不会真的修改 `MinorVampire` 类型，这里是为了说明如何重新添加 `master` 到 `MinorVampire`）
 
@@ -332,7 +332,7 @@ insert Vampire {
 };
 ```
 
-如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
+如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `master` 链接直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
 
 ```edgeql
 select MinorVampire {
