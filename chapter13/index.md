@@ -19,7 +19,7 @@ type MinorVampire extending Person {
 }
 ```
 
-Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` named Count Dracula.
+Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` object named Count Dracula.
 
 So instead of trying to change the `NPC` type, we can just give `MinorVampire` an optional link to `Person`:
 
@@ -29,7 +29,7 @@ type MinorVampire extending Person {
 }
 ```
 
-The `former_self` link is optional because we don't always know anything about people before they were made into vampires. For example, we don't know anything about the three vampire women before Dracula found them so we can't make an `NPC` type for them.
+The `former_self` link isn't `required` because we don't always know anything about people before they were made into vampires. For example, we don't know anything about the three vampire women before Dracula found them so we can't make an `NPC` type for them.
 
 Another way to (informally) link them is to give the same date to `last_appearance` for an `NPC` and `first_appearance` for a `MinorVampire`. First we will update Lucy with her `last_appearance`:
 

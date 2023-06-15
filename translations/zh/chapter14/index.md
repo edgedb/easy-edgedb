@@ -278,8 +278,8 @@ select Vampire {
 ```edgeql
 select MinorVampire {
   name,
-  # master... how do we get this?
-  # There's no link to Vampire inside MinorVampire...
+  # master... 怎么找呢?
+  # 在MinorVampire没有到Vampire的链接...
 }
 ```
 

@@ -318,16 +318,16 @@ insert Castle {
   ```
   {
     'type default::Castle extending default::Place {
-      required single link __type__ -> schema::Type {
+      required single link __type__: schema::Type {
           readonly := true;
       };
-      optional single property doors -> array<std::int16>;
-      required single property id -> std::uuid {
+      optional single property doors: array<std::int16>;
+      required single property id: std::uuid {
           readonly := true;
       };
-      optional single property important_places -> array<std::str>;
-      optional single property modern_name -> std::str;
-      required single property name -> std::str;
+      optional single property important_places: array<std::str>;
+      optional single property modern_name: std::str;
+      required single property name: std::str;
   };',
   }
   ```

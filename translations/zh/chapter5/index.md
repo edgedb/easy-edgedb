@@ -172,7 +172,7 @@ error: possibly more than one element returned by an expression for a link 'mast
 ```
 {
   'CREATE TYPE default::MinorVampire EXTENDING default::Person {
-    CREATE REQUIRED LINK master -> default::Vampire;
+    CREATE REQUIRED LINK master: default::Vampire;
 };',
 }
 ```
@@ -198,16 +198,16 @@ error: possibly more than one element returned by an expression for a link 'mast
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link __type__ -> schema::Type {
+    required single link __type__: schema::Type {
         readonly := true;
     };
-    optional single link lover -> default::Person;
-    required single link master -> default::Vampire;
-    optional multi link places_visited -> default::Place;
-    required single property id -> std::uuid {
+    optional single link lover: default::Person;
+    required single link master: default::Vampire;
+    optional multi link places_visited: default::Place;
+    required single property id: std::uuid {
         readonly := true;
     };
-    required single property name -> std::str;
+    required single property name: std::str;
 };',
 }
 ```

@@ -366,23 +366,23 @@ The next question of course is which is best to use: `multi` for a multi propert
   ```
   {
     'type default::Castle extending default::Place {
-      required single link __type__ -> schema::Type {
+      required single link __type__: schema::Type {
           readonly := true;
       };
-      optional single property doors -> array<std::int16>;
-      required single property id -> std::uuid {
+      optional single property doors: array<std::int16>;
+      required single property id: std::uuid {
           readonly := true;
       };
-      optional single property important_places -> array<std::str>;
-      optional single property modern_name -> std::str;
-      required single property name -> std::str;
+      optional single property important_places: array<std::str>;
+      optional single property modern_name: std::str;
+      required single property name: std::str;
   };',
   }
   ```
 
   You'll remember seeing the `readonly := true` properties, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
-  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a `multi` property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
+  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a multi link to an object needs an extra "join" (a link table + object table), but a `multi` property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
 
   Having said that, now here are two positives for objects in comparison.
 

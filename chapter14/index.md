@@ -344,7 +344,7 @@ In this case, we are asking EdgeDB to show us each and every object that is link
 }
 ```
 
-You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object that links via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
 
 ```edgeql-repl
 db> select Place {

@@ -294,16 +294,16 @@ You'll notice that it's basically the same as our SDL schema, just a bit more ve
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link __type__ -> schema::Type {
+    required single link __type__: schema::Type {
         readonly := true;
     };
-    optional single link lover -> default::Person;
-    required single link master -> default::Vampire;
-    optional multi link places_visited -> default::Place;
-    required single property id -> std::uuid {
+    optional single link lover: default::Person;
+    required single link master: default::Vampire;
+    optional multi link places_visited: default::Place;
+    required single property id: std::uuid {
         readonly := true;
     };
-    required single property name -> std::str;
+    required single property name: std::str;
 };',
 }
 ```
@@ -313,17 +313,17 @@ If you want a bit more information, you can add the keyword `verbose` to make th
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link __type__ -> schema::ObjectType {
+    required single link __type__: schema::ObjectType {
         readonly := true;
     };
-    optional single link lover -> default::Person;
-    required single link master -> default::Vampire;
-    optional multi link places_visited -> default::Place;
-    required single property id -> std::uuid {
+    optional single link lover: default::Person;
+    required single link master: default::Vampire;
+    optional multi link places_visited: default::Place;
+    required single property id: std::uuid {
         readonly := true;
         constraint std::exclusive;
     };
-    required single property name -> std::str;
+    required single property name: std::str;
 };',
 }
 ```
