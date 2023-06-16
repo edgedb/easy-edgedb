@@ -52,19 +52,19 @@ abstract type Currency {
 
 ```sdl
 type Pound extending Currency {
-  overloaded required major {
+  overloaded required major: str {
     default := 'pound'
   }
-  overloaded required minor {
+  overloaded required minor: str {
     default := 'shilling'
   }
-  overloaded required minor_conversion {
+  overloaded required minor_conversion: int64 {
     default := 20
   }
-  overloaded sub_minor {
+  overloaded sub_minor: str {
     default := 'pence'
   }
-  overloaded sub_minor_conversion {
+  overloaded sub_minor_conversion: int64 {
     default := 240
   }
 }

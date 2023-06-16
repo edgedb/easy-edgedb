@@ -188,7 +188,7 @@ type ShipVisit {
 
 ```sdl
 type NPC extending Person {
-  overloaded age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
   overloaded multi places_visited: Place {
