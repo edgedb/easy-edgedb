@@ -70,7 +70,12 @@ module default {
       delegated constraint exclusive;
     }
     modern_name: str;
-    important_places: array<str>;
+    multi important_places: Landmark;
+  }
+
+  type Landmark {
+    required name: str;
+    multi context: str;
   }
 
   type City extending Place {
@@ -184,13 +189,17 @@ insert City {
 
 insert City {
   name := 'Buda-Pesth',
-  modern_name := 'Budapest'
+  modern_name := 'Budapest',
+  important_places := {
+    (insert Landmark {name := 'Hospital of St. Joseph and Ste. Mary'}),
+    (insert Landmark {name := 'Buda-Pesth University'})
+  }
 };
 
 insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
-  important_places := ['Golden Krone Hotel'],
+  important_places := (insert Landmark { name := 'Golden Krone Hotel'}),
 };
 
 insert PC {
@@ -327,7 +336,7 @@ insert NPC {
 insert City {
   name := 'Whitby',
   population := 14400,
-  important_places := ['Whitby Abbey']
+  important_places := (insert Landmark { name := 'Whitby Abbey'})
 };
 
 for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
@@ -393,13 +402,6 @@ insert City {
   name := 'Exeter', 
   population := 40000
 };
-
-update City filter .name = 'Buda-Pesth' 
-  set { important_places := [
-    'Hospital of St. Joseph and Ste. Mary',
-    'Buda-Pesth University'
-    ] 
-  };
 
 update Crewman
   set {

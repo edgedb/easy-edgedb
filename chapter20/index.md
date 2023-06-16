@@ -224,30 +224,11 @@ Our `Place` type shows that you can extend as many times as you want. It's an `a
 ```sdl
 abstract type Place extending HasNameAndCoffins {
   modern_name: str;
-  important_places: array<str>;
+  multi important_places: Landmark;
 }
 ```
 
-The `important_places` property only got used once in this insert:
-
-```edgeql
-insert City {
-  name := 'Bistritz',
-  modern_name := 'Bistrița',
-  important_places := ['Golden Krone Hotel'],
-};
-```
-
-and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi` link. Even our `OtherPlace` type is not quite the right type for this, as the {ref}`annotation <docs:ref_eql_sdl_annotations>` shows:
-
-```sdl
-type OtherPlace extending Place {
-  annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
-  annotation warning := 'Castles and castle towns count! Use the Castle type for that';
-}
-```
-
-So in a real game we would create some other smaller location types and make them a link from the `important_places` property inside `City`. We might also move `important_places` to `Place` so that types like `Region` could link from it too.
+The `important_places` property used to be an `<array<str>>`, but in Chapter 16 we decided to create a `Landmark` type that would represent the smallest type of location that would appear in the game such as hotels, parks, universities, and so on. These locations are so small that they don't need to track the number of coffins, because the number of coffins is relevant for larger spaces of land to help determine if the location can be easily terrorized by vampires or not.
 
 Annotations: we used `abstract annotation` to add a new annotation:
 
