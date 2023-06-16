@@ -479,6 +479,7 @@ But if we try again we will get this error:
 
 ```
 edgedb error: ConstraintViolationError: name violates exclusivity constraint
+```
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 
