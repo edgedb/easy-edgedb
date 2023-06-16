@@ -65,7 +65,7 @@ insert Country {
 };
 ```
 
-You might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi` link. That's true, and later on in the book we will learn how to change a property into a link while retaining your existing data.
+You might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi` link. That's true, and much later on in the book (in Chapter 16, to be precise) we will learn how to change a property into a link while retaining your existing data.
 
 ## Capturing a select expression
 
