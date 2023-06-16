@@ -447,6 +447,13 @@ insert City {
   population := 40000
 };
 
+update City filter .name = 'Buda-Pesth' 
+  set { important_places := [
+    'Hospital of St. Joseph and Ste. Mary',
+    'Buda-Pesth University'
+    ] 
+  };
+
 update Crewman
   set {
     name := 'Crewman ' ++ <str>.number
