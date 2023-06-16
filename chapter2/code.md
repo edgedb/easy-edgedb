@@ -38,6 +38,11 @@ insert City {
 insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
+};
+
+insert City {
+  name := 'Bistritz',
+  modern_name := 'Bistrița',
   important_places := ['Golden Krone Hotel'],
 };
 

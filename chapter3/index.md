@@ -418,6 +418,61 @@ The output is...verbose!
 
 This is because `Person` is linked to `Place` via the `places_visited` link, and the double splat operator shows you both an object's properties and the properties of the objects it links to. This operator only goes down to a depth of one, meaning that it won't follow the links of a linked object. This makes sense because in some databases you could see links that go on almost forever.
 
+## Deleting Bistritz
+
+We haven't learned how to `update` yet (we'll learn that in Chapter 6), but we do know how to `delete` so let's get rid of our duplicate Bistritz. Let's first do a query to remember what the two objects look like at the moment:
+
+```edgeql
+select City {*} filter .name = 'Bistritz';
+```
+
+And the output:
+
+```
+{
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+    important_places: ['Golden Krone Hotel'],
+  },
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    id: d1e38192-0bd6-11ee-ba45-d7ecb20723cf,
+    important_places: {},
+  },
+}
+```
+
+Ah yes, we have a `City` called Bistritz that was inserted before we added the `important_places` property. There are two differences between the two: they have different `id` numbers, and one has an `important_places` property. In the next chapter we will learn to to filter depending on whether a property or link `exists` or not, but in the meantime let's just delete one by its id. (`id` is always a unique number so on your database the `id` will be different from the one in this example.)
+
+This query almost works but not quite:
+
+```edgeql
+delete City filter .id = 'd1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+```
+
+Close!
+
+```
+error: InvalidTypeError: operator '=' cannot be applied to operands of type 
+'std::uuid' and 'std::str'
+  ┌─ <query>:1:13
+  │
+1 │ delete City filter .id = 'd1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+  │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+  Consider using an explicit type cast or a conversion function.
+```
+
+All we have to do is cast the `str` to a `uuid` and it will now work:
+
+```edgeql
+delete City filter .id = <uuid>'d1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+```
+
+And now it's gone! We are back to a single `City` object named Bistritz instead of two.
+
 [Here is all our code so far up to Chapter 3.](code.md)
 
 <!-- quiz-start -->
