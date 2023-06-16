@@ -27,7 +27,8 @@ type City extending Place {
 ```edgeql
 insert City {
   name := 'Whitby',
-  population := 14400
+  population := 14400,
+  important_places := ['Whitby Abbey']
 };
 ```
 

@@ -4,7 +4,7 @@ tags: Tuples, Computed Properties, Math
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
+> Mina and Lucy are enjoying their time in Whitby. They spend a lot of time hiking nearby the coast and enjoying the view from the ruins of Whitby Abbey, an old church from long ago. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
 >
 > One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
@@ -31,7 +31,8 @@ Whitby is the only one of the five that isn't in our database already. Inserting
 ```edgeql
 insert City {
   name := 'Whitby',
-  population := 14400
+  population := 14400,
+  important_places := ['Whitby Abbey']
 };
 ```
 

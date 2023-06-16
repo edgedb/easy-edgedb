@@ -288,7 +288,8 @@ insert NPC {
 
 insert City {
   name := 'Whitby',
-  population := 14400
+  population := 14400,
+  important_places := ['Whitby Abbey']
 };
 
 for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
