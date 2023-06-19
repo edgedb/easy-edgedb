@@ -69,6 +69,10 @@ module default {
     property master_name := .master.name;
   };
 
+  required global current_date: cal::local_date {
+    default := <cal::local_date>'1893-05-13'
+  }
+
   abstract type Place extending HasNameAndCoffins {
     modern_name: str;
     multi important_places: Landmark;

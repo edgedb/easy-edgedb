@@ -235,6 +235,93 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
+## Globals
+
+A lot of games feature time travel, and maybe our game will too. The player characters might have come from the present time, or might visit an apocalyptic future in which Dracula won and now rules from his base in London in the year 2023.
+
+The interesting thing about time travel is that it is entirely dependent on what the player character is doing. The current year doesn't really belong in any of the objects currently in our database because they have nothing to do with what any player is doing at the moment. But we would like to reference the current year sometimes, because for example query on `City` objects should give their `name` when in the 19th century, but their `modern_name` when in the present.
+
+So the current year doesn't belong to any type - it's a global parameter.
+
+EdgeDB allows you to create global parameters using the `global` keyword. These must be scalars, unless the `global` is a computable in which case there are no limits. Let's give this a try by adding a `current_date` scalar to the schema. We'll also give it a `default` which can be the date when all player characters begin their quest.
+
+```sdl
+required global current_date: cal::local_date {
+  default := <cal::local_date>'1893-05-13'
+}
+```
+
+And once the migration is done, we can easily select it using the `global` keyword:
+
+```edgeql
+select global current_date;
+```
+
+This returns `{<cal::local_date>'1893-05-13'}`, the default value.
+
+To change a global variable, just use the keyword `set`. Let's set `current_date` to a more modern date:
+
+```edgeql
+set global current_date := <cal::local_date>'2023-06-19';
+```
+
+The output is pretty simple:
+
+```
+OK: SET GLOBAL
+```
+
+So that was pretty easy! After all, this global is a scalar and scalars are pretty easy to work with.
+
+Now let's run a query to get some `City` names. In this query we will make 1945 the cutoff date for old names vs. new names. Our `City` objects use the `modern_name` property from the abstract `Place` type as a hint that the name for the city has changed since the time in the book, so we will have to default to the `name` property regardless of the data if `modern_name` doesn't exist. Here is what the query looks like:
+
+```
+with use_modern := global current_date > <cal::local_date>'1945-01-01',
+  select City {
+  city_name := .modern_name if use_modern and exists .modern_name else .name
+ };
+```
+
+Putting that together gives us our cities in their modern form: two of them are now Bistrița and Budapest.
+
+```
+{
+  default::City {city_name: 'Whitby'},
+  default::City {city_name: 'Munich'},
+  default::City {city_name: 'Bistrița'},
+  default::City {city_name: 'London'},
+  default::City {city_name: 'Exeter'},
+  default::City {city_name: 'Budapest'},
+}
+```
+
+Now let's change `current_date` back to an older date. In addition to `set`, we can use the `reset` keyword for our use case because `current_date` has a default value.
+
+```edgeql
+reset global current_date;
+```
+
+And the output: 
+
+```
+OK: RESET GLOBAL
+```
+
+The `reset` keyword works for globals without default values too, but their default value is an empty set.
+
+And now that the `current_date` has been reset, the same query as above for the `City` object names now shows us the names Bistritz and Buda-Pesth for two of the cities:
+
+```
+{
+  default::City {city_name: 'Whitby'},
+  default::City {city_name: 'Munich'},
+  default::City {city_name: 'Bistritz'},
+  default::City {city_name: 'London'},
+  default::City {city_name: 'Exeter'},
+  default::City {city_name: 'Buda-Pesth'},
+}
+```
+
 ## Backlinks
 
 Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.

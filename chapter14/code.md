@@ -47,6 +47,10 @@ module default {
   type MinorVampire extending Person {
     former_self: Person;
   }
+
+  required global current_date: cal::local_date {
+    default := <cal::local_date>'1893-05-13'
+  }
   
   abstract type Place {
     required name: str {

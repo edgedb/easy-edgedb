@@ -64,6 +64,10 @@ module default {
     single link master := assert_single(.<slaves[is Vampire]);
     property master_name := .master.name;
   };
+
+  required global current_date: cal::local_date {
+    default := <cal::local_date>'1893-05-13'
+  }
   
   abstract type Place extending HasCoffins {
     required name: str {
