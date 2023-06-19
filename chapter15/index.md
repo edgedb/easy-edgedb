@@ -491,8 +491,6 @@ You should see the three `id`s of the three objects and their types to show us t
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
 
-5. How would you make it without touching the schema?
-
 [See the answers here.](answers.md)
 
 <!-- quiz-end -->

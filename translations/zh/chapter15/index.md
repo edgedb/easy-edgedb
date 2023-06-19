@@ -379,8 +379,6 @@ select MinorVampire {
 
 4. 如何创建一个名为 `display_coffins` 的函数来显示出所有棺材数量大于 0 的 `HasCoffins` 类型的对象？
 
-5. 如何在不碰架构（schema）的情况下（不做”显式迁移“）创建上一题中的函数？
-
 [点击这里查看答案](answers.md)
 
 <!-- quiz-end -->

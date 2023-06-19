@@ -76,7 +76,3 @@ select display_coffins() {
   [is City].population,
 };
 ```
-
-#### 5. 如何在不碰架构（schema）的情况下（不做”显式迁移“）创建上一题中的函数？
-
-很简单，只需在它的最前面加上 `create`！

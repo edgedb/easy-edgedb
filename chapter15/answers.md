@@ -77,6 +77,3 @@ select display_coffins() {
 };
 ```
 
-#### 5. How would you make it without touching the schema?
-
-Easy, just put `create` in front of it!
