@@ -231,7 +231,34 @@ module default {
       vampire := assert_single((select Person filter .name = person_name)),
       enter_place := assert_single((select HasNameAndCoffins filter .name = place))
       select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
-      );   
+      );
+
+  type Account {
+    required name: str;
+    required address: str;
+    required username: str;
+    required credit_card: CreditCardInfo;
+    multi pcs: PC;
+
+    trigger user_info_insert after delete for each do (
+      insert MinimalUserInfo {
+        username := __old__.name,
+        pcs := __old__.pcs
+      }
+    );
+  }
+
+  type CreditCardInfo {
+    required name: str;
+    required number: str;
+
+    link card_holder := .<credit_card[is Account]
+  }
+
+  type MinimalUserInfo {
+    username: str;
+    multi pcs: PC;
+  }
 }
 
 # Data:
@@ -503,4 +530,21 @@ select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Em
   total_pounds :=
     round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
 };
+
+insert Account {
+  name := 'Deborah Brown',
+  address := '10 Main Street',
+  username := 'deb_deb_999',
+  credit_card := (insert CreditCardInfo 
+    {  name := 'DEBORAH LAURA BROWN',
+       number := '000-000-000' }
+  ),
+  pcs := (insert PC 
+    {  name := 'LordOfSalty',
+       class := Class.Rogue
+    }
+  )
+};
+
+delete Account filter .name = 'Deborah Brown';
 ```

@@ -1,5 +1,5 @@
 ---
-tags: Complex Inserts, Schema Cleanup
+tags: Complex Inserts, Schema Cleanup, Triggers
 ---
 
 # Chapter 18 - Using Dracula's own weapon against him
@@ -347,6 +347,195 @@ insert Ship {
 ```
 
 Much better!
+
+## Triggers
+
+Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help?) Count Dracula.
+
+However the game takes shape, it will require some sort of account type to hold the information for the people using our game. A simplified example of what we might need is as follows:
+
+```sdl
+type Account {
+  required name: str;
+  required address: str;
+  required username: str;
+  required credit_card: CreditCardInfo;
+  multi pcs: PC;
+}
+
+type CreditCardInfo {
+  required name: str;
+  required number: str;
+
+  link card_holder := .<credit_card[is Account]
+}
+```
+
+Every single property in these types is required, which makes sense - it's all personal information required to create accounts and pay for them.
+
+Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. But at the same time, users often delete their accounts but then want to restore them again! We can make this process easy with _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
+
+```
+type type-name "{"
+  trigger name
+  after
+    {insert | update | delete} [, ...]
+    for {each | all}
+    do expr
+"}"
+```
+
+In other words:
+
+- Decide on a name for a trigger (like `validate_input` or `check_length`),
+- Add the keyword `after`,
+- Decide for which cases we want a trigger to happen (only on `insert`, or for `insert` and `update`, etc.),
+- Decide whether a trigger should happen on `each` object or once per query with `all`,
+- And finally the expression of the trigger itself.
+
+Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, depending on the operation. When you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
+
+And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
+
+The `MinimalUserInfo` type is pretty simple:
+
+```sdl
+type MinimalUserInfo {
+  username: str;
+  multi pcs: PC;
+}
+```
+
+And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it.
+
+All together, the changes now look as follows:
+
+```sdl
+type Account {
+  required name: str;
+  required address: str;
+  required username: str;
+  required credit_card: CreditCardInfo;
+  multi pcs: PC;
+
+  trigger user_info_insert after delete for each do (
+  insert MinimalUserInfo {
+    username := __old__.name,
+    pcs := __old__.pcs
+  }
+);
+}
+
+type CreditCardInfo {
+  required name: str;
+  required number: str;
+
+  link card_holder := .<credit_card[is Account]
+}
+
+type MinimalUserInfo {
+  username: str;
+  multi pcs: PC;
+}
+```
+
+Okay, let's do a migration and then insert an `Account` object!
+
+```
+insert Account {
+  name := 'Deborah Brown',
+  address := '10 Main Street',
+  username := 'deb_deb_999',
+  credit_card := (insert CreditCardInfo 
+    {  name := 'DEBORAH LAURA BROWN',
+       number := '000-000-000' }
+  ),
+  pcs := (insert PC 
+    {  name := 'LordOfSalty',
+       class := Class.Rogue
+    }
+  )
+};
+```
+
+We have only one `Account` object so far so let's query with `select Account {**};` to see all of the information available. Here is the output:
+
+```
+{
+  default::Account {
+    id: 6f67992a-0d90-11ee-b3bb-8f877d23b651,
+    name: 'Deborah Brown',
+    address: '10 Main Street',
+    username: 'deb_deb_999',
+    pcs: {
+      default::PC {
+        last_appearance: {},
+        first_appearance: {},
+        degrees: {},
+        title: {},
+        age: {},
+        is_single: true,
+        strength: {},
+        name: 'LordOfSalty',
+        pen_name: 'LordOfSalty',
+        conversational_name: 'LordOfSalty',
+        id: 6f67f154-0d90-11ee-b3bb-37992cdeda59,
+        class: Rogue,
+        created_at: <datetime>'2023-06-18T04:27:29.059881Z',
+        number: 5,
+      },
+    },
+    credit_card: default::CreditCardInfo {
+      id: 6f678106-0d90-11ee-b3bb-13592cce3a16,
+      name: 'DEBORAH LAURA BROWN',
+      number: '000-000-000',
+    },
+  },
+}
+```
+
+Looks good! That is, until Deborah decides she has been playing too many vampire games recently and would like to delete her account. We are sad to see her go but comply with her request:
+
+```edgeql
+delete Account filter .name = 'Deborah Brown';
+```
+
+And now Deborah's personal information is all gone, as requested. But thanks to the trigger we added, we now have a `MinimalUserInfo` object in the database that was added automatically at the moment that we deleted Deborah's account. Let's take a look at it:
+
+```
+select MinimalUserInfo {**};
+```
+
+Here is the output:
+
+```
+{
+  default::MinimalUserInfo {
+    id: 5c17b0de-0d91-11ee-946c-6f411083ab25,
+    username: 'deb_deb_999',
+    pcs: {
+      default::PC {
+        last_appearance: {},
+        first_appearance: {},
+        degrees: {},
+        title: {},
+        age: {},
+        is_single: true,
+        strength: {},
+        name: 'LordOfSalty',
+        pen_name: 'LordOfSalty',
+        conversational_name: 'LordOfSalty',
+        id: 59cbd4b8-0d91-11ee-946c-a3693fe5d218,
+        class: Rogue,
+        created_at: <datetime>'2023-06-18T04:34:02.301357Z',
+        number: 8,
+      },
+    },
+  },
+}
+```
+
+With that we are holding none of Deborah's personal information anymore. All we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! And if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username.
 
 [Here is all our code so far up to Chapter 18.](code.md)
 
