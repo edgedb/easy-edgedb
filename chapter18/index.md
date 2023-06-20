@@ -549,7 +549,7 @@ With that we are holding none of Deborah's personal information anymore. All we 
 
 ## Time to practice
 
-1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
+1. The Goldmark was used in Germany during the time of Bram Stoker's Dracula. One Goldmark had 100 Pfennig. How would you make this type?
 
 2. Try adding two annotations to this type. One should be called `description` and mention that `One mark = 100 Pfennig`. The other should be called `note` and mention the types of coins there are.
 

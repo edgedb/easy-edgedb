@@ -1,5 +1,5 @@
 ---
-tags: Aliases, Named Tuples
+tags: Aliases, Named Tuples, Mutation Rewrites
 ---
 
 # Chapter 17 - Poor Renfield. Poor Mina.
@@ -477,6 +477,116 @@ Here's the output:
       default::NPC {name: 'Lord Billy'},
     },
     number_of_subjects: 9,
+  },
+}
+```
+
+## Mutation rewrites
+
+Since version 3.0, EdgeDB allows us to automatically rewrite properties of an object whenever an insert or update happens. The syntax for a mutation rewrite is really simple: just choose `insert` and/or `update`, and then add the expression.
+
+```
+rewrite {insert | update} [, ...]
+  using expr
+```
+
+A mutation rewrite makes it really easy to keep track of when an object was last updated. To do this, just add a property to the object and a mutation rewrite that calls `datetime_of_statement()` whenever the object is inserted or updated. Here it is added to the `PC` type:
+
+```sdl
+type PC extending Person {
+  required class: Class;
+  created_at: datetime {
+    default := datetime_of_statement()
+  }
+  required number: PCNumber {
+    default := sequence_next(introspect PCNumber);
+  }
+  last_updated: datetime {
+    rewrite insert, update using (datetime_of_statement());
+  }
+}
+```
+
+But while we are at it, let's stretch our imagination a bit and make another mutation rewrite for fun for the `PC` type. Imagine that every time a `PC` is created or gets to a save point (which updates it) we will give it a chance to win a bonus item at the same time. Let's call it a `LotteryTicket` and add some items that are useful to vampire hunters.
+
+```sdl
+scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+```
+
+Most of the time a lottery ticket will be nothing, but sometimes it will be a bonus item. Let's make a function to represent that:
+
+```sdl
+  function get_ticket() -> LotteryTicket using (
+    with rnd := <int16>(random() * 10),
+    select(LotteryTicket.Nothing if rnd <= 6 else
+    LotteryTicket.WallChicken if rnd = 7 else
+    LotteryTicket.ChainWhip if rnd = 8 else
+    LotteryTicket.Crucifix if rnd = 9 else
+    LotteryTicket.Garlic)
+  )
+```
+
+Putting all those together, here are the changes to make to the schema:
+
+```sdl
+type PC extending Person {
+  required class: Class;
+  created_at: datetime {
+    default := datetime_of_statement()
+  }
+  required number: PCNumber {
+    default := sequence_next(introspect PCNumber);
+  }
+  last_updated: datetime {
+    rewrite insert, update using (datetime_of_statement());
+  }
+  bonus_item: LotteryTicket {
+    rewrite insert, update using (get_ticket());
+  }
+}
+
+scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+
+function get_ticket() -> LotteryTicket using (
+  with rnd := <int16>(random() * 10),
+  select(LotteryTicket.Nothing if rnd <= 6 else
+  LotteryTicket.WallChicken if rnd = 7 else
+  LotteryTicket.ChainWhip if rnd = 8 else
+  LotteryTicket.Crucifix if rnd = 9 else
+  LotteryTicket.Garlic)
+)
+```
+
+Once the migration is done, let's insert a new `PC` and see what she gets! First the insert:
+
+```edgeql
+insert PC {
+ name := 'Sypha',
+ class := Class.Mystic
+};
+```
+
+And now a few queries to see what Sypha's bonus item is. This will return something different every time, so let's "update" her by...just giving her the same name as before. This will still count as an update to the object and thus the `last_updated` property will change, while the `bonus_item` is _likely_ to change depending on the random number chosen. The output will look something like this:
+
+```
+db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
+{
+  default::PC {
+    name: 'Sypha',
+    class: Mystic,
+    bonus_item: Nothing,
+    last_updated: <datetime>'2023-06-18T07:50:56.181567Z',
+  },
+}
+edgedb> update PC filter .name = 'Sypha' set { name := .name };
+{default::PC {id: 803d4486-0dac-11ee-9250-4746f54d7008}}
+edgedb> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
+{
+  default::PC {
+    name: 'Sypha',
+    class: Mystic,
+    bonus_item: Crucifix,
+    last_updated: <datetime>'2023-06-18T07:51:03.998048Z',
   },
 }
 ```

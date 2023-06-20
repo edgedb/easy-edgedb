@@ -100,7 +100,7 @@ abstract type Place {
   }
   modern_name: str;
   important_places: array<str>;
-  property post_date := datetime_current(); # this is new
+  property post_date := datetime_of_statement(); # this is new
 }
 ```
 
@@ -114,7 +114,7 @@ abstract type Place {
   modern_name: str;
   important_places: array<str>;
   post_date: datetime {
-    default := datetime_current()
+    default := datetime_of_statement()
   }
 }
 ```

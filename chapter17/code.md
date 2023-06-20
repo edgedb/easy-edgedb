@@ -34,7 +34,7 @@ module default {
   type PC extending Person {
     required class: Class;
     created_at: datetime {
-      default := datetime_current()
+      default := datetime_of_statement()
     }
     required number: PCNumber {
       default := sequence_next(introspect PCNumber);
@@ -42,6 +42,12 @@ module default {
     overloaded required name: str {
       constraint max_len_value(30);
     }
+    last_updated: datetime {
+      rewrite insert, update using (datetime_of_statement());
+    }
+    bonus_item: LotteryTicket {
+      rewrite insert, update using (get_ticket());
+    }    
   }
 
   type Lord extending Person {
@@ -190,6 +196,17 @@ module default {
       enter_place := assert_single((select HasNameAndCoffins filter .name = place))
       select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
       );   
+
+  scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+  
+  function get_ticket() -> LotteryTicket using (
+    with rnd := <int16>(random() * 10),
+    select(LotteryTicket.Nothing if rnd <= 6 else
+    LotteryTicket.WallChicken if rnd = 7 else
+    LotteryTicket.ChainWhip if rnd = 8 else
+    LotteryTicket.Crucifix if rnd = 9 else
+    LotteryTicket.Garlic)
+  )
 }
 
 # Data:

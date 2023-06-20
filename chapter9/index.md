@@ -109,16 +109,20 @@ type NPC extending Person {
 }
 ```
 
-## datetime_current()
+## datetime_current() and datetime_of_statement()
 
-One convenient function is {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`, which gives the datetime right now. Let's try it out:
+Two convenient functions are {eql:func}` ``datetime_current()`` <docs:std::datetime_current>` and {eql:func}` ``datetime_of_statement()`` <docs:std::datetime_of_statement>`, which give the datetime right now. Let's try the first one out:
 
 ```edgeql-repl
 db> select datetime_current();
 {<datetime>'2023-05-28T10:18:56.889701Z'}
 ```
 
-This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Here is a quick example that creates three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
+This can be useful if you want a post date when you insert an object. With this you can sort objects by date, delete the most recent item if you have a duplicate, and so on.
+
+Note though that `datetime_current()` will not return the exact same date as another call to `datetime_current()` inside the same statement. This is because `datetime_current()` returns the datetime at which the _function is called_, not the datetime of the statement that it's in.
+
+We can see this in the following example in which we create three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
 
 ```edgeql-repl
 db> with three_dates := {
@@ -126,12 +130,23 @@ db> with three_dates := {
   datetime_current(),
   datetime_current()
   },
-select three dates union max(three_dates);
+select three_dates union max(three_dates);
 {
   <datetime>'2023-05-28T10:26:55.744720Z',
   <datetime>'2023-05-28T10:26:55.744733Z',
   <datetime>'2023-05-28T10:26:55.744735Z',
   <datetime>'2023-05-28T10:26:55.744735Z',
+}
+```
+
+However, if we change the function to `datetime_of_statement()`, then the exact same datetime will be returned no matter how many times we call it:
+
+```edgeql-repl
+edgedb> select {datetime_of_statement(), datetime_of_statement(), datetime_of_statement()};
+{
+  <datetime>'2023-06-18T08:34:10.621754Z',
+  <datetime>'2023-06-18T08:34:10.621754Z',
+  <datetime>'2023-06-18T08:34:10.621754Z',
 }
 ```
 
@@ -142,7 +157,7 @@ Let's imagine how it would look if we put it inside the `Place` type. This is cl
 ```sdl
 type PC extending Person {
   required class: Class;
-  property created_at := datetime_current(); # this is new
+  property created_at := datetime_of_statement(); # this is new
 }
 ```
 
@@ -152,7 +167,7 @@ Because `created_at` is a computable here, and computables are calculated when y
 type PC extending Person {
   required class: Class;
   created_at: datetime {
-    default := datetime_current()
+    default := datetime_of_statement()
   }
 }
 ```
