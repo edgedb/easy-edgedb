@@ -237,7 +237,9 @@ module default {
     required name: str;
     required address: str;
     required username: str;
-    required credit_card: CreditCardInfo;
+    required credit_card: CreditCardInfo {
+      on source delete delete target;
+    }
     multi pcs: PC;
 
     trigger user_info_insert after delete for each do (

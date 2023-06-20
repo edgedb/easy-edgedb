@@ -359,7 +359,9 @@ type Account {
   required name: str;
   required address: str;
   required username: str;
-  required credit_card: CreditCardInfo;
+  required credit_card: CreditCardInfo {
+    on source delete delete target;
+  }
   multi pcs: PC;
 }
 
@@ -373,7 +375,9 @@ type CreditCardInfo {
 
 Every single property in these types is required, which makes sense - it's all personal information required to create accounts and pay for them.
 
-Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. But at the same time, users often delete their accounts but then want to restore them again! We can make this process easy with _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
+Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. With the `on source delete delete target` deletion policy, we have the `credit_card` link set up to delete any linked `CreditCardInfo` when an `Account` object is deleted. (A reminder: `on source delete delete target` means that when the source of the link is deleted, the target of the link gets deleted as well.) Deleting an `Account` object will delete absolutely everything to do with the user of our game.
+
+However, users often delete their accounts but then want to restore them again! But we can't keep the `Account` and `CreditCardInfo` objects around just in case, because we are legally obliged to remove the user's information. An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
 
 ```
 type type-name "{"
@@ -415,7 +419,9 @@ type Account {
   required name: str;
   required address: str;
   required username: str;
-  required credit_card: CreditCardInfo;
+  required credit_card: CreditCardInfo {
+    on source delete delete target;
+  }
   multi pcs: PC;
 
   trigger user_info_insert after delete for each do (
