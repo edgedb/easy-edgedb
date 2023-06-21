@@ -166,7 +166,7 @@ set {
 
 现在，让我们用上面的方法给 `The Demeter`（德古拉前往伦敦时乘坐的船）上放一些棺材：
 
-```edgeql-repl
+```
 db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number

@@ -157,7 +157,7 @@ function can_enter(person_name: str, place: str) -> optional str
 
 And now let's do a migration. One of the migration questions will ask us what default name to give the existing objects, because `name` is a required property. We can just type `''` to give an empty string by default.
 
-```edgeql-repl
+```
 Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::HasNameAndCoffins' required:
 fill_expr_2> ''
 ```
@@ -175,7 +175,7 @@ set {
 
 Now let's give the ship `The Demeter` some coffins.
 
-```edgeql-repl
+```
 db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number
@@ -186,7 +186,7 @@ Parameter <int16>$number: 10
 
 Castle Dracula naturally should have some coffins too. Let's go with 50.
 
-```edgeql-repl
+```
 db> update HasNameAndCoffins filter .name = <str>$place_name
 ....... set {
 .......   coffins := .coffins + <int16>$number
@@ -270,7 +270,7 @@ error: cannot insert into expression alias 'default::CrewmanInBulgaria'
 
 So all inserts are still done through the `Crewman` type. But because an alias is a subtype and a shape, we can select it in the same way as anything else. Let's now compare a `select` on the `Crewman` objects to a `select` with the `CrewmanInBulgaria` alias:
 
-```edgeql-repl
+```
 db> select Crewman { name, strength };
 {
   default::Crewman {name: 'Crewman 1', strength: 1},

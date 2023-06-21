@@ -25,7 +25,7 @@ leadImage: illustration_05.jpg
 
 顺便说一下，你可能会留意到一个不太熟悉的、名为 {eql:type}` ``decimal`` <docs:std::decimal>` 的类型。这是一个具有“任意精度”的浮点数，这意味着你可以根据需要在小数点后给出任意数量的数字。计算机上的浮点类型会由于舍入错误，在一段时间后 [变得不精确](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile)。比如下面的例子：
 
-```edgeql-repl
+```
 db> select 6.777777777777777; # Good so far
 {6.777777777777777}
 db> select 6.7777777777777777; # Add one more digit...
@@ -34,7 +34,7 @@ db> select 6.7777777777777777; # Add one more digit...
 
 如果你想避免这个问题，就在末尾添加一个 `n` 以获得一个 `decimal` 类型，它将尽可能做到精确。
 
-```edgeql-repl
+```
 db> select 6.7777777777777777n;
 {6.7777777777777777n}
 db> select 6.7777777777777777777777777777777777777777777777777n;
@@ -43,7 +43,7 @@ db> select 6.7777777777777777777777777777777777777777777777777n;
 
 同时，还有一个 `bigint` 类型，也可以使用 `n` 来表示任意大小。那是因为即使 int64 也有上限：它是 9223372036854775807。
 
-```edgeql-repl
+```
 db> select 9223372036854775807; # Good so far...
 {9223372036854775807}
 db> select 9223372036854775808; # But add 1 and it will fail
@@ -52,7 +52,7 @@ ERROR: NumericOutOfRangeError: std::int64 out of range
 
 所以这里你可以加上一个 `n`，它将会创建一个可以容纳任何大小的 `bigint`。
 
-```edgeql-repl
+```
 db> select 9223372036854775808n;
 {9223372036854775808n}
 ```

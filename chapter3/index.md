@@ -309,7 +309,7 @@ select City {
 
 If the splat operator is used for a type that is extended by other types, it will choose all of the properties that they have in common. Let's demonstrate that with three queries.
 
-```edgeql-repl
+```
 db> select PC{*};
 {default::PC {name: 'Emil Sinclair', id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35, class: Mystic}}
 db> select NPC {*};

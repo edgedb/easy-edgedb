@@ -253,7 +253,7 @@ Then we can `insert` the `MinorVampire` type at the same time as we insert the i
 - When we declare a `Vampire` it has `slaves`, but if there are no `MinorVampire`s yet then it will be empty: {}. And if we declare the `MinorVampire` type first it has a `master`, but if we declare them first then their `master` (a `required` link) will not be there.
 - If both types link to each other, we won't be able to delete them if we need to. The error looks something like this:
 
-```edgeql-repl
+```
 db> delete MinorVampire;
   ERROR: ConstraintViolationError: deletion of default::MinorVampire
   (ee6ca100-006f-11ec-93a9-4b5d85e60114) is prohibited by link target policy

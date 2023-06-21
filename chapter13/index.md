@@ -415,7 +415,7 @@ And now let's play around with this sequence type a bit before we make a `PCNumb
 
 In other words, just typing `sequence_next()` won't work because EdgeDB doesn't know which sequence type we want to increment:
 
-```edgeql-repl
+```
 db> select sequence_next();
 error: QueryError: function "sequence_next()" does not exist
   ┌─ <query>:1:8
@@ -426,7 +426,7 @@ error: QueryError: function "sequence_next()" does not exist
 
 And typing `SomeSequenceNumber` won't work either because SomeSequenceNumber isn't an object type in our schema:
 
-```edgeql-repl
+```
 db> select sequence_next(SomeSequenceNumber);
 error: InvalidReferenceError: object type or alias 'default::SomeSequenceNumber' does not exist
   ┌─ <query>:1:22
@@ -437,7 +437,7 @@ error: InvalidReferenceError: object type or alias 'default::SomeSequenceNumber'
 
 But did you notice that the function is expecting an argument of `ScalarType`? We saw this just above when we learned the `introspect` keyword. Let's try replacing `SomeSequenceNumber` with `introspect SomeSequenceNumber` which returns a `ScalarType`:
 
-```edgeql-repl
+```
 db> select sequence_next(introspect SomeSequenceNumber);
 {1}
 ```
@@ -446,7 +446,7 @@ Success! Just add `introspect` and the `sequence_next()` and `sequence_reset()` 
 
 Let's play around with this sequence number of ours for a bit. As you can see, it can be incremented or reset, but can't be reset to anything less than 1.
 
-```edgeql-repl
+```
 db> select sequence_next(introspect SomeSequenceNumber);
 {2}
 db> select sequence_next(introspect SomeSequenceNumber);

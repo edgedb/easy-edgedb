@@ -160,7 +160,7 @@ l or list - list the DDL statements associated with prompt
 
 Sure, let's be curious and try typing `l` to see what commands will be generated to create our `City` type. If we type `l` we will see the following:
 
-```edgeql-repl
+```
 Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
 > l
 The following DDL statements will be applied:
@@ -199,7 +199,8 @@ Did you create object type 'default::City'? [y,n,l,c,b,s,q,?]
 > y
 Did you alter object type 'default::NPC'? [y,n,l,c,b,s,q,?]
 > y
-Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::NPC' required:
+Please specify an expression to populate existing objects in order to make
+property 'name' of object type 'default::NPC' required:
 fill_expr>
 ```
 
@@ -300,14 +301,14 @@ EdgeDB also has a byte literal type that gives you the bytes of a string. This i
 
 You create byte literals by adding a `b` in front of the string:
 
-```edgeql-repl
+```
 db> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 And because the characters must be 1 byte, only ASCII works for this type. So the name in `modern_name` as a byte literal will generate an error because of the `ț`:
 
-```edgeql-repl
+```
 db> select b'Bistrița';
 error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
   ┌─ <query>:1:8

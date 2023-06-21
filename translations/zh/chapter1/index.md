@@ -197,14 +197,14 @@ EdgeDB 还有一种字节字面量类型，可以用来创建用字符串表示�
 
 你可以通过在字符串前添加一个 `b` 来创建一个字节文字：
 
-```edgeql-repl
+```
 db> select b'Bistritz';
 {b'Bistritz'}
 ```
 
 因为每个字符必须是 1 个字节，因此只有 ASCII 才适用于这种类型。所以如果 `modern_name` 是字节类型且名字中有类似 `ț` 这样的字符，将会产生错误：
 
-```edgeql-repl
+```
 db> select b'Bistrița';
 error: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
   ┌─ query:1:8
