@@ -193,6 +193,13 @@ select NPC {
 }
 ```
 
+因为John Seward是医生，所以我们会给他一个叫'Dr'的 `title`:
+
+```edgeql
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
+```
+
 顺便说一下，现在我们也可以使用同样的方法将我们的五个 `Crewman` 对象用一个 `insert` 完成插入，而不是 `insert` 五次。我们可以将船员的编号放在一个集合中，并使用 `for` 和 `union` 来创建他们。当然，在这之前我们已经使用了 `update` 对他们进行了更改，但从现在开始，在我们的代码中，船员的插入将如下所示：
 
 ```edgeql

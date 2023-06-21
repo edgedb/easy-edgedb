@@ -23,7 +23,7 @@ module default {
     required class: Class;
     created_at: datetime {
       default := datetime_of_statement()
-  }
+    }
   }
 
   type NPC extending Person {
@@ -257,6 +257,9 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
     name := character_name,
     lovers := (select Person filter .name = 'Lucy Westenra'),
 });
+
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
 
 update NPC filter .name = 'Lucy Westenra'
 set {

@@ -1,5 +1,5 @@
 ---
-tags: Writing Functions, Multiplication, Coalescing
+tags: Writing Functions, Multiplication, Coalescing, Grouping
 ---
 
 # Chapter 11 - What's wrong with Lucy?
@@ -274,6 +274,231 @@ And if you take out the filter and just write `select Person` for the function, 
 ```
 
 If you want to display more or less than a maximum of 100 (the default), just type `\set limit` followed by whichever number you like.
+
+## Grouping
+
+In the last chapter we learned how to use `order by` to order the results of a query, which produces a single set in a certain order. Let's do a quick query to ensure that we remember how to do this:
+
+```edgeql
+select City {
+  name, 
+  population
+} order by .population;
+```
+
+The result is a single set with the `City` objects ordered by population in ascending order (going up). If we had written `order by .population desc`, it would have gone in descending order.
+
+```
+{
+  default::City {name: 'Bistritz', population: 9100},
+  default::City {name: 'Whitby', population: 14400},
+  default::City {name: 'Munich', population: 230023},
+  default::City {name: 'Buda-Pesth', population: 402706},
+  default::City {name: 'London', population: 3500000},
+}
+```
+
+Now let's say we want to do a similar query to see which NPCs are single and which are not. Looks a bit weird, doesn't it? After all, `.is_single` only returns `true` or `false`.
+
+```edgeql
+select NPC {
+  name, 
+  is_single
+} order by .is_single;
+```
+
+The output is indeed a bit weird:
+
+```
+{
+  default::NPC {name: 'Jonathan Harker', is_single: false},
+  default::NPC {name: 'Mina Murray', is_single: false},
+  default::NPC {name: 'Lucy Westenra', is_single: false},
+  default::NPC {name: 'Arthur Holmwood', is_single: false},
+  default::NPC {name: 'Abraham Van Helsing', is_single: true},
+  default::NPC {name: 'John Seward', is_single: true},
+  default::NPC {name: 'Renfield', is_single: true},
+  default::NPC {name: 'The innkeeper', is_single: true},
+  default::NPC {name: 'Quincey Morris', is_single: true},
+}
+```
+
+The objects returning `false` do come before those that return `true`, but this isn't really an ordering. A true ordering would be more along the lines of single*ness* (let's say from 0 to 100) where a singleness of 0 represents one extreme (someone who is married and never ever has time alone), and a singleness of 100 the other extreme: someone who is absolutely always alone. And most people would have a number somewhere in between.
+
+So what we are looking for here with `is_single` is not an ordering, but a grouping: one group of NPC objects that are single, and another group of NPC objects that are not. EdgeDB has an operator called `group` which does just that. To do a `group` query, just change `select` to `group`!
+
+```edgeql
+group NPC {
+  name, 
+  is_single
+} by .is_single;
+```
+
+The output for the `group` operator is quite nice, as each set includes two extra parameters:
+
+- `grouping` to show how the set has been grouped,
+- `key` to show which group the set belongs to.
+
+```
+{
+  {
+    key: {is_single: false},
+    grouping: {'is_single'},
+    elements: {
+      default::NPC {name: 'Jonathan Harker', is_single: false},
+      default::NPC {name: 'Mina Murray', is_single: false},
+      default::NPC {name: 'Lucy Westenra', is_single: false},
+      default::NPC {name: 'Arthur Holmwood', is_single: false},
+    },
+  },
+  {
+    key: {is_single: true},
+    grouping: {'is_single'},
+    elements: {
+      default::NPC {name: 'Abraham Van Helsing', is_single: true},
+      default::NPC {name: 'John Seward', is_single: true},
+      default::NPC {name: 'Renfield', is_single: true},
+      default::NPC {name: 'The innkeeper', is_single: true},
+      default::NPC {name: 'Quincey Morris', is_single: true},
+    },
+  },
+}
+```
+
+Grouping can be a lot more complex than adding `by` and a property name. For referenc, here is what the full syntax looks like.
+
+```
+[ with with-item [, ...] ]
+
+group [alias := ] expr
+
+[ using using-alias := expr, [, ...] ]
+
+by grouping-element, ... ;
+```
+
+You don't need to memorize the syntax, but a quick read shows us that the keyword `with` can be used before writing `group`, and the keyword `using` can be used after `group` to create our name for a grouping.
+
+Take our `City` objects for example. Each one has a different population, so if we were to use this query we would simply get a big list of groups containing one `City` object each:
+
+```edgeql
+group City { population } by .population;
+```
+
+Instead, we can make up a grouping called `is_big` that we define as a population greater than 50,000:
+
+```
+group City {name, population}
+  using is_big := .population > 50000,
+  by is_big;
+```
+
+With that, we now have our cities divided into big and small.
+
+```
+{
+  {
+    key: {is_big: false},
+    grouping: {'is_big'},
+    elements: {
+      default::City {name: 'Whitby', population: 14400},
+      default::City {name: 'Bistritz', population: 9100},
+    },
+  },
+  {
+    key: {is_big: true},
+    grouping: {'is_big'},
+    elements: {
+      default::City {name: 'Munich', population: 230023},
+      default::City {name: 'Buda-Pesth', population: 402706},
+      default::City {name: 'London', population: 3500000},
+    },
+  },
+}
+```
+
+We can define as many of these as we like. The query below defines `big` as any population greater than 50,000, `small` as any population less than 10,000, and `medium` as any population that is neither `big` nor `small`.
+
+```edgeql
+group City {name, population}
+  using big := .population > 50000,
+  small := .population < 10000,
+  medium := not big and not small,
+  by big, medium, small;
+```
+
+The output now shows three groups:
+
+```
+{
+  {
+    key: {big: false, small: false, medium: true},
+    grouping: {'big', 'medium', 'small'},
+    elements: {default::City {name: 'Whitby', population: 14400}},
+  },
+  {
+    key: {big: false, small: true, medium: false},
+    grouping: {'big', 'medium', 'small'},
+    elements: {default::City {name: 'Bistritz', population: 9100}},
+  },
+  {
+    key: {big: true, small: false, medium: false},
+    grouping: {'big', 'medium', 'small'},
+    elements: {
+      default::City {name: 'Munich', population: 230023},
+      default::City {name: 'Buda-Pesth', population: 402706},
+      default::City {name: 'London', population: 3500000},
+    },
+  },
+}
+```
+
+And because an expression comes right after the `group` keyword, we can use `with` and `select` to create an expression before typing `group`. This way we can filter an expression before we group it. Let's use this method to group our `NPC` objects to see who is still single and who has a title (perhaps for a dating app). But we want to make sure that they are alive first! To make sure that they are alive, we can filter by `not exists .last_appearance`. Here is the full query:
+
+```edgeql
+with still_alive := (select NPC filter not exists .last_appearance),
+  group still_alive { name, title } using
+  has_title := exists .title,
+  by .is_single, has_title;
+```
+
+Note that `.is_single` has a `.` because it is a property on `NPC` while `has_title` does not because it is a name that we defined inside the query.
+
+The result is three groups of people. Interestingly, the NPCs that are doctors are both single!
+
+```edgeql
+{
+  {
+    key: {has_title: false, is_single: false},
+    grouping: {'is_single', 'has_title'},
+    elements: {
+      default::NPC {name: 'Jonathan Harker', title: {}},
+      default::NPC {name: 'Mina Murray', title: {}},
+      default::NPC {name: 'Lucy Westenra', title: {}},
+      default::NPC {name: 'Arthur Holmwood', title: {}},
+    },
+  },
+  {
+    key: {has_title: false, is_single: true},
+    grouping: {'is_single', 'has_title'},
+    elements: {
+      default::NPC {name: 'Quincey Morris', title: {}},
+      default::NPC {name: 'Renfield', title: {}},
+      default::NPC {name: 'The innkeeper', title: {}},
+    },
+  },
+  {
+    key: {has_title: true, is_single: true},
+    grouping: {'is_single', 'has_title'},
+    elements: {
+      default::NPC {name: 'Abraham Van Helsing', title: 'Dr.'},
+      default::NPC {name: 'John Seward', title: 'Dr.'},
+    },
+  },
+}
+```
+
+Abraham van Helsing, however, is single because he is a widower. Our schema doesn't include that status so he has been grouped along with John Seward who has never been married. Sometimes a database query doesn't tell you the full story!
 
 [Here is all our code so far up to Chapter 11.](code.md)
 
