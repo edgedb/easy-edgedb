@@ -9,13 +9,13 @@ We continue to read the story as we think about the database we need to store th
 
 > Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a horse-driven carriage to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
-Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `property important_places -> array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
+Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `important_places: array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
 
 ```sdl
 type City {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -53,12 +53,12 @@ So now this part of the schema looks like this:
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 
 type PC extending Person {
-  required property class -> Class;
+  required class: Class;
 }
 
 type NPC extending Person {
@@ -101,10 +101,11 @@ insert PC {
 };
 ```
 
-But if you were to type `class := 'wrestler'` it wouldn't work:
+But if you were to type `class := 'Wrestler'` it wouldn't work:
 
 ```
-edgedb error: InvalidValueError: invalid input value for enum 'default::Class': "wrestler"
+edgedb error: InvalidValueError: invalid input value for enum 
+'default::Class': "Wrestler"
 ```
 
 Now let's do a select on the abstract type `Person` to see the objects inside, plus the properties common to both: `name` and `places_visited`.
@@ -187,7 +188,8 @@ Of course, a cast won't work if the input is invalid:
 
 ```edgeql
 db> select <int64>"Hi I'm a number please add me to" + 9;
-edgedb error: InvalidValueError: invalid input syntax for type std::int64: "Hi I'm a number please add me to"
+edgedb error: InvalidValueError: invalid input syntax for type std::int64:
+"Hi I'm a number please add me to"
 ```
 
 You can cast more than once at a time if you need to. This example isn't something you will need to do but shows how you can cast over and over again if you want:
@@ -287,7 +289,8 @@ select City {
 That gives the same result. Careful though: if you set the number too high then it will try to search outside of the string, which is an error. If we change 0 to 18 (`filter .name[18] = 'B';`), we'll get this error:
 
 ```
-edgedb error: InvalidValueError: string index 18 is out of bounds (on line 4, column 16)
+edgedb error: InvalidValueError: string index 18 is out of bounds
+(on line 4, column 16)
 ```
 
 Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
@@ -303,14 +306,15 @@ db> insert City {
 {default::City {id: 5d01e634-f2c7-11ed-87af-d7dfced50628}}
 ```
 
-And now our former query doesn't work, because EdgeDB will come across a `City` object with a name property that it can't index into.
+And now our former query doesn't work, because EdgeDB will come across a `City` object with a `name` property that it can't index into.
 
 ```edgeql
 db> select City {
   name,
   modern_name,
  } filter .name[0] = 'B';
-edgedb error: InvalidValueError: string index 0 is out of bounds (on line 4, column 16)
+edgedb error: InvalidValueError: string index 0 is out of bounds
+(on line 4, column 16)
 ```
 
 So a good rule of thumb is to not use raw indexes when filtering unless you are sure that there will be a value, and that the value will be long enough. In the next chapter we will learn how to use _constraints_ to ensure that your data matches certain expectations you have, such as minimum length.
@@ -364,7 +368,8 @@ This also means that you can use slicing to safely search for values at a certai
 
 ```edgeql
 db> select City.name[0];
-edgedb error: InvalidValueError: string index 0 is out of bounds (on line 1, column 18)
+edgedb error: InvalidValueError: string index 0 is out of bounds
+(on line 1, column 18)
 ```
 
 However, if we change the query to `db> select City.name[0:1];` then it will look for a slice instead of an exact character index, and the query will work:
@@ -406,7 +411,7 @@ returns `{1893}`.
 
    ```sdl
    abstract type HasAString {
-     property string -> str
+     string: str
    };
    ```
 

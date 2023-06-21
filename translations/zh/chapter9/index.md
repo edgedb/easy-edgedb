@@ -75,8 +75,8 @@ insert NPC {
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
-  overloaded multi link places_visited -> Place {
+  age: HumanAge;
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -95,12 +95,12 @@ db> select datetime_current();
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date := datetime_current(); # this is new
+  modern_name: str;
+  important_places: array<str>;
+  property post_date := datetime_of_statement(); # this is new
 }
 ```
 
@@ -108,13 +108,13 @@ abstract type Place {
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  property modern_name -> str;
-  property important_places -> array<str>;
-  property post_date -> datetime {
-    default := datetime_current()
+  modern_name: str;
+  important_places: array<str>;
+  post_date: datetime {
+    default := datetime_of_statement()
   }
 }
 ```
@@ -193,6 +193,13 @@ select NPC {
 }
 ```
 
+因为John Seward是医生，所以我们会给他一个叫'Dr'的 `title`:
+
+```edgeql
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
+```
+
 顺便说一下，现在我们也可以使用同样的方法将我们的五个 `Crewman` 对象用一个 `insert` 完成插入，而不是 `insert` 五次。我们可以将船员的编号放在一个集合中，并使用 `for` 和 `union` 来创建他们。当然，在这之前我们已经使用了 `update` 对他们进行了更改，但从现在开始，在我们的代码中，船员的插入将如下所示：
 
 ```edgeql
@@ -218,7 +225,7 @@ union output-expr ;
 
 最重要的部分是 *iterator-expr*，它需要一个简单的表达式，返回某个集合。通常是置于 `{` 和 `}` 中的一个集合。也可以是返回集合的一个路径，例如 `NPC.places_visited`，也可以是返回集合的一个函数调用，例如 `array_unpack()`。对于更复杂的表达来说，要放置于圆括号中引用。
 
-现在是时候更新露西（Lucy）的情人链接了（但她有三个情人）。露西已经破坏了我们将 `lover` 仅仅作为一个 `link`（即 `single link`）的设定。我们不得不将其变更为 `multi link`，这样我们就可以同时添加他们三个人给露西了。这里是我们对露西的更新：
+现在是时候更新露西（Lucy）的情人链接了（但她有三个情人）。露西已经破坏了我们将 `lover` 仅仅作为一个 `link`（即 `single link`）的设定。我们不得不将其变更为 `multi` 链接，这样我们就可以同时添加他们三个人给露西了。这里是我们对露西的更新：
 
 ```edgeql
 update NPC filter .name = 'Lucy Westenra'
@@ -269,10 +276,10 @@ scalar type HumanAge extending int16 {
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -282,8 +289,8 @@ type NPC extending Person {
 
 ```sdl
 type Vampire extending Person {
-  # property age -> int16; **Delete this one now**
-  multi link slaves -> MinorVampire;
+  # age: int16; **Delete this one now**
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -348,15 +355,15 @@ insert NPC {
 
    ```sdl
    abstract type Person {
-     required property name -> str {
+     required name: str {
        delegated constraint exclusive;
      }
-     property age -> int16;
-     property strength -> int16;
-     multi link places_visited -> Place;
-     multi link lovers -> Person;
-     property first_appearance -> cal::local_date;
-     property last_appearance -> cal::local_date;
+     age: int16;
+     strength: int16;
+     multi places_visited: Place;
+     multi lovers: Person;
+     first_appearance: cal::local_date;
+     last_appearance: cal::local_date;
    }
    ```
 

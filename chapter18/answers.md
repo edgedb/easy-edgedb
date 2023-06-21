@@ -6,13 +6,13 @@ This is a lot easier than the `Pound` type, since the only thing smaller than a 
 
 ```sdl
 type Goldmark extending Currency {
-  overloaded required property major {
+  overloaded required major: str {
     default := 'Mark'
   }
-  overloaded required property minor {
+  overloaded required minor: str {
     default := 'Pfennig'
   }
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion: str {
     default := 100
   }
 }
@@ -30,13 +30,13 @@ After that, we add the annotations to Goldmark and it's done:
 type Goldmark extending Currency {
   annotation description := 'One Mark = 100 Pfennig';
   annotation note := 'Coin types: 1 Pfennig, 2 Pfennig, 5 Pfennig, 10 Pfennig, 20 Pfennig, 25 Pfennig';
-  overloaded required property major {
+  overloaded required major: str {
     default := 'Mark';
   };
-  overloaded required property minor {
+  overloaded required minor: str {
     default := 'Pfennig';
   };
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion: int64 {
     default := 100;
   };
 }

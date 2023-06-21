@@ -13,19 +13,19 @@ leadImage: illustration_03.jpg
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
-  property age -> int16;
+  required name: str;
+  multi places_visited: City;
+  age: int16;
 }
 ```
 
-`int16` 表示 16 位（2 字节）整数，从 -32768 到 +32767。对于年龄来说，这绰绰有余，所以我们不需要用更大的 `int32` 或 `int64` 类型。我们也不希望它成为“必需属性” `required property`，因为我们并不关心每一个人的年龄。
+`int16` 表示 16 位（2 字节）整数，从 -32768 到 +32767。对于年龄来说，这绰绰有余，所以我们不需要用更大的 `int32` 或 `int64` 类型。我们也不希望它成为“必需属性” `required` property，因为我们并不关心每一个人的年龄。
 
 但是我们不会期待 `PC` 和 `NPC` 活到 32767 岁，所以我们现在只给 `Vampire` 提供 `age`，之后我们再考虑在其他类型上用 `age`（因此，我们从上面的 `Person` 定义中先挪去 `age`)。于是，我们从 `Person` 扩展出 `Vampire` 类型，并对其添加属性 `age`：
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
+  age: int16;
 }
 ```
 
@@ -33,9 +33,9 @@ type Vampire extending Person {
 
 ```sdl
 abstract type Place {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 
 type City extending Place;
@@ -47,8 +47,8 @@ type Country extending Place;
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
+  required name: str;
+  multi places_visited: Place;
 }
 ```
 
@@ -63,7 +63,7 @@ insert Country {
 };
 ```
 
-顺便说一下，你可能注意到了 `Place` 中的 `important_places` 仍然是一个字符串数组 `array<str>`，也许改为 `multi link` 可能会更好？确实如此，但是在本教程中我们最终并未使用这个属性，所以我们就简单地将其作为数组保留在这个结构中，不做过多调整了。如果这是一个正式的架构设计，它可能最终会变成一个“多链接”`multi link`，或者因为我们并不需要它而被删除掉。
+顺便说一下，你可能注意到了 `Place` 中的 `important_places` 仍然是一个字符串数组 `array<str>`，也许改为 `multi` 链接可能会更好？确实如此，但是在本教程中我们最终并未使用这个属性，所以我们就简单地将其作为数组保留在这个结构中，不做过多调整了。如果这是一个正式的架构设计，它可能最终会变成一个“多链接”`multi` 链接，或者因为我们并不需要它而被删除掉。
 
 ## 捕获 select 表达式
 
@@ -117,7 +117,7 @@ scalar type HumanAge extending int16 {
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
+  age: HumanAge;
 }
 ```
 
@@ -216,7 +216,7 @@ select (delete Country) {
    };
    ```
 
-2. 如果 `City` 类型需要一个名为 `population` 的 `required property` 属性，它会是什么样子？“population”会是什么类型？
+2. 如果 `City` 类型需要一个名为 `population` 的 `required` property 属性，它会是什么样子？“population”会是什么类型？
 3. 此查询出于某种原因想要显示两次 `name`，但出现了错误。你能想出办法解决吗？
 
    ```edgeql

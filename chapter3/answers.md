@@ -19,11 +19,11 @@ Right now `City` is just extending `Place`:
 type City extending Place;
 ```
 
-So it would need a `required property` for population:
+So it would need a `required` property for population:
 
 ```sdl
 type City extending Place {
-  required property population -> int32
+  required population: int32;
 };
 ```
 
@@ -31,7 +31,7 @@ type City extending Place {
 
 #### 3. This query wants to display `name` twice for some reason but is giving an error. Can you think of a way to do it?
 
-You can access `property name` twice by giving it a different name the second time. Let's call it name2:
+You can access the `name` property twice by giving it a different name the second time. Let's call it name2:
 
 ```edgeql
 select Person {

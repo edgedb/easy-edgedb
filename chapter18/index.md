@@ -1,5 +1,5 @@
 ---
-tags: Complex Inserts, Schema Cleanup
+tags: Complex Inserts, Schema Cleanup, Triggers
 ---
 
 # Chapter 18 - Using Dracula's own weapon against him
@@ -20,31 +20,31 @@ Now, there is one difficulty: in the 1800s, monetary systems were more complicat
 
 (There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
 
-To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus a `link owner -> Person`. So `Currency` will look like this:
+To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus an `owner: Person` link. So `Currency` will look like this:
 
 ```sdl
 abstract type Currency {
-  required link owner -> Person;
+  required owner: Person;
 
-  required property major -> str;
-  required property major_amount -> int64 {
+  required major: str;
+  required major_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
 
-  property minor -> str;
-  property minor_amount -> int64 {
+  minor: str;
+  minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property minor_conversion -> int64;
+  minor_conversion: int64;
 
-  property sub_minor -> str;
-  property sub_minor_amount -> int64 {
+  sub_minor: str;
+  sub_minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property sub_minor_conversion -> int64;
+  sub_minor_conversion: int64;
 }
 ```
 
@@ -56,19 +56,19 @@ Then comes our first currency: the `Pound` type. The `minor` property is called 
 
 ```sdl
 type Pound extending Currency {
-  overloaded required property major {
+  overloaded required major: str {
     default := 'pound'
   }
-  overloaded required property minor {
+  overloaded required minor: str {
     default := 'shilling'
   }
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion: int64 {
     default := 20
   }
-  overloaded property sub_minor {
+  overloaded sub_minor: str {
     default := 'pence'
   }
-  overloaded property sub_minor_conversion {
+  overloaded sub_minor_conversion: int64 {
     default := 240
   }
 }
@@ -175,14 +175,14 @@ And then it will give a result similar to this with our collections of money, ea
 
 (If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float64>`.)
 
-You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required link owner -> Person;` to `optional link owner -> Person;` if it's possible for a character in the game to lose them.
+You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required owner: Person;` to `optional owner: Person;` if it's possible for a character in the game to lose them.
 
 Of course, if we only had one type of money then it would be simpler to just put it inside the `Person` type. We won't do this in our schema, but let's imagine how to do it. If the game were only inside the United States, it would be easier to just do this without an abstract `Currency` type:
 
 ```sdl
 type Dollar {
-  required property dollars -> int64;
-  required property cents -> int64;
+  required dollars: int64;
+  required cents: int64;
   property total_money := .dollars + (.cents / 100)
 }
 ```
@@ -348,13 +348,208 @@ insert Ship {
 
 Much better!
 
+## Triggers
+
+Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help?) Count Dracula.
+
+However the game takes shape, it will require some sort of account type to hold the information for the people using our game. A simplified example of what we might need is as follows:
+
+```sdl
+type Account {
+  required name: str;
+  required address: str;
+  required username: str;
+  required credit_card: CreditCardInfo {
+    on source delete delete target;
+  }
+  multi pcs: PC;
+}
+
+type CreditCardInfo {
+  required name: str;
+  required number: str;
+
+  link card_holder := .<credit_card[is Account]
+}
+```
+
+Every single property in these types is required, which makes sense - it's all personal information required to create accounts and pay for them.
+
+Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. With the `on source delete delete target` deletion policy, we have the `credit_card` link set up to delete any linked `CreditCardInfo` when an `Account` object is deleted. (A reminder: `on source delete delete target` means that when the source of the link is deleted, the target of the link gets deleted as well.) Deleting an `Account` object will delete absolutely everything to do with the user of our game.
+
+However, users often delete their accounts but then want to restore them again! But we can't keep the `Account` and `CreditCardInfo` objects around just in case, because we are legally obliged to remove the user's information. An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
+
+```
+type type-name "{"
+  trigger name
+  after
+    {insert | update | delete} [, ...]
+    for {each | all}
+    do expr
+"}"
+```
+
+In other words:
+
+- Decide on a name for a trigger (like `validate_input` or `check_length`),
+- Add the keyword `after`,
+- Decide for which cases we want a trigger to happen (only on `insert`, or for `insert` and `update`, etc.),
+- Decide whether a trigger should happen on `each` object or once per query with `all`,
+- And finally the expression of the trigger itself.
+
+Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, depending on the operation. When you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
+
+And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
+
+The `MinimalUserInfo` type is pretty simple:
+
+```sdl
+type MinimalUserInfo {
+  username: str;
+  multi pcs: PC;
+}
+```
+
+And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it.
+
+All together, the changes now look as follows:
+
+```sdl
+type Account {
+  required name: str;
+  required address: str;
+  required username: str;
+  required credit_card: CreditCardInfo {
+    on source delete delete target;
+  }
+  multi pcs: PC;
+
+  trigger user_info_insert after delete for each do (
+  insert MinimalUserInfo {
+    username := __old__.name,
+    pcs := __old__.pcs
+  }
+);
+}
+
+type CreditCardInfo {
+  required name: str;
+  required number: str;
+
+  link card_holder := .<credit_card[is Account]
+}
+
+type MinimalUserInfo {
+  username: str;
+  multi pcs: PC;
+}
+```
+
+Okay, let's do a migration and then insert an `Account` object!
+
+```
+insert Account {
+  name := 'Deborah Brown',
+  address := '10 Main Street',
+  username := 'deb_deb_999',
+  credit_card := (insert CreditCardInfo 
+    {  name := 'DEBORAH LAURA BROWN',
+       number := '000-000-000' }
+  ),
+  pcs := (insert PC 
+    {  name := 'LordOfSalty',
+       class := Class.Rogue
+    }
+  )
+};
+```
+
+We have only one `Account` object so far so let's query with `select Account {**};` to see all of the information available. Here is the output:
+
+```
+{
+  default::Account {
+    id: 6f67992a-0d90-11ee-b3bb-8f877d23b651,
+    name: 'Deborah Brown',
+    address: '10 Main Street',
+    username: 'deb_deb_999',
+    pcs: {
+      default::PC {
+        last_appearance: {},
+        first_appearance: {},
+        degrees: {},
+        title: {},
+        age: {},
+        is_single: true,
+        strength: {},
+        name: 'LordOfSalty',
+        pen_name: 'LordOfSalty',
+        conversational_name: 'LordOfSalty',
+        id: 6f67f154-0d90-11ee-b3bb-37992cdeda59,
+        class: Rogue,
+        created_at: <datetime>'2023-06-18T04:27:29.059881Z',
+        number: 5,
+      },
+    },
+    credit_card: default::CreditCardInfo {
+      id: 6f678106-0d90-11ee-b3bb-13592cce3a16,
+      name: 'DEBORAH LAURA BROWN',
+      number: '000-000-000',
+    },
+  },
+}
+```
+
+Looks good! That is, until Deborah decides she has been playing too many vampire games recently and would like to delete her account. We are sad to see her go but comply with her request:
+
+```edgeql
+delete Account filter .name = 'Deborah Brown';
+```
+
+And now Deborah's personal information is all gone, as requested. But thanks to the trigger we added, we now have a `MinimalUserInfo` object in the database that was added automatically at the moment that we deleted Deborah's account. Let's take a look at it:
+
+```
+select MinimalUserInfo {**};
+```
+
+Here is the output:
+
+```
+{
+  default::MinimalUserInfo {
+    id: 5c17b0de-0d91-11ee-946c-6f411083ab25,
+    username: 'deb_deb_999',
+    pcs: {
+      default::PC {
+        last_appearance: {},
+        first_appearance: {},
+        degrees: {},
+        title: {},
+        age: {},
+        is_single: true,
+        strength: {},
+        name: 'LordOfSalty',
+        pen_name: 'LordOfSalty',
+        conversational_name: 'LordOfSalty',
+        id: 59cbd4b8-0d91-11ee-946c-a3693fe5d218,
+        class: Rogue,
+        created_at: <datetime>'2023-06-18T04:34:02.301357Z',
+        number: 8,
+      },
+    },
+  },
+}
+```
+
+With that we are holding none of Deborah's personal information anymore. All we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! And if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username.
+
 [Here is all our code so far up to Chapter 18.](code.md)
 
 <!-- quiz-start -->
 
 ## Time to practice
 
-1. During the time of Dracula, the Goldmark was used in Germany. One Goldmark had 100 Pfennig. How would you make this type?
+1. The Goldmark was used in Germany during the time of Bram Stoker's Dracula. One Goldmark had 100 Pfennig. How would you make this type?
 
 2. Try adding two annotations to this type. One should be called `description` and mention that `One mark = 100 Pfennig`. The other should be called `note` and mention the types of coins there are.
 

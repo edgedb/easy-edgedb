@@ -1,12 +1,12 @@
 # Chapter 15 Questions and Answers
 
-#### 1. 如何创建一个名为“Horse”的类型，且其属性 `required property name -> str` 的值只能是“Horse”？
+#### 1. 如何创建一个名为“Horse”的类型，且其属性 `required name: str` 的值只能是“Horse”？
 
 使用 `expression on` 则很容易，并用 `__subject__.name` 来引用我们要插入的对象的名称：
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse');
 };
 ```
@@ -17,7 +17,7 @@ type Horse {
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse') {
     errmessage := 'All Horses must be named \'Horse\''
   }
@@ -30,10 +30,10 @@ type Horse {
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -43,13 +43,13 @@ type NPC extending Person {
 
 ```sdl
 type NPC extending Person {
-  overloaded property name {
+  overloaded name: str {
     constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -76,7 +76,3 @@ select display_coffins() {
   [is City].population,
 };
 ```
-
-#### 5. 如何在不碰架构（schema）的情况下（不做”显式迁移“）创建上一题中的函数？
-
-很简单，只需在它的最前面加上 `create`！

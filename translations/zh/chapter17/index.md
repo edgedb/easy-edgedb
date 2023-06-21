@@ -98,10 +98,10 @@ select ('Lucy Westenra', 'Renfield') = (character1 := 'Lucy Westenra', character
 
 ```sdl
 abstract type HasNameAndCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
     constraint max_len_value(30);
   }
@@ -112,8 +112,8 @@ abstract type HasNameAndCoffins {
 
 ```sdl
 type Ship extending HasNameAndCoffins {
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -121,8 +121,8 @@ type Ship extending HasNameAndCoffins {
 
 ```sdl
 abstract type Place extending HasNameAndCoffins {
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 

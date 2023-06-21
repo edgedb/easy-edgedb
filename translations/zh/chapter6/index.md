@@ -103,7 +103,7 @@ set {
 };
 ```
 
-这里我们需要使用 `detached Person`，与我们在之前的章节中用 `insert NPC` 创建 Mina Murray 并指定她爱人时使用了 `detached` 的理由一样。我们要在一个 `Person` 上使用 `update`，同时还需要 `select` 另一个 `Person` 作为其爱人。现在，Jonathan 的 `link lover` 终于显示了 Mina 而不再是空的 `{}`。
+这里我们需要使用 `detached Person`，与我们在之前的章节中用 `insert NPC` 创建 Mina Murray 并指定她爱人时使用了 `detached` 的理由一样。我们要在一个 `Person` 上使用 `update`，同时还需要 `select` 另一个 `Person` 作为其爱人。现在，Jonathan 的 `lover` 链接终于显示了 Mina 而不再是空的 `{}`。
 
 当然，如果你在没有 `filter` 的情况下使用了 `update`，它将对所有对象进行相同的更改。例如，下面的语句会在数据库里把所有 `Place` 更新进每一个 `Person` 对象的 `places_visited` 属性中：
 
@@ -136,18 +136,18 @@ select 'A character from the book: ' ++ (select NPC.name) ++ ', who is not ' ++ 
 
 （这个级联运算符也适用于数组，它可以将被操作的数组合并放入到一个数组中。所以执行 `select ['I', 'am'] ++ ['Jonathan', 'Harker'];` 的结果是 `{['I', 'am', 'Jonathan', 'Harker']}`。）
 
-现在，让我们再来更改一下 `Vampire` 类型，使其拥有一个新链接，并指向其所掌控的 `MinorVampire`。你应该还记得德古拉伯爵是游戏中唯一一个真正的吸血鬼，而其他吸血鬼都是 `MinorVampire` 类型。这意味着我们需要一个 `multi link`：
+现在，让我们再来更改一下 `Vampire` 类型，使其拥有一个新链接，并指向其所掌控的 `MinorVampire`。你应该还记得德古拉伯爵是游戏中唯一一个真正的吸血鬼，而其他吸血鬼都是 `MinorVampire` 类型。这意味着我们需要一个 `multi` 链接：
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
-  multi link slaves -> MinorVampire;
+  age: int16;
+  multi slaves: MinorVampire;
 }
 ```
 
-然后，我们便可以在插入德古拉伯爵（Count Dracula）信息的同时 `insert` 相关的 `MinorVampire` 对象。但首先让我们先从 `MinorVampire` 中删除 `required link master`，因为我们不希望两个对象相互链接。原因有二：
+然后，我们便可以在插入德古拉伯爵（Count Dracula）信息的同时 `insert` 相关的 `MinorVampire` 对象。但首先让我们先从 `MinorVampire` 中删除 `required master`，因为我们不希望两个对象相互链接。原因有二：
 
-- 会使事情变得复杂。假设我们声明的 `Vampire` 里包含一个指向 `MinorVampire` 的 `slaves` 链接，在我们插入 `Vampire` 时，如果我们还没有创建对应的 `MinorVampire`，那么它将是空 `{}`，则我们将不得不在创建 `MinorVampire` 后，再对 `Vampire` 进行更新；如果我们先创建的是 `MinorVampire`，且它有一个指向 `Vampire` 的 `master` 链接，而我们还没有创建 `Vampire`，那么这个 `master` 将不存在，尤其当它是个 `required link` 时，我们必须提供一个 `master`。
+- 会使事情变得复杂。假设我们声明的 `Vampire` 里包含一个指向 `MinorVampire` 的 `slaves` 链接，在我们插入 `Vampire` 时，如果我们还没有创建对应的 `MinorVampire`，那么它将是空 `{}`，则我们将不得不在创建 `MinorVampire` 后，再对 `Vampire` 进行更新；如果我们先创建的是 `MinorVampire`，且它有一个指向 `Vampire` 的 `master` 链接，而我们还没有创建 `Vampire`，那么这个 `master` 将不存在，尤其当它是个 `required` link 时，我们必须提供一个 `master`。
 - 如果这两种类型相互链接，我们将无法在需要时删除它们。删除时的错误提示如下所示：
 
 ```edgeql-repl
@@ -159,7 +159,7 @@ ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11e
   Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
 
-因此，我们先简单地将 `MinorVampire` 改为没有 `link master` 的 `Person` 扩展类型：
+因此，我们先简单地将 `MinorVampire` 改为没有 `master` 链接的 `Person` 扩展类型：
 
 ```sdl
 type MinorVampire extending Person {

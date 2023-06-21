@@ -22,7 +22,7 @@ This sounds like a good case for an abstract type. Here it is:
 
 ```sdl
 abstract type HasCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
 }
@@ -42,11 +42,11 @@ With our abstract type done, we will want to have a lot of types `extending` thi
 
 ```sdl
 abstract type Place extending HasCoffins {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -54,9 +54,9 @@ Ships are also big enough to have coffins (the Demeter had 50 of them, after all
 
 ```sdl
 type Ship extending HasCoffins {
-  property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -140,23 +140,23 @@ We're coming up to an insert, so let's migrate the schema. Here are all the sche
 
 ```sdl
 abstract type HasCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
 }
 
 abstract type Place extending HasCoffins {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 
 type Ship extending HasCoffins {
-  property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 
 function can_enter(person_name: str, place: HasCoffins) -> optional str
@@ -201,14 +201,14 @@ There is one called `max_len_value` that makes sure that a string doesn't go ove
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
-    default := datetime_current()
+  required class: Class;
+  created_at: datetime {
+    default := datetime_of_statement()
   }
-  required property number -> PCNumber {
+  required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
-  overloaded required property name -> str {
+  overloaded required name: str {
     constraint max_len_value(30);
   }
 }
@@ -230,10 +230,10 @@ edgedb error: ConstraintViolationError: name must be no longer than 30 character
   Detail: `value of property 'name' of object type 'default`::`PC'` must be no longer than 30 characters.
 ```
 
-Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `property title -> str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
+Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
 ```sdl
-property title -> str {
+title: str {
   constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord')
 }
 ```
@@ -243,7 +243,7 @@ For us it's probably not worth it to add a `one_of` constraint though, as there 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
 ```sdl
-property month -> int64 {
+month: int64 {
   constraint one_of(5, 6, 7, 8, 9, 10)
 }
 ```
@@ -360,13 +360,13 @@ Much better!
 
 ## Putting backlinks into the schema
 
-Back in Chapter 6 we removed `link master` from `MinorVampire`, because `Vampire` already has `multi link slaves` to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
+Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -374,8 +374,8 @@ To add the master link again, one way to start would be with a property called `
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
-  required single property master_name -> str;
+  former_self: Person;
+  required master_name: str;
 };
 ```
 
@@ -383,8 +383,8 @@ Then we can use it to filter out the corresponding `Vampire` and assign it to a 
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
-  required single property master_name -> str;
+  former_self: Person;
+  required master_name: str;
   link master := (
     with master_name := .master_name
     assert_single(select Vampire filter .name = master_name));
@@ -395,7 +395,7 @@ Note: it's a single link, so we needed to add `assert_single()`. However, it loo
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
   single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
@@ -406,7 +406,7 @@ And if we still want to have a shortcut for `master_name`, we can just add `prop
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
   single link master := assert_single(.<slaves[is Vampire]);
   property master_name := .master.name;
 };
@@ -428,7 +428,7 @@ insert Vampire {
 };
 ```
 
-Now if the `MinorVampire` type works as it should, we should be able to see Kain via `link master` inside `MinorVampire` and we won't have to use a backlink. Let's check:
+Now if the `MinorVampire` type works as it should, we should be able to see Kain via the `master` link inside `MinorVampire` and we won't have to use a backlink. Let's check:
 
 ```edgeql
 select MinorVampire {
@@ -481,7 +481,7 @@ You should see the three `id`s of the three objects and their types to show us t
 
 ## Time to practice
 
-1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
+1. How would you create a type called Horse with a `required name: str` that can only be 'Horse'?
 
 2. How would you let the user know that it needs to be called 'Horse'?
 
@@ -490,8 +490,6 @@ You should see the three `id`s of the three objects and their types to show us t
    Try it first with `expression on`.
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
-
-5. How would you make it without touching the schema?
 
 [See the answers here.](answers.md)
 

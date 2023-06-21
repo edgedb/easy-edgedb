@@ -3,27 +3,28 @@
 
 module default {
   abstract type HasNameAndCoffins {
-    required property coffins -> int16 {
+    required coffins: int16 {
       default := 0;
     }
-    required property name -> str {
+    required name: str {
       delegated constraint exclusive;
       constraint max_len_value(30);
     }
   }
 
   abstract type Person {
-    property name -> str {
+    name: str {
       delegated constraint exclusive;
     }
-    multi link places_visited -> Place;
-    multi link lovers -> Person;
-    property strength -> int16;
-    property first_appearance -> cal::local_date;
-    property last_appearance -> cal::local_date;
-    property age -> int16;
-    property title -> str;
-    property degrees -> str;
+    multi places_visited: Place;
+    multi lovers: Person;
+    property is_single := not exists .lovers;
+    strength: int16;
+    first_appearance: cal::local_date;
+    last_appearance: cal::local_date;
+    age: int16;
+    title: str;
+    degrees: str;
     property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
@@ -31,15 +32,21 @@ module default {
   scalar type PCNumber extending sequence;
 
   type PC extending Person {
-    required property class -> Class;
-    property created_at -> datetime {
-      default := datetime_current()
+    required class: Class;
+    created_at: datetime {
+      default := datetime_of_statement()
     }
-    required property number -> PCNumber {
+    required number: PCNumber {
       default := sequence_next(introspect PCNumber);
     }
-    overloaded required property name -> str {
+    overloaded required name: str {
       constraint max_len_value(30);
+    }
+    last_updated: datetime {
+      rewrite insert, update using (datetime_of_statement());
+    }
+    bonus_item: LotteryTicket {
+      rewrite insert, update using (get_ticket());
     }
   }
 
@@ -50,32 +57,41 @@ module default {
   };
 
   type NPC extending Person {
-    overloaded property age {
+    overloaded age: int16 {
       constraint max_value(120)
   }
-    overloaded multi link places_visited -> Place {
+    overloaded multi places_visited: Place {
       default := (select City filter .name = 'London');
     }
   }
 
   type Vampire extending Person {
-    multi link slaves -> MinorVampire;
+    multi slaves: MinorVampire;
   }
 
   type MinorVampire extending Person {
-    link former_self -> Person;
+    former_self: Person;
     single link master := assert_single(.<slaves[is Vampire]);
     property master_name := .master.name;
   };
+
+  required global current_date: cal::local_date {
+    default := <cal::local_date>'1893-05-13'
+  }
   
   abstract type Place extending HasNameAndCoffins {
-    property modern_name -> str;
-    property important_places -> array<str>;
+    modern_name: str;
+    multi important_places: Landmark;
+  }
+
+  type Landmark {
+    required name: str;
+    multi context: str;
   }
 
   type City extending Place {
     annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-    property population -> int64;
+    population: int64;
     index on (.name ++ ': ' ++ <str>.population);
   }
 
@@ -89,7 +105,7 @@ module default {
   }
 
   type Castle extending Place {
-    property doors -> array<int16>;
+    doors: array<int16>;
   }
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
@@ -97,7 +113,7 @@ module default {
   scalar type SleepState extending enum <Asleep, Awake>;
   
   type Time { 
-    required property clock -> str; 
+    required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
     property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
@@ -105,7 +121,7 @@ module default {
   } 
 
   abstract type HasNumber {
-    required property number -> int16;
+    required number: int16;
   }
   
   type Crewman extending HasNumber, Person {
@@ -120,74 +136,74 @@ module default {
   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
   type Sailor extending Person {
-    property rank -> Rank;
+    rank: Rank;
   }
 
   type Ship extending HasNameAndCoffins {
-    multi link sailors -> Sailor;
-    multi link crew -> Crewman;
+    multi sailors: Sailor;
+    multi crew: Crewman;
   }
 
   type BookExcerpt {
-    required property date -> cal::local_datetime;
-    required property excerpt -> str;
+    required date: cal::local_datetime;
+    required excerpt: str;
     index on (.date);
-    required link author -> Person
+    required author: Person;
   }
 
   function get_url() -> str
     using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
 
   type Event {
-    required property description -> str;
-    required property start_time -> cal::local_datetime;
-    required property end_time -> cal::local_datetime;
-    required multi link place -> Place;
-    required multi link people -> Person;
-    multi link excerpt -> BookExcerpt;
-    property location -> tuple<float64, float64>;
-    property east -> bool;
+    required description: str;
+    required start_time: cal::local_datetime;
+    required end_time: cal::local_datetime;
+    required multi place: Place;
+    required multi people: Person;
+    multi excerpt: BookExcerpt;
+    location: tuple<float64, float64>;
+    east: bool;
     property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
   abstract type Currency {
-    required link owner -> Person;
+    required owner: Person;
 
-    required property major -> str;
-    required property major_amount -> int64 {
+    required major: str;
+    required major_amount: int64 {
         default := 0;
         constraint min_value(0);
     }
 
-    property minor -> str;
-    property minor_amount -> int64 {
+    minor: str;
+    minor_amount: int64 {
         default := 0;
         constraint min_value(0);
     }
-    property minor_conversion -> int64;
+    minor_conversion: int64;
 
-    property sub_minor -> str;
-    property sub_minor_amount -> int64 {
+    sub_minor: str;
+    sub_minor_amount: int64 {
         default := 0;
         constraint min_value(0);
     }
-    property sub_minor_conversion -> int64;
+    sub_minor_conversion: int64;
   }
 
   type Pound extending Currency {
-    overloaded required property major {
+    overloaded required major: str {
         default := 'pound'
     }
-    overloaded required property minor {
+    overloaded required minor: str {
         default := 'shilling'
     }
-    overloaded required property minor_conversion {
+    overloaded required minor_conversion: int64 {
         default := 20
     }
-    overloaded property sub_minor {
+    overloaded sub_minor: str {
         default := 'pence'
     }
-    overloaded property sub_minor_conversion {
+    overloaded sub_minor_conversion: int64 {
         default := 240
     }
   }
@@ -221,7 +237,47 @@ module default {
       vampire := assert_single((select Person filter .name = person_name)),
       enter_place := assert_single((select HasNameAndCoffins filter .name = place))
       select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
-      );   
+      );
+
+  scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+  
+  function get_ticket() -> LotteryTicket using (
+    with rnd := <int16>(random() * 10),
+    select(LotteryTicket.Nothing if rnd <= 6 else
+    LotteryTicket.WallChicken if rnd = 7 else
+    LotteryTicket.ChainWhip if rnd = 8 else
+    LotteryTicket.Crucifix if rnd = 9 else
+    LotteryTicket.Garlic)
+  )
+
+  type Account {
+    required name: str;
+    required address: str;
+    required username: str;
+    required credit_card: CreditCardInfo {
+      on source delete delete target;
+    }
+    multi pcs: PC;
+
+    trigger user_info_insert after delete for each do (
+      insert MinimalUserInfo {
+        username := __old__.name,
+        pcs := __old__.pcs
+      }
+    );
+  }
+
+  type CreditCardInfo {
+    required name: str;
+    required number: str;
+
+    link card_holder := .<credit_card[is Account]
+  }
+
+  type MinimalUserInfo {
+    username: str;
+    multi pcs: PC;
+  }
 }
 
 # Data:
@@ -235,13 +291,17 @@ union (
 
 insert City {
   name := 'Buda-Pesth',
-  modern_name := 'Budapest'
+  modern_name := 'Budapest',
+  important_places := {
+    (insert Landmark {name := 'Hospital of St. Joseph and Ste. Mary'}),
+    (insert Landmark {name := 'Buda-Pesth University'})
+  }
 };
 
 insert City {
   name := 'Bistritz',
   modern_name := 'Bistrița',
-  important_places := ['Golden Krone Hotel'],
+  important_places := (insert Landmark { name := 'Golden Krone Hotel'}),
 };
 
 insert PC {
@@ -337,6 +397,9 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
     lovers := (select Person filter .name = 'Lucy Westenra'),
 });
 
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
+
 update NPC filter .name = 'Lucy Westenra'
 set {
   lovers := (
@@ -362,7 +425,8 @@ insert NPC {
 
 insert City {
   name := 'Whitby',
-  population := 14400
+  population := 14400,
+  important_places := (insert Landmark { name := 'Whitby Abbey'})
 };
 
 for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)}
@@ -488,4 +552,21 @@ select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Em
   total_pounds :=
     round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
 };
+
+insert Account {
+  name := 'Deborah Brown',
+  address := '10 Main Street',
+  username := 'deb_deb_999',
+  credit_card := (insert CreditCardInfo 
+    {  name := 'DEBORAH LAURA BROWN',
+       number := '000-000-000' }
+  ),
+  pcs := (insert PC 
+    {  name := 'LordOfSalty',
+       class := Class.Rogue
+    }
+  )
+};
+
+delete Account filter .name = 'Deborah Brown';
 ```

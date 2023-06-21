@@ -30,10 +30,10 @@ This is convenient for us. With this we can make a type that holds a date and a 
 
 ```sdl
 type BookExcerpt {
-  required property date -> cal::local_datetime;
-  required property excerpt -> str;
+  required date: cal::local_datetime;
+  required excerpt: str;
   index on (.date);
-  required link author -> Person
+  required author: Person;
 }
 ```
 
@@ -109,14 +109,14 @@ After this, we can add a link to our `Event` type to join it to our new `BookExc
 
 ```sdl
 type Event {
-  required property description -> str;
-  required property start_time -> cal::local_datetime;
-  required property end_time -> cal::local_datetime;
-  required multi link place -> Place;
-  required multi link people -> Person;
-  multi link excerpt -> BookExcerpt; # Only this is new
-  property location -> tuple<float64, float64>;
-  property east_west -> bool;
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  multi excerpt: BookExcerpt; # Only this is new
+  location: tuple<float64, float64>;
+  east: bool;
   property url := get_url() ++ <str>.location.0 
     ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
@@ -289,7 +289,7 @@ By the way, `index on` can also be used on expressions that you we make ourselve
 ```sdl
 type City extending Place {
   annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  property population -> int64;
+  population: int64;
   index on (.name ++ ': ' ++ <str>.population);
 }
 ```
@@ -299,7 +299,7 @@ Also don't forget that you can add add an annotation to this as well. `(.name ++
 ```
 type City extending Place {
     annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-    property population -> int64;
+    population: int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for use in game function get_city_names';
     }
@@ -307,6 +307,194 @@ type City extending Place {
 ```
 
 `get_city_names` isn't a real function; we're just pretending that it's used somewhere in the game and is important to remember.
+
+## Changing a property to a link
+
+Our `Place` type has had a property called `important_places` for quite some time now: almost since the beginning of the book! This property is just an `<array<str>>`, which is better than nothing but not as good as a link. Let's remind ourselves what `important_places` are in the database at the moment:
+
+```edgeql
+select Place {
+  name, important_places
+  } filter exists .important_places;
+```
+
+It turns out that we have a total of four `important_places`, all of which are located inside `City` objects:
+
+```
+{
+  default::City {name: 'Whitby', important_places: ['Whitby Abbey']},
+  default::City {name: 'Bistritz', important_places: ['Golden Krone Hotel']},
+  default::City {
+    name: 'Buda-Pesth',
+    important_places: ['Hospital of St. Joseph and Ste. Mary', 'Buda-Pesth University'],
+  },
+}
+```
+
+So let's think of a type we could make for these places. Our types that extend `Place` are all related to whether they have coffins or not, which is important in our game because places with coffins have a higher chance of being terrorized by vampires. These types so far are `City`, `Country`, `OtherPlace`, and `Castle` (which includes castle towns): all fairly large places that can be explored. But `important_places` seems more like a list of locations that are so tiny that keeping track of the number of coffins doesn't make any sense. In other words, it doesn't matter if the Golden Krone Hotel has coffins or not: it only matters if Bistritz has coffins in it or not.
+
+So let's create a new type that is independent of the abstract type `Place`, and just call it `Landmark`:
+
+```sdl
+type Landmark {
+  required name: str;
+  multi context: str;
+}
+```
+
+Inside the `context` property we can just add parts of the book that reference the `Landmark`. We could have chosen `<array<str>>` but we haven't used `multi` properties much yet, so let's give that a try.
+
+Eventually we will change our `Place` type so that `important places` changes from an `<array<str>>` to a `multi` link to `Landmark` that looks like the type below. The code below shows the final form for `Place`, but don't change it to this yet!
+
+```sdl
+abstract type Place extending HasCoffins {
+  required name: str {
+    delegated constraint exclusive;
+  }
+  modern_name: str;
+  multi important_places: Landmark;
+}
+```
+
+We don't want to make this change yet because we will lose our data if we just change the type of `important_ places` to something else. Instead, we can change our schema to add the `Landmark` type in addition to a new link on `Place` we'll call `linked_important_places`. Let's make those changes and migrate the schema now:
+
+```sdl
+type Landmark {
+  required name: str;
+  multi context: str;
+}
+
+abstract type Place extending HasCoffins {
+  required name: str {
+    delegated constraint exclusive;
+  }
+  modern_name: str;
+  important_places: array<str>;
+  multi linked_important_places: Landmark;
+}
+```
+
+After doing a migration we now have the type `Landmark`, and our `important_places` data is untouched. Now we can create some `Landmark` objects. Let's just insert them with the required `name` property to start. We can use the `array_unpack()` method to grab each `str` from all the `important_places` in all the `Place` objects we have so far, and use that to do the inserts:
+
+```edgeql
+for place_name in select (array_unpack(Place.important_places))
+union (insert Landmark {
+  name := place_name
+});
+```
+
+After that we can update our `Place` objects to have the link called `linked_important_places` to the `Landmark` objects that we have just inserted.
+
+```edgeql
+update Place filter exists .important_places set {
+  linked_important_places := (
+    select Landmark filter .name in array_unpack(Place.important_places))
+  };
+```
+
+This has returned three objects, so looks like it worked! Let's do a query to make sure:
+
+```edgeql
+select Place {
+  name,
+  important_places,
+  linked_important_places: { name }
+  } filter exists .linked_important_places;
+```
+
+The output shows us that it worked! We can compare the existing data inside `important_places` and see that we now have `Landmark` objects with the same name as before.
+
+```
+{
+  default::City {
+    name: 'Whitby',
+    important_places: ['Whitby Abbey'],
+    linked_important_places: {default::Landmark {name: 'Whitby Abbey'}},
+  },
+  default::City {
+    name: 'Bistritz',
+    important_places: ['Golden Krone Hotel'],
+    linked_important_places: {default::Landmark {name: 'Golden Krone Hotel'}},
+  },
+  default::City {
+    name: 'Buda-Pesth',
+    important_places: ['Hospital of St. Joseph and Ste. Mary', 'Buda-Pesth University'],
+    linked_important_places: {
+      default::Landmark {name: 'Hospital of St. Joseph and Ste. Mary'},
+      default::Landmark {name: 'Buda-Pesth University'},
+    },
+  },
+}
+```
+
+And now that our data is safe, we can now do two more migrations. First we remove `important_places` and migrate.
+
+```sdl
+abstract type Place extending HasCoffins {
+  required name: str {
+    delegated constraint exclusive;
+  }
+  modern_name: str;
+  multi linked_important_places: Landmark;
+}
+```
+
+The CLI will ask us if we wanted to "drop property 'important_places' of object type 'default::Place'?", to which the answer is yes.
+
+And then we change the link name from `linked_important_places` to `important_places`, and do a migration again.
+
+```sdl
+abstract type Place extending HasCoffins {
+  required name: str {
+    delegated constraint exclusive;
+  }
+  modern_name: str;
+  multi important_places: Landmark;
+}
+```
+
+This time the CLI asks us if we renamed "link 'linked_important_places' of object type 'default::Place' to 'important_places'?", to which the answer is again yes.
+
+Let's do a final check to make sure that the data is there:
+
+```edgeql
+select Place {
+  name,
+  important_places: { name }
+} filter exists .important_places;
+```
+
+And the data is there! Beautiful.
+
+```
+{
+  default::City {name: 'Whitby', important_places: {default::Landmark {name: 'Whitby Abbey'}}},
+  default::City {
+    name: 'Bistritz',
+    important_places: {default::Landmark {name: 'Golden Krone Hotel'}},
+  },
+  default::City {
+    name: 'Buda-Pesth',
+    important_places: {
+      default::Landmark {name: 'Hospital of St. Joseph and Ste. Mary'},
+      default::Landmark {name: 'Buda-Pesth University'},
+    },
+  },
+}
+```
+
+As always, the code at the end of the chapter will feature the inserts we would have made if we had had the current schema to begin with. So the insert for Buda-Pesth for example will now look like this, with the `Landmark` inserts at the same time.
+
+```edgeql
+insert City {
+  name := 'Buda-Pesth',
+  modern_name := 'Budapest',
+  important_places := {
+    (insert Landmark {name := 'Hospital of St. Joseph and Ste. Mary'}),
+    (insert Landmark {name := 'Buda-Pesth University'})
+  }
+};
+```
 
 [Here is all our code so far up to Chapter 16.](code.md)
 

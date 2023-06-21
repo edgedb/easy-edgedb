@@ -3,13 +3,14 @@
 
 module default {
   abstract type Person {
-    required property name -> str;
-    multi link places_visited -> Place;
-    link lover -> Person;
+    required name: str;
+    multi places_visited: Place;
+    lover: Person;
+    property is_single := not exists .lover;
   }
 
   type PC extending Person {
-    required property class -> Class;
+    required class: Class;
   }
 
   scalar type HumanAge extending int16 {
@@ -17,21 +18,21 @@ module default {
   }
 
   type NPC extending Person {
-    property age -> HumanAge;
+    age: HumanAge;
   }
 
   type Vampire extending Person {
-    property age -> int16;
-    multi link slaves -> MinorVampire;
+    age: int16;
+    multi slaves: MinorVampire;
   }
 
   type MinorVampire extending Person {
   }
   
   abstract type Place {
-    required property name -> str;
-    property modern_name -> str;
-    property important_places -> array<str>;
+    required name: str;
+    modern_name: str;
+    important_places: array<str>;
   }
 
   type Castle extending Place;
@@ -47,7 +48,7 @@ module default {
   scalar type SleepState extending enum <Asleep, Awake>;
   
   type Time { 
-    required property clock -> str; 
+    required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
     property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19

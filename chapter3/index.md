@@ -13,19 +13,19 @@ Now we are completely inside Dracula's castle, so this is a good time to create 
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
-  property age -> int16;
+  required name: str;
+  multi places_visited: City;
+  age: int16;
 }
 ```
 
-`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required property`, because we don't care about everybody's age.
+`int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required` property, because we don't care about everybody's age.
 
 But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's remove `age` from the abstract `Person` type and give it only to `Vampire` now. We will think about the other types later. We'll make `Vampire` a type that extends `Person`, and adds age:
 
 ```sdl
 type Vampire extending Person {
-  property age -> int16;
+  age: int16;
 }
 ```
 
@@ -33,9 +33,9 @@ Now we can create Count Dracula. We know that he lives in Romania, but that isn'
 
 ```sdl
 abstract type Place {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 
 type City extending Place;
@@ -47,8 +47,8 @@ We will also need to change `places_visited` in `Person` from `City` to `Place` 
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
+  required name: str;
+  multi places_visited: Place;
 }
 ```
 
@@ -65,7 +65,7 @@ insert Country {
 };
 ```
 
-(By the way, you might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi link`. That's true, though in this tutorial we never end up using it and it just stays in the schema as an array. If this were a schema for a real game, it would probably either end up turned to a `multi link` or removed if we decide we don't need it.)
+You might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi` link. That's true, and much later on in the book (in Chapter 16, to be precise) we will learn how to change a property into a link while retaining your existing data.
 
 ## Capturing a select expression
 
@@ -123,7 +123,7 @@ Remember, it's a scalar type because it can only have one value. Then we'll add 
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
+  age: HumanAge;
 }
 ```
 
@@ -149,7 +149,7 @@ Now let's insert the same innkeeper but give him an `age` of 30. This will now w
 
 Deleting in EdgeDB is very easy: just use the `delete` keyword. It's similar to `select` in that you write `delete` and then the type, which will by default delete them all. And in the same way as `select`, if you `filter` then it will only delete the ones that match the filter.
 
-This similarity to `select` might make you nervous, because if you type something like `select City` then it will select all of them. `delete` is the same: `delete City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
+This similarity to `select` might make you nervous, because if you type something like `select City` then it will select all of them. Using `delete` is the same: `delete City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
 
 However, sometimes you may be prevented from deleting an object. Remember our two `Country` objects for Hungary and Romania? Let's try deleting them all:
 
@@ -213,7 +213,265 @@ The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted
 
 (Fun fact: `delete` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `delete (select ...)`. You'll be learning something called `limit` in the next chapter with `select` and as you do so, keep in mind that you can apply the same to `delete` too.)
 
-Finally, let's insert Hungary and Romania again to finish the chapter. Plus Count Dracula! We'll leave them alone now.
+We should probably delete that `City` object with `''` as its name that we inserted in the last chapter to practice indexing. That's easy:
+
+```edgeql
+delete City filter .name = '';
+```
+
+Finally, let's insert Hungary and Romania again to finish the seection on deleting. Plus Count Dracula! We'll leave them alone now.
+
+## The splat operator
+
+Sometimes a query can take some time to type. Let's say we want to look up all of our `PC` objects and their properties, plus check whether their name has changed since Dracula was published. Such a query would look like this:
+
+```edgeql
+select City {
+  name,
+  modern_name,
+  important_places,
+  id,
+  name_has_changed := exists .modern_name
+};
+```
+
+This gives us the following output:
+
+```
+{
+  default::City {
+    name: 'Munich',
+    modern_name: {},
+    important_places: {},
+    id: 8a6d06bc-0b04-11ee-bd1f-67f7c83004cb,
+    name_has_changed: false,
+  },
+  default::City {
+    name: 'Buda-Pesth',
+    modern_name: 'Budapest',
+    important_places: {},
+    id: 8a9e9222-0b04-11ee-bd1f-cfa57ad4cff6,
+    name_has_changed: true,
+  },
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    important_places: ['Golden Krone Hotel'],
+    id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+    name_has_changed: true,
+  },
+}
+```
+
+Not bad! But we had to type quite a bit to select every property inside `City`. Wouldn't it be nice if EdgeDB had an operator that could do that for us?
+
+It just so happens that EdgeDB does have such an operator! The operator is called the splat operator because it uses a `*` which...looks like a splat. In other languages you sometimes see this called the 'global operator' which also has to do with importing or using everything in a namespace, so the `*` operator was well chosen.
+
+Let's try using the splat operator with `City` now.
+
+```edgeql
+select City {*};
+```
+
+And that's all there is to it! Here's the output:
+
+```
+{
+  default::City {
+    name: 'Munich',
+    modern_name: {},
+    important_places: {},
+    id: 8a6d06bc-0b04-11ee-bd1f-67f7c83004cb,
+  },
+  default::City {
+    name: 'Buda-Pesth',
+    modern_name: 'Budapest',
+    important_places: {},
+    id: 8a9e9222-0b04-11ee-bd1f-cfa57ad4cff6,
+  },
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    important_places: ['Golden Krone Hotel'],
+    id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+  },
+}
+```
+
+And if we want to include the computed `name_has_changed` property, we can just add it after the splat operator. So the query below will return the same output as the first query we tried.
+
+```edgeql
+select City {
+  *,
+  name_has_changed := exists .modern_name
+};
+```
+
+If the splat operator is used for a type that is extended by other types, it will choose all of the properties that they have in common. Let's demonstrate that with three queries.
+
+```edgeql-repl
+db> select PC{*};
+{default::PC {name: 'Emil Sinclair', id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35, class: Mystic}}
+db> select NPC {*};
+{
+  default::NPC {name: 'Jonathan Harker', id: 8ae5923a-0b04-11ee-bd1f-e3545fe0bccf, age: {}},
+  default::NPC {name: 'The innkeeper', id: 8bd08f10-0b04-11ee-bd1f-bf2be2316e84, age: 30},
+}
+db> select Person {*};
+{
+  default::PC {id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35, name: 'Emil Sinclair'},
+  default::Vampire {id: 8b4aefcc-0b04-11ee-bd1f-c36d2df0b47a, name: 'Count Dracula'},
+  default::NPC {id: 8ae5923a-0b04-11ee-bd1f-e3545fe0bccf, name: 'Jonathan Harker'},
+  default::NPC {id: 8bd08f10-0b04-11ee-bd1f-bf2be2316e84, name: 'The innkeeper'},
+}
+```
+
+Notice the difference? The `PC` type contains a `class` that the two others don't, while `NPC` has an `age` property. The base `PC`type doesn't hold either of these two properties.
+
+## The double splat operator
+
+But wait, there's more! EdgeDB also has a double splat operator: `**` instead of `*`. Let's see what it does with `City`.
+
+```edgeql
+select City {**};
+```
+
+If you try that query...you'll get the same output. That's because `City` isn't linked to anything, and the double splat operator is used for showing all properties _and_ all links.
+
+Let's demonstrate by querying all of our `Person` objects. We tried a query just before with `select Person {*};` which showed us all of the `Person` types, their `id` and their `name`. Could the double splat operator be any different? Let's give it a try.
+
+```edgeql
+select Person {**};
+```
+
+The output is...verbose!
+
+```
+{
+  default::PC {
+    id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35,
+    name: 'Emil Sinclair',
+    places_visited: {
+      default::City {
+        id: 8a6d06bc-0b04-11ee-bd1f-67f7c83004cb,
+        important_places: {},
+        modern_name: {},
+        name: 'Munich',
+      },
+      default::City {
+        id: 8a9e9222-0b04-11ee-bd1f-cfa57ad4cff6,
+        important_places: {},
+        modern_name: 'Budapest',
+        name: 'Buda-Pesth',
+      },
+      default::City {
+        id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+        important_places: ['Golden Krone Hotel'],
+        modern_name: 'Bistrița',
+        name: 'Bistritz',
+      },
+    },
+  },
+  default::Vampire {
+    id: 8b4aefcc-0b04-11ee-bd1f-c36d2df0b47a,
+    name: 'Count Dracula',
+    places_visited: {
+      default::Country {
+        id: 8b2a64f0-0b04-11ee-bd1f-632e60d595d2,
+        important_places: {},
+        modern_name: {},
+        name: 'Romania',
+      },
+    },
+  },
+  default::NPC {
+    id: 8ae5923a-0b04-11ee-bd1f-e3545fe0bccf,
+    name: 'Jonathan Harker',
+    places_visited: {
+      default::City {
+        id: 8a6d06bc-0b04-11ee-bd1f-67f7c83004cb,
+        important_places: {},
+        modern_name: {},
+        name: 'Munich',
+      },
+      default::City {
+        id: 8a9e9222-0b04-11ee-bd1f-cfa57ad4cff6,
+        important_places: {},
+        modern_name: 'Budapest',
+        name: 'Buda-Pesth',
+      },
+      default::City {
+        id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+        important_places: ['Golden Krone Hotel'],
+        modern_name: 'Bistrița',
+        name: 'Bistritz',
+      },
+    },
+  },
+  default::NPC {
+    id: 8bd08f10-0b04-11ee-bd1f-bf2be2316e84,
+    name: 'The innkeeper',
+    places_visited: {},
+  },
+}
+```
+
+This is because `Person` is linked to `Place` via the `places_visited` link, and the double splat operator shows you both an object's properties and the properties of the objects it links to. This operator only goes down to a depth of one, meaning that it won't follow the links of a linked object. This makes sense because in some databases you could see links that go on almost forever.
+
+## Deleting Bistritz
+
+We haven't learned how to `update` yet (we'll learn that in Chapter 6), but we do know how to `delete` so let's get rid of our duplicate Bistritz. Let's first do a query to remember what the two objects look like at the moment:
+
+```edgeql
+select City {*} filter .name = 'Bistritz';
+```
+
+And the output:
+
+```
+{
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
+    important_places: ['Golden Krone Hotel'],
+  },
+  default::City {
+    name: 'Bistritz',
+    modern_name: 'Bistrița',
+    id: d1e38192-0bd6-11ee-ba45-d7ecb20723cf,
+    important_places: {},
+  },
+}
+```
+
+Ah yes, we have a `City` called Bistritz that was inserted before we added the `important_places` property. There are two differences between the two: they have different `id` numbers, and one has an `important_places` property. In the next chapter we will learn to to filter depending on whether a property or link `exists` or not, but in the meantime let's just delete one by its id. (`id` is always a unique number so on your database the `id` will be different from the one in this example.)
+
+This query almost works but not quite:
+
+```edgeql
+delete City filter .id = 'd1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+```
+
+Close!
+
+```
+error: InvalidTypeError: operator '=' cannot be applied to operands of type 
+'std::uuid' and 'std::str'
+  ┌─ <query>:1:13
+  │
+1 │ delete City filter .id = 'd1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+  │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+  Consider using an explicit type cast or a conversion function.
+```
+
+All we have to do is cast the `str` to a `uuid` and it will now work:
+
+```edgeql
+delete City filter .id = <uuid>'d1e38192-0bd6-11ee-ba45-d7ecb20723cf';
+```
+
+And now it's gone! We are back to a single `City` object named Bistritz instead of two.
 
 [Here is all our code so far up to Chapter 3.](code.md)
 

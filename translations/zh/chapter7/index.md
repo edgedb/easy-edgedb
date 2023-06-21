@@ -12,11 +12,11 @@ tags: Constraint Delegation, $ Parameters
 
 ```sdl
 abstract type Person {
-  required property name -> str { ## Add a block
+  required name: str { ## Add a block
       constraint exclusive;       ## and the constraint
   }
-  multi link places_visited -> Place;
-  link lover -> Person;
+  multi places_visited: Place;
+  lover: Person;
 }
 ```
 
@@ -24,11 +24,11 @@ abstract type Person {
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
       constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -40,12 +40,12 @@ abstract type Place {
 
 ```sdl
 abstract type Person {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   }
-  multi link places_visited -> Place;
-  link lover -> Person;
-  property strength -> int16;
+  multi places_visited: Place;
+  lover: Person;
+  strength: int16;
 }
 ```
 
@@ -55,11 +55,11 @@ abstract type Person {
 
 ```sdl
 abstract type Place {
-  required property name -> str {
+  required name: str {
       delegated constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -74,7 +74,7 @@ abstract type Place {
 
 ```sdl
 type Castle extending Place {
-    property doors -> array<int16>;
+    doors: array<int16>;
 }
 ```
 
@@ -87,7 +87,7 @@ insert Castle {
 };
 ```
 
-然后我们再添加一个 `property strength -> int16;` 到 `Person` 类型。这个属性将不是必需的，因为我们并不知道本书中所有人的力量……当然，如果游戏需要我们可以在之后将其设置为 `required`。
+然后我们再添加一个 `strength: int16;` 到 `Person` 类型。这个属性将不是必需的，因为我们并不知道本书中所有人的力量……当然，如果游戏需要我们可以在之后将其设置为 `required`。
 
 现在我们给乔纳森（Jonathan）一个等于 5 的力量值。像之前一样，使用 `update` 和 `set` 进行更新：
 

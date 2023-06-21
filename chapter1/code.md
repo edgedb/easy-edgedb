@@ -3,13 +3,13 @@
 
 module default {
   type NPC {
-    required property name -> str;
-    multi link places_visited -> City;
+    required name: str;
+    multi places_visited: City;
   }
   
   type City {
-    required property name -> str;
-    property modern_name -> str;
+    required name: str;
+    modern_name: str;
   }
 }
 

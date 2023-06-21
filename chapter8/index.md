@@ -24,7 +24,7 @@ We'll try some multiple inheritance with the ship's crew. The book doesn't give 
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -47,7 +47,7 @@ And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
 
 ```sdl
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 ```
 
@@ -55,9 +55,9 @@ Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `
 
 ```sdl
 type Ship {
-  required property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -322,11 +322,11 @@ So with that you can change the above input to `select 1893 is anyint` and get `
 
 ## Array vs. multi property vs. multi link
 
-We've seen `multi link` quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi property` is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
+We've seen `multi` links quite a bit already, and you might be wondering if `multi` can appear in other places too. The answer is yes. A `multi` property is like any other property, except that it can have more than one value. For example, our `Castle` type has an `array<int16>` for the `doors` property:
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -334,7 +334,7 @@ But it could do something similar like this:
 
 ```sdl
 type Castle extending Place {
-  multi property doors -> int16;
+  multi doors: int16;
 }
 ```
 
@@ -347,46 +347,46 @@ insert Castle {
 };
 ```
 
-The next question of course is which is best to use: `multi property`, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
+The next question of course is which is best to use: `multi` for a multi property, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
 
-- `multi property` vs. arrays:
+- `multi` property vs. arrays:
 
-  How large is the data you are working with? A `multi property` is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi property`.
+  How large is the data you are working with? A `multi` property is more efficient when you have a lot of data, while arrays are slower. But if you have small sets, then arrays are faster than `multi` property.
 
-  If you want to use indexes and constraints on individual elements, then you should use a `multi property`. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
+  If you want to use indexes and constraints on individual elements, then you should use a `multi` property. We'll look at indexes in Chapter 16, but for now just know that they are a way of making lookups faster.
 
   If order is important, than an array may be better. It's easier to keep the original order of items in an array.
 
-- `multi property` vs. objects (via `link`)
+- `multi` property vs. linking to objects
 
-  Here we'll start with two areas where `multi property` is better, and then two areas where objects are better.
+  Here we'll start with two areas where a `multi` property is better, and then two areas where objects are better.
 
   First negative for objects: objects are always larger, and here's why. Remember `describe type as text`? Let's look at one of our types with that again. Here's the `Castle` type:
 
   ```
   {
     'type default::Castle extending default::Place {
-      required single link __type__ -> schema::Type {
+      required single link __type__: schema::Type {
           readonly := true;
       };
-      optional single property doors -> array<std::int16>;
-      required single property id -> std::uuid {
+      optional single property doors: array<std::int16>;
+      required single property id: std::uuid {
           readonly := true;
       };
-      optional single property important_places -> array<std::str>;
-      optional single property modern_name -> std::str;
-      required single property name -> std::str;
+      optional single property important_places: array<std::str>;
+      optional single property modern_name: std::str;
+      required single property name: std::str;
   };',
   }
   ```
 
   You'll remember seeing the `readonly := true` properties, which are created for each object type you make. The `__type__` link and `id` property together always make up 32 bytes.
 
-  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a `multi link` to an object needs an extra "join" (a link table + object table), but a multi property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
+  The second negative for objects is similar: underneath, they are more work for the computer. EdgeDB runs on top of PostgreSQL, and a multi link to an object needs an extra "join" (a link table + object table), but a `multi` property only has one. Also, a "backlink" (you'll see those in Chapter 14) takes more work as well.
 
   Having said that, now here are two positives for objects in comparison.
 
-  Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi link`, for example.
+  Are there other types that need to refer to the same values? If so, then it may be better to use an object to keep things consistent. That's why we eventually made `places_visited` a `multi` link, for example.
 
   Using objects with an `exclusive` constraint is more efficient when there is a lot of property value duplication.
 

@@ -18,8 +18,8 @@
 
 ```sdl
 abstract type Person extending HasAString {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 ```
 

@@ -4,11 +4,11 @@ tags: Type Annotations, Backlinks
 
 # Chapter 14 - A ray of hope
 
-> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Budapest in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Buda-Pesth (Budapest) in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
 >
 > Mina takes a train to the hospital where Jonathan is recovering, after which they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it.
 >
-> Meanwhile, the men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
+> Meanwhile, Van Helsing continues to contact his associates in universities around Europe to search for information on vampires and their activities. The men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
 Looks like we have a new city called Exeter, which is easy to add:
 
@@ -21,6 +21,17 @@ insert City {
 
 That's the population of Exeter at the time (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
 
+We can also update the city of Buda-Pesth to add the name of the hospital where Jonathan Harker was staying. In addition, one of the universities that Van Helsing contacted for information is in the same city. Let's add them both:
+
+```edgeql
+update City filter .name = 'Buda-Pesth' 
+  set { important_places := [
+    'Hospital of St. Joseph and Ste. Mary',
+    'Buda-Pesth University'
+    ] 
+  };
+```
+
 ## Adding annotations to types and using @
 
 Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
@@ -30,7 +41,7 @@ Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `
 ```sdl
 type City extending Place {
   annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -224,6 +235,93 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
+## Globals
+
+A lot of games feature time travel, and maybe our game will too. The player characters might have come from the present time, or might visit an apocalyptic future in which Dracula won and now rules from his base in London in the year 2023.
+
+The interesting thing about time travel is that it is entirely dependent on what the player character is doing. The current year doesn't really belong in any of the objects currently in our database because they have nothing to do with what any player is doing at the moment. But we would like to reference the current year sometimes, because for example query on `City` objects should give their `name` when in the 19th century, but their `modern_name` when in the present.
+
+So the current year doesn't belong to any type - it's a global parameter.
+
+EdgeDB allows you to create global parameters using the `global` keyword. These must be scalars, unless the `global` is a computable in which case there are no limits. Let's give this a try by adding a `current_date` scalar to the schema. We'll also give it a `default` which can be the date when all player characters begin their quest.
+
+```sdl
+required global current_date: cal::local_date {
+  default := <cal::local_date>'1893-05-13'
+}
+```
+
+And once the migration is done, we can easily select it using the `global` keyword:
+
+```edgeql
+select global current_date;
+```
+
+This returns `{<cal::local_date>'1893-05-13'}`, the default value.
+
+To change a global variable, just use the keyword `set`. Let's set `current_date` to a more modern date:
+
+```edgeql
+set global current_date := <cal::local_date>'2023-06-19';
+```
+
+The output is pretty simple:
+
+```
+OK: SET GLOBAL
+```
+
+So that was pretty easy! After all, this global is a scalar and scalars are pretty easy to work with.
+
+Now let's run a query to get some `City` names. In this query we will make 1945 the cutoff date for old names vs. new names. Our `City` objects use the `modern_name` property from the abstract `Place` type as a hint that the name for the city has changed since the time in the book, so we will have to default to the `name` property regardless of the data if `modern_name` doesn't exist. Here is what the query looks like:
+
+```
+with use_modern := global current_date > <cal::local_date>'1945-01-01',
+  select City {
+  city_name := .modern_name if use_modern and exists .modern_name else .name
+ };
+```
+
+Putting that together gives us our cities in their modern form: two of them are now Bistrița and Budapest.
+
+```
+{
+  default::City {city_name: 'Whitby'},
+  default::City {city_name: 'Munich'},
+  default::City {city_name: 'Bistrița'},
+  default::City {city_name: 'London'},
+  default::City {city_name: 'Exeter'},
+  default::City {city_name: 'Budapest'},
+}
+```
+
+Now let's change `current_date` back to an older date. In addition to `set`, we can use the `reset` keyword for our use case because `current_date` has a default value.
+
+```edgeql
+reset global current_date;
+```
+
+And the output: 
+
+```
+OK: RESET GLOBAL
+```
+
+The `reset` keyword works for globals without default values too, but their default value is an empty set.
+
+And now that the `current_date` has been reset, the same query as above for the `City` object names now shows us the names Bistritz and Buda-Pesth for two of the cities:
+
+```
+{
+  default::City {city_name: 'Whitby'},
+  default::City {city_name: 'Munich'},
+  default::City {city_name: 'Bistritz'},
+  default::City {city_name: 'London'},
+  default::City {city_name: 'Exeter'},
+  default::City {city_name: 'Buda-Pesth'},
+}
+```
+
 ## Backlinks
 
 Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.
@@ -265,7 +363,7 @@ select MinorVampire {
 }
 ```
 
-Since there's no `link master -> Vampire`, how do we go backwards to see the `Vampire` type that links to it?
+Since there's no `master: Vampire` link, how do we go backwards to see the `Vampire` type that links to it?
 
 This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[is Vampire]`.
 
@@ -344,7 +442,7 @@ In this case, we are asking EdgeDB to show us each and every object that is link
 }
 ```
 
-You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object that links via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
 
 ```edgeql-repl
 db> select Place {

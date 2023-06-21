@@ -18,7 +18,7 @@ tags: Expression On, Error Messages
 
 ```sdl
 abstract type HasCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
 }
@@ -38,11 +38,11 @@ abstract type HasCoffins {
 
 ```sdl
 abstract type Place extending HasCoffins {
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
   };
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -50,9 +50,9 @@ abstract type Place extending HasCoffins {
 
 ```sdl
 type Ship extending HasCoffins {
-  property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -140,8 +140,8 @@ select can_enter('Count Dracula', (select City filter .name = 'London'));
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
-  overloaded required property name -> str {
+  required class: Class;
+  overloaded required name: str {
     constraint max_len_value(30);
   }
 }
@@ -149,10 +149,10 @@ type PC extending Person {
 
 现在，当我们尝试插入一个名字太长的 `PC` 时，则会被拒绝，并得到错误提示：`ERROR: ConstraintViolationError: name must be no longer than 30 characters`。
 
-另一个方便的约束叫做 `one_of`，它有点像枚举。在我们的架构中，可以使用到它的一个地方是我们的 `Person` 类型中的 `property title -> str;`。你一定还记得我们添加这个属性时是为了便于我们在需要时可以将各种称呼（名字、姓氏、头衔、学位……）组合在一起生成所需的名称。`one_of` 这个约束则可以确保使用 `title` 的用户不会给自己编造头衔：
+另一个方便的约束叫做 `one_of`，它有点像枚举。在我们的架构中，可以使用到它的一个地方是我们的 `Person` 类型中的 `title: str;`。你一定还记得我们添加这个属性时是为了便于我们在需要时可以将各种称呼（名字、姓氏、头衔、学位……）组合在一起生成所需的名称。`one_of` 这个约束则可以确保使用 `title` 的用户不会给自己编造头衔：
 
 ```sdl
-property title -> str {
+title: str {
   constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord')
 }
 ```
@@ -162,7 +162,7 @@ property title -> str {
 另一个你可以想到的 `one_of` 的用武之地是“月份”，因为这本小说的时间只涉及了同一年中的五月到十月。假设我们有一个用于生成日期的类型，那么你可以在其定义中使用该约束：
 
 ```sdl
-property month -> int64 {
+month: int64 {
   constraint one_of(5, 6, 7, 8, 9, 10)
 }
 ```
@@ -269,7 +269,7 @@ type Lord extending Person {
 
 ## 双向关联
 
-回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `link master`。我们删除 `link master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `delete` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
+回到第 6 章，我们当时给 `Vampire` 添加了链接到 `MinorVampire` 类型的 `multi link slaves`，并从 `MinorVampire` 中删除了 `master` 链接。我们删除 `master` 的一个原因是为了降低复杂度，另一个原因是因为它们彼此依赖，使得 `delete` 变得不可行。但现在我们知道如何使用反向链接了，因此如果我们想，我们随时可以使用反向链接给 `MinorVampire` 重新添加一个 `master`。
 
 （注意：我们不会真的修改 `MinorVampire` 类型，这里是为了说明如何重新添加 `master` 到 `MinorVampire`）
 
@@ -277,11 +277,11 @@ type Lord extending Person {
 
 ```sdl
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -289,8 +289,8 @@ type MinorVampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
-  required single property master_name -> str;
+  former_self: Person;
+  required master_name: str;
   link master := (
     with master_name := .master_name
     assert_single(select Vampire filter .name = master_name));
@@ -301,7 +301,7 @@ type MinorVampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
   single link master := assert_single(.<slaves[is Vampire]);
 };
 ```
@@ -310,7 +310,7 @@ type MinorVampire extending Person {
 
 ```sdl
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
   link master := assert_single(.<slaves[IS Vampire]);
   property master_name := .master.name;
 };
@@ -332,7 +332,7 @@ insert Vampire {
 };
 ```
 
-如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `link master` 直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
+如果新的 `MinorVampire` 类型正常工作，我们应该能够通过 `MinorVampire` 中的 `master` 链接直接看到“Kain”，而不必再使用反向链接。现在，让我们马上试一下：
 
 ```edgeql
 select MinorVampire {
@@ -369,7 +369,7 @@ select MinorVampire {
 
 ## 小测验
 
-1. 如何创建一个名为“Horse”的类型，且其属性 `required property name -> str` 的值只能是“Horse”？
+1. 如何创建一个名为“Horse”的类型，且其属性 `required name: str` 的值只能是“Horse”？
 
 2. 如何让用户们能了解到 `name` 需要被赋值“Horse”？如何提示他们？
 
@@ -378,8 +378,6 @@ select MinorVampire {
    先用 `expression on` 试试。
 
 4. 如何创建一个名为 `display_coffins` 的函数来显示出所有棺材数量大于 0 的 `HasCoffins` 类型的对象？
-
-5. 如何在不碰架构（schema）的情况下（不做”显式迁移“）创建上一题中的函数？
 
 [点击这里查看答案](answers.md)
 

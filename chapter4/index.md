@@ -11,13 +11,13 @@ First let's create Jonathan's girlfriend, Mina Murray. It would be nice to repre
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Place;
+  lover: Person;
 }
 ```
 
-With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a `single link`. But `link` is the short form of `single link` so we only need to write `link`.
+With this we can link the two of them together. We will assume that a person can only have one `lover`, so this is a single link. If we wanted `lover` to be a multi link, we would have written `multi lover` instead.
 
 Mina is in London, and we don't know if she has been anywhere else. So let's do a quick insert to create the city of London. It couldn't be easier:
 
@@ -58,7 +58,7 @@ error: QueryError: invalid reference to default::NPC: self-referencing INSERTs a
   │              ^^^ Use DETACHED if you meant to refer to an uncorrelated default::NPC set
 ```
 
-- {eql:func}`docs:std::assert_single`. This is because the link is a `single link`. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a `single link`, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
+- {eql:func}`docs:std::assert_single`. This is because the link is a single link. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a single link, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
 
 Let's make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a basic query showing the names of each `Person` object's `lover`:
 
@@ -83,7 +83,7 @@ This gives us:
 }
 ```
 
-We can see that Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first when Mina Murray didn't exist yet. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for `link lover`.
+We can see that Mina Murray has a lover but Jonathan Harker does not yet, because he was inserted first when Mina Murray didn't exist yet. We'll learn some techniques later in Chapters 6, 14 and 15 to deal with this. In the meantime we'll just leave Jonathan Harker with `{}` for the `lover` link.
 
 Back to the query: what if we just want to say `true` or `false` depending on if the character has a lover? To do that we can put a computed property in the query, using `exists`. We'll call it `is_single`, but since it's not in the schema for the `Person` type we could call it anything we like here. The keyword `not exists` will return `false` if a set is returned, and `true` if it gets `{}` (if there is nothing). This is once again one of the nice things about using empty sets in EdgeDB instead of null. It looks like this:
 
@@ -131,14 +131,14 @@ We could also put the computed property in the type itself. Here's the same comp
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Place;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Place;
+  lover: Person;
   property is_single := not exists .lover;
 }
 ```
 
-We won't keep `is_single` in the type definition though, because it's not useful enough for our game.
+You'll notice that we have written `property is_single` this time instead of just `is_single`. With computed properties and links we need to give EdgeDB a little bit more help by letting it know whether the computed expression will result in a `property` or a `link`. So if you are working on your schema and the property or link uses a `:=` to make it computed, don't forget to choose between `property` or `link`!
 
 You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. Computed links also don't specify the type because the expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
 
@@ -176,7 +176,7 @@ We will imagine that our game engine has a clock that gives the time as a `str`,
 
 ```sdl
 type Time { 
-  required property clock -> str; 
+  required clock: str; 
   property clock_time := <cal::local_time>.clock; 
   property hour := .clock[0:2]; 
 } 
@@ -231,7 +231,7 @@ Finally, we can add some logic to the `Time` type to see if vampires are awake o
 scalar type SleepState extending enum <Asleep, Awake>;
 
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19

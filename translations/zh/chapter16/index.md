@@ -28,10 +28,10 @@ Mina Murray’s Journal.
 
 ```sdl
 type BookExcerpt {
-  required property date -> cal::local_datetime;
-  required property excerpt -> str;
+  required date: cal::local_datetime;
+  required excerpt: str;
   index on (.date);
-  required link author -> Person
+  required author: Person;
 }
 ```
 
@@ -98,14 +98,14 @@ select <json>(
 
 ```sdl
 type Event {
-  required property description -> str;
-  required property start_time -> cal::local_datetime;
-  required property end_time -> cal::local_datetime;
-  required multi link place -> Place;
-  required multi link people -> Person;
-  multi link excerpt -> BookExcerpt; # Only this is new
-  property location -> tuple<float64, float64>;
-  property east_west -> bool;
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  multi excerpt: BookExcerpt; # Only this is new
+  location: tuple<float64, float64>;
+  east: bool;
   property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
@@ -247,7 +247,7 @@ db> select re_match_all('[Tt]o-?night', 'Dracula is an old book, so the word ton
 ```sdl
 type City extending Place {
   annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  property population -> int64;
+  population: int64;
   index on (.name ++ ': ' ++ <str>.population);
 }
 ```
@@ -257,7 +257,7 @@ type City extending Place {
 ```
 type City extending Place {
     annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-    property population -> int64;
+    population: int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for use in game function get_city_names';
     }

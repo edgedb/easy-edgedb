@@ -77,8 +77,8 @@ Let's first see what error EdgeDB gives us if we forget the `overloaded` keyword
 
 ```sdl
 type NPC extending Person {
-property age -> HumanAge;
-multi link places_visited -> Place {
+age: HumanAge;
+multi places_visited: Place {
   default := (select City filter .name = 'London');
   }
 }
@@ -90,7 +90,7 @@ Impressive! It not only gives an error but tells us exactly what to do.
 error: link 'places_visited' of object type 'default::NPC' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
    ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:27:3
    │
-27 │ ╭   multi link places_visited -> Place {
+27 │ ╭   multi places_visited: Place {
 28 │ │     default := (select City filter .name = 'London');
 29 │ │   }
    │ ╰───^ error
@@ -102,23 +102,27 @@ With `default` and `overloaded` added, it now looks like this:
 
 ```sdl
 type NPC extending Person {
-  property age -> HumanAge;
-  overloaded multi link places_visited -> Place {
+  age: HumanAge;
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
 ```
 
-## datetime_current()
+## datetime_current() and datetime_of_statement()
 
-One convenient function is {eql:func}` ``datetime_current()`` <docs:std::datetime_current>`, which gives the datetime right now. Let's try it out:
+Two convenient functions are {eql:func}` ``datetime_current()`` <docs:std::datetime_current>` and {eql:func}` ``datetime_of_statement()`` <docs:std::datetime_of_statement>`, which give the datetime right now. Let's try the first one out:
 
 ```edgeql-repl
 db> select datetime_current();
 {<datetime>'2023-05-28T10:18:56.889701Z'}
 ```
 
-This can be useful if you want a post date when you insert an object. With this you can sort by date, delete the most recent item if you have a duplicate, and so on. Here is a quick example that creates three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
+This can be useful if you want a post date when you insert an object. With this you can sort objects by date, delete the most recent item if you have a duplicate, and so on.
+
+Note though that `datetime_current()` will not return the exact same date as another call to `datetime_current()` inside the same statement. This is because `datetime_current()` returns the datetime at which the _function is called_, not the datetime of the statement that it's in.
+
+We can see this in the following example in which we create three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
 
 ```edgeql-repl
 db> with three_dates := {
@@ -126,12 +130,23 @@ db> with three_dates := {
   datetime_current(),
   datetime_current()
   },
-select three dates union max(three_dates);
+select three_dates union max(three_dates);
 {
   <datetime>'2023-05-28T10:26:55.744720Z',
   <datetime>'2023-05-28T10:26:55.744733Z',
   <datetime>'2023-05-28T10:26:55.744735Z',
   <datetime>'2023-05-28T10:26:55.744735Z',
+}
+```
+
+However, if we change the function to `datetime_of_statement()`, then the exact same datetime will be returned no matter how many times we call it:
+
+```edgeql-repl
+edgedb> select {datetime_of_statement(), datetime_of_statement(), datetime_of_statement()};
+{
+  <datetime>'2023-06-18T08:34:10.621754Z',
+  <datetime>'2023-06-18T08:34:10.621754Z',
+  <datetime>'2023-06-18T08:34:10.621754Z',
 }
 ```
 
@@ -141,8 +156,8 @@ Let's imagine how it would look if we put it inside the `Place` type. This is cl
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
-  property created_at := datetime_current(); # this is new
+  required class: Class;
+  property created_at := datetime_of_statement(); # this is new
 }
 ```
 
@@ -150,9 +165,9 @@ Because `created_at` is a computable here, and computables are calculated when y
 
 ```sdl
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
-    default := datetime_current()
+  required class: Class;
+  created_at: datetime {
+    default := datetime_of_statement()
   }
 }
 ```
@@ -258,7 +273,14 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we could use this method to insert our five `Crewman` objects inside one `insert` instead of doing it five times. Previously we used the `count()` function to insert their numbers, but we know that the book only ever has five crewmen so it will be easier to just use a `for` loop now. With this we can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
+John Seward is a doctor so let's be sure to update him with the proper title.
+
+```edgeql
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
+```
+
+By the way, now we could use the `for` keyword to insert our five `Crewman` objects inside one `insert` instead of doing it five times. Previously we used the `count()` function to insert their numbers, but we know that the book only ever has five crewmen so it will be easier to just use a `for` loop now. With this we can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
 
 ```edgeql
 for n in {1, 2, 3, 4, 5}
@@ -285,7 +307,7 @@ The important part is the *iterator-expr* which needs to be a single simple expr
 
 ## An interesting migration
 
-Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a `link` (which means `single link`). We'll rename the `link lover` to `multi link lovers` instead and do a migration so that we can add all three of the men. This makes sense in any case, as other `Person` types could easily have more than one lover.
+Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a single link. We'll rename the `lover` link to `multi lovers` to make it a multi link instead and do a migration so that we can add all three of the men. This makes sense in any case, as other `Person` types could easily have more than one lover.
 
 The migration output this time is a little interesting, as EdgeDB needed a bit of help to understand what we were trying to do. It first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it.
 
@@ -388,10 +410,10 @@ You will remember that we made this type because vampires can live forever, but 
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -401,8 +423,8 @@ This is convenient because we can delete `age` from `Vampire` too. We don't need
 
 ```sdl
 type Vampire extending Person {
-  # property age -> int16; **Deleted now
-  multi link slaves -> MinorVampire;
+  # age: int16; **Deleted now
+  multi slaves: MinorVampire;
 }
 ```
 
@@ -466,15 +488,15 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 
    ```sdl
    abstract type Person {
-     required property name -> str {
+     required name: str {
        delegated constraint exclusive;
      }
-     property age -> int16;
-     property strength -> int16;
-     multi link places_visited -> Place;
-     multi link lovers -> Person;
-     property first_appearance -> cal::local_date;
-     property last_appearance -> cal::local_date;
+     age: int16;
+     strength: int16;
+     multi places_visited: Place;
+     multi lovers: Person;
+     first_appearance: cal::local_date;
+     last_appearance: cal::local_date;
    }
    ```
 

@@ -3,21 +3,21 @@
 
 module default {
   abstract type Person {
-    required property name -> str;
-    multi link places_visited -> City;
+    required name: str;
+    multi places_visited: City;
   }
 
   type PC extending Person {
-    required property class -> Class;
+    required class: Class;
   }
 
   type NPC extending Person {
   }
   
   type City {
-    required property name -> str;
-    property modern_name -> str;
-    property important_places -> array<str>;
+    required name: str;
+    modern_name: str;
+    important_places: array<str>;
   }
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
@@ -33,6 +33,11 @@ insert City {
 insert City {
   name := 'Buda-Pesth',
   modern_name := 'Budapest'
+};
+
+insert City {
+  name := 'Bistritz',
+  modern_name := 'Bistrița',
 };
 
 insert City {

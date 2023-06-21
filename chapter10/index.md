@@ -4,15 +4,15 @@ tags: Tuples, Computed Properties, Math
 
 # Chapter 10 - Terrible events in Whitby
 
-> Mina and Lucy are enjoying their time in Whitby. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
+> Mina and Lucy are enjoying their time in Whitby. They spend a lot of time hiking nearby the coast and enjoying the view from the ruins of Whitby Abbey, an old church from long ago. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
 >
 > One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
-The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `property population` which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
+The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `population` property which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
 ```sdl
 type City extending Place {
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -31,7 +31,8 @@ Whitby is the only one of the five that isn't in our database already. Inserting
 ```edgeql
 insert City {
   name := 'Whitby',
-  population := 14400
+  population := 14400,
+  important_places := ['Whitby Abbey']
 };
 ```
 
@@ -360,8 +361,8 @@ That would lead us to think that we should have titles like `first_name`, `last_
 We could try a middle of the road approach  for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
 
 ```sdl
-property title -> str;
-property degrees -> str;
+title: str;
+degrees: str;
 property conversational_name := .title ++ ' ' 
   ++ .name if exists .title else .name;
 property pen_name := .name ++ ', ' 
@@ -479,6 +480,7 @@ But if we try again we will get this error:
 
 ```
 edgedb error: ConstraintViolationError: name violates exclusivity constraint
+```
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 

@@ -26,7 +26,7 @@ insert City {
 ```sdl
 type City extending Place {
   annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  property population -> int64;
+  population: int64;
 }
 ```
 
@@ -278,12 +278,12 @@ select Vampire {
 ```edgeql
 select MinorVampire {
   name,
-  # master... how do we get this?
-  # There's no link to Vampire inside MinorVampire...
+  # master... 怎么找呢?
+  # 在MinorVampire没有到Vampire的链接...
 }
 ```
 
-既然上面没有 `link master -> Vampire`，我们该如何倒退查看链接到它的 `Vampire` 类型呢？
+既然上面没有 `master: Vampire`，我们该如何倒退查看链接到它的 `Vampire` 类型呢？
 
 这就要靠反向链接了，我们使用 `.<` 代替 `.` 并指定我们要查找的类型：`[is Vampire]`。
 

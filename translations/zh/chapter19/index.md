@@ -30,18 +30,18 @@ tags: Backlinks, Schema Cleanup
 
 ```sdl
 type Ship extending HasNameAndCoffins {
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
-看起来还不错，但我们可以在本章中进一步构建它。目前，我们还没有任何关于什么船到过什么地方的信息。现在让我们来创建一个包含所有船舶访问信息的快速类型 `Visit`。每一次的访问都会有一个指向 `Ship` 的链接和一个指向 `Place` 的链接，以及一个用来展示访问日期的 `cal::local_date`。如下所示：
+看起来还不错，但我们可以在本章中进一步构建它。目前，我们还没有任何关于什么船到过什么地方的信息。现在让我们来创建一个包含所有船舶访问信息的快速类型 `ShipVisit`。每一次的访问都会有一个指向 `Ship` 的链接和一个指向 `Place` 的链接，以及一个用来展示访问日期的 `cal::local_date`。如下所示：
 
 ```sdl
-type Visit {
-  required link ship -> Ship;
-  required link place -> Place;
-  required property date -> cal::local_date;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
 }
 ```
 
@@ -96,7 +96,7 @@ select (introspect OtherPlace) {
 }
 ```
 
-嗯，博斯普鲁斯海峡（Bosphorus）不是一座城堡，也不是一个有建筑物的地方，所以使用 `OhterPlace` 很合适。后面我们将会创建一个 `Region` 类型，以便我们可以有一个 `Country` -> `Region` -> `City` 的布局。在这种情况下，`OtherPlace` 可能会在 `Country` 或 `Region` 中被链接。但目前，我们先只是添加它，暂不需要链接到任何其他类型：
+嗯，博斯普鲁斯海峡（Bosphorus）不是一座城堡，也不是一个有建筑物的地方，所以使用 `OhterPlace` 很合适。后面我们将会创建一个 `Region` 类型，以便我们可以有一个 `Country` → `Region` → `City` 的布局。在这种情况下，`OtherPlace` 可能会在 `Country` 或 `Region` 中被链接。但目前，我们先只是添加它，暂不需要链接到任何其他类型：
 
 ```edgeql
 insert OtherPlace {
@@ -115,7 +115,7 @@ for visit in {
     ('Czarina Catherine', 'Galatz', '1893-10-28')
   }
 union (
-  insert Visit {
+  insert ShipVisit {
     ship := (select Ship filter .name = visit.0),
     place := (select Place filter .name = visit.1),
     date := <cal::local_date>visit.2
@@ -126,7 +126,7 @@ union (
 有了这些数据，我们在游戏中可以随时查看特定日期下各城市的船只停泊情况了。例如，假设一个角色进入了加拉茨（Galatz）。如果日期是 1893 年 10 月 28 日，我们则可以通过下面的语句查看当地是否有船只停靠：
 
 ```edgeql
-select Visit {
+select ShipVisit {
   ship: {
     name
   },
@@ -141,7 +141,7 @@ select Visit {
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     ship: default::Ship {name: 'Czarina Catherine'},
     place: default::City {name: 'Galatz'},
     date: <cal::local_date>'1893-10-28',
@@ -152,7 +152,7 @@ select Visit {
 现在，让我们在船只的访问中再次练习一下可计算的反向链接。比如：
 
 ```edgeql
-select Ship.<ship[is Visit] {
+select Ship.<ship[is ShipVisit] {
   place: {
     name
   },
@@ -163,13 +163,13 @@ select Ship.<ship[is Visit] {
 } filter .place.name = 'Galatz';
 ```
 
-`Ship.<ship[is Visit]` 是指所有通过链接 `ship` 指向了某个 `Ship` 类型对象的 `Visit`。因为我们选择的是 `Visit` 而不是 `Ship`，所以我们的过滤器此时是作用在 `Visit` 的 `.place.name` 上，而不是 `Ship` 的属性上。
+`Ship.<ship[is ShipVisit]` 是指所有通过链接 `ship` 指向了某个 `Ship` 类型对象的 `ShipVisit`。因为我们选择的是 `ShipVisit` 而不是 `Ship`，所以我们的过滤器此时是作用在 `ShipVisit` 的 `.place.name` 上，而不是 `Ship` 的属性上。
 
 这是输出：
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1893-10-28',
@@ -189,7 +189,7 @@ select Ship.<ship[is Visit] {
 
 ```sdl
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
@@ -204,7 +204,7 @@ with time := (
     clock := '13:00:00'
   }
 )
-select Ship.<ship[is Visit] {
+select Ship.<ship[is ShipVisit] {
   place: {
     name
   },
@@ -225,7 +225,7 @@ select Ship.<ship[is Visit] {
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1893-10-28',
@@ -241,14 +241,14 @@ select Ship.<ship[is Visit] {
 
 ## 更多架构清理
 
-像上面那样在查询中快速做插入当然很酷，但这有点奇怪。问题在于我们现在使用的是一个随机的 `Time` 对象，它没有链接到任何东西。为此，让我们把 `Time` 中的所有属性都拿出来用于改进 `Visit` 类型。
+像上面那样在查询中快速做插入当然很酷，但这有点奇怪。问题在于我们现在使用的是一个随机的 `Time` 对象，它没有链接到任何东西。为此，让我们把 `Time` 中的所有属性都拿出来用于改进 `ShipVisit` 类型。
 
 ```sdl
-type Visit {
-  link ship -> Ship;
-  link place -> Place;
-  required property date -> cal::local_date;
-  property clock -> str;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
+  clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
@@ -264,10 +264,10 @@ set {
 };
 ```
 
-然后，我们将再次使用反向查询来完成同上面一样的对 `Visit` 的查询。同时，我们再添加一个计算（computed）属性给到 `when_arthur_got_the_telegram` 以增加一些趣味性：假设亚瑟（Arthur）花了两小时五分十秒才收到电报。我们将 `time` 字符串转换为 `cal::local_time`，然后再为其加上一个 `duration`，即可得到 `when_arthur_got_the_telegram`。
+然后，我们将再次使用反向查询来完成同上面一样的对 `ShipVisit` 的查询。同时，我们再添加一个计算（computed）属性给到 `when_arthur_got_the_telegram` 以增加一些趣味性：假设亚瑟（Arthur）花了两小时五分十秒才收到电报。我们将 `time` 字符串转换为 `cal::local_time`，然后再为其加上一个 `duration`，即可得到 `when_arthur_got_the_telegram`。
 
 ```edgeql
-select Ship.<ship[is Visit] {
+select Ship.<ship[is ShipVisit] {
   place: {
     name
   },
@@ -286,7 +286,7 @@ select Ship.<ship[is Visit] {
 
 ```
 {
-  default::Visit {
+  default::ShipVisit {
     place: default::City {name: 'Galatz'},
     ship: default::Ship {name: 'Czarina Catherine'},
     date: <cal::local_date>'1893-10-28',
@@ -302,13 +302,13 @@ select Ship.<ship[is Visit] {
 
 ```sdl
 type Country extending Place {
-  multi link regions -> Region;
+  multi regions: Region;
 }
 
 type Region extending Place {
-  multi link cities -> City;
-  multi link other_places -> OtherPlace;
-  multi link castles -> Castle;
+  multi cities: City;
+  multi other_places: OtherPlace;
+  multi castles: Castle;
 }
 ```
 

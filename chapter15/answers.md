@@ -1,12 +1,12 @@
 # Chapter 15 Questions and Answers
 
-#### 1. How would you create a type called Horse with a `required property name -> str` that can only be 'Horse'?
+#### 1. How would you create a type called Horse with a `required name: str` that can only be 'Horse'?
 
 This is easy with `expression on` and using `__subject__.name` to refer to the name of the object we are inserting:
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse');
 };
 ```
@@ -17,7 +17,7 @@ Just put it inside the `constraint` like this:
 
 ```sdl
 type Horse {
-  required property name -> str;
+  required name: str;
   constraint expression on (__subject__.name = 'Horse') {
     errmessage := 'All Horses must be named \'Horse\''
   }
@@ -30,10 +30,10 @@ First of all, here is the type right now:
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -43,13 +43,13 @@ Since `name` comes from Person, we can overload it with this constraint. With `e
 
 ```sdl
 type NPC extending Person {
-  overloaded property name {
+  overloaded name: str {
     constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -77,6 +77,3 @@ select display_coffins() {
 };
 ```
 
-#### 5. How would you make it without touching the schema?
-
-Easy, just put `create` in front of it!

@@ -16,7 +16,7 @@ tags: Multiple Inheritance, Polymorphism
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -60,7 +60,7 @@ scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
 ```sdl
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 ```
 
@@ -68,9 +68,9 @@ type Sailor extending Person {
 
 ```sdl
 type Ship {
-  required property name -> str;
-  multi link sailors -> Sailor;
-  multi link crew -> Crewman;
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
 }
 ```
 
@@ -152,7 +152,7 @@ EdgeDB 有一个叫做 {eql:type}`docs:std::sequence` 的类型，它对于给�
 
 ```sdl
 type Townsperson extending Person {
-  property number -> sequence;
+  number: sequence;
 }
 ```
 
@@ -162,7 +162,7 @@ type Townsperson extending Person {
 scalar type TownspersonNumber extending sequence;
 
 type Townsperson extending Person {
-  property number -> TownspersonNumber;
+  number: TownspersonNumber;
 }
 ```
 
@@ -274,11 +274,11 @@ select year is int16 or year is int32 or year is int64;
 
 ## Multi 的使用
 
-我们已经看到过很多次 `multi link` 了，你可能想知道 `multi` 是否也可以用在其他地方。答案是肯定的。比如 `multi property`，它与任何属性并无二致，但它可以有多个值。例如，我们的 `Castle` 类型有一个用于 `doors` 属性的 `array<int16>`：
+我们已经看到过很多次 `multi` 链接了，你可能想知道 `multi` 是否也可以用在其他地方。答案是肯定的。比如 `multi`的 property，它与任何属性并无二致，但它可以有多个值。例如，我们的 `Castle` 类型有一个用于 `doors` 属性的 `array<int16>`：
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -286,7 +286,7 @@ type Castle extending Place {
 
 ```sdl
 type Castle extending Place {
-  multi property doors -> int16;
+  multi doors: int16;
 }
 ```
 
@@ -299,46 +299,46 @@ insert Castle {
 };
 ```
 
-接下来你可能会问，使用哪种方法更好？`multi property` 还是 `array`？或是使用 `multi link` 链接到对象。答案是……视情况而定。但是这里有一些很好的经验法则可以帮助你做决定。
+接下来你可能会问，使用哪种方法更好？`multi` property 还是 `array`？或是使用 `multi` 链接到对象。答案是……视情况而定。但是这里有一些很好的经验法则可以帮助你做决定。
 
-- `multi property` 与数组：
+- `multi` property 与数组：
 
-  取决于你正在处理的数据有多大？当你的数据量很大时，`multi property` 更有效，而数组则较慢。但是如果你处理的集合较小，那么数组比 `multi property` 更快。
+  取决于你正在处理的数据有多大？当你的数据量很大时，`multi` property 更有效，而数组则较慢。但是如果你处理的集合较小，那么数组比 `multi` property 更快。
 
-  如果你想对单个元素使用索引（indexes）和约束（constraints），那么你应该使用 `multi property`。我们将在第 16 章中学习如何在查询种使用索引，现在只需要知道它们是一种加快查询的方法。
+  如果你想对单个元素使用索引（indexes）和约束（constraints），那么你应该使用 `multi` property。我们将在第 16 章中学习如何在查询种使用索引，现在只需要知道它们是一种加快查询的方法。
 
   如果顺序很重要，那么使用数组可能会更好。因为保持数组中项目的原始顺序更加容易。
 
-- `multi property` 与对象
+- `multi` property 与对象
 
-  我们先来看使用 `multi property` 更好的两个方面，即使用对象的劣势，然后再说使用对象的好处。
+  我们先来看使用 `multi` property 更好的两个方面，即使用对象的劣势，然后再说使用对象的好处。
 
   首先，对象的第一个负面问题是：对象总是很大。还记得 `describe type as text` 吗？让我们用它来看看我们之前创建的 `Castle` 类型：
 
   ```
   {
     'type default::Castle extending default::Place {
-      required single link __type__ -> schema::Type {
+      required single link __type__: schema::Type {
           readonly := true;
       };
-      optional single property doors -> array<std::int16>;
-      required single property id -> std::uuid {
+      optional single property doors: array<std::int16>;
+      required single property id: std::uuid {
           readonly := true;
       };
-      optional single property important_places -> array<std::str>;
-      optional single property modern_name -> std::str;
-      required single property name -> std::str;
+      optional single property important_places: array<std::str>;
+      optional single property modern_name: std::str;
+      required single property name: std::str;
   };',
   }
   ```
 
   你一定看到过 `readonly := true` 的类型，你创建的每个对象类型都会有它们。`__type__` 链接和 `id` 属性分别都是 16 字节。
 
-  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi link` 需要额外的“连接（join）”（链接表 + 对象表），但 `multi property` 并不需要。此外，“反向链接“（backlink）（你将在第 14 章中学习到）也需要更多类似的额外工作。
+  对象的第二个负面问题是类似的：对象更多是为计算机工作的。EdgeDB 运行在 PostgreSQL 之上，指向对象的 `multi` 链接需要额外的“连接（join）”（链接表 + 对象表），但 `multi` property 并不需要。此外，“反向链接“（backlink）（你将在第 14 章中学习到）也需要更多类似的额外工作。
 
   现在，我们来介绍一下经过对比后，使用对象的两个好处：
 
-  是否有其他类型需要引用相同的值？如果是这样，那么最好使用对象来保持一致。这就是为什么我们最终将 `places_visited` 设为 `multi link` 的原因。
+  是否有其他类型需要引用相同的值？如果是这样，那么最好使用对象来保持一致。这就是为什么我们最终将 `places_visited` 设为 `multi` 链接的原因。
 
   如果你需要为每个对象设置多个值，则使用对象更容易进行迁移/变更（migrate）。
 

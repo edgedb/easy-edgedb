@@ -47,10 +47,10 @@ Our first type is called `HasNameAndCoffins`, which is abstract because we don't
 
 ```sdl
 abstract type HasNameAndCoffins {
-  required property coffins -> int16 {
+  required coffins: int16 {
     default := 0;
   }
-  required property name -> str {
+  required name: str {
     delegated constraint exclusive;
     constraint max_len_value(30);
   }
@@ -63,22 +63,22 @@ Next is `abstract type Person`. This type is by far the largest, and does most o
 
 ```sdl
 abstract type Person {
-  property first -> str;
-  property last -> str;
-  property title -> str;
-  property degrees -> str;
-  required property name -> str {
+  first: str;
+  last: str;
+  title: str;
+  degrees: str;
+  required name: str {
     delegated constraint exclusive;
   }
-  property age -> int16;
+  age: int16;
   property conversational_name := .title ++ ' ' ++ .name 
     if exists .title else .name;
   property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  property strength -> int16;
-  multi link places_visited -> Place;
-  multi link lovers -> Person;
-  property first_appearance -> cal::local_date;
-  property last_appearance -> cal::local_date;
+  strength: int16;
+  multi places_visited: Place;
+  multi lovers: Person;
+  first_appearance: cal::local_date;
+  last_appearance: cal::local_date;
 }
 ```
 
@@ -88,14 +88,14 @@ Properties like `conversational_name` are {ref}`computed properties <docs:ref_da
 
 Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
 
-The two links are `multi link`s, without which a `link` is to only one object. If you just write `link`, it will be a `single link`. It means that you may need to add `assert_single()` when creating a link or it will give this error:
+The two links are `multi` links, without which a link is to only one object: without the keyword `multi` it will be a single link. It means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
 error: possibly more than one element returned by an expression
 for a computed link 'former_self' declared as 'single'
 ```
 
-This could be what you want for `lover`, but it wouldn't work well for `places_visited`. And backlinks have the opposite behavior: a backlink is a `multi link` by default, meaning that you have to write `single link` otherwise.
+Meanwhile, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
 
 For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and ISO8601 compliant.
 
@@ -111,7 +111,7 @@ A similar abstract type to `HasNameAndCoffins` is this one:
 
 ```sdl
 abstract type HasNumber {
-  required property number -> int16;
+  required number: int16;
 }
 ```
 
@@ -133,15 +133,15 @@ set {
 
 So even though it was rarely used, it could become useful later on. For types later in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
 
-Our vampire types extend `Person`, while `MinorVampire` also has an optional (single) link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
+Our vampire types extend `Person`, while `MinorVampire` also has a single and non-required link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
 
 ```sdl
 type Vampire extending Person {
-  multi link slaves -> MinorVampire;
+  multi slaves: MinorVampire;
 }
 
 type MinorVampire extending Person {
-  link former_self -> Person;
+  former_self: Person;
 }
 ```
 
@@ -161,20 +161,20 @@ The `PC` and `Sailor` types show two enums and one sequence that we used:
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 type Sailor extending Person {
-  property rank -> Rank;
+  rank: Rank;
 }
 
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
 scalar type PCNumber extending sequence;
 type PC extending Person {
-  required property class -> Class;
-  property created_at -> datetime {
-    default := datetime_current()
+  required class: Class;
+  created_at: datetime {
+    default := datetime_of_statement()
   }
-  required property number -> PCNumber {
+  required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
-  overloaded required property name -> str {
+  overloaded required name: str {
     constraint max_len_value(30);
   }
 }
@@ -187,18 +187,18 @@ with latest := (select <str>max(PC.number)),
 select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
 ```
 
-`Visit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `Visit` type we have a `clock` property that is just a string, but gets used in this way:
+`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
 - by another computed property called `sleep_state` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
 
 ```sdl
-type Visit {
-  required link ship -> Ship;
-  required link place -> Place;
-  required property date -> cal::local_date;
-  property clock -> str;
+type ShipVisit {
+  required ship: Ship;
+  required place: Place;
+  required date: cal::local_date;
+  clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' 
@@ -210,10 +210,10 @@ The NPC type is where we first saw the {ref}` ``overloaded`` <docs:ref_eql_sdl_l
 
 ```sdl
 type NPC extending Person {
-  overloaded property age {
+  overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi link places_visited -> Place {
+  overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
   }
 }
@@ -223,31 +223,12 @@ Our `Place` type shows that you can extend as many times as you want. It's an `a
 
 ```sdl
 abstract type Place extending HasNameAndCoffins {
-  property modern_name -> str;
-  property important_places -> array<str>;
+  modern_name: str;
+  multi important_places: Landmark;
 }
 ```
 
-The `important_places` property only got used once in this insert:
-
-```edgeql
-insert City {
-  name := 'Bistritz',
-  modern_name := 'Bistrița',
-  important_places := ['Golden Krone Hotel'],
-};
-```
-
-and right now it is just an array. We can keep it unchanged for now, because we haven't made a type yet for really small locations like hotels and parks. But if we do make a new type for these places, then we should turn it into a `multi link`. Even our `OtherPlace` type is not quite the right type for this, as the {ref}`annotation <docs:ref_eql_sdl_annotations>` shows:
-
-```sdl
-type OtherPlace extending Place {
-  annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
-  annotation warning := 'Castles and castle towns count! Use the Castle type for that';
-}
-```
-
-So in a real game we would create some other smaller location types and make them a link from the `property important_places` inside `City`. We might also move `important_places` to `Place` so that types like `Region` could link from it too.
+The `important_places` property used to be an `<array<str>>`, but in Chapter 16 we decided to create a `Landmark` type that would represent the smallest type of location that would appear in the game such as hotels, parks, universities, and so on. These locations are so small that they don't need to track the number of coffins, because the number of coffins is relevant for larger spaces of land to help determine if the location can be easily terrorized by vampires or not.
 
 Annotations: we used `abstract annotation` to add a new annotation:
 
@@ -271,7 +252,7 @@ We might remove this in a real game, or maybe it would become type Lord extendin
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
-Another possible way to create a `Lord` is to do it this way, since `Person` has the property called `title`:
+Another possible way to create a `Lord` is to do it this way, since `Person` has a property called `title`:
 
 ```sdl
 type Lord extending Person {
@@ -287,7 +268,7 @@ Our next types extending `Place` including `Country` and `Region` were looked at
 
 ```sdl
 type Castle extending Place {
-  property doors -> array<int16>;
+  doors: array<int16>;
 }
 ```
 
@@ -325,9 +306,9 @@ Our next type is `BookExcerpt`, which we imagined being useful for the humans cr
 
 ```sdl
 type BookExcerpt {
-  required property date -> cal::local_datetime;
-  required link author -> Person;
-  required property excerpt -> str;
+  required date: cal::local_datetime;
+  required author: Person;
+  required excerpt: str;
   index on (.excerpt);
 }
 ```
@@ -336,14 +317,14 @@ Next is our other fun and hacky type, `Event`.
 
 ```sdl
 type Event {
-  required property description -> str;
-  required property start_time -> cal::local_datetime;
-  required property end_time -> cal::local_datetime;
-  required multi link place -> Place;
-  required multi link people -> Person;
-  multi link excerpt -> BookExcerpt;
-  property location -> tuple<float64, float64>;
-  property east -> bool;
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  multi excerpt: BookExcerpt;
+  location: tuple<float64, float64>;
+  east: bool;
   property url := get_url() ++ <str>.location.0 ++ '_N_' 
     ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
@@ -456,9 +437,9 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
 
 ```sdl-synopsis
 [ overloaded ] [{required | optional}] [{single | multi}]
-  property name
-  [ extending base [, ...] ] -> type
+  [ property ] name : type
   [ "{"
+      [ extending base [, ...] ; ]
       [ default := expression ; ]
       [ readonly := {true | false} ; ]
       [ annotation-declarations ]

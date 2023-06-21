@@ -9,13 +9,13 @@ leadImage: illustration_02.jpg
 
 > 乔纳森·哈克（Jonathan Harker）在 **比斯特里茨（Bistritz）** 发现了一家酒店, 叫做 **金克朗酒店（Golden Krone Hotel）**。他在酒店里收到了一封来自德古拉（Dracula）的欢迎信，信中提到德古拉正在 **城堡（castle）** 里等他。乔纳森·哈克第二天不得不搭乘马车才能到达那里。同时我们还了解到乔纳森·哈克来自 **伦敦（London）**。金克朗酒店（Golden Krone Hotel）的老板似乎很害怕德古拉。他不想让乔纳森（Jonathan）离开并表示前往城堡会很危险，但乔纳森并没有听进去。一位老太太给了乔纳森一个金色的十字架，说十字架可以保护他。乔纳森感到很尴尬，认为这可能是出于礼貌，他并不知道之后这会对他有多大的帮助。
 
-现在我们开始看一下比斯特里茨（Bistritz）这座城市的细节。通过阅读上面的情节，你可能会想到我们可以给 `City` 添加一个叫做 `important_places` 的属性。它可以是像 **金克朗酒店（Golden Krone Hotel）** 这样的地方。虽然我们尚不确定这些地方在将来是否会拥有属于自己的类型，但至少现在不需要，所以我们暂时只是将它定义为一个字符串的数组：`property important_places -> array<str>;` 然后我们则可以把这些重要地点的名字放进去。也许之后还会发展出更多的内容，但目前为止，`City` 的定义暂时如下所示：
+现在我们开始看一下比斯特里茨（Bistritz）这座城市的细节。通过阅读上面的情节，你可能会想到我们可以给 `City` 添加一个叫做 `important_places` 的属性。它可以是像 **金克朗酒店（Golden Krone Hotel）** 这样的地方。虽然我们尚不确定这些地方在将来是否会拥有属于自己的类型，但至少现在不需要，所以我们暂时只是将它定义为一个字符串的数组：`important_places: array<str>;` 然后我们则可以把这些重要地点的名字放进去。也许之后还会发展出更多的内容，但目前为止，`City` 的定义暂时如下所示：
 
 ```sdl
 type City {
-  required property name -> str;
-  property modern_name -> str;
-  property important_places -> array<str>;
+  required name: str;
+  modern_name: str;
+  important_places: array<str>;
 }
 ```
 
@@ -53,12 +53,12 @@ scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> City;
+  required name: str;
+  multi places_visited: City;
 }
 
 type PC extending Person {
-  required property class -> Class;
+  required class: Class;
 }
 
 type NPC extending Person {
@@ -273,7 +273,7 @@ select 1893#0503 is the first day of the book Dracula when...
 
    ```sdl
    abstract type HasAString {
-     property string -> str
+     string: str
    };
    ```
 

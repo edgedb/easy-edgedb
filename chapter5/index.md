@@ -201,13 +201,13 @@ Now we need to make a type for the three female vampires. We'll call it `MinorVa
 
 ```sdl
 type MinorVampire extending Person {
-  required link master -> Vampire;
+  required master: Vampire;
 }
 ```
 
 Now let's do a migration to add `MinorVampire` to the schema.
 
-With `master` as a `required link`, we can't insert a `MinorVampire` with just a name:
+With `master` as a `required` link, we can't insert a `MinorVampire` with just a name:
 
 ```edgeql
 insert MinorVampire {
@@ -268,7 +268,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 ```
 {
   'create type default::MinorVampire extending default::Person {
-    create required link master -> default::Vampire;
+    create required link master: default::Vampire;
 };',
 }
 ```
@@ -282,7 +282,7 @@ The output is almost the same too, just the SDL version of the above. It's also 
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required link master -> default::Vampire;
+    required master: default::Vampire;
 };',
 }
 ```
@@ -294,16 +294,16 @@ You'll notice that it's basically the same as our SDL schema, just a bit more ve
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link __type__ -> schema::Type {
+    required single link __type__: schema::Type {
         readonly := true;
     };
-    optional single link lover -> default::Person;
-    required single link master -> default::Vampire;
-    optional multi link places_visited -> default::Place;
-    required single property id -> std::uuid {
+    optional single link lover: default::Person;
+    required single link master: default::Vampire;
+    optional multi link places_visited: default::Place;
+    required single property id: std::uuid {
         readonly := true;
     };
-    required single property name -> std::str;
+    required single property name: std::str;
 };',
 }
 ```
@@ -313,17 +313,17 @@ If you want a bit more information, you can add the keyword `verbose` to make th
 ```
 {
   'type default::MinorVampire extending default::Person {
-    required single link __type__ -> schema::ObjectType {
+    required single link __type__: schema::ObjectType {
         readonly := true;
     };
-    optional single link lover -> default::Person;
-    required single link master -> default::Vampire;
-    optional multi link places_visited -> default::Place;
-    required single property id -> std::uuid {
+    optional single link lover: default::Person;
+    required single link master: default::Vampire;
+    optional multi link places_visited: default::Place;
+    required single property id: std::uuid {
         readonly := true;
         constraint std::exclusive;
     };
-    required single property name -> std::str;
+    required single property name: std::str;
 };',
 }
 ```

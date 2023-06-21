@@ -16,31 +16,31 @@ tags: Complex Inserts, Schema Cleanup
 
 （还有一个 _半便士铜币（halfpenny）_ 是一便士的一半，但这里我们就不在游戏中引入这么多细节了。）
 
-为了说明上面的规则，我们给 `Currency` 定义了三个属性（货币单位）：`major`、`minor` 和 `sub_minor`，且它们每一个都会有一个金额，其中后两个还会有一个用于兑换换算的数字；此外，`Currency` 还包含一个 `link owner -> Person` 来指明钱的拥有者。所以 `Currency` 的定义如下所示：
+为了说明上面的规则，我们给 `Currency` 定义了三个属性（货币单位）：`major`、`minor` 和 `sub_minor`，且它们每一个都会有一个金额，其中后两个还会有一个用于兑换换算的数字；此外，`Currency` 还包含一个 `owner: Person` 来指明钱的拥有者。所以 `Currency` 的定义如下所示：
 
 ```sdl
 abstract type Currency {
-  required link owner -> Person;
+  required owner: Person;
 
-  required property major -> str;
-  required property major_amount -> int64 {
+  required major: str;
+  required major_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
 
-  property minor -> str;
-  property minor_amount -> int64 {
+  minor: str;
+  minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property minor_conversion -> int64;
+  minor_conversion: int64;
 
-  property sub_minor -> str;
-  property sub_minor_amount -> int64 {
+  sub_minor: str;
+  sub_minor_amount: int64 {
     default := 0;
     constraint min_value(0);
   }
-  property sub_minor_conversion -> int64;
+  sub_minor_conversion: int64;
 }
 ```
 
@@ -52,19 +52,19 @@ abstract type Currency {
 
 ```sdl
 type Pound extending Currency {
-  overloaded required property major {
+  overloaded required major: str {
     default := 'pound'
   }
-  overloaded required property minor {
+  overloaded required minor: str {
     default := 'shilling'
   }
-  overloaded required property minor_conversion {
+  overloaded required minor_conversion: int64 {
     default := 20
   }
-  overloaded property sub_minor {
+  overloaded sub_minor: str {
     default := 'pence'
   }
-  overloaded property sub_minor_conversion {
+  overloaded sub_minor_conversion: int64 {
     default := 240
   }
 }
@@ -169,14 +169,14 @@ select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Em
 
 （如果你不想看到 `decimal` 类型最后的 `n`，只需将其转换为 `<float32>` 或 `<float64>` 即可）
 
-你现在也许会注意到，关于如何显示金钱可能存在一些争论。它应该是一个 `Currency` 并链接到所有者吗？或者它应该是一个 `Person` 并链接到名为 `money` 的属性？前者（我们的方法）对于现实游戏来说可能更简单，因为游戏中存在多种 `Currency` 类型。如果我们选择另一种方法，我们将需要给 `Person` 类型创建很多个链接，分别链接到不同类型的货币，并且大多数都为零。而使用我们的方法，我们只需要在角色开始拥有某种货币时为其创造“成堆”的金钱。或者这些“堆”可能是钱包和袋子之类的东西，如果游戏中的角色可能会丢失这些“成堆”的钱，我们可以将 `required link owner -> Person;` 改为 `optional link owner -> Person;`。
+你现在也许会注意到，关于如何显示金钱可能存在一些争论。它应该是一个 `Currency` 并链接到所有者吗？或者它应该是一个 `Person` 并链接到名为 `money` 的属性？前者（我们的方法）对于现实游戏来说可能更简单，因为游戏中存在多种 `Currency` 类型。如果我们选择另一种方法，我们将需要给 `Person` 类型创建很多个链接，分别链接到不同类型的货币，并且大多数都为零。而使用我们的方法，我们只需要在角色开始拥有某种货币时为其创造“成堆”的金钱。或者这些“堆”可能是钱包和袋子之类的东西，如果游戏中的角色可能会丢失这些“成堆”的钱，我们可以将 `required owner: Person;` 改为 `optional owner: Person;`。
 
 当然，如果我们的游戏世界里只有一种类型的钱，那么将它放在 `Person` 类型中会更加简单。下面的内容并没有打算真的修改架构，只是一起来想象一下该如何做到这一点。假设游戏只发生在美国境内，那么在没有 `Currency` 这个抽象类型的情况下，像下面这样做会更容易：
 
 ```sdl
 type Dollar {
-  required property dollars -> int64;
-  required property cents -> int64;
+  required dollars: int64;
+  required cents: int64;
   property total_money := .dollars + (.cents / 100)
 }
 ```

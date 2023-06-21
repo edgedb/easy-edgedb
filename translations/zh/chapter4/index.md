@@ -11,13 +11,13 @@ leadImage: illustration_04.jpg
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Places;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Places;
+  lover: Person;
 }
 ```
 
-这样就可以把乔纳森和米娜关联在一起了。我们假设一个人只能有一个 `lover`，所以它是一个 `single link`，但我们可以只写 `link`。
+这样就可以把乔纳森和米娜关联在一起了。我们假设一个人只能有一个 `lover`，所以它是一个 `single link`。
 
 米娜目前在伦敦，且我们还不知道她是否去过其他什么地方。所以我们先快速地为“伦敦”插入一条数据。这很简单：
 
@@ -74,7 +74,7 @@ select Person {
 }
 ```
 
-不难看出，米娜·默里（Mina Murray）有一个爱人，是乔纳森，但乔纳森·哈克（Jonathan Harker）却还没有爱人，这是因为我们之前创建乔纳森的时候还没有 `lover` 这个属性。我们将会在后续的第 6、14、15章中学习一些技巧来处理这种情况。这里我们就先暂时保持乔纳森·哈克的 `link lover` 是 `{}`。
+不难看出，米娜·默里（Mina Murray）有一个爱人，是乔纳森，但乔纳森·哈克（Jonathan Harker）却还没有爱人，这是因为我们之前创建乔纳森的时候还没有 `lover` 这个属性。我们将会在后续的第 6、14、15章中学习一些技巧来处理这种情况。这里我们就先暂时保持乔纳森·哈克的 `lover` 链接是 `{}`。
 
 回到查询语句：如果我们只是想根据角色是否有爱人来返回 `true` 或 `false`，该怎么办呢？我们可以在查询语句中添加一个使用 `exists` 的“计算（computed）”属性。如下所示，如果 `Person.lover` 返回的是一个有内容的集合，则 `exists` 将返回 `true`；如果它返回的是 `{}`（即什么都没有），则 `exists` 返回 `false`。这再次说明 EdgeDB 中没有 null。由此，我们将查询语句调整为：
 
@@ -121,14 +121,12 @@ select Person {
 
 ```sdl
 abstract type Person {
-  required property name -> str;
-  multi link places_visited -> Places;
-  link lover -> Person;
+  required name: str;
+  multi places_visited: Places;
+  lover: Person;
   property is_single := not exists .lover;
 }
 ```
-
-但我们并不会为我们的游戏在这个类型定义中最终保留 `is_single`，这里只是示意你还可以如何这样做。
 
 现在，你可能对“计算的（computed）”链接及属性在后端数据库中的表示方式感到好奇。它们很有趣，因为它们不会出现在实际数据库中 {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`，他们仅会在你查询时出现。你不必指定它的类型，因为“计算的（computed）”表达式自身就决定了类型。比如，当你查看带有快速计算变量的查询时，如 `select country_name := 'Romania'`，每次执行查询时 EdgeDB 都会计算 `country_name`，且类型会被确定为字符串。类型定义中的“计算（computed）”链接及属性所做的事情其实是一样的。但无论如何，他们用起来同常规的属性及链接并无二致，因为计算属性及链接的公式在定义类型的时候就写死了。换言之，计算属性与常规属性的底层实现虽有不同，但对使用者来说都是一样的属性。
 
@@ -166,7 +164,7 @@ select <cal::local_time>('15:44:56');
 
 ```sdl
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
 }
@@ -215,7 +213,7 @@ select Time {
 
 ```sdl
 type Time {
-  required property clock -> str;
+  required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
   property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
