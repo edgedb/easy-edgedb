@@ -101,7 +101,7 @@ For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_d
 
 So for databases with users around the world, `datetime` is usually the best choice. Then you can use a function like {eql:func}`docs:std::to_datetime` to turn five `int64`s, one `float64` (for the seconds) and one `str` (for [the timezone](https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations)) into a `datetime` that is always returned as UTC:
 
-```edgeql-repl
+```
 db> select std::to_datetime(2020, 10, 12, 15, 35, 5.5, 'KST');
 ....... # October 12 2020, 3:35 pm and 5.5 seconds in Korea (KST = Korean Standard Time)
 {<datetime>'2020-10-12T06:35:05.500Z'} # The return value is UTC, 6:35 (plus 5.5 seconds) in the morning
@@ -456,7 +456,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL. Take this attempt to use DDL for example and the error output it generates:
 
-```edgeql-repl
+```
 db> create function hi() -> str using ("Hi");
 error: QueryError: bare DDL statements are not allowed in this database
   ┌─ <query>:1:1

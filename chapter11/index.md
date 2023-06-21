@@ -173,7 +173,7 @@ To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which i
 
 Here is a quick example:
 
-```edgeql-repl
+```
 db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
@@ -266,7 +266,7 @@ Here is the output. It's a total of nine fights, where each person in Set 1 figh
 
 And if you take out the filter and just write `select Person` for the function, you will get well over 100 results. EdgeDB by default will only show the first 100, eventually displaying this after the first 100 results:
 
-```edgeql-repl
+```
 # First 98 results...
 'Count Dracula wins!',
 'Fighter 2 wins!',

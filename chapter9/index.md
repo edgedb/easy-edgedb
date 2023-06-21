@@ -113,7 +113,7 @@ type NPC extending Person {
 
 Two convenient functions are {eql:func}` ``datetime_current()`` <docs:std::datetime_current>` and {eql:func}` ``datetime_of_statement()`` <docs:std::datetime_of_statement>`, which give the datetime right now. Let's try the first one out:
 
-```edgeql-repl
+```
 db> select datetime_current();
 {<datetime>'2023-05-28T10:18:56.889701Z'}
 ```
@@ -124,7 +124,7 @@ Note though that `datetime_current()` will not return the exact same date as ano
 
 We can see this in the following example in which we create three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
 
-```edgeql-repl
+```
 db> with three_dates := {
   datetime_current(),
   datetime_current(),
@@ -141,7 +141,7 @@ select three_dates union max(three_dates);
 
 However, if we change the function to `datetime_of_statement()`, then the exact same datetime will be returned no matter how many times we call it:
 
-```edgeql-repl
+```
 edgedb> select {datetime_of_statement(), datetime_of_statement(), datetime_of_statement()};
 {
   <datetime>'2023-06-18T08:34:10.621754Z',

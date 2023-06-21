@@ -165,7 +165,7 @@ InvalidFunctionDefinitionError: return cardinality mismatch in function
 
 下面是一个简单的例子：
 
-```edgeql-repl
+```
 db> select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 

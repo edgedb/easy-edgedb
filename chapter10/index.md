@@ -190,7 +190,7 @@ Now we get `{230023}`, the population of Munich.
 
 You can still access items inside tuples by numbers even if they have a name:
 
-```edgeql-repl
+```
 db> select (name := 'Jonathan Harker', age := 25).0;
 {'Jonathan Harker'}
 db> select (name := 'Jonathan Harker', age := 25).name;

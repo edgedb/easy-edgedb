@@ -108,7 +108,7 @@ function two_cities(city_one: str, city_two: str) -> float64
 
 Then it would be used in this sort of way:
 
-```edgeql-repl
+```
 db> select two_cities('Munich', 'Bistritz');
 {25.277252747252746}
 db> select two_cities('Munich', 'London');

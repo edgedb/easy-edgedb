@@ -160,7 +160,7 @@ function visited(person: str, city: str) -> bool
 
 Pretty simple! Let's add it to the schema and do a migration. Now our queries are much shorter:
 
-```edgeql-repl
+```
 db> select visited('Mina Murray', 'London');
 {true}
 db> select visited('Mina Murray', 'Bistritz');
@@ -220,7 +220,7 @@ You can probably guess that the same is true for array constructors too, so `sel
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
-```edgeql-repl
+```
 db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```

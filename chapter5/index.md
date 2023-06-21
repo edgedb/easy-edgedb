@@ -27,7 +27,7 @@ One other way to get a `datetime` is to use the `to_datetime()` function. {eql:f
 
 Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
 
-```edgeql-repl
+```
 db> select 6.777777777777777; # Good so far
 {6.777777777777777}
 db> select 6.7777777777777777; # Add one more digit...
@@ -36,7 +36,7 @@ db> select 6.7777777777777777; # Add one more digit...
 
 If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
 
-```edgeql-repl
+```
 db> select 6.7777777777777777n;
 {6.7777777777777777n}
 db> select 6.7777777777777777777777777777777777777777777777777n;
@@ -45,7 +45,7 @@ db> select 6.7777777777777777777777777777777777777777777777777n;
 
 Similarly, there is a `bigint` type that also uses `n` for an arbitrary size. That's because even int64 has a limit: it's 9223372036854775807.
 
-```edgeql-repl
+```
 db> select 9223372036854775807; # Good so far...
 {9223372036854775807}
 db> select 9223372036854775808; # But add 1 and it will fail
@@ -54,7 +54,7 @@ edgedb error: NumericOutOfRangeError: std::int64 out of range
 
 Here as well you can just add an `n` and it will create a `bigint` that can accommodate any size.
 
-```edgeql-repl
+```
 db> select 9223372036854775808n;
 {9223372036854775808n}
 ```

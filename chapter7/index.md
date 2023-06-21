@@ -276,7 +276,7 @@ So that will give all `City` type objects with "b" in the name and that have a d
 
 Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
 
-```edgeql-repl
+```
 with time := (
    insert Time {
      clock := <str>$hour ++ <str>$minute ++ <str>$second
