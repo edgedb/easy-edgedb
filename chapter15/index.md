@@ -108,7 +108,7 @@ Then the output is `Called!` as we expected. The function requires a City as an 
 
 So far so good, but the input is not optional so what happens if we type this instead?
 
-```
+```edgeql
 select try((select City filter .name = 'Beijing'));
 ```
 
@@ -121,12 +121,12 @@ function try(place: optional City) -> str
   );
 ```
 
-In this case we are still ignoring the argument `place` (the `City` type) but making it optional lets the function select 'Called!' regardless of whether it finds an argument or not. Having a City type and not having a City type are both acceptable in this case, and the function gets called in either case.
+In this case we are still ignoring the argument `place` (the `City` type) but making it optional lets the function select 'Called!' regardless of whether it finds an argument or not. Having a `City` type and not having a `City` type are both acceptable in this case, and the function gets called in either case.
 
 {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: 
 
 ```
-...the function is called normally when the corresponding argument is empty...
+...the function is called normally when the corresponding argument is empty ...
 A notable example of a function that gets called on empty input is the coalescing operator.
 ```
 
@@ -190,7 +190,8 @@ Some other possible ideas for improvement later on for `can_enter()` are:
 - Require a date in the function so that we can check if the vampire is dead or not first. For example, if we entered a date after Lucy died, it would just display something like the following:
 
 ```
-vampire.name ++ ' is already dead on ' ++ <str>.date ++ ' and cannot enter ' ++ city.name`
+vampire.name ++ ' is already dead on ' ++ <str>.date
+++ ' and cannot enter ' ++ city.name`
 ```
 
 ## More constraints
@@ -226,15 +227,17 @@ insert PC {
 The error is pretty nice and tells us everything we need to know:
 
 ```
-edgedb error: ConstraintViolationError: name must be no longer than 30 characters.
-  Detail: `value of property 'name' of object type 'default`::`PC'` must be no longer than 30 characters.
+edgedb error: ConstraintViolationError: name must be no longer 
+than 30 characters.
+  Detail: `value of property 'name' of object type 'default`::`PC'` 
+  must be no longer than 30 characters.
 ```
 
 Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
 ```sdl
 title: str {
-  constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord')
+  constraint one_of('Mr.', 'Mrs.', 'Ms.', 'Lord');
 }
 ```
 
@@ -244,7 +247,7 @@ Another place you could imagine using a `one_of` is in the months, because the b
 
 ```sdl
 month: int64 {
-  constraint one_of(5, 6, 7, 8, 9, 10)
+  constraint one_of(5, 6, 7, 8, 9, 10);
 }
 ```
 

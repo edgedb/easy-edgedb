@@ -140,7 +140,7 @@ As expected, we are not allowed and an error shows up. Perfect.
 
 ```
 edgedb error: ConstraintViolationError: Maximum allowed value for HumanAge is 120.
-  Detail: Maximum allowed value for value of scalar type 'default::HumanAge' is 120.
+ Detail: Maximum allowed value for value of scalar type 'default::HumanAge' is 120.
 ```
 
 Now let's insert the same innkeeper but give him an `age` of 30. This will now work: `{default::NPC {id: e7c4dd96-f2d4-11ed-a0c7-17fe2be02578}}`. Our `NPC` objects are now guaranteed to be no more than 120 years old.

@@ -159,7 +159,7 @@ And here it is:
 
 A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
 
-There is also a function called {eql:func}`docs:std::enumerate` that gives tuples of the index numbers and the items in set that we give it. We'll use this to compare to our `count()` function to make sure that our number is right.
+There is also a function called {eql:func}`docs:std::enumerate` that returns tuples of the index numbers and the items in set that we give it (a `set of tuple<int64, anytype>`). We'll use this to compare to our `count()` function to make sure that our number is right.
 
 First a simple example of how to use `enumerate()`:
 
@@ -481,6 +481,7 @@ And with that we get a nice output that shows backlinks from multiple concrete t
     npc_visitors: {default::NPC {name: 'Jonathan Harker'}},
   },
 }
+```
 
 One final note: this is why backlinks in EdgeDB are `multi` by default, as opposed to regular links which are `single` by default. After all, there might be a lot of objects here and there in our database that link back and it makes sense to assume that there could be a lot of them. But you can declare a backlink in your schema to be `single` if you want to insist that there can only be one object in a backlink.
 

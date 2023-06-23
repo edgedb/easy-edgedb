@@ -116,9 +116,9 @@ for visit in {
   }
 union (
   insert ShipVisit {
-    ship := (select Ship filter .name = visit.0),
+    ship  := (select Ship filter .name = visit.0),
     place := (select Place filter .name = visit.1),
-    date := <cal::local_date>visit.2
+    date  := <cal::local_date>visit.2
   }
 );
 ```

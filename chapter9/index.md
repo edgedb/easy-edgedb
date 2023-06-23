@@ -14,7 +14,7 @@ It looks like we have some more people to insert. But first, let's think about t
 
 This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
-For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also `cal::local_datetime` that includes time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
+For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also a `cal::local_datetime` type that includes the time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
 
 Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
 
@@ -46,7 +46,7 @@ By the way, `cal::local_date` has a pretty simple YYYYMMDD format so casting fro
 select <cal::local_date>'1893-07-08';
 ```
 
-But we imagined before that our dates and datetimes are being generated from a source that gives us individual numbers instead of strings, so we will continue to use that method.
+But we decided before that the dates and datetimes in our game are being generated from a source that gives us individual numbers instead of strings, so we will continue to use that method.
 
 Now we can update the `Crewman` objects. We'll give them all the same date to keep things simple:
 
@@ -54,7 +54,7 @@ Now we can update the `Crewman` objects. We'll give them all the same date to ke
 update Crewman
 set {
   first_appearance := cal::to_local_date(1893, 7, 6),
-  last_appearance := cal::to_local_date(1893, 7, 16)
+  last_appearance  := cal::to_local_date(1893, 7, 16)
 };
 ```
 
@@ -87,7 +87,9 @@ multi places_visited: Place {
 Impressive! It not only gives an error but tells us exactly what to do.
 
 ```
-error: link 'places_visited' of object type 'default::NPC' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
+error: link 'places_visited' of object type 'default::NPC' must be 
+declared using the `overloaded` keyword because it is defined in 
+the following ancestor(s): default::Person
    ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:27:3
    │
 27 │ ╭   multi places_visited: Place {
@@ -176,19 +178,20 @@ Let's do a migration and give this a try with a second PC. We'll call him Max De
 
 ```edgeql
 with new_pc := (insert PC {
- name := 'Max Demian',
- class := Class.Mystic
+   name := 'Max Demian',
+   class := Class.Mystic
  }),
  select new_pc {
- name,
- created_at
+   name,
+   created_at
  };
 ```
 
 The output will depend on when you do the insert, but it will look like this:
 
 ```
-{default::PC {name: 'Max Demian', created_at: <datetime>'2023-05-30T01:13:28.022340Z'}}
+{default::PC {name: 'Max Demian', 
+created_at: <datetime>'2023-05-30T01:13:28.022340Z'}}
 ```
 
 ## Using the 'for' and 'union' keywords
@@ -288,12 +291,12 @@ union (
   insert Crewman {
     number := n,
     first_appearance := cal::to_local_date(1893, 7, 6),
-    last_appearance := cal::to_local_date(1893, 7, 16),
+    last_appearance  := cal::to_local_date(1893, 7, 16),
   }
 );
 ```
 
-It's a good idea to familiarize yourself with {ref}`the order to follow <docs:ref_eql_statements_for>` when you use `for`:
+It's a good idea to familiarize yourself with {ref}`the order to follow <docs:ref_eql_statements_for>` when you use `for`. Here is the syntax information from the documentation on `for`:
 
 ```edgeql-synopsis
 [ with with-item [, ...] ]
@@ -353,8 +356,8 @@ In this case the schema migration would still have worked, but the `lover` data 
 ```edgeql
 update NPC filter .name in 
  {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
- set {
- lovers := (select Person filter .name = 'Lucy Westenra')
+   set {
+    lovers := (select Person filter .name = 'Lucy Westenra')
  };
 ```
 
@@ -445,9 +448,9 @@ That makes it easy to update Lucy's `lovers` link, since we know she now only sh
 
 ```edgeql
 update NPC filter .name = 'Lucy Westenra'
-set {
-lovers := (
-select Person filter NPC in .lovers
+  set {
+    lovers := (
+    select Person filter NPC in .lovers
 )};
 ```
 
@@ -472,7 +475,8 @@ But he has some sort of relationship to Dracula, similar to the `MinorVampire` t
 1. Why doesn't this insert work and how can it be fixed?
 
    ```edgeql
-   for castle in ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
+   for castle in
+     ['Windsor Castle', 'Neuschwanstein', 'Hohenzollern Castle']
    union (
      insert Castle {
        name := castle

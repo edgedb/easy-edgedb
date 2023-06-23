@@ -45,7 +45,7 @@ scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
 Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-To choose between the values (the choices) in an enum, you just use a `.`. For our enum, that means we can choose `Class.Rogue`, `Class.Mystic`, or `Class.Merchant`.
+To choose between the values (the choices) in an enum, you just use a `.` (a dot). For our enum, that means we can choose `Class.Rogue`, `Class.Mystic`, or `Class.Merchant`.
 
 This `Class` type is going to be for player characters in our game, not the people in the book (their stories, choices and statistics are already decided). That means that we will need both an `PC` type and an `NPC` type. These two types are pretty similar to each other: they both have a `name`, `places_visited`, and probably  some other properties that we will add later. This is a good case for an abstract type. Inside this abstract type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
 
@@ -79,7 +79,7 @@ No problem - just change `Person` to `NPC` and it will work.
 
 However, `select` on an abstract type is just fine - it will select all the types that extend from it. Let's add a `PC` object now to make a `select` on the abstract `Person` type more interesting. 
 
-We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just give him `City` so he'll have all three cities.
+We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just type `City` for his `places_visited` link which will link him to all three cities.
 
 ```edgeql
 insert PC {
@@ -169,7 +169,8 @@ select '9' + 9;
 EdgeDB tells us the exact problem here:
 
 ```
-error: InvalidTypeError: operator '+' cannot be applied to operands of type 'std::str' and 'std::int64'
+error: InvalidTypeError: operator '+' cannot be applied to operands of type
+'std::str' and 'std::int64'
   ┌─ <query>:1:8
   │
 1 │ select '9' + 9;
@@ -186,7 +187,7 @@ And you will get `18`, a 64-bit integer.
 
 Of course, a cast won't work if the input is invalid:
 
-```edgeql
+```
 db> select <int64>"Hi I'm a number please add me to" + 9;
 edgedb error: InvalidValueError: invalid input syntax for type std::int64:
 "Hi I'm a number please add me to"
@@ -328,12 +329,14 @@ db> select City {
  } filter .name ilike 'B%';
 ```
 
-The result is now all `City` objects that start with 'B', and the `City' object with a `name` of `''` is no longer getting in the way.
+The result is now all `City` objects that start with 'B', and the `City` object with a `name` of `''` is no longer getting in the way.
 
+```
  {
   default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
   default::City {name: 'Bistritz', modern_name: 'Bistrița'},
 }
+```
 
 ## Slicing
 
@@ -348,14 +351,14 @@ Slices represent a part of a string that starts at one index and ends _before_ a
 
 In the same way, selecting a slice of 'Jonathan' up to index 7 will show up to and including index 6:
 
-```edgeql
+```
 db> select 'Jonathan'[0:7];
 {'Jonatha'}
 ```
 
 In this case, you could search up to index 8. You could even search up to index 1000, as slicing doesn't involve trying to directly access an index so it won't generate an error if there is no value at that index. Or you can use `[0:]` for an open-ended slice that starts at 0 and ends when the string ends. So all three of these queries will work without generating an error:
 
-```edgeql
+```
 db> select 'Jonathan'[0:8];
 {'Jonathan'}
 db> select 'Jonathan'[0:1000];
@@ -366,7 +369,7 @@ db> select 'Jonathan'[0:];
 
 This also means that you can use slicing to safely search for values at a certain index even if the value might be an empty string. At the moment we have a `City` object in the database with a `name` of `''`, so `select City.name[0]` generates an error:
 
-```edgeql
+```
 db> select City.name[0];
 edgedb error: InvalidValueError: string index 0 is out of bounds
 (on line 1, column 18)

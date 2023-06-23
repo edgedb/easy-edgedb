@@ -90,7 +90,7 @@ select <json>(
 );
 ```
 
-Here's the JSON output (remember, set with '\set output-format json-pretty`) which looks pretty nice:
+Here's the JSON output (remember, set with `\set output-format json-pretty`) which looks pretty nice:
 
 ```
 {
@@ -439,7 +439,7 @@ abstract type Place extending HasCoffins {
 }
 ```
 
-The CLI will ask us if we wanted to "drop property 'important_places' of object type 'default::Place'?", to which the answer is yes.
+The CLI will ask us if we wanted to `drop property 'important_places' of object type 'default::Place'?`, to which the answer is yes.
 
 And then we change the link name from `linked_important_places` to `important_places`, and do a migration again.
 
@@ -453,7 +453,7 @@ abstract type Place extending HasCoffins {
 }
 ```
 
-This time the CLI asks us if we renamed "link 'linked_important_places' of object type 'default::Place' to 'important_places'?", to which the answer is again yes.
+This time the CLI asks us if we renamed `link 'linked_important_places' of object type 'default::Place' to 'important_places'?`, to which the answer once again is yes.
 
 Let's do a final check to make sure that the data is there:
 
@@ -464,7 +464,7 @@ select Place {
 } filter exists .important_places;
 ```
 
-And the data is there! Beautiful.
+And the data is all there! Beautiful.
 
 ```
 {

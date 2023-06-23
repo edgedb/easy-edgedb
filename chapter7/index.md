@@ -13,9 +13,11 @@ tags: Constraint Delegation, $ Parameters
 
 ## More constraints
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120: `constraint max_value(120);`.
+While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
 
-We can give `name` a constraint too called `constraint exclusive` which prevents two objects of the same type from having the same name. Like the other constraint we added, you put it `constraint` in a block after the property, like this:
+```constraint max_value(120);```
+
+We can give `name` a constraint too called `constraint exclusive` which prevents two objects of the same type from having the same value - in this case, a name. Like the other constraint we added, you put `constraint` in a block after the property, like this:
 
 ```sdl
 abstract type Person {
@@ -39,10 +41,11 @@ abstract type Place {
 }
 ```
 
-Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we had two `MinorVampire` objects with the same name, it would give this output:
+Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we tried to insert a `MinorVampire` object that had the same name as an existing `MinorVampire` object, we would see this output:
 
 ```
-Detail: value of property 'name' of object type 'default::MinorVampire' violates exclusivity constraint
+Detail: value of property 'name' of object type 'default::MinorVampire'
+violates exclusivity constraint
 ```
 
 ## Passing constraints with delegated
@@ -64,7 +67,7 @@ abstract type Person {
 
 With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
-Also, the `delegated constraint` applies to `Place`, since for example `Country` can have the same name as `City`. So let's update the `name` property for the `Place` type:
+The `delegated constraint` should also apply to `Place` since a `Country` can have the same name as `City`, and so on for any other types that will extend `Place`. So let's update the constraint on the `name` property for the `Place` type:
 
 ```sdl
 abstract type Place {
@@ -91,7 +94,7 @@ type Castle extending Place {
 }
 ```
 
-Then we will also add a `strength: int16;` to our `Person` type. It won't be required because we don't know the strength of everybody in the book. Plus, if we made it a `required` property, we would have to choose a default strength for every `Person` object that we already have.
+Then we will also add a `strength: int16;` to our `Person` type. This property won't be `required` because we don't know the strength of everybody in the book. Plus, if we made it a `required` property, we would have to choose a default strength for every `Person` object that we already have.
 
 Now it's time to do an insert. We'll imagine that there are three main doors to enter and leave Castle Dracula. First let's update the schema with `edgedb migration create` and `edgedb migrate` as usual.
 
@@ -119,9 +122,9 @@ Fortunately, there is a function called `min()` that gives the minimum value of 
 
 ```edgeql
 with
-  jonathan_strength := (select Person filter .name = 'Jonathan Harker').strength,
-  castle_doors := (select Castle filter .name = 'Castle Dracula').doors,
-select jonathan_strength > min(castle_doors);
+  jonathan := (select Person filter .name = 'Jonathan Harker'),
+  castle   := (select Castle filter .name = 'Castle Dracula'),
+select jonathan.strength > min(castle.doors);
 ```
 
 Here's the error:
@@ -146,19 +149,19 @@ Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::ar
 ```edgeql
 with
   jonathan := (select Person filter .name = 'Jonathan Harker'),
-  castle := (select Castle filter .name = 'Castle Dracula'),
+  castle :=   (select Castle filter .name = 'Castle Dracula'),
   select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
 That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any doors. He will have to climb out the window to escape.
 
-Along with `min()` there is of course `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` type objects:
+Unsurprisingly, along with `min()` there is also a function called `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` type objects:
 
 ```edgeql
 select (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
 ```
 
-Don't forget that we need to cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. This prints:
+Don't forget that we need to cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. Here is the result:
 
 ```
 {
@@ -175,7 +178,7 @@ select 'There are ' ++ <str>(select count(Place)
       - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 8 more places than castles'}`. (The number 8 might be a bit different from yours if you have been experimenting with inserting `Place` objects.)
+It prints: `{'There are 8 more places than castles'}`. (Your query might return a different number if you have been experimenting with inserting `Place` objects.)
 
 In a few chapters we will learn how to create our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
 
@@ -293,7 +296,7 @@ Parameter <str>$minute: 09
 Parameter <str>$second: 09
 ```
 
-Here's the output:
+And the output:
 
 ```
 {
@@ -319,7 +322,7 @@ select City {
 } filter
     .name ilike '%' ++ <str>$input1 ++ '%'
   and
-  .name ilike '%' ++ <optional str>$input2 ++ '%';
+    .name ilike '%' ++ <optional str>$input2 ++ '%';
 ```
 
 In this case you could search for cities containing both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or just search for cities containing `B` and not enter anything for the second input.

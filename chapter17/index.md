@@ -16,7 +16,7 @@ Remember the function `fight()` that we made? It was overloaded to take either `
 
 ```edgeql
 with
-  dracula := (select Person filter .name = 'Count Dracula'),
+  dracula  := (select Person filter .name = 'Count Dracula'),
   renfield := (select Person filter .name = 'Renfield'),
 select fight(dracula, renfield);
 ```
@@ -37,7 +37,7 @@ That's not bad, but we learned a few chapters ago about named tuples and this is
 
 ```edgeql
 with fighters := (
-    dracula := (select Person filter .name = 'Count Dracula'),
+    dracula  := (select Person filter .name = 'Count Dracula'),
     renfield := (select Person filter .name = 'Renfield')
   ),
 select fight(fighters.dracula, fighters.renfield);
@@ -48,7 +48,7 @@ Here's one more example of a named tuple:
 ```edgeql
 with minor_vampires := (
     women := (select MinorVampire filter .name like '%Woman%'),
-    lucy := (select MinorVampire filter .name like '%Lucy%')
+    lucy  := (select MinorVampire filter .name like '%Lucy%')
   ),
 select (minor_vampires.women.name, minor_vampires.lucy.name);
 ```
@@ -56,7 +56,8 @@ select (minor_vampires.women.name, minor_vampires.lucy.name);
 The output is:
 
 ```
-{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'), ('Vampire Woman 3', 'Lucy')}
+{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'),
+('Vampire Woman 3', 'Lucy')}
 ```
 
 Renfield is no longer alive, so we need to use `update` to give him a `last_appearance`. Let's do a fancy one again where we `select` the update we just made and display that information:
@@ -76,11 +77,11 @@ select ( # Put the whole update inside
 
 This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
-One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return true:
+One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return `true`:
 
 ```edgeql
 select 
-  ('Lucy Westenra', 'Renfield') 
+    ('Lucy Westenra', 'Renfield') 
   = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
 
@@ -299,7 +300,7 @@ It's somewhat interesting that our alias is just declared using a `:=` when we w
 
 Let's say that we want to compare the strengths of all our `MinorVampire` objects. This first query won't quite work, and you can probably guess why:
 
-```
+```edgeql
 select MinorVampire.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' 
 ++ <str>(MinorVampire.name > MinorVampire.name);
 ```
@@ -340,8 +341,8 @@ Instead, we can use an alias for a set of `MinorVampire` objects and use that to
 
 ```edgeql
 with M := MinorVampire,
-select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ <str>(M.strength
-> MinorVampire.strength);
+select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ 
+<str>(M.strength > MinorVampire.strength);
 ```
 
 The output is now closer to what we want, except that we are still comparing the same objects with each other. Here is part of the output (it's still pretty long):
@@ -363,7 +364,8 @@ And since we are using `M` as an expression alias, we can use it to filter. Let'
 
 ```edgeql
 with M := MinorVampire,
-select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ <str>(M.strength > MinorVampire.strength) filter M.id != MinorVampire.id;
+select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++ 
+<str>(M.strength > MinorVampire.strength) filter M.id != MinorVampire.id;
 ```
 
 And now we no longer have any duplicate names.
@@ -393,7 +395,8 @@ name := 'Pumped up ' ++ .name,
 strength := .strength + <int16>2
  },
 select PumpedUp.name ++ ' is stronger than ' ++ MinorVampire.name ++
-'? ' ++ <str>(PumpedUp.strength > MinorVampire.strength) filter PumpedUp.id != MinorVampire.id;
+'? ' ++ 
+<str>(PumpedUp.strength > MinorVampire.strength) filter PumpedUp.id != MinorVampire.id;
 ```
 
 Now the expression returns a lot more `true`, because the chance of having greater strength than the other object is that much greater.
@@ -510,7 +513,8 @@ type PC extending Person {
 But while we are at it, let's stretch our imagination a bit and make another mutation rewrite for fun for the `PC` type. Imagine that every time a `PC` is created or gets to a save point (which updates it) we will give it a chance to win a bonus item at the same time. Let's call it a `LotteryTicket` and add some items that are useful to vampire hunters.
 
 ```sdl
-scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+scalar type LotteryTicket extending enum <Nothing, WallChicken, 
+ChainWhip, Crucifix, Garlic>;
 ```
 
 Most of the time a lottery ticket will be nothing, but sometimes it will be a bonus item. Let's make a function to represent that:
@@ -519,9 +523,9 @@ Most of the time a lottery ticket will be nothing, but sometimes it will be a bo
   function get_ticket() -> LotteryTicket using (
     with rnd := <int16>(random() * 10),
     select(LotteryTicket.Nothing if rnd <= 6 else
-    LotteryTicket.WallChicken if rnd = 7 else
-    LotteryTicket.ChainWhip if rnd = 8 else
-    LotteryTicket.Crucifix if rnd = 9 else
+    LotteryTicket.WallChicken    if rnd = 7 else
+    LotteryTicket.ChainWhip      if rnd = 8 else
+    LotteryTicket.Crucifix       if rnd = 9 else
     LotteryTicket.Garlic)
   )
 ```

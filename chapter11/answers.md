@@ -65,7 +65,14 @@ Here's the output:
 Looking at the input, you can see that there will be 16 lines generated, because each part of each set will be combined with each part of every other set:
 
 ```edgeql
-select {'Jonathan', 'Arthur'} ++ {' loves '} ++ {'Mina', 'Lucy'} ++ {' but '} ++ {'Dracula', 'The inkeeper'} ++ {' doesn\'t love '} ++ {'Mina', 'Jonathan'};
+select 
+  {'Jonathan', 'Arthur'} ++ 
+  {' loves '} ++ 
+  {'Mina', 'Lucy'} ++ 
+  {' but '} ++ 
+  {'Dracula', 'The inkeeper'} ++ 
+  {' doesn\'t love '} ++ 
+  {'Mina', 'Jonathan'};
 ```
 
 (2 * 1 * 2 * 1 * 2 * 1 * 2 = 16)

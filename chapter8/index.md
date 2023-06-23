@@ -30,7 +30,7 @@ abstract type HasNumber {
 
 We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
 
-Now let's put together the `Crewman` type, which will use multiple inheritance. It's very simple: just add a comma between every type you want to extend.
+Now let's put the `Crewman` type together, which will use multiple inheritance. It's very simple: just add a comma between every type you want to extend.
 
 ```sdl
 type Crewman extending HasNumber, Person {
@@ -171,7 +171,8 @@ select Person {
 The error is:
 
 ```
-error: InvalidReferenceError: object type 'default::Person' has no link or property 'age'
+error: InvalidReferenceError: object type 'default::Person'
+has no link or property 'age'
 ```
 
 It looks like the only property of the three that we can put in this query is `name`. That feels pretty limiting!
@@ -285,7 +286,7 @@ And now the two objects from out previous output have human-readble names.
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And conversely, `supertype is subtype` returns `{false}` because supertypes do not inherit the features of their subtypes.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned.
 
 In our schema, that means that `select PC is Person` returns `{true}`, while `select Person is PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
 
@@ -307,7 +308,7 @@ The output will look like this:
 # ... and so on
 ```
 
-Now how about the simpler scalar types? We know that EdgeDB is very precise in having different types for integers, floats and so on, but what if you just want to know if a number is an integer for example? We could check to see if an integer is one of any integer types, but this makes for a pretty awkward query:
+Now how about the simpler scalar types? It's nice that EdgeDB is strict about type safety and has different types for integers, floats and so on, but what if you just want to know if a number is an integer or a float? We could check to see if an integer is one of any integer types, but this makes for a pretty awkward query:
 
 ```edgeql
 with year := 1893,
@@ -316,9 +317,9 @@ select year is int16 or year is int32 or year is int64;
 
 Output: `{true}`.
 
-But fortunately these types all {ref}`extend from abstract types too <docs:ref_std_abstract_types>`, and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one that might make you pause is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
+But fortunately these types all {ref}`extend from abstract types too <docs:ref_std_abstract_types>`, and we can use them. These abstract types all start with `any`, and are: `anytype`, `anyscalar`, `anyenum`, `anytuple`, `anyint`, `anyfloat`, `anyreal`. The only one with an unclear name is `anyreal`: this one means any real number, so both integers and floats, plus the `decimal` type.
 
-So with that you can change the above input to `select 1893 is anyint` and get `{true}`.
+So with that you can change the above input to `select 1893 is anyint;` and get `{true}`.
 
 ## Array vs. multi property vs. multi link
 
@@ -330,7 +331,7 @@ type Castle extending Place {
 }
 ```
 
-But it could do something similar like this:
+But it could do something similar with a `multi` property:
 
 ```sdl
 type Castle extending Place {
@@ -338,7 +339,7 @@ type Castle extending Place {
 }
 ```
 
-With that, you would insert using `{}` instead of square brackets for an array:
+With a `multi` property you would then insert using `{}` instead of square brackets for an array:
 
 ```edgeql
 insert Castle {
@@ -347,7 +348,7 @@ insert Castle {
 };
 ```
 
-The next question of course is which is best to use: `multi` for a multi property, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
+Which makes you wonder which is best to use: `multi` for a multi property, `array`, or an object type via a link. The answer is... it depends. But here are some good rules of thumb to help you decide which to choose.
 
 - `multi` property vs. arrays:
 

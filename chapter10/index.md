@@ -16,7 +16,7 @@ type City extending Place {
 }
 ```
 
-By the way, here are the approximate populations for our five cities at the time of the book. They are much smaller back in 1893:
+By the way, here are the approximate populations for our five cities at the time of the book. They were much smaller back in 1893:
 
 - Buda-Pesth (Budapest): 402706
 - London: 3500000
@@ -43,7 +43,8 @@ But for the rest of them it would be nice to update everything at the same time.
 If we have all the city data together, we can do a single insert with a `for` and `union` loop again. Let's imagine that the city data we have inside tuples, which seem similar to arrays but are quite different. One big difference is that a tuple can hold different types, so this is okay:
 
 ```
-('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('Bistritz', 9100)
+('Buda-Pesth', 402706), ('London', 3500000), 
+('Munich', 230023),     ('Bistritz', 9100)
 ```
 
 In this case, the type is called a `tuple<str, int64>`.
@@ -52,7 +53,9 @@ Before we start using these tuples, let's make sure that we understand the diffe
 
 Previously we learned how to use square brackets to access part of an array or a string. So this query:
 
-```select ['Mina Murray', 'Lucy Westenra'][1];```
+```edgeql
+select ['Mina Murray', 'Lucy Westenra'][1];
+```
 
 will give the output `{'Lucy Westenra'}` (that's index number 1).
 
@@ -98,14 +101,14 @@ This prints from index 2 up to 2 indexes away from the end (in other words, it'l
 }
 ```
 
-Tuples are very different. You can think of them as similar to object types with properties that have numbers instead of names. This is why tuples can hold different types together: `string`s with `array`s, `int64`s with `float32`s, anything.
+Tuples are very different. You can think of them as similar to object types with properties that have numbers instead of names. This is why tuples can hold different types together: `str` with `array<bool>`, `int64` with `float32`, you name it.
 
 So this is completely fine:
 
 ```edgeql
 select {
-('Bistritz', 9100, cal::to_local_date(1893, 5, 6)),
-('Munich', 230023, cal::to_local_date(1893, 5, 8))
+  ('Bistritz', 9100, cal::to_local_date(1893, 5, 6)),
+  ('Munich', 230023, cal::to_local_date(1893, 5, 8))
 };
 ```
 
@@ -128,11 +131,13 @@ EdgeDB will give an error because it won't try to work with tuples that are of d
 
 ```
 error: InvalidTypeError: set constructor has arguments of incompatible types 
-'tuple<std::int64, std::int64, std::int64>' and 'tuple<std::int64, std::int64, std::str>'
+'tuple<std::int64, std::int64, std::int64>' and 
+'tuple<std::int64, std::int64, std::str>'
   ┌─ <query>:1:8
   │
 1 │ select {(1, 2, 3), (4, 5, '6')};
-  │        ^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast or a conversion function.
+  │        ^^^^^^^^^^^^^^^^^^^^^^^^ Consider using an explicit type cast 
+  or a conversion function.
 ```
 
 You'll notice that the error suggests that we cast one of the items inside one of the tuples to match the other. Doing so removes the error and EdgeDB is happy again:
@@ -156,7 +161,7 @@ union (
 );
 ```
 
-So it sends each tuple into the `for` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
+So this query accesses each tuple one at a time in the `for` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
 
 You can actually choose to give names to the items inside tuples if you like. Here are the same cities except now we can access them by name:
 
@@ -164,9 +169,9 @@ You can actually choose to give names to the items inside tuples if you like. He
 with cities := 
 (
   (name := 'Buda-Pesth', pop := 402706), 
-  (name := 'London', pop := 3500000), 
-  (name := 'Munich', pop := 230023),
-  (name := 'Bistritz', pop := 9100)
+  (name := 'London',     pop := 3500000), 
+  (name := 'Munich',     pop := 230023),
+  (name := 'Bistritz',   pop := 9100)
 ),
   select cities.1.pop;
 ```
@@ -179,9 +184,9 @@ Similarly, we can give each of the tuples inside the `cities` tuple a name too!
 with cities := 
 (
   budapest := (name := 'Buda-Pesth', pop := 402706), 
-  london := (name := 'London', pop := 3500000), 
-  munich := (name := 'Munich', pop := 230023),
-  bistritz := (name := 'Bistritz', pop := 9100)
+  london   := (name := 'London',     pop := 3500000), 
+  munich   := (name := 'Munich',     pop := 230023),
+  bistritz := (name := 'Bistritz',   pop := 9100)
   ),
   select cities.munich.pop;
 ```
@@ -220,7 +225,7 @@ Here's another example if we need to do some math with floats on London's popula
 
 ```edgeql
 with london := <tuple<str, float64>>('London', 3500000),
-# London after a population increase
+# After a population increase
   london_after := (london.1 * 1.035),
   select (london.0, <int32>london_after);
 {('London', 3622500)}
@@ -256,19 +261,19 @@ What's `desc`? It means descending, so largest first and then going down. If we 
 For some actual math, you can check out the functions in `std` {eql:func}`here <docs:std::sum>` as well as the `math` module {ref}`here <docs:ref_std_math>`. Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
 ```edgeql
-with cities := City.population
+with pop := City.population
 select (
-  'Number of cities with population data: ' ++ <str>count(cities),
-  'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
-  'Total population: ' ++ <str>sum(cities),
-  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
-  'Average population: ' ++ <str>math::mean(cities),
-  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
-  'Standard deviation: ' ++ <str>math::stddev(cities)
+  'Number of cities with population data: ' ++ <str>count(pop),
+  'All cities have more than 50,000 people: ' ++ <str>all(pop > 50000),
+  'Total population: ' ++ <str>sum(pop),
+  'Smallest/largest population: ' ++ <str>min(pop) ++ ', ' ++ <str>max(pop),
+  'Average population: ' ++ <str>math::mean(pop),
+  'Any cities with more than 5 million people? ' ++ <str>any(pop > 5000000),
+  'Standard deviation: ' ++ <str>math::stddev(pop)
 );
 ```
 
-This used quite a few functions, all of which work on sets:
+This query used quite a few functions, all of which work on sets:
 
 - `count()` to count the number of items,
 - `all()` to return `{true}` if all items match and `{false}` otherwise,
@@ -308,15 +313,17 @@ edgedb error: InvalidReferenceError: function 'default::mean' does not exist
 If you don't want to write the module name every time you can just import the module after `with`. Let's slip that into the query we just used. See if you can see what's changed:
 
 ```edgeql
-with cities := City.population
+with 
+  pop := City.population,
+  module math,
 select (
-  'Number of cities with population data: ' ++ <str>count(cities),
-  'All cities have more than 50,000 people: ' ++ <str>all(cities > 50000),
-  'Total population: ' ++ <str>sum(cities),
-  'Smallest/largest population: ' ++ <str>min(cities) ++ ', ' ++ <str>max(cities),
-  'Average population: ' ++ <str>mean(cities),
-  'Any cities with more than 5 million people? ' ++ <str>any(cities > 5000000),
-  'Standard deviation: ' ++ <str>stddev(cities)
+  'Number of cities with population data: ' ++ <str>count(pop),
+  'All cities have more than 50,000 people: ' ++ <str>all(pop > 50000),
+  'Total population: ' ++ <str>sum(pop),
+  'Smallest/largest population: ' ++ <str>min(pop) ++ ', ' ++ <str>max(pop),
+  'Average population: ' ++ <str>mean(pop),
+  'Any cities with more than 5 million people? ' ++ <str>any(pop > 5000000),
+  'Standard deviation: ' ++ <str>stddev(pop)
 );
 ```
 
@@ -417,7 +424,12 @@ Besides `\n` and `\t` there are quite a few other escape characters - you can se
 Try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
 
 ```edgeql
-select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D\u0020\u006E\u006F\u0074\u0020\u006A\u0065\u0073\u0074\u0069\u006E\u0067\u002E\u0020\u0054\u0068\u0069\u0073\u0020\u0069\u0073\u0020\u006E\u006F\u0020\u006A\u0065\u0073\u0074\u002C\u0020\u0062\u0075\u0074\u0020\u006C\u0069\u0066\u0065\u0020\u0061\u006E\u0064\u0020\u0064\u0065\u0061\u0074\u0068\u002C\u0020\u0070\u0065\u0072\u0068\u0061\u0070\u0073\u0020\u006D\u006F\u0072\u0065\u002E\u2019';
+select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D
+\u006E\u006F\u0074\u0020\u006A\u0065\u0073\u0074\u0069\u006E\u0067\u002E
+\u0054\u0068\u0069\u0073\u0020\u0069\u0073\u0020\u006E\u006F
+\u006A\u0065\u0073\u0074\u002C\u0020\u0062\u0075\u0074
+\u006C\u0069\u0066\u0065\u0020\u0061\u006E\u0064\u0020\u0064\u0065\u0061\u0074\u0068\u002C
+\u0070\u0065\u0072\u0068\u0061\u0070\u0073\u0020\u006D\u006F\u0072\u0065\u002E\u2019';
 ```
 
 If you want to ignore escape characters, put an `r` (which stands for _raw_) in front of the quote. Let's try it with the example above. Only the last part has an `r`:

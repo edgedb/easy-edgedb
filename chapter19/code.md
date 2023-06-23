@@ -170,7 +170,7 @@ module default {
   }
 
   function get_url() -> str
-    using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+    using (<str>'https://geohack.toolforge.org/geohack.php?params=');
 
   type Event {
     required description: str;

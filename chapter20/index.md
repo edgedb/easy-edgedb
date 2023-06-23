@@ -404,7 +404,7 @@ Now that you have reached the end of the book, you'll be referencing our documen
 
 ### Syntax
 
-This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create one of these items and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have.
+This book included a lot of links to EdgeDB documentation, such as types, functions, and so on. If you are trying to create one of these items and are having trouble, a good idea is to start with the section on syntax. This section always shows the order you need to follow, and all the options you have. We looked at the syntax of a few items during this book, but there is a lot more of this to reference in the documentation.
 
 For a simple example, {ref}`here is the syntax on creating a module <docs:ref_eql_sdl_modules>`:
 

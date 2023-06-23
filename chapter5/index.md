@@ -5,7 +5,7 @@ leadImage: illustration_05.jpg
 
 # Chapter 5 - Jonathan tries to leave the castle
 
-Poor Jonathan is not having much luck. Here's what happens to him in this chapter:
+Poor Jonathan is still at Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
 
 > During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
@@ -18,14 +18,14 @@ Since Jonathan in Romania was thinking of Mina back in London, let's learn about
 So a cast to an actual datetime looks like this:
 
 ```edgeql
-db> select <datetime>'2020-12-06T22:12:10Z';
+select <datetime>'2020-12-06T22:12:10Z';
 ```
 
 The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here is its signature <docs:std::to_datetime>`, which shows that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you give it.
+One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here are its signatures <docs:std::to_datetime>`, which show that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you pass in.
 
-Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>` type. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. This is because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows it:
+Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>`. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. The decimal type exists because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows the problem that floats have after too much precision:
 
 ```
 db> select 6.777777777777777; # Good so far
@@ -98,7 +98,7 @@ Now let's try something similar with Jonathan as he tries to escape Castle Dracu
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST')
-     - to_datetime(1893, 5, 12, 6, 10, 0,  'UTC');
+     - to_datetime(1893, 5, 12, 6,  10, 0, 'UTC');
 ```
 
 The answer is 1 hour and 25 minutes: `{<duration>'1:25:00'}`.
@@ -107,8 +107,10 @@ To make the query easier for us to read, we can also use the `with` keyword to c
 
 ```edgeql
 with
-  jonathan_wants_to_escape := to_datetime(1893, 5, 12, 10, 35, 0, 'EEST'),
-  mina_has_tea := to_datetime(1893, 5, 12, 6, 10, 0, 'UTC'),
+  jonathan_wants_to_escape := 
+    to_datetime(1893, 5, 12, 10, 35, 0, 'EEST'),
+  mina_has_tea := 
+    to_datetime(1893, 5, 12, 6,  10, 0, 'UTC'),
 select jonathan_wants_to_escape - mina_has_tea;
 ```
 
@@ -129,8 +131,8 @@ This will return `{<duration>'6:06:00.688999'}`.
 EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. Even this horrible input will work:
 
 ```edgeql
-select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds' -
-  <duration>'10 microsecond 7 minutes %%%%%%% 10 seconds 5 hour';
+select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds'
+     - <duration>'10 microsecond 7 minutes %%%%%%% 10 seconds 5 hour';
 ```
 
 The result: `{<duration>'-3:59:04.99401'}`.
@@ -140,24 +142,29 @@ The result: `{<duration>'-3:59:04.99401'}`.
 The scene in the book today takes place on the 16th of May, 15 days after Jonathan Harker left London. Jonathan Harker was kind enough to even mark down the time of day during his first journal entry, which gives us a good idea of how much time has gone by since then. Here are the two relevant journal entries:
 
 ```
-3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at Vienna early next morning;
+3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at 
+Vienna early next morning;
 
-The Morning of 16 May.—God preserve my sanity, for to this I am reduced...All three had brilliant white teeth that shone like pearls against the ruby of their voluptuous lips. There was something about them that made me uneasy, some longing and at the same time some deadly fear.
+The Morning of 16 May.—God preserve my sanity, for to this I am reduced...
+All three had brilliant white teeth that shone like pearls against the 
+ruby of their voluptuous lips. There was something about them that made
+me uneasy, some longing and at the same time some deadly fear.
 ```
 
 Let's imagine that our `PC` named Emil Sinclair has been accomplishing some missions during this time in order to build up experience and get involved with the events in the book. It would be nice to let the player know how much time has elapsed since the game started. If the player clock currently says 8:03:17 am right now, we can calculate the duration as we did just before:
 
-```
+```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
 select today - game_start;
 ```
 
 That gives us a duration of `{<duration>'296:28:17'}`. That's very precise, but it would be nice to show the player these units in more readable units. EdgeDB added a type called `relative_duration` in 2021 to do exactly this. A relative_duration will show up when you add or subtract local dates and local datetimes. Here is a quick example:
 
 ```edgeql
-db> select <cal::local_datetime>'2023-05-18T08:00:00' - <cal::local_datetime>'2023-05-16T04:06:55';
+select <cal::local_datetime>'2023-05-18T08:00:00'
+     - <cal::local_datetime>'2023-05-16T04:06:55';
 ```
 
 This gives the output `{<cal::relative_duration>'P2DT3H53M5S'}`, which has done all the calculating for us and is easy to split up into parts. Adding a few spaces makes it easy to read: `P 2D T 3H 53M 5S`. In other words:
@@ -174,10 +181,12 @@ So let's make a `relative_duration` for our `PC`. Here we will use a function ca
 The player is currently in Romania so we will choose the EEST timezone. The code looks like this:
 
 ```edgeql
-db> with
+with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
-  select cal::to_local_datetime(today, 'EEST') - cal::to_local_datetime(game_start, 'EEST');
+  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  select
+    cal::to_local_datetime(today, 'EEST') 
+  - cal::to_local_datetime(game_start, 'EEST');
 ```
 
 This gives us an output of `{<cal::relative_duration>'P12DT8H28M17S'}`. Perfect! Now our game can display something like `Time elapsed: 12 days, 8 hours, 28 minutes, 17 seconds` and we don't need to do any calculations to do so.
@@ -185,10 +194,12 @@ This gives us an output of `{<cal::relative_duration>'P12DT8H28M17S'}`. Perfect!
 Another type called `date_duration` is useful when you only care about day to day duration. If we change the above code from `cal::to_local_datetime` to `cal::to_local_date` then we will cut off the time information and get a `date_duration` that only shows the number of days passed. So if we type this query:
 
 ```edgeql
-db> with
+with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
-  select cal::to_local_date(today, 'EEST') - cal::to_local_date(game_start, 'EEST');
+  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  select 
+    cal::to_local_date(today, 'EEST') 
+  - cal::to_local_date(game_start, 'EEST');
 ```
 
 We will get the output `{<cal::date_duration>'P13D'}`. So even though only about 12 days and 8 hours have gone by, in terms of changes to the date it is 13 days. Then we could add one to it and have this output for the character playing the game:
@@ -263,7 +274,7 @@ Later on we will learn to add a constraint to ensure on the schema level that pa
 
 Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to picture it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
 
-- `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is the lower level language that we have seen in our migration files that end in `.edgeql` (00001.edgeql, 00002.edgeql, and so on). If we type `describe type MinorVampire` into the REPL, we will see the following output:
+- `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is the lower level language that we have seen in our migration files that end in `.edgeql` such as 00001.edgeql, 00002.edgeql, and so on. If we type `describe type MinorVampire` into the REPL, we will see the following output:
 
 ```
 {
@@ -273,7 +284,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 }
 ```
 
-The `create` keyword shows that it's a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
+The `create` keyword shows that DDL is a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
 
 - `describe type MinorVampire as sdl` - same thing, but in SDL.
 

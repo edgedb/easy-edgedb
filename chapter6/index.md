@@ -63,7 +63,7 @@ insert NPC {
 
 ```{eval-rst}
 .. note::
-  You'll notice that we just wrote the names in a set using `{}`, so we didn't need to use an array with `[]` to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
+  You'll notice that we just wrote the names in a set using {}, so we didn't need to use an array with [] to do it. (This is called a {ref}`set constructor <docs:ref_eql_set_constructor>`, by the way.)
 ```
 
 But we already have a Jonathan Harker in the database. We could always do a quick `delete NPC filter .name = 'Jonathan Harker'` before doing this insert, but that's not ideal. Instead, we should do an update. For that we have the `update` and `set` keywords. The `update` keyword selects the type to start the update, and `set` is used to specify the parts that we want to change. So let's update Jonathan with this code instead:
@@ -73,7 +73,8 @@ update NPC
 filter .name = 'Jonathan Harker'
 set {
   places_visited := (
-    select Place filter .name in {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
+    select Place filter .name in 
+    {'Munich', 'Buda-Pesth', 'Bistritz', 'London', 'Romania', 'Castle Dracula'}
   )
 };
 ```
@@ -111,12 +112,13 @@ set {
 Here is the output now:
 
 ```
-edgedb error: CardinalityViolationError: assert_exists violation: expression returned an empty set
+edgedb error: CardinalityViolationError: assert_exists violation:
+expression returned an empty set
 ```
 
 With that we now know {ref}`all three operators <docs:ref_eql_statements_update>` used after `set`: `:=`, `+=`, and `-=`.
 
-Let's do another update. Remember the `lover` link on the `Person` type? Let's take a look at Jonathan and see how he is doing when it comes to love.
+Let's do another update. Remember the `lover` link on the `Person` type? Let's take a look at Jonathan and see how his love life is doing.
 
 ```edgeql
 select Person {
@@ -191,7 +193,12 @@ Let's do a `select` query now to make sure that it worked:
 select Person {name, lover: {name}} filter .name = 'Jonathan Harker';
 ```
 
-The output is now `{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Mina Murray'}}}`. Success!
+The output is now as follows:
+
+```
+{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Mina Murray'}}}```
+
+Success!
 
 Now, if you use `update` without `filter` it will do the same change on all the types. This update below for example would give every `Person` type every single `Place` in the database under `places_visited`:
 
@@ -323,6 +330,8 @@ We have a nice output that shows them all together:
 ```
 
 This might make you wonder: what if we do want two-way links? There's actually a very cool way to do it called a **backlink** that will let us give `MinorVampire` a link based on what links _to_ it, but we won't look at it until Chapters 14 and 15. If you're really curious you can skip to those chapters but there's a lot more to learn before then.
+
+EdgeDB also allows us to change the deletion policy of a type which would allow us to delete linked objects, automatically delete linked objects, and so on. We will cover this in Chapter 18.
 
 ## Just type \<json> to generate json
 

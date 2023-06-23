@@ -126,7 +126,12 @@ missing value for required property 'name' of object type 'default::NPC'
 
 A `str` is just a string, and goes inside either single quotes: `'Jonathan Harker'` or double quotes: `"Jonathan Harker"`. The `\` escape character before a quote makes EdgeDB treat it like just another letter: `'Jonathan Harker\'s journal'`.
 
-An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this: `["Bistritz", "Munich", "Buda-Pesth"]`. The idea is to easily search later and see which character has visited where.
+An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this:
+
+```["Bistritz", "Munich", "Buda-Pesth"]
+```
+
+The idea is to easily search later and see which character has visited where.
 
 `places_visited` is not a `required` property because we might later add minor characters that don't go anywhere. Maybe one person will be the "innkeeper_in_bistritz" or something, and we won't know or care about `places_visited` for him.
 
@@ -295,7 +300,7 @@ So let's not do that `NPC` insert. We'll fix the `NPC` type soon by changing `ar
 
 But first let's look a bit closer at what happens when we use `insert`.
 
-As you can see, strings (`str`) are fine with unicode letters like ț. Even emojis and special characters are just fine, so you could even create a `City` called '🤠' or '(╯°□°)╯︵ ┻━┻' if you wanted to.
+As you can see, strings (`str`) are fine with unicode letters like ț. Even emojis and special characters are just fine, so you could even create a `City` called `'🤠'` or `'(╯°□°)╯︵ ┻━┻'` if you wanted to.
 
 EdgeDB also has a byte literal type that gives you the bytes of a string. This is mainly for raw data that humans don't need to view such when saving to files. They must be characters that are 1 byte long.
 
@@ -310,7 +315,8 @@ And because the characters must be 1 byte, only ASCII works for this type. So th
 
 ```
 db> select b'Bistrița';
-error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected, only ascii chars are allowed in bytes literals
+error: EdgeQLSyntaxError: invalid bytes literal: character 'ț' is unexpected,
+only ascii chars are allowed in bytes literals
   ┌─ <query>:1:8
   │
 1 │ select b'Bistrița';
@@ -419,7 +425,7 @@ So if you can make a quick `name_in_dracula` property from `.name`, can we make 
 select City {
   name_in_dracula := .name,
   name_today := .modern_name,
-  oh_and_by_the_way := 'This is a city in the book Dracula'
+  oh_and_by_the_way := 'A city in the book Dracula'
 };
 ```
 
@@ -430,17 +436,17 @@ And here is the output:
   default::City {
     name_in_dracula: 'Munich',
     name_today: {},
-    oh_and_by_the_way: 'This is a city in the book Dracula',
+    oh_and_by_the_way: 'A city in the book Dracula',
   },
   default::City {
     name_in_dracula: 'Buda-Pesth',
     name_today: 'Budapest',
-    oh_and_by_the_way: 'This is a city in the book Dracula',
+    oh_and_by_the_way: 'A city in the book Dracula',
   },
   default::City {
     name_in_dracula: 'Bistritz',
     name_today: 'Bistrița',
-    oh_and_by_the_way: 'This is a city in the book Dracula',
+    oh_and_by_the_way: 'A city in the book Dracula',
   },
 }
 ```
@@ -451,7 +457,7 @@ This brings up an interesting discussion about type safety. EdgeDB is strongly t
 db> select City {
   name_in_dracula := .name,
   name_today := .modern_name,
-  oh_and_by_the_way := 'This is a city in the book Dracula written in the year' + 1897
+  oh_and_by_the_way := 'A city in the book Dracula written in the year' + 1897
  };
 ```
 
@@ -499,9 +505,11 @@ And now do a migration with `edgedb migration create` and `edgedb migrate`. The 
 ```
 c:\easy-edgedb>edgedb migration create
 Connecting to an EdgeDB instance at localhost:10716...
-Did you drop property 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
+Did you drop property 'places_visited' of object type 'default::NPC'?
+[y,n,l,c,b,s,q,?]
 > y
-Did you create link 'places_visited' of object type 'default::NPC'? [y,n,l,c,b,s,q,?]
+Did you create link 'places_visited' of object type 'default::NPC'?
+[y,n,l,c,b,s,q,?]
 > y
 ```
 

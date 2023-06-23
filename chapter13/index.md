@@ -135,9 +135,9 @@ We only have Count Dracula in our database as the main `Vampire` type so we won'
 
 ## On target delete
 
-We've decided to keep the old `NPC` object for Lucy, because that Lucy will be in the game until September 1893. Other `PC` objects could interact with her as an `NPC` up to this time, for example. 
+We've decided to keep the old `NPC` object for Lucy, because that Lucy will be in the game as an `NPC` until September 1893. Other `PC` objects could interact with her as an `NPC` up to this time, for example. 
 
-But what if we had chosen to delete her, what would have happened to the objects she is linked to? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. `on target delete` means "when the target is deleted", and it goes inside `{}` after the link declaration. For this we have {ref}`four options <docs:ref_datamodel_link_deletion>`:
+But what if we had chosen to delete her, what would have happened to the objects she is linked to? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. This `on target delete` means "when the target is deleted", or in other words "when the object that is linked to is deleted". It goes inside `{}` after the link declaration. For this we have {ref}`four options <docs:ref_datamodel_link_deletion>`:
 
 - `restrict`: forbids you from deleting the target object.
 
@@ -186,7 +186,8 @@ Now let's look at some tips for making queries.
 The `distinct` keyword is used if we want to remove duplicate values in a set, and is easy: just change `select` to `select distinct`. We can see that right now there are quite a few duplicate values in our `Person` objects if we `select Person.strength;`. The output will vary because it comes from the `random` function, but it will look something like this:
 
 ```
-{1, 1, 7, 8, 9, 9, 5, 3, 0, 0, 5, 10, 2, 0, 2, 5, 3, 4, 0, 1, 4, 20, 5, 5, 5, 5, 5}
+{1, 1, 7, 8, 9, 9, 5, 3, 0, 0, 5, 10, 2, 0, 
+2, 5, 3, 4, 0, 1, 4, 20, 5, 5, 5, 5, 5}
 ```
 
 Change it to `select distinct Person.strength;` and the output will now be:
@@ -405,7 +406,7 @@ type SomeType {
 
 This sequence number could be useful for our `PC` objects, because players of our game might want us to delete their accounts. When that happens we will have to delete the `PC` object that the player used, so the data will be gone. That means that we can't use `count(PC)` as a sequence number. If we did that, then the 51st player would have the number 51, but if a `PC` object was then deleted then the next one would also be number 51! A sequence is just right for us here.
 
-Let's experiment first. We'll add a SomeSequenceNumber to our schema with the following, and do a migration:
+Let's experiment first. We'll add a `SomeSequenceNumber` to our schema with the following, and do a migration:
 
 ```sdl
 scalar type SomeSequenceNumber extending sequence;
@@ -458,7 +459,8 @@ db> select sequence_next(introspect SomeSequenceNumber);
 db> select sequence_reset(introspect SomeSequenceNumber, 10);
 {10}
 db> select sequence_reset(introspect SomeSequenceNumber, 0);
-edgedb error: NumericOutOfRangeError: setval: value 0 is out of bounds for sequence "6f7e322d-ff25-11ed-95e6-558fd8f3e188_sequence" (1..9223372036854775807)
+edgedb error: NumericOutOfRangeError: setval: value 0 is out of bounds for 
+sequence "6f7e322d-ff25-11ed-95e6-558fd8f3e188_sequence" (1..9223372036854775807)
 db> select sequence_reset(introspect SomeSequenceNumber, 1);
 {1}
 ```

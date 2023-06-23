@@ -131,7 +131,8 @@ No, they didn't win. How about five people?
 
 ```edgeql
 with
-  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 'The innkeeper', 'Lucy Westenra'],
+  party := ['Jonathan Harker', 'Renfield', 'Arthur Holmwood', 
+    'The innkeeper', 'Lucy Westenra'],
   dracula := (select Person filter .name = 'Count Dracula'),
 select fight(party , dracula);
 ```
@@ -274,7 +275,7 @@ One way to join the two together without thinking about Cartesian multiplication
 with b_places := (select Place filter .name ilike 'b%'),
      m_places := (select Place filter .name ilike 'm%'),
 select array_agg(b_places.name) ++
-  array_agg(m_places.name);
+       array_agg(m_places.name);
 ```
 
 Using this gives us an output of `{['Buda-Pesth', 'Bistritz', 'Munich']}`.
@@ -283,7 +284,7 @@ But if we just want to stick with a set, there is an even easier way: just `unio
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
-  m_places := (select Place filter .name ilike 'm%'),
+     m_places := (select Place filter .name ilike 'm%'),
   select b_places.name union m_places.name;
 ```
 
@@ -360,7 +361,7 @@ It returns `{true}` because Dracula has no lover and the Crewmen have no names s
 
 3. Will `select {} ?? {3, 4} ?? {5, 6};` work?
 
-4. Will `select <int64>{} ?? <int64>{} ?? {1, 2}` work?
+4. Will `select <int64>{} ?? <int64>{} ?? {1, 2};` work?
 
 5. Trying to make a single string of everyone's name with `select array_join(array_agg(Person.name));` isn't working. What's the problem?
 

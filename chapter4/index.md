@@ -58,7 +58,7 @@ error: QueryError: invalid reference to default::NPC: self-referencing INSERTs a
   │              ^^^ Use DETACHED if you meant to refer to an uncorrelated default::NPC set
 ```
 
-- {eql:func}`docs:std::assert_single`. This is because the link is a single link. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a single link, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
+- {eql:func}`docs:std::assert_single`. This is used here because the link is a single link. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a single link, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
 
 Let's make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a basic query showing the names of each `Person` object's `lover`:
 
@@ -266,7 +266,7 @@ default::Time {
 },
 ```
 
-One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example:
+One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example showing how this could work if we had more values on the `SleepState` enum:
 
 ```sdl
 property sleep_state := 
@@ -312,7 +312,8 @@ select (
     clock,
     hour,
     sleep_state,
-    time_until_midnight := <cal::local_time>'24:00:00' - <cal::local_time>.clock
+    time_until_midnight := <cal::local_time>'24:00:00'
+                         - <cal::local_time>.clock
   };
 ```
 

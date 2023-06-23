@@ -34,7 +34,7 @@ You can see that most of the properties are `required`, because an `Event` type 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
 ```
-https://geohack.toolforge.org/geohack.php?pagename=Bistri%C8%9Ba&params=47_8_N_24_30_E
+https://geohack.toolforge.org/geohack.php?params=47_8_N_24_30_E
 ```
 
 Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
@@ -49,7 +49,8 @@ insert Event {
   start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
   end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
-  people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
+  people := (select Person filter .name ilike 
+    {'%helsing%', '%westenra%', '%seward%'}),
   location := (54.4858, 0.6206),
   east := false
 };
@@ -60,19 +61,15 @@ With all this information we can now find events by description, character, loca
 Now let's do a query for all events with the word `garlic flowers` in them:
 
 ```edgeql
-select Event {
-  description,
-  start_time,
-  end_time,
+select Event { 
+  *, 
   place: {
     name
-  },
+  }, 
   people: {
     name
-  },
-  location,
-  url
-} filter .description ilike '%garlic flowers%';
+    } 
+  } filter .description ilike '%garlic flowers%';
 ```
 
 It generates a nice output that shows us everything about the event:
@@ -80,17 +77,19 @@ It generates a nice output that shows us everything about the event:
 ```
 {
   default::Event {
-    description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
-    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
     place: {default::City {name: 'Whitby'}},
     people: {
       default::NPC {name: 'Lucy Westenra'},
       default::NPC {name: 'John Seward'},
       default::NPC {name: 'Abraham Van Helsing'},
     },
+    id: 7fa1ddc6-0de7-11ee-98fc-2f8d7602e3a2,
+    east: false,
     location: (54.4858, 0.6206),
-    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
+    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W54.4858_N_0.6206_W',
+    description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
+    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
+    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
   },
 }
 ```
@@ -128,7 +127,7 @@ Let's write a quick function to make our Event type a little nicer to read. Inst
 
 ```sdl
 function get_url() -> str
-  using (<str>'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W');
+  using (<str>'https://geohack.toolforge.org/geohack.php?params=');
 
 type Event {
   required description: str;
@@ -220,7 +219,7 @@ Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_produ
 This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
 ```
-{the number of items in the first set}` \* `{the number of items in the second set}
+{number of items in the first set}` \* `{number of items in the second set}
 ```
 
 So if there are two in the first set, and three in the second, it will run the function six times.
