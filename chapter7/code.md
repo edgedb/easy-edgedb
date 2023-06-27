@@ -2,6 +2,16 @@
 # Schema:
 
 module default {
+  # Scalar types
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  scalar type HumanAge extending int16 {
+    constraint max_value(120);
+  }
+
+  scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Object types
   abstract type Person {
     required name: str {
       delegated constraint exclusive;
@@ -12,24 +22,19 @@ module default {
     strength: int16;
   }
 
-  type PC extending Person {
-    required class: Class;
-  }
-
-  scalar type HumanAge extending int16 {
-    constraint max_value(120);
-  }
+  type MinorVampire extending Person;
 
   type NPC extending Person {
     age: HumanAge;
   }
 
+  type PC extending Person {
+    required class: Class;
+  }
+
   type Vampire extending Person {
     age: int16;
     multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
   }
   
   abstract type Place {
@@ -40,19 +45,15 @@ module default {
     important_places: array<str>;
   }
 
+  type Castle extending Place {
+    doors: array<int16>;
+  }
+
   type City extending Place;
 
   type Country extending Place;
 
   type OtherPlace extending Place;
-
-  type Castle extending Place {
-    doors: array<int16>;
-  }
-
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
-
-  scalar type SleepState extending enum <Asleep, Awake>;
   
   type Time { 
     required clock: str; 

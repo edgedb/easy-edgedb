@@ -31,7 +31,7 @@ type Horse {
 ```sdl
 type NPC extending Person {
   overloaded age: int16 {
-    constraint max_value(120)
+    constraint max_value(120);
   }
   overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
@@ -47,7 +47,7 @@ type NPC extending Person {
     constraint expression on (len(__subject__) > 4 and len(__subject__) < 31)
   }
   overloaded age: int16 {
-    constraint max_value(120)
+    constraint max_value(120);
   }
   overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');

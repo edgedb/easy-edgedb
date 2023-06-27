@@ -61,8 +61,7 @@ type PC extending Person {
   required class: Class;
 }
 
-type NPC extending Person {
-}
+type NPC extending Person;
 ```
 
 The characters from the book are still `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is an abstract type, we can't insert directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:

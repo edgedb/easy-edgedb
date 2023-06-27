@@ -244,11 +244,11 @@ Our `Lord` type was only created to show how to use `constraint expression on`, 
 type Lord extending Person {
   constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
-  };
-};
+  }
+}
 ```
 
-We might remove this in a real game, or maybe it would become type Lord extending PC so player characters could choose to be a lord, thief, detective, etc.
+We might remove this in a real game, or maybe it would become `type Lord extending PC` so player characters could choose to be a lord, thief, detective, etc.
 
 The `Lord` type uses the function {eql:func}`docs:std::contains` which returns `true` if the item we are searching for is inside the string, array, etc. It also uses `__subject__` which refers to the type itself: `__subject__.name` means `Person.name` in this case. {eql:constraint}`Here are some more examples <docs:std::expression>` from the documentation of using `constraint expression on`.
 
@@ -258,7 +258,7 @@ Another possible way to create a `Lord` is to do it this way, since `Person` has
 type Lord extending Person {
   constraint expression on (__subject__.title = 'Lord') {
     errmessage := "All lords need \'Lord\' in their title";
-  };
+  }
 }
 ```
 

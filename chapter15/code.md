@@ -2,10 +2,35 @@
 # Schema:
 
 module default {
+
+  # Globals and definitions
+
+  required global current_date: cal::local_date {
+    default := <cal::local_date>'1893-05-13'
+  }
+
+  abstract annotation warning;
+
+  # Scalar types
+
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  scalar type PCNumber extending sequence;
+
+  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
+  scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Abstract object types
+
   abstract type HasCoffins {
     required coffins: int16 {
       default := 0;
     }
+  }
+
+  abstract type HasNumber {
+    required number: int16;
   }
 
   abstract type Person {
@@ -25,56 +50,18 @@ module default {
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
 
-  scalar type PCNumber extending sequence;
-
-  type PC extending Person {
-    required class: Class;
-    created_at: datetime {
-      default := datetime_of_statement()
-    }
-    required number: PCNumber {
-      default := sequence_next(introspect PCNumber);
-    }
-    overloaded required name: str {
-      constraint max_len_value(30);
-    }
-  }
-
-  type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord')) {
-      errmessage := "All lords need \'Lord\' in their name";
-    };
-  };
-
-  type NPC extending Person {
-    overloaded age: int16 {
-      constraint max_value(120)
-  }
-    overloaded multi places_visited: Place {
-      default := (select City filter .name = 'London');
-    }
-  }
-
-  type Vampire extending Person {
-    multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
-    former_self: Person;
-    single link master := assert_single(.<slaves[is Vampire]);
-    property master_name := .master.name;
-  };
-  
-  required global current_date: cal::local_date {
-    default := <cal::local_date>'1893-05-13'
-  }
-
   abstract type Place extending HasCoffins {
     required name: str {
       delegated constraint exclusive;
     }
     modern_name: str;
     important_places: array<str>;
+  }
+
+  # Object types
+
+  type Castle extending Place {
+    doors: array<int16>;
   }
 
   type City extending Place {
@@ -84,50 +71,7 @@ module default {
 
   type Country extending Place;
 
-  abstract annotation warning;
-
-  type OtherPlace extending Place {
-    annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
-    annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
-  }
-
-  type Castle extending Place {
-    doors: array<int16>;
-  }
-
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
-
-  scalar type SleepState extending enum <Asleep, Awake>;
-  
-  type Time { 
-    required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
-      else SleepState.Awake;
-  } 
-
-  abstract type HasNumber {
-    required number: int16;
-  }
-  
-  type Crewman extending HasNumber, Person {
-  }
-
-  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
-
-  type Sailor extending Person {
-    rank: Rank;
-  }
-
-  type Ship extending HasCoffins {
-    required name: str;
-    multi sailors: Sailor;
-    multi crew: Crewman;
-  }
-
-  function get_url() -> str
-    using (<str>'https://geohack.toolforge.org/geohack.php?params=');
+  type Crewman extending HasNumber, Person;
 
   type Event {
     required description: str;
@@ -141,12 +85,82 @@ module default {
     ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
 
+  type Lord extending Person {
+    constraint expression on (contains(__subject__.name, 'Lord')) {
+      errmessage := "All lords need \'Lord\' in their name";
+    }
+  }
+
+  type MinorVampire extending Person {
+    former_self: Person;
+    single link master := assert_single(.<slaves[is Vampire]);
+    property master_name := .master.name;
+  };
+
+  type NPC extending Person {
+    overloaded age: int16 {
+      constraint max_value(120);
+  }
+    overloaded multi places_visited: Place {
+      default := (select City filter .name = 'London');
+    }
+  }
+
+  type OtherPlace extending Place {
+    annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
+    annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
+  }
+
+  type PC extending Person {
+    required class: Class;
+    created_at: datetime {
+      default := datetime_of_statement();
+    }
+    required number: PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
+    overloaded required name: str {
+      constraint max_len_value(30);
+    }
+  }
+
+  type Time { 
+    required clock: str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
+
+  type Vampire extending Person {
+    multi slaves: MinorVampire;
+  }
+
+  type Sailor extending Person {
+    rank: Rank;
+  }
+
+  type Ship extending HasCoffins {
+    required name: str;
+    multi sailors: Sailor;
+    multi crew: Crewman;
+  }
+
+  # Functions
+
+  function can_enter(person_name: str, place: HasCoffins) -> optional str
+    using (
+      with vampire := (select Person filter .name = person_name),
+      has_coffins := place.coffins > 0,
+        select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
+  );
+
   function fight(one: Person, two: Person) -> str
     using (
       (one.name ?? 'Fighter 1') ++ ' wins!'
       if (one.strength ?? 0) > (two.strength ?? 0)
       else (two.name ?? 'Fighter 2') ++ ' wins!'
-    );
+  );
 
   function fight(people_names: array<str>, opponent: Person) -> str
     using (
@@ -158,18 +172,16 @@ module default {
           else (opponent.name ?? 'Opponent') ++ ' wins!'
     );
 
+  function get_url() -> str
+    using (
+      <str>'https://geohack.toolforge.org/geohack.php?params='
+    );
+
   function visited(person: str, city: str) -> bool
     using (
       with person := (select Person filter .name = person),
       select city in person.places_visited.name
     );
-
-  function can_enter(person_name: str, place: HasCoffins) -> optional str
-    using (
-      with vampire := (select Person filter .name = person_name),
-      has_coffins := place.coffins > 0,
-        select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
-      );
 }
     
 # Data:

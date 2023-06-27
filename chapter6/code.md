@@ -2,6 +2,18 @@
 # Schema:
 
 module default {
+  
+  # Scalar types
+
+  scalar type HumanAge extending int16 {
+    constraint max_value(120);
+  }
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Abstract object types
+
   abstract type Person {
     required name: str;
     multi places_visited: Place;
@@ -9,31 +21,13 @@ module default {
     property is_single := not exists .lover;
   }
 
-  type PC extending Person {
-    required class: Class;
-  }
-
-  scalar type HumanAge extending int16 {
-    constraint max_value(120);
-  }
-
-  type NPC extending Person {
-    age: HumanAge;
-  }
-
-  type Vampire extending Person {
-    age: int16;
-    multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
-  }
-  
   abstract type Place {
     required name: str;
     modern_name: str;
     important_places: array<str>;
   }
+
+  # Object types
 
   type Castle extending Place;
 
@@ -41,19 +35,31 @@ module default {
 
   type Country extending Place;
 
+  type MinorVampire extending Person {
+  }
+
+  type NPC extending Person {
+    age: HumanAge;
+  }
+
   type OtherPlace extending Place;
 
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+  type PC extending Person {
+    required class: Class;
+  }
 
-  scalar type SleepState extending enum <Asleep, Awake>;
-  
   type Time { 
     required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
     property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
-  } 
+  }
+
+  type Vampire extending Person {
+    age: int16;
+    multi slaves: MinorVampire;
+  }
 }
 
 

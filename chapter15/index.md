@@ -272,7 +272,7 @@ We can write the constraint with `expression on` and `contains()` like this:
 ```sdl
 type Lord extending Person {
   constraint expression on (
-    contains(__subject__.name, 'Lord')
+    contains(__subject__.name, 'Lord');
   );
 }
 ```
@@ -348,8 +348,8 @@ Here's the `Lord` type now:
 type Lord extending Person {
   constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
-  };
-};
+  }
+}
 ```
 
 If you do a migration now and try to insert a `Lord` that is just called `Billy`, the error now tells us what to do:

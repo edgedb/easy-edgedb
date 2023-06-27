@@ -16,14 +16,21 @@ This is already a lot of information, and it helps us start to think about our d
 - Some kind of `City` or `Location` type. These types that we can create are called {ref}`object types <docs:ref_datamodel_object_types>`, made out of properties and links to other objects. What properties should a `City` type have? Perhaps a name and a location, and sometimes a different name or spelling. Bistritz for example is in Romania and is now written Bistrița (note the ț - it's Bistrița, not Bistrita), while Buda-Pesth is now written Budapest.
 - Some kind of `NPC` type to represent the people in the book. We need it to have a name, and also a way to track the places that the person visited.
 
-To make a type inside a schema, just use the keyword `type` followed by the type name, then `{}` curly brackets. Our `NPC` type will start out like this:
+To make a type inside a schema, just use the keyword `type` followed by the type name. Our `NPC` type will start out like this:
 
 ```sdl
-type NPC {
-}
+type NPC;
 ```
 
 That's all you need to create a type.
+
+Now an `NPC` type that doesn't hold any properties isn't very useful, so we'll remove the `;` and replace them with `{}` curly brackets instead. The `NPC` type still doesn't have any properties but with the `{}` it is ready to hold them:
+
+```sdl
+type NPC {
+
+}
+```
 
 But hold on, where is our schema? The best way to create a schema is to start an EdgeDB project. It is quite easy.
 

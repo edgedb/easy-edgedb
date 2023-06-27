@@ -2,6 +2,23 @@
 # Schema:
 
 module default {
+
+  # Scalar types
+
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  scalar type PCNumber extending sequence;
+
+  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
+  scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Abstract object types
+
+  abstract type HasNumber {
+    required number: int16;
+  }
+  
   abstract type Person {
     name: str {
       delegated constraint exclusive;
@@ -19,35 +36,6 @@ module default {
     property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
   }
 
-  scalar type PCNumber extending sequence;
-
-  type PC extending Person {
-    required class: Class;
-    created_at: datetime {
-      default := datetime_of_statement()
-    }
-    required number: PCNumber {
-      default := sequence_next(introspect PCNumber);
-    }
-  }
-
-  type NPC extending Person {
-    overloaded age: int16 {
-      constraint max_value(120)
-  }
-    overloaded multi places_visited: Place {
-      default := (select City filter .name = 'London');
-    }
-  }
-
-  type Vampire extending Person {
-    multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
-    former_self: Person;
-  }
-  
   abstract type Place {
     required name: str {
       delegated constraint exclusive;
@@ -56,51 +44,19 @@ module default {
     important_places: array<str>;
   }
 
+  # Object types
+
+  type Castle extending Place {
+    doors: array<int16>;
+  }
+
   type City extending Place {
     population: int64;
   }
 
   type Country extending Place;
 
-  type OtherPlace extending Place;
-
-  type Castle extending Place {
-    doors: array<int16>;
-  }
-
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
-
-  scalar type SleepState extending enum <Asleep, Awake>;
-  
-  type Time { 
-    required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
-      else SleepState.Awake;
-  } 
-
-  abstract type HasNumber {
-    required number: int16;
-  }
-  
-  type Crewman extending HasNumber, Person {
-  }
-
-  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
-
-  type Sailor extending Person {
-    rank: Rank;
-  }
-
-  type Ship {
-    required name: str;
-    multi sailors: Sailor;
-    multi crew: Crewman;
-  }
-
-  function get_url() -> str
-    using (<str>'https://geohack.toolforge.org/geohack.php?params=');
+  type Crewman extending HasNumber, Person;
 
   type Event {
     required description: str;
@@ -113,6 +69,55 @@ module default {
     property url := get_url() ++ <str>.location.0 ++ '_N_' 
     ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
   }
+
+  type MinorVampire extending Person {
+    former_self: Person;
+  }
+
+  type NPC extending Person {
+    overloaded age: int16 {
+      constraint max_value(120);
+  }
+    overloaded multi places_visited: Place {
+      default := (select City filter .name = 'London');
+    }
+  }
+
+  type OtherPlace extending Place;
+
+  type PC extending Person {
+    required class: Class;
+    created_at: datetime {
+      default := datetime_of_statement()
+    }
+    required number: PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
+  }
+
+  type Sailor extending Person {
+    rank: Rank;
+  }
+
+  type Ship {
+    required name: str;
+    multi sailors: Sailor;
+    multi crew: Crewman;
+  }
+
+  type Time { 
+    required clock: str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
+
+  type Vampire extending Person {
+    multi slaves: MinorVampire;
+  }
+
+  # Functions
 
   function fight(one: Person, two: Person) -> str
     using (
@@ -129,6 +134,11 @@ module default {
           array_join(people_names, ', ') ++ ' win!'
           if sum(people.strength) > (opponent.strength ?? 0)
           else (opponent.name ?? 'Opponent') ++ ' wins!'
+    );
+
+  function get_url() -> str
+    using (
+      <str>'https://geohack.toolforge.org/geohack.php?params='
     );
 
   function visited(person: str, city: str) -> bool

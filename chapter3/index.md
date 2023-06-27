@@ -131,8 +131,8 @@ This `HumanAge` scalar is our own type with its own name, but underneath it's an
 
 ```edgeql
 insert NPC {
-    name := 'The innkeeper',
-    age := 130
+  name := 'The innkeeper',
+  age := 130
 };
 ```
 

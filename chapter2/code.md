@@ -2,25 +2,30 @@
 # Schema:
 
 module default {
+  # Scalar types
+
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  # Abstract object types
+
   abstract type Person {
     required name: str;
     multi places_visited: City;
   }
 
-  type PC extending Person {
-    required class: Class;
-  }
+  # Object types
 
-  type NPC extending Person {
-  }
-  
   type City {
     required name: str;
     modern_name: str;
     important_places: array<str>;
   }
 
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+  type NPC extending Person;
+
+  type PC extending Person {
+    required class: Class;
+  }
 }
 
 

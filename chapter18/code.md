@@ -2,169 +2,28 @@
 # Schema:
 
 module default {
-  abstract type HasNameAndCoffins {
-    required coffins: int16 {
-      default := 0;
-    }
-    required name: str {
-      delegated constraint exclusive;
-      constraint max_len_value(30);
-    }
-  }
 
-  abstract type Person {
-    name: str {
-      delegated constraint exclusive;
-    }
-    multi places_visited: Place;
-    multi lovers: Person;
-    property is_single := not exists .lovers;
-    strength: int16;
-    first_appearance: cal::local_date;
-    last_appearance: cal::local_date;
-    age: int16;
-    title: str;
-    degrees: str;
-    property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
-    property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  }
-
-  scalar type PCNumber extending sequence;
-
-  type PC extending Person {
-    required class: Class;
-    created_at: datetime {
-      default := datetime_of_statement()
-    }
-    required number: PCNumber {
-      default := sequence_next(introspect PCNumber);
-    }
-    overloaded required name: str {
-      constraint max_len_value(30);
-    }
-    last_updated: datetime {
-      rewrite insert, update using (datetime_of_statement());
-    }
-    bonus_item: LotteryTicket {
-      rewrite insert, update using (get_ticket());
-    }
-  }
-
-  type Lord extending Person {
-  constraint expression on (contains(__subject__.name, 'Lord')) {
-      errmessage := "All lords need \'Lord\' in their name";
-    };
-  };
-
-  type NPC extending Person {
-    overloaded age: int16 {
-      constraint max_value(120)
-  }
-    overloaded multi places_visited: Place {
-      default := (select City filter .name = 'London');
-    }
-  }
-
-  type Vampire extending Person {
-    multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
-    former_self: Person;
-    single link master := assert_single(.<slaves[is Vampire]);
-    property master_name := .master.name;
-  };
+  # Globals and definitions
 
   required global current_date: cal::local_date {
-    default := <cal::local_date>'1893-05-13'
+    default := <cal::local_date>'1893-05-13';
   }
-  
-  abstract type Place extending HasNameAndCoffins {
-    modern_name: str;
-    multi important_places: Landmark;
-  }
-
-  type Landmark {
-    required name: str;
-    multi context: str;
-  }
-
-  type City extending Place {
-    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-    population: int64;
-    index on (.name ++ ': ' ++ <str>.population);
-  }
-
-  type Country extending Place;
 
   abstract annotation warning;
 
-  type OtherPlace extending Place {
-    annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
-    annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
-  }
-
-  type Castle extending Place {
-    doors: array<int16>;
-  }
+  # Scalar types
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
-  scalar type SleepState extending enum <Asleep, Awake>;
-  
-  type Time { 
-    required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
-      else SleepState.Awake;
-  } 
+  scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
 
-  abstract type HasNumber {
-    required number: int16;
-  }
-  
-  type Crewman extending HasNumber, Person {
-  }
-  
-  alias CrewmanInBulgaria := Crewman {
-      name := 'Gospodin ' ++ .name,
-      strength := .strength + <int16>1,
-      original_name := .name,
-    };
+  scalar type PCNumber extending sequence;
 
   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
-  type Sailor extending Person {
-    rank: Rank;
-  }
+  scalar type SleepState extending enum <Asleep, Awake>;
 
-  type Ship extending HasNameAndCoffins {
-    multi sailors: Sailor;
-    multi crew: Crewman;
-  }
-
-  type BookExcerpt {
-    required date: cal::local_datetime;
-    required excerpt: str;
-    index on (.date);
-    required author: Person;
-  }
-
-  function get_url() -> str
-    using (<str>'https://geohack.toolforge.org/geohack.php?params=');
-
-  type Event {
-    required description: str;
-    required start_time: cal::local_datetime;
-    required end_time: cal::local_datetime;
-    required multi place: Place;
-    required multi people: Person;
-    multi excerpt: BookExcerpt;
-    location: tuple<float64, float64>;
-    east: bool;
-    property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
-  }
+  # Abstract object types
 
   abstract type Currency {
     required owner: Person;
@@ -190,65 +49,43 @@ module default {
     sub_minor_conversion: int64;
   }
 
-  type Pound extending Currency {
-    overloaded required major: str {
-        default := 'pound'
+  abstract type HasNameAndCoffins {
+    required coffins: int16 {
+      default := 0;
     }
-    overloaded required minor: str {
-        default := 'shilling'
-    }
-    overloaded required minor_conversion: int64 {
-        default := 20
-    }
-    overloaded sub_minor: str {
-        default := 'pence'
-    }
-    overloaded sub_minor_conversion: int64 {
-        default := 240
+    required name: str {
+      delegated constraint exclusive;
+      constraint max_len_value(30);
     }
   }
 
-  function fight(one: Person, two: Person) -> str
-    using (
-      (one.name ?? 'Fighter 1') ++ ' wins!'
-      if (one.strength ?? 0) > (two.strength ?? 0)
-      else (two.name ?? 'Fighter 2') ++ ' wins!'
-    );
+  abstract type HasNumber {
+    required number: int16;
+  }
 
-  function fight(people_names: array<str>, opponent: Person) -> str
-    using (
-      with
-          people := (select Person filter contains(people_names, .name)),
-      select
-          array_join(people_names, ', ') ++ ' win!'
-          if sum(people.strength) > (opponent.strength ?? 0)
-          else (opponent.name ?? 'Opponent') ++ ' wins!'
-    );
+  abstract type Person {
+    name: str {
+      delegated constraint exclusive;
+    }
+    multi places_visited: Place;
+    multi lovers: Person;
+    property is_single := not exists .lovers;
+    strength: int16;
+    first_appearance: cal::local_date;
+    last_appearance: cal::local_date;
+    age: int16;
+    title: str;
+    degrees: str;
+    property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
+    property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
+  }
 
-  function visited(person: str, city: str) -> bool
-    using (
-      with person := (select Person filter .name = person),
-      select city in person.places_visited.name
-    );
+  abstract type Place extending HasNameAndCoffins {
+    modern_name: str;
+    multi important_places: Landmark;
+  }
 
-  function can_enter(person_name: str, place: str) -> optional str
-    using (
-    with 
-      vampire := assert_single((select Person filter .name = person_name)),
-      enter_place := assert_single((select HasNameAndCoffins filter .name = place))
-      select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
-      );
-
-  scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
-  
-  function get_ticket() -> LotteryTicket using (
-    with rnd := <int16>(random() * 10),
-    select(LotteryTicket.Nothing if rnd <= 6 else
-    LotteryTicket.WallChicken if rnd = 7 else
-    LotteryTicket.ChainWhip if rnd = 8 else
-    LotteryTicket.Crucifix if rnd = 9 else
-    LotteryTicket.Garlic)
-  )
+  # Object types
 
   type Account {
     required name: str;
@@ -267,6 +104,25 @@ module default {
     );
   }
 
+  type BookExcerpt {
+    required date: cal::local_datetime;
+    required excerpt: str;
+    index on (.date);
+    required author: Person;
+  }
+
+  type Castle extending Place {
+    doors: array<int16>;
+  }
+
+  type City extending Place {
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
+    population: int64;
+    index on (.name ++ ': ' ++ <str>.population);
+  }
+
+  type Country extending Place;
+
   type CreditCardInfo {
     required name: str;
     required number: str;
@@ -274,10 +130,170 @@ module default {
     link card_holder := .<credit_card[is Account]
   }
 
+  type Crewman extending HasNumber, Person;
+
+  type Event {
+    required description: str;
+    required start_time: cal::local_datetime;
+    required end_time: cal::local_datetime;
+    required multi place: Place;
+    required multi people: Person;
+    multi excerpt: BookExcerpt;
+    location: tuple<float64, float64>;
+    east: bool;
+    property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  }
+
+  type Landmark {
+    required name: str;
+    multi context: str;
+  }
+
+  type Lord extending Person {
+    constraint expression on (contains(__subject__.name, 'Lord')) {
+      errmessage := "All lords need \'Lord\' in their name";
+    }
+  }
+
   type MinimalUserInfo {
     username: str;
     multi pcs: PC;
   }
+
+  type MinorVampire extending Person {
+    former_self: Person;
+    single link master := assert_single(.<slaves[is Vampire]);
+    property master_name := .master.name;
+  };
+
+  type NPC extending Person {
+    overloaded age: int16 {
+      constraint max_value(120);
+    }
+    overloaded multi places_visited: Place {
+      default := (select City filter .name = 'London');
+    }
+  }
+
+  type OtherPlace extending Place {
+    annotation description := 'A place with under 50 buildings - hamlets, small villages, etc.';
+    annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
+  }
+
+  type PC extending Person {
+    required class: Class;
+    created_at: datetime {
+      default := datetime_of_statement();
+    }
+    required number: PCNumber {
+      default := sequence_next(introspect PCNumber);
+    }
+    overloaded required name: str {
+      constraint max_len_value(30);
+    }
+    last_updated: datetime {
+      rewrite insert, update using (datetime_of_statement());
+    }
+    bonus_item: LotteryTicket {
+      rewrite insert, update using (get_ticket());
+    }
+  }
+
+  type Pound extending Currency {
+    overloaded required major: str {
+        default := 'pound';
+    }
+    overloaded required minor: str {
+        default := 'shilling';
+    }
+    overloaded required minor_conversion: int64 {
+        default := 20;
+    }
+    overloaded sub_minor: str {
+        default := 'pence';
+    }
+    overloaded sub_minor_conversion: int64 {
+        default := 240;
+    }
+  }
+
+  type Sailor extending Person {
+    rank: Rank;
+  }
+
+  type Ship extending HasNameAndCoffins {
+    multi sailors: Sailor;
+    multi crew: Crewman;
+  }
+
+  type Time { 
+    required clock: str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
+
+  type Vampire extending Person {
+    multi slaves: MinorVampire;
+  }
+
+  # Aliases
+
+  alias CrewmanInBulgaria := Crewman {
+    name := 'Gospodin ' ++ .name,
+    strength := .strength + <int16>1,
+    original_name := .name,
+  };
+
+  # Functions
+
+  function can_enter(person_name: str, place: str) -> optional str
+    using (
+      with 
+        vampire := assert_single((select Person filter .name = person_name)),
+        enter_place := assert_single((select HasNameAndCoffins filter .name = place))
+        select vampire.name ++ ' can enter.' if enter_place.coffins > 0 else vampire.name ++ ' cannot enter.'
+    );
+  
+  function get_url() -> str
+    using (
+      <str>'https://geohack.toolforge.org/geohack.php?params='
+    );
+
+  function fight(one: Person, two: Person) -> str
+    using (
+      (one.name ?? 'Fighter 1') ++ ' wins!'
+      if (one.strength ?? 0) > (two.strength ?? 0)
+      else (two.name ?? 'Fighter 2') ++ ' wins!'
+    );
+
+  function fight(people_names: array<str>, opponent: Person) -> str
+    using (
+      with
+          people := (select Person filter contains(people_names, .name)),
+      select
+          array_join(people_names, ', ') ++ ' win!'
+          if sum(people.strength) > (opponent.strength ?? 0)
+          else (opponent.name ?? 'Opponent') ++ ' wins!'
+    );
+
+  function get_ticket() -> LotteryTicket 
+    using (
+      with rnd := <int16>(random() * 10),
+        select(
+        LotteryTicket.Nothing if rnd <= 6 else
+        LotteryTicket.WallChicken if rnd = 7 else
+        LotteryTicket.ChainWhip if rnd = 8 else
+        LotteryTicket.Crucifix if rnd = 9 else
+        LotteryTicket.Garlic)
+    );
+
+  function visited(person: str, city: str) -> bool
+    using (
+      with person := (select Person filter .name = person),
+      select city in person.places_visited.name
+    );
 }
 
 # Data:

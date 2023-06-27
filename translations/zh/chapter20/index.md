@@ -189,7 +189,7 @@ type ShipVisit {
 ```sdl
 type NPC extending Person {
   overloaded age: int16 {
-    constraint max_value(120)
+    constraint max_value(120);
   }
   overloaded multi places_visited: Place {
     default := (select City filter .name = 'London');
@@ -241,8 +241,8 @@ abstract annotation warning;
 type Lord extending Person {
   constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
-  };
-};
+  }
+}
 ```
 
 （我们可能会在真正的游戏中删除它，或者它可能会成为扩展自 `PC` 类型的 `Lord`，以便玩家角色可以选择身份成为领主、小偷、或侦探等等。）
@@ -255,7 +255,7 @@ type Lord extending Person {
 type Lord extending Person {
   constraint expression on (__subject__.title = 'Lord') {
     errmessage := "All lords need \'Lord\' in their title";
-  };
+  }
 }
 ```
 

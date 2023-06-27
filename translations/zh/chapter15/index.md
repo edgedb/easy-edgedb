@@ -187,9 +187,9 @@ std::contains(haystack: str, needle: str) -> bool
 
 ```sdl
 type Lord extending Person {
-  constraint expression on (
+  constraint expression on {
     contains(__subject__.name, 'Lord')
-  );
+  }
 }
 ```
 
@@ -263,8 +263,8 @@ select (
 type Lord extending Person {
   constraint expression on (contains(__subject__.name, 'Lord')) {
     errmessage := "All lords need \'Lord\' in their name";
-  };
-};
+  }
+}
 ```
 
 ## 双向关联

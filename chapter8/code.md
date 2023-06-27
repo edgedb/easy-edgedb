@@ -2,6 +2,25 @@
 # Schema:
 
 module default {
+
+  # Scalar types
+
+  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
+  scalar type HumanAge extending int16 {
+    constraint max_value(120);
+  }
+
+  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
+  scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Abstract object types
+
+  abstract type HasNumber {
+    required number: int16;
+  }
+
   abstract type Person {
     name: str {
       delegated constraint exclusive;
@@ -12,26 +31,6 @@ module default {
     strength: int16;
   }
 
-  type PC extending Person {
-    required class: Class;
-  }
-
-  scalar type HumanAge extending int16 {
-    constraint max_value(120);
-  }
-
-  type NPC extending Person {
-    age: HumanAge;
-  }
-
-  type Vampire extending Person {
-    age: int16;
-    multi slaves: MinorVampire;
-  }
-
-  type MinorVampire extending Person {
-  }
-  
   abstract type Place {
     required name: str {
       delegated constraint exclusive;
@@ -40,36 +39,29 @@ module default {
     important_places: array<str>;
   }
 
-  type City extending Place;
-
-  type Country extending Place;
-
-  type OtherPlace extending Place;
+  # Object types
 
   type Castle extending Place {
     doors: array<int16>;
   }
 
-  scalar type Class extending enum<Rogue, Mystic, Merchant>;
+  type City extending Place;
 
-  scalar type SleepState extending enum <Asleep, Awake>;
-  
-  type Time { 
-    required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
-      else SleepState.Awake;
-  } 
+  type Country extending Place;
 
-  abstract type HasNumber {
-    required number: int16;
-  }
-  
-  type Crewman extending HasNumber, Person {
+  type Crewman extending HasNumber, Person;
+
+  type MinorVampire extending Person;
+
+  type OtherPlace extending Place;
+
+  type NPC extending Person {
+    age: HumanAge;
   }
 
-  scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+  type PC extending Person {
+    required class: Class;
+  }
 
   type Sailor extending Person {
     rank: Rank;
@@ -79,6 +71,19 @@ module default {
     required name: str;
     multi sailors: Sailor;
     multi crew: Crewman;
+  }
+
+  type Time { 
+    required clock: str; 
+    property clock_time := <cal::local_time>.clock; 
+    property hour := .clock[0:2]; 
+    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+      else SleepState.Awake;
+  } 
+
+  type Vampire extending Person {
+    age: int16;
+    multi slaves: MinorVampire;
   }
 }
 
