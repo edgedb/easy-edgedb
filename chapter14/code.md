@@ -3,14 +3,6 @@
 
 module default {
 
-  # Globals and definitions
-
-  required global tester_mode: Mode {
-    default := Mode.Info;
-  }
-
-  abstract annotation warning;
-
   # Scalar types
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
@@ -22,6 +14,14 @@ module default {
   scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 
   scalar type SleepState extending enum <Asleep, Awake>;
+
+  # Globals and definitions
+
+  required global tester_mode: Mode {
+    default := Mode.Info;
+  }
+
+  abstract annotation warning;
 
   # Abstract object types
 
