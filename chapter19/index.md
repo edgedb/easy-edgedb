@@ -244,7 +244,7 @@ type Time {
   required clock: str; 
   property clock_time := <cal::local_time>.clock; 
   property hour := .clock[0:2]; 
-  property sleep_state := 
+  property vampires_are := 
     SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
 } 
@@ -270,7 +270,7 @@ select ShipVisit {
     clock,
     clock_time,
     hour,
-    sleep_state
+    vampires_are
   },
 } filter .place.name = 'Galatz';
 ```
@@ -287,7 +287,7 @@ The output looks pretty good, including whether vampires were awake or asleep wh
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
       hour: '13',
-      sleep_state: Asleep,
+      vampires_are: Asleep,
     },
   },
 }
@@ -299,9 +299,9 @@ However, the problem is that we now have a random `Time` type floating around th
 function time(clock: str) -> tuple<cal::local_time, str, SleepState> using (
   with local := <cal::local_time>clock,
   hour := clock[0:2],
-  sleep_state := SleepState.Asleep if <int16>hour > 7 and <int16>hour < 19
+  vampires_are := SleepState.Asleep if <int16>hour > 7 and <int16>hour < 19
     else SleepState.Awake,
-    select(local, hour, sleep_state)
+    select(local, hour, vampires_are)
 );
 ```
 
@@ -315,7 +315,8 @@ type ShipVisit {
   clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+        else SleepState.Awake;
 }
 ```
 
@@ -339,7 +340,7 @@ select ShipVisit {
   clock,
   when_arthur_got_the_telegram := <cal::local_time>.clock + duration,
   hour,
-  sleep_state
+  vampires_are
 } filter .place.name = 'Galatz';
   
 ```
@@ -354,7 +355,7 @@ And now we get all the output that the `Time` type gave us before, plus our extr
     date: <cal::local_date>'1893-10-28',
     clock: '13:00:00',
     hour: '13',
-    sleep_state: 'asleep',
+    vampires_are: Asleep,
     when_arthur_got_the_telegram: <cal::local_time>'15:05:10',
   },
 }

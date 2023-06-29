@@ -216,27 +216,27 @@ type Time {
   required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19
-    else 'awake';
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+        else SleepState.Awake;
 }
 ```
 
-因此，`sleep_state` 是如下这样计算的：
+因此，`vampires_are` 是如下这样计算的：
 
 - 首先 EdgeDB 会查看取到的小时的数值是否大于 7 且小于 19（晚上 7 点）。这里用两个数字进行比较比用数字与字符串进行比较要好，因此我们编写 `<int16>.hour` 而不是 `.hour`，这样就可以通过类型转换达到用数字与数字进行比较的目的。
 - 然后 EdgeDB 会基于比较结果给出一个字符串来说明现在的状态是“睡着（'asleep'）”还是“醒着（'awake'）”。
 
 现在，如果我们对所有属性进行 `select`，我们将得到：
 
-`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', sleep_state: 'asleep'}}`
+`{default::Time {clock: '09:55:05', clock_time: <cal::local_time>'09:55:05', hour: '09', vampires_are: Asleep}}`
 
 关于 `else`，这里有一个注意事项：你可以在 `(result) if (condition) else` 格式中根据需要多次使用 `else`。例如：
 
 ```
-property sleep_state := 'just waking up' if <int16>.hour = 19 else
-                  'going to bed' if <int16>.hour = 6 else
-                  'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else
-                  'awake';
+property vampires_are := SleepState.JustWakingUp if <int16>.hour = 19 else
+                  SleepState.GoingToBed if <int16>.hour = 6 else
+                  SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19 else
+                  SleepState.Awake;
 ```
 
 ## 插入的同时做选择
@@ -262,12 +262,12 @@ select ( # Start a selection
   { # Now just choose the properties we want
     clock,
     hour,
-    sleep_state,
+    vampires_are,
     double_hour := <int16>.hour * 2
   };
 ```
 
-现在的输出结果对我们来说更有意义了，即：`{default::Time {clock: '22:44:10', hour: '22', sleep_state: 'awake', double_hour: 44}}`。我们知道了时间（clock）和小时（hour），同时也了解到了吸血鬼是醒着的，我们甚至可以对我们刚刚输入的对象做些其他计算，如示例中的 `double_hour`。
+现在的输出结果对我们来说更有意义了，即：`{default::Time {clock: '22:44:10', hour: '22', vampires_are: Awake, double_hour: 44}}`。我们知道了时间（clock）和小时（hour），同时也了解到了吸血鬼是醒着的，我们甚至可以对我们刚刚输入的对象做些其他计算，如示例中的 `double_hour`。
 
 [→ 点击这里查看到第 4 章为止的所有代码](code.md)
 

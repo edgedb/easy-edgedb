@@ -5,9 +5,11 @@ module default {
 
   # Globals and definitions
 
-  required global current_date: cal::local_date {
-    default := <cal::local_date>'1893-05-13';
+  required global tester_mode: Mode {
+    default := Mode.Info;
   }
+
+  global time := assert_single((select Time));
 
   abstract annotation warning;
 
@@ -16,6 +18,8 @@ module default {
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
 
   scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
+
+  scalar type Mode extending enum<Info, Debug>;
   
   scalar type PCNumber extending sequence;
 
@@ -159,7 +163,7 @@ module default {
     required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
   } 
 
@@ -226,6 +230,8 @@ module default {
 }
 
 # Data:
+
+insert Time { clock := '09:00:00' };
 
 insert City {
   name := 'Munich',

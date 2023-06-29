@@ -235,90 +235,122 @@ Here is the output:
 
 We could of course turn this into a function if we use it enough.
 
-## Globals
+## Global scalars
 
-A lot of games feature time travel, and maybe our game will too. The player characters might have come from the present time, or might visit an apocalyptic future in which Dracula won and now rules from his base in London in the year 2023.
+Every game needs to be tested before it can be sold, and it's nice to have different possible modes when testing a game. Any game testers should be able to experience the game in the same way that a regular player would, but another mode with extra information would be helpful too.
 
-The interesting thing about time travel is that it is entirely dependent on what the player character is doing. The current year doesn't really belong in any of the objects currently in our database because they have nothing to do with what any player is doing at the moment. But we would like to reference the current year sometimes, because for example query on `City` objects should give their `name` when in the 19th century, but their `modern_name` when in the present.
+Another global type could help here. We've had a global `Time` object in our database for some time now, which so far is our only global type. But globals can be scalar types too.
 
-So the current year doesn't belong to any type - it's a global parameter.
+A global scalar isn't an object though, so changing its value is a bit different: instead, we use the `set` and `unset` keywords to work with it.
 
-EdgeDB allows you to create global parameters using the `global` keyword. These must be scalars, unless the `global` is a computable in which case there are no limits. Let's give this a try by adding a `current_date` scalar to the schema. We'll also give it a `default` which can be the date when all player characters begin their quest.
+To do this we can add an enum called `Mode`, and give it two values: `Info` or `Debug`. `Info` will be the default, while `Debug` will be the mode that provides extra information for the testers. After this we can make a global called `tester_mode`:
 
 ```sdl
-required global current_date: cal::local_date {
-  default := <cal::local_date>'1893-05-13'
-}
+scalar type Mode extending enum<Info, Debug>;
+
+required global tester_mode: Mode {
+    default := Mode.Info;
+  }
 ```
 
-And once the migration is done, we can easily select it using the `global` keyword:
+A `required` global always needs a default value, which makes sense: a global is available across the entire database and is `required` so it must be present. The only way to ensure this is to add a default value. Fortunately, the EdgeDB compiler won't let a schema migration happen if we forget this. The error message would look like this:
+
+```
+error: required globals must have a default
+  ┌─ c:\easy-edgedb\dbschema\default.esdl:9:3
+  │
+9 │   required global tester_mode: str;
+  │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
+
+edgedb error: cannot proceed until .esdl files are fixed
+```
+
+With the migration done, let's make sure that the global value is there:
 
 ```edgeql
-select global current_date;
+select global tester_mode;
 ```
 
-This returns `{<cal::local_date>'1893-05-13'}`, the default value.
+The output is simple: just `{Info}`.
 
-To change a global variable, just use the keyword `set`. Let's set `current_date` to a more modern date:
+Changing a global scalar is easy too: just use the `set` keyword.
 
 ```edgeql
-set global current_date := <cal::local_date>'2023-06-19';
+set global tester_mode := Mode.Debug;
 ```
 
-The output is pretty simple:
+The output here is simple too, just a message informing us that the value was successfully set:
 
 ```
 OK: SET GLOBAL
 ```
 
-So that was pretty easy! After all, this global is a scalar and scalars are pretty easy to work with.
+The other keyword is `reset`, which resets a global to its default value. In our case the default value is `Mode.Info`, but if we hadn't specified that `tester_mode` is `required` then the default value would have been `{}`, an empty set.
 
-Now let's run a query to get some `City` names. In this query we will make 1945 the cutoff date for old names vs. new names. Our `City` objects use the `modern_name` property from the abstract `Place` type as a hint that the name for the city has changed since the time in the book, so we will have to default to the `name` property regardless of the data if `modern_name` doesn't exist. Here is what the query looks like:
-
-```
-with use_modern := global current_date > <cal::local_date>'1945-01-01',
-  select City {
-  city_name := .modern_name if use_modern and exists .modern_name else .name
- };
-```
-
-Putting that together gives us our cities in their modern form: two of them are now Bistrița and Budapest.
+Pretty easy! The output below shows the sort of output you will see when setting and resetting a global scalar value.
 
 ```
-{
-  default::City {city_name: 'Whitby'},
-  default::City {city_name: 'Munich'},
-  default::City {city_name: 'Bistrița'},
-  default::City {city_name: 'London'},
-  default::City {city_name: 'Exeter'},
-  default::City {city_name: 'Budapest'},
-}
-```
-
-Now let's change `current_date` back to an older date. In addition to `set`, we can use the `reset` keyword for our use case because `current_date` has a default value.
-
-```edgeql
-reset global current_date;
-```
-
-And the output: 
-
-```
+db> select global tester_mode;
+{Info}
+db> set global tester_mode := Mode.Debug;
+OK: SET GLOBAL
+db> select global tester_mode;
+{Debug}
+db> reset global tester_mode;
 OK: RESET GLOBAL
 ```
 
-The `reset` keyword works for globals without default values too, but their default value is an empty set.
+And with this global value in place, we can now do queries that match on the `tester_mode` enum. Here is an example of a query that a tester using the `PC` named Emil Sinclair might use. During regular `Info` mode the query will only show the character's own info, but during `Debug` mode it will also show info on all the `NPC` objects as well. In a more complex schema we can imagine that this could be used to show a tester the health, location and so on of all the NPCs in a game, which could then be used to show them on a map or in a separate chart on the screen that is only visible during debug mode.
 
-And now that the `current_date` has been reset, the same query as above for the `City` object names now shows us the names Bistritz and Buda-Pesth for two of the cities:
+```edgeql
+with info := NPC if global tester_mode = Mode.Debug else <NPC>{},
+  select PC {
+    name,
+    class,
+    strength,
+    locations := .places_visited.name,
+    npc_info := info { 
+      name, 
+      strength
+    }
+} filter .name = 'Emil Sinclair';
+```
+
+The output is pretty short during `Info` mode:
 
 ```
 {
-  default::City {city_name: 'Whitby'},
-  default::City {city_name: 'Munich'},
-  default::City {city_name: 'Bistritz'},
-  default::City {city_name: 'London'},
-  default::City {city_name: 'Exeter'},
-  default::City {city_name: 'Buda-Pesth'},
+  default::PC {
+    name: 'Emil Sinclair',
+    class: Mystic,
+    strength: 2,
+    locations: {'Munich', 'Buda-Pesth', 'Bistritz'},
+    npc_info: {},
+  },
+}
+```
+
+But if you use `set global tester_mode := Mode.Debug;` then all of a sudden the same query will display all of the extra info!
+
+```
+{
+  default::PC {
+    name: 'Emil Sinclair',
+    class: Mystic,
+    strength: 2,
+    locations: {'Munich', 'Buda-Pesth', 'Bistritz'},
+    npc_info: {
+      default::NPC {name: 'Jonathan Harker', strength: 5},
+      default::NPC {name: 'Renfield', strength: 10},
+      default::NPC {name: 'The innkeeper', strength: 1},
+      default::NPC {name: 'Mina Murray', strength: 2},
+      default::NPC {name: 'Quincey Morris', strength: 4},
+      default::NPC {name: 'Arthur Holmwood', strength: 4},
+      default::NPC {name: 'John Seward', strength: 3},
+      default::NPC {name: 'Abraham Van Helsing', strength: 1},
+      default::NPC {name: 'Lucy Westenra', strength: 0},
+    },
+  },
 }
 ```
 

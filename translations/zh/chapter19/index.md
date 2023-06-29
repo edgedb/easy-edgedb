@@ -192,11 +192,12 @@ type Time {
   required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+        else SleepState.Awake;
 }
 ```
 
-电报里提到的抵达时间是下午 1 点钟，让我们将该信息也放入到查询中，并获取包括 `sleep_state` 属性在内的时间信息。如下所示：
+电报里提到的抵达时间是下午 1 点钟，让我们将该信息也放入到查询中，并获取包括 `vampires_are` 属性在内的时间信息。如下所示：
 
 ```edgeql
 with time := (
@@ -216,7 +217,7 @@ select Ship.<ship[is ShipVisit] {
     clcok,
     clock_time,
     hour,
-    sleep_state
+    vampires_are
   },
 } filter .place.name = 'Galatz';
 ```
@@ -233,7 +234,7 @@ select Ship.<ship[is ShipVisit] {
       clock: '13:00:00',
       clock_time: <cal::local_time>'13:00:00',
       hour: '13',
-      sleep_state: 'asleep',
+      vampires_are: Asleep,
     },
   },
 }
@@ -251,7 +252,8 @@ type ShipVisit {
   clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+        else SleepState.Awake;
 }
 ```
 
@@ -277,7 +279,7 @@ select Ship.<ship[is ShipVisit] {
   date,
   clock,
   hour,
-  sleep_state,
+  vampires_are,
   when_arthur_got_the_telegram := (<cal::local_time>.clock) + <duration>'2 hours, 5 minutes, 10 seconds'
 } filter .place.name = 'Galatz';
 ```
@@ -292,7 +294,7 @@ select Ship.<ship[is ShipVisit] {
     date: <cal::local_date>'1893-10-28',
     clock: '13:00:00',
     hour: '13',
-    sleep_state: 'asleep',
+    vampires_are: Asleep,
     when_arthur_got_the_telegram: <cal::local_time>'15:05:10',
   },
 }

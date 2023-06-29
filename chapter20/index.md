@@ -191,7 +191,7 @@ select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
-- by another computed property called `sleep_state` that is either 'asleep' or 'awake' depending on the `hour` property we just made, cast into an `int16`.
+- by another computed property called `vampires_are` that is either `Asleep` or `Awake` depending on the `hour` property we just made, cast into an `int16`.
 
 ```sdl
 type ShipVisit {
@@ -201,8 +201,8 @@ type ShipVisit {
   clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := 'asleep' 
-    if <int16>.hour > 7 and <int16>.hour < 19 else 'awake';
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+        else SleepState.Awake;
 }
 ```
 

@@ -2,6 +2,11 @@
 # Schema:
 
 module default {
+
+  # Globals
+
+  global time := assert_single((select Time));
+
   # Scalar types
 
   scalar type Class extending enum<Rogue, Mystic, Merchant>;
@@ -49,7 +54,7 @@ module default {
     required clock: str; 
     property clock_time := <cal::local_time>.clock; 
     property hour := .clock[0:2]; 
-    property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
   } 
 
@@ -59,6 +64,8 @@ module default {
 }
 
 # Data:
+
+insert Time { clock := '09:00:00' };
 
 insert City {
   name := 'Munich',
