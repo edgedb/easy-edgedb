@@ -289,7 +289,7 @@ with time := (
  clock,
  clock_time,
  hour,
- sleep_state
+ vampires_are
  };
 Parameter <str>$hour: 10
 Parameter <str>$minute: 09
@@ -304,7 +304,7 @@ And the output:
     clock: '100909',
     clock_time: <cal::local_time>'10:09:09',
     hour: '10',
-    sleep_state: 'asleep',
+    vampires_are: Asleep,
   },
 }
 ```

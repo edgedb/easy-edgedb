@@ -234,12 +234,12 @@ type Time {
   required clock: str;
   property clock_time := <cal::local_time>.clock;
   property hour := .clock[0:2];
-  property sleep_state := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
 }
 ```
 
-So `sleep_state` is calculated like this:
+So `vampires_are` is calculated like this:
 
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we cast into an `int16` with `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it chooses between the 'Asleep' or 'Awake' values of the enum depending on that.
@@ -251,7 +251,7 @@ select Time {
   clock,
   clock_time,
   hour,
-  sleep_state
+  vampires_are
  };
 ```
 
@@ -262,14 +262,14 @@ default::Time {
   clock: '09:55:05',
   clock_time: <cal::local_time>'09:55:05',
   hour: '09',
-  sleep_state: Asleep,
+  vampires_are: Asleep,
 },
 ```
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example showing how this could work if we had more values on the `SleepState` enum:
 
 ```sdl
-property sleep_state := 
+property vampires_are := 
   SleepState.JustWakingUp if <int16>.hour = 19 else
   SleepState.GoingToBed if <int16>.hour = 6 else
   SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19 else
@@ -311,27 +311,77 @@ select (
   {
     clock,
     hour,
-    sleep_state,
-    time_until_midnight := <cal::local_time>'24:00:00'
+    vampires_are,
+    time_until_just_before_midnight := <cal::local_time>'23:59:59'
                          - <cal::local_time>.clock
   };
 ```
 
-Now the output is more meaningful to us: 
+(The computed `time_until_midnight` property used '23:59:59' as its input because the range of a `local_time` is 0:00:00 to 23:59:59. If we needed more accuracy we could have added a `<duration>'1 second'` to the expression. We will learn how to work with durations in the next chapter.)
 
+Now the output is more meaningful to us: 
 
 ```
 {
   default::Time {
     clock: '22:44:10',
     hour: '22',
-    sleep_state: Awake,
-    time_until_midnight: <cal::relative_duration>'PT1H15M50S',
+    vampires_are: Awake,
+    time_until_just_before_midnight: <cal::relative_duration>'PT1H15M49S',
   },
 }
 ```
 
 We know the clock and the hour, we can see that vampires are awake, and even make a computed property from the object we just entered. Looks like we have one hour, 15 minutes, and 50 seconds until midnight.
+
+## Making Time global
+
+Depending on how closely you've been following this chapter, you probably have about three or four `Time` objects in the database by now. That feels a bit odd, because this `Time` type is most useful for determining the current state of the game: the current clock time, if vampires are awake or not, and so on. So instead of multiple `Time` objects floating around in the database, we should have a single global `Time` object instead.
+
+So first let's delete all the `Time` objects in the database with `delete Time;` and make a change to the schema by making a `global` type called `time`. In EdgeDB a global type can either be:
+
+* A scalar type if it isn't computed,
+* Any type if it is computed.
+
+In our case we are going to make `time` a computed global that selects all the `Time` objects in the database, which in our case should never be more than one. So we can define it using the `assert_single()` function again. The global type will now look like this:
+
+```sdl
+global time := assert_single((select Time));
+```
+
+Now that this is added, let's do a migration and see what's inside! Selecting a global type is done in the same way as with other types except that it needs the `global` keyword:
+
+```edgeql
+select global time {*};
+```
+
+Doing this should return an empty set. Now let's insert the current time:
+
+```edgeql
+insert Time { clock := '09:00:00' };
+```
+
+And then do the query on `global time` again:
+
+```edgeql
+select global time {*};
+```
+
+With this single global `Time` object in our database, we can now see the current time and what vampires are up to at the moment:
+
+```
+{
+  default::Time {
+    id: d6363f92-1517-11ee-ab3d-834f250e5e21,
+    clock: '09:00:00',
+    clock_time: <cal::local_time>'09:00:00',
+    hour: '09',
+    vampires_are: Asleep,
+  },
+}
+```
+
+In Chapter 6 we will learn how to `update` objects, which will let us change this global `Time` object whenever we like. And much later on in the book we will also add a global scalar value, so stay tuned!
 
 [Here is all our code so far up to Chapter 4.](code.md)
 
