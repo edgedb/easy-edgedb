@@ -9,6 +9,10 @@ module default {
 
   scalar type LotteryTicket extending enum <Nothing, WallChicken, ChainWhip, Crucifix, Garlic>;
 
+  scalar type Money extending int64 {
+    constraint min_value(0);
+  }
+
   scalar type Mode extending enum<Info, Debug>;
 
   scalar type PCNumber extending sequence;
@@ -29,28 +33,25 @@ module default {
 
   # Abstract object types
 
-  abstract type Currency {
-    required owner: Person;
-
-    required major: str;
-    required major_amount: int64 {
-        default := 0;
-        constraint min_value(0);
+  abstract type HasMoney {
+    required pounds: Money {
+      default := 0;
     }
-
-    minor: str;
-    minor_amount: int64 {
-        default := 0;
-        constraint min_value(0);
+    required shillings: Money {
+      default := 0;
     }
-    minor_conversion: int64;
-
-    sub_minor: str;
-    sub_minor_amount: int64 {
-        default := 0;
-        constraint min_value(0);
+    required pence: Money {
+      default := 0;
+    }    
+    required cents: Money {
+      default := 0;
     }
-    sub_minor_conversion: int64;
+    required dollars: Money {
+      default := 0;
+    }
+    property total_pence := .pounds * 240 + .shillings * 20 + .pence;
+    property total_cents := .dollars * 100 + .cents;
+    property total_wealth_in_pence := .total_pence + <int64>(.total_cents / 800);
   }
 
   abstract type HasNameAndCoffins {
@@ -67,7 +68,7 @@ module default {
     required number: int16;
   }
 
-  abstract type Person {
+  abstract type Person extending HasMoney {
     name: str {
       delegated constraint exclusive;
     }
@@ -200,24 +201,6 @@ module default {
     }
     bonus_item: LotteryTicket {
       rewrite insert, update using (get_ticket());
-    }
-  }
-
-  type Pound extending Currency {
-    overloaded required major: str {
-        default := 'pound';
-    }
-    overloaded required minor: str {
-        default := 'shilling';
-    }
-    overloaded required minor_conversion: int64 {
-        default := 20;
-    }
-    overloaded sub_minor: str {
-        default := 'pence';
-    }
-    overloaded sub_minor_conversion: int64 {
-        default := 240;
     }
   }
 
@@ -550,30 +533,25 @@ select (
   last_appearance
   };
 
-insert Pound {
- owner := (select Person filter .name = 'Count Dracula'),
-   major_amount := 2500,
-   minor_amount := 50,
-   sub_minor_amount := 200
-};
+  update Person filter .name in { 'Arthur Holmwood', 'Count Dracula' }
+  set {
+    pounds := 3000 + <int64>(random() * 3000),
+    shillings := 3000 + <int64>(random() * 3000),
+    pence := 3000 + <int64>(random() * 3000)
+  };
 
-select (for character in {'Jonathan Harker', 'Mina Murray', 'The innkeeper', 'Emil Sinclair'}
-  union (
-    insert Pound {
-      owner := assert_single((select Person filter .name = character)),
-      major_amount := <int64>round(random() * 500),
-      minor_amount := <int64>round(random() * 100),
-      sub_minor_amount := <int64>round(random() * 500)
-  })) {
-  owner: {
-    name
-  },
-  pounds := .major_amount,
-  shillings := .minor_amount,
-  pence := .sub_minor_amount,
-  total_pounds :=
-    round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
-};
+  update Person filter .name not in { 'Arthur Holmwood', 'Count Dracula' }
+  set {
+    pence := 100 + <int64>(random() * 100),
+    shillings := 20 + <int64>(random() * 100),
+    pounds := 10 + <int64>(random() * 100)
+  };
+
+  update Person filter .name = 'Quincey Morris'
+  set { 
+    dollars := 500 + <int64>(random() * 2000),
+    cents := 500 + <int64>(random() * 2000)
+  };
 
 insert Account {
   name := 'Deborah Brown',
