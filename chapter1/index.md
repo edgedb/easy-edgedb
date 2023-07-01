@@ -604,7 +604,7 @@ Success! Now we get the output we wanted:
 }
 ```
 
-Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every City type in the database`. Right now we only have three `City` objects and one `NPC` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
+Interestingly, Jonathan Harker has been inserted with a link to every city in the database. In other words, `places_visited := City` means `places_visited := every object of type City in the database`. Right now we only have three `City` objects and one `NPC` object, and Jonathan Harker has visited them all. But later on we will have more cities and won't be able to just write `places_visited := City` for all the other characters. For that we will need `filter`, which we will learn to use in the next chapter.
 
 Note that if you inserted "Jonathan Harker" multiple times (or any other `NPC` objects with the same name), you will now have multiple `NPC` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `NPC` with the same name.
 
