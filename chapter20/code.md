@@ -51,7 +51,7 @@ module default {
     }
     property total_pence := .pounds * 240 + .shillings * 20 + .pence;
     property total_cents := .dollars * 100 + .cents;
-    property total_wealth_in_pence := .total_pence + <int64>(.total_cents / 8);
+    property approx_wealth_in_pounds := <int64>(.total_pence / 240 + .total_cents / 800);
   }
 
   abstract type HasNameAndCoffins {

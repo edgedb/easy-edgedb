@@ -76,9 +76,11 @@ Next, we can make all of these properties `required` and give them a default val
   }
 ```
 
-And finally, to top it off let's add three computed properties called `total_pence`, `total_cents`, and `total_wealth_in_pounds`. The first two represent the smallest units of currency in their respective countries, and so will represent a person's total wealth.
+And finally, to top it off let's add three computed properties called `total_pence`, `total_cents`, and `approx_wealth_in_pounds`. The first two represent the smallest units of currency in their respective countries, and so will represent a person's total wealth.
 
-The last `total_wealth_in_pounds` shows the character's total wealth in pounds, which we will use as a central benchmark to compare all wealth. We won't be using this property to buy or sell anything, so we can leave it as a float. At the time of the book, the exchange rate was about 8 US dollars to one pound (so 800 cents to one pound). Putting all that together, the final `HasMoney` type looks like this:
+The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this as a general benchmark and won't be using it to buy or sell anything so we will cast it to an `int64` for readability.
+
+At the time of the book, the exchange rate was about 8 US dollars to one pound (so 800 cents to one pound). Putting all that together, the final `HasMoney` type looks like this:
 
 ```edgeql
   abstract type HasMoney {
@@ -99,7 +101,7 @@ The last `total_wealth_in_pounds` shows the character's total wealth in pounds, 
     }
     property total_pence := .pounds * 240 + .shillings * 20 + .pence;
     property total_cents := .dollars * 100 + .cents;
-    property total_wealth_in_pounds := .total_pence / 240 + .total_cents / 800;
+    property approx_wealth_in_pounds := <int64>.total_pence / 240 + .total_cents / 800;
   }
 ```
 
@@ -178,8 +180,8 @@ select Person {
   name,
   total_pence,
   total_cents,
-  total_wealth_in_pounds
- } order by .total_wealth_in_pounds desc;
+  approx_wealth_in_pounds
+ } order by .approx_wealth_in_pounds desc;
 ```
 
 The output should be similar to the output below, with Count Dracula and Arthur Holmwood on top, Quincey Morris in third place, and other `Person` objects in random order. Looks like the Crewmen and Innkeeper have been doing pretty well for themselves!
@@ -190,43 +192,43 @@ The output should be similar to the output below, with Count Dracula and Arthur 
     name: 'Count Dracula',
     total_pence: 1505969,
     total_cents: 0,
-    total_wealth_in_pounds: 6274.870833333333,
+    approx_wealth_in_pounds: 6275,
   },
   default::NPC {
     name: 'Arthur Holmwood',
     total_pence: 1107436,
     total_cents: 0,
-    total_wealth_in_pounds: 4614.316666666667,
+    approx_wealth_in_pounds: 4614,
   },
   default::NPC {
     name: 'Quincey Morris',
     total_pence: 27395,
     total_cents: 197076,
-    total_wealth_in_pounds: 360.49083333333334,
+    approx_wealth_in_pounds: 360,
   },
   default::NPC {
     name: 'Mina Murray',
     total_pence: 27722,
     total_cents: 0,
-    total_wealth_in_pounds: 115.50833333333334,
+    approx_wealth_in_pounds: 116,
   },
   default::Crewman {
     name: 'Crewman 2',
     total_pence: 25928,
     total_cents: 0,
-    total_wealth_in_pounds: 108.03333333333333,
+    approx_wealth_in_pounds: 108,
   },
   default::Crewman {
     name: 'Crewman 4',
     total_pence: 25554,
     total_cents: 0,
-    total_wealth_in_pounds: 106.475,
+    approx_wealth_in_pounds: 106,
   },
   default::NPC {
     name: 'The innkeeper',
     total_pence: 24409,
     total_cents: 0,
-    total_wealth_in_pounds: 101.70416666666667,
+    approx_wealth_in_pounds: 102,
   },
   # And so on...
 }
