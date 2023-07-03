@@ -10,9 +10,9 @@ tags: Complex Inserts, Schema Cleanup, Triggers
 >
 > Our heroes eventually find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good reminder that we should probably think about money in our game. The characters have been to countries like England, Romania, and Germany, and each of those have their own money. An `abstract type` seems to be a good choice here: we should create an `abstract type Currency` that we can extend for all the other types of money.
+This is a good reminder that we should probably think about money in our game. Money in a regular fantasy game is generally pretty easy: you can use a parameter called `gold` or something, call that the currency and give everyone a `gold` property. But our game is based on the real world. The characters have been to countries like England, Romania, and Germany, and each of those have their own money.
 
-Now, there is one difficulty: in the 1800s, monetary systems were more complicated than they are today. In England, for example it wasn't 100 pence to 1 pound, it was as follows:
+On top of this is an extra difficulty: in the 1800s, monetary systems were more complicated than they are today. For example, the United Kingdom at the time didn't use a simple 100 pence to 1 pound conversion. Instead, it was as follows:
 
 - 12 pence (the smallest coin) made one shilling,
 - 20 shillings made one pound, thus
@@ -20,199 +20,219 @@ Now, there is one difficulty: in the 1800s, monetary systems were more complicat
 
 (There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
 
-To reflect this, we'll say that `Currency` has three properties: `major`, `minor`, and `sub_minor`. Each one of these will have an amount, and finally there will be a number for the conversion, plus an `owner: Person` link. So `Currency` will look like this:
+Fortunately, even in this case we can default to the smallest unit of money when it comes to things like buying and selling.  By using the smallest unit of currency possible, we can do all calculations with integers instead of floats. For example, if a `Person` object with 5 pounds, 3 shillings and 5 pence wants to buy something that costs 1 shilling and 15 pence, the buyer has:
 
-```sdl
-abstract type Currency {
-  required owner: Person;
+- 5 pounds * 240 = 1200 pence
+- 3 shillings * 3 = 60 pence
+- 5 pence
 
-  required major: str;
-  required major_amount: int64 {
-    default := 0;
-    constraint min_value(0);
-  }
+Which makes a total of 1265 pence for the buyer minus the item that costs 75 pence (3 shillings * 20, plus 15 pence). And since shopkeepers like to have small currencies (so they can give people change) and people like to have large currencies (so they aren't weighed down with too many coins), you can always subtract pence first, then shillings, and finally pounds when making a purchase.
 
-  minor: str;
-  minor_amount: int64 {
-    default := 0;
-    constraint min_value(0);
-  }
-  minor_conversion: int64;
+There are many ways to represent money in a game. Let's think about them a bit:
 
-  sub_minor: str;
-  sub_minor_amount: int64 {
-    default := 0;
-    constraint min_value(0);
-  }
-  sub_minor_conversion: int64;
-}
-```
+- Simply adding properties like `pence`, `shilling` and `cent` to the `Person` type. This could work, but the `Person` type is already quite large. Plus there might be other objects that have money, such as `City` objects (if we wanted to keep track of a city's money supply). Even things like dead bodies could hold treasure and money.
+- Creating an object type for types of currency with a link to an `owner`. This could make sense, considering that in life there are always heaps of money that are linked to us. For example, $1000.50 USD in a bank that belongs to you can be thought of as a `USD` type that holds 1000 `dollars` and 50 `cents` and has a link to you, the owner. The `USD` type could extend an abstract `Currency` type, and then you, a `Person` object, would have a backlink for all the piles of money that link to you. This might be too complicated for our game, however, which is centered on `PC`s and which doesn't have too many currencies to think about.
+- Creating an abstract `HasMoney` type that can be extended by `Person` and anything else that holds money later on. This abstract type can hold each of the currencies as a property.
 
-You'll notice that only `major` properties are `required`, because some currencies don't even have things like cents. Two examples from modern times are the Japanese yen and Korean won that are just a single money unit and a number.
-
-We also gave it a constraint of `min_value(0)` so that characters won't be able to buy with money they don't have. Money can be negative in real life, but we don't need to think about complicated subjects like credit and negative money in our game.
-
-Then comes our first currency: the `Pound` type. The `minor` property is called `'shilling'`, and we use `minor_conversion` to get the amount in pounds. The same thing happens with `'pence'`. Then our characters can collect various coins but the final value can still quickly be turned into pounds. Here's the `Pound` type:
-
-```sdl
-type Pound extending Currency {
-  overloaded required major: str {
-    default := 'pound'
-  }
-  overloaded required minor: str {
-    default := 'shilling'
-  }
-  overloaded required minor_conversion: int64 {
-    default := 20
-  }
-  overloaded sub_minor: str {
-    default := 'pence'
-  }
-  overloaded sub_minor_conversion: int64 {
-    default := 240
-  }
-}
-```
-
-Now let's do a schema migration and try it out. First we'll give Dracula some money. We'll give him 2500 pounds, 50 shillings, and 200 pence. Maybe that's a lot of money in 1893.
+This last option seems easiest, so let's try that. We'll start with a scalar type called `Money` that we can use for every type of currency in the game, and give it a minimum value of 0:
 
 ```edgeql
-insert Pound {
-  owner := (select Person filter .name = 'Count Dracula'),
-  major_amount := 2500,
-  minor_amount := 50,
-  sub_minor_amount := 200
+  scalar type Money extending int64 {
+    constraint min_value(0);
+  }
+```
+
+With the `Money` type created, we can now move on to the abstract `HasMoney` type. Here it is to start:
+
+```edgeql
+  abstract type HasMoney {
+    pounds: Money;
+    shillings: Money;
+    pence: Money;
+    dollars: Money;
+    cents: Money;
+  }
+```
+
+Next, we can make all of these properties `required` and give them a default value of 0. This will make calculations easier since we will be guaranteed to always have a value instead of an empty set:
+
+```edgeql
+  abstract type HasMoney {
+    required pounds: Money {
+      default := 0;
+    }
+    required shillings: Money {
+      default := 0;
+    }
+    required pence: Money {
+      default := 0;
+    }
+    required cents: Money {
+      default := 0;
+    }
+    required dollars: Money {
+      default := 0;
+    }
+  }
+```
+
+And finally, to top it off let's add three computed properties called `total_pence`, `total_cents`, and `approx_wealth_in_pounds`. The first two represent the smallest units of currency in their respective countries, and so will represent a person's total wealth.
+
+The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this as a general benchmark and won't be using it to buy or sell anything so we will cast it to an `int64` for readability.
+
+At the time of the book, the exchange rate was about 8 US dollars to one pound (so 800 cents to one pound). Putting all that together, the final `HasMoney` type looks like this:
+
+```edgeql
+  abstract type HasMoney {
+    required pounds: Money {
+      default := 0;
+    }
+    required shillings: Money {
+      default := 0;
+    }
+    required pence: Money {
+      default := 0;
+    }    
+    required cents: Money {
+      default := 0;
+    }
+    required dollars: Money {
+      default := 0;
+    }
+    property total_pence := .pounds * 240 + .shillings * 20 + .pence;
+    property total_cents := .dollars * 100 + .cents;
+    property approx_wealth_in_pounds := <int64>.total_pence / 240 + .total_cents / 800;
+  }
+```
+
+With all the above done, just add `extending HasMoney` to the `Person` type, and do a migration. Now it's time to give our characters some money!
+
+An average laborer in the United Kingdom in 1893 made 30 pounds per year. Both Arthur Holmwood and Count Dracula are lords with almost unimaginable amounts of money, so we'll `update` them with random numbers that should be well beyond anything a laborer can earn in a lifetime:
+
+```edgeql
+update Person filter .name in { 'Arthur Holmwood', 'Count Dracula' }
+ set {
+   pounds := 3000 + <int64>(random() * 3000),
+   shillings := 3000 + <int64>(random() * 3000),
+   pence := 3000 + <int64>(random() * 3000)
 };
 ```
 
-Then we can use the conversion rates to display the total amount he owns in pounds:
+And then a query to check how much money they have:
 
 ```edgeql
-select Currency {
-  owner: {name},
-  total := .major_amount + (.minor_amount / .minor_conversion) 
-    + (.sub_minor_amount / .sub_minor_conversion)
-};
+select Person {
+  name,
+  pounds,
+  shillings,
+  pence,
+  total_pence } filter .name in { 'Arthur Holmwood', 'Count Dracula' };
 ```
 
-Based on the results of the query, he has about 2503 pounds:
-
-```
-{default::Pound {owner: default::Vampire {name: 'Count Dracula'}, total: 2503.3333333333335}}
-```
-
-We know that Arthur (now called Lord Godalming) has all the money he needs, but the others we aren't sure about. Let's give a few of them a random amount of money, and also `select` it at the same time to display the result. For the random number we'll use the method we used for `strength` before: `round()` on a `random()` number multiplied by the maximum.
-
-Finally, when displaying the total we will cast it to a `decimal` type. With this, we can display the number of pounds as something like 555.76 instead of 555.76545256. For this we use the same `round()` function, but using the last signature:
-
-```sdl
-std::round(value: int64) -> float64
-std::round(value: float64) -> float64
-std::round(value: bigint) -> bigint
-std::round(value: decimal) -> decimal
-std::round(value: decimal, d: int64) -> decimal
-```
-
-That signature has an extra `d: int64` part for the number of decimal places we want to give it.
-
-All together, it looks like this:
-
-```edgeql
-select (for character in {'Jonathan Harker', 'Mina Murray',
-  'The innkeeper', 'Emil Sinclair'}
-  union (
-    insert Pound {
-      owner := assert_single((select Person filter .name = character)),
-      major_amount := <int64>round(random() * 500),
-      minor_amount := <int64>round(random() * 100),
-      sub_minor_amount := <int64>round(random() * 500)
-  })) {
-  owner: {
-    name
-  },
-  pounds := .major_amount,
-  shillings := .minor_amount,
-  pence := .sub_minor_amount,
-  total_pounds :=
-    round(<decimal>(.major_amount + (.minor_amount / .minor_conversion) + (.sub_minor_amount / .sub_minor_conversion)), 2)
-};
-```
-
-And then it will give a result similar to this with our collections of money, each with an owner:
+The output should show each of these two characters with some pretty incredible amounts of money.
 
 ```
 {
-  default::Pound {
-    owner: default::NPC {name: 'Jonathan Harker'},
-    pounds: 386,
-    shillings: 80,
-    pence: 184,
-    total_pounds: 390.77n,
+  default::NPC {
+    name: 'Arthur Holmwood',
+    pounds: 4249,
+    shillings: 4219,
+    pence: 3296,
+    total_pence: 1107436,
   },
-  default::Pound {
-    owner: default::NPC {name: 'Mina Murray'},
-    pounds: 385,
-    shillings: 57,
-    pence: 272,
-    total_pounds: 388.98n,
-  },
-  default::Pound {
-    owner: default::NPC {name: 'The innkeeper'},
-    pounds: 374,
-    shillings: 40,
-    pence: 187,
-    total_pounds: 376.78n,
-  },
-  default::Pound {
-    owner: default::PC {name: 'Emil Sinclair'},
-    pounds: 20,
-    shillings: 86,
-    pence: 1,
-    total_pounds: 24.30n,
+  default::Vampire {
+    name: 'Count Dracula',
+    pounds: 5967,
+    shillings: 3539,
+    pence: 3109,
+    total_pence: 1505969,
   },
 }
 ```
 
-(If you don't want to see the `n` for the `decimal` type, just cast it into a `<float32>` or `<float64>`.)
+You can see that the `total_pence` property lets us quickly see who of the two is richer.
 
-You'll notice now that there could be some debate on how to show money. Should it be a `Currency` that links to an owner? Or should it be a `Person` that links to a property called `money`? Our way might be easier for a realistic game, simply because there are many types of `Currency`. If we chose the other method, we would have one `Person` type linked to every type of currency, and most of them would be zero. But with our method, we only have to create 'piles' of money when a character starts owning them. Or these 'piles' could be things like purses and bags, and then we could change `required owner: Person;` to `optional owner: Person;` if it's possible for a character in the game to lose them.
-
-Of course, if we only had one type of money then it would be simpler to just put it inside the `Person` type. We won't do this in our schema, but let's imagine how to do it. If the game were only inside the United States, it would be easier to just do this without an abstract `Currency` type:
-
-```sdl
-type Dollar {
-  required dollars: int64;
-  required cents: int64;
-  property total_money := .dollars + (.cents / 100)
-}
-```
-
-The `total_money` type, by the way, will become a `float64` because of the `/ 100` part. We can confirm this with a quick query:
+The other characters will get an `update` with more reasonable random amounts of money:
 
 ```edgeql
-select (100 + (55 / 100)) is float64;
+update Person filter .name not in { 'Arthur Holmwood', 'Count Dracula' }
+ set {
+   pence := 100 + <int64>(random() * 100),
+   shillings := 20 + <int64>(random() * 100),
+   pounds := 10 + <int64>(random() * 100)
+ };
 ```
 
-The output: `{true}`.
-
-We can see the same when we make an insert and use `select` to check the `total_money` property:
+Then we have Quincy Morris, who should have some USD because he is an American. Back in 1890 an average American worker earned about $500 a year. He is pretty wealthy too so we'll `update` him with a few times that amount.
 
 ```edgeql
-select (
-  insert Dollar {
-    dollars := 100,
-    cents := 55
-  }
-) {
-  total_money
+update Person filter .name = 'Quincey Morris'
+ set { 
+  dollars := 500 + <int64>(random() * 2000),
+  cents := 500 + <int64>(random() * 2000)
 };
 ```
 
-Then the output would look like `{default::Dollar {total_money: 100.55}}`.
+And now let's try this query on all our `Person` objects.
 
-Dollars won't be used in this game, but if they were, we'd create it with `type Dollar extending Currency`.
+```
+select Person {
+  name,
+  total_pence,
+  total_cents,
+  approx_wealth_in_pounds
+ } order by .approx_wealth_in_pounds desc;
+```
 
-One final note: the dollar's `total_money` property is just created by dividing by 100, so it's using `float64` in a limited fashion (which is good). But you want to be careful with floats because they are not always precise, and if we were to need to divide by 3 for example we would get results like `100 / 3 = 33.33333333`...not very good for actual currency. So in that case it would be better to stick to integers.
+The output should be similar to the output below, with Count Dracula and Arthur Holmwood on top, Quincey Morris in third place, and other `Person` objects in random order. Looks like the Crewmen and Innkeeper have been doing pretty well for themselves!
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    total_pence: 1505969,
+    total_cents: 0,
+    approx_wealth_in_pounds: 6275,
+  },
+  default::NPC {
+    name: 'Arthur Holmwood',
+    total_pence: 1107436,
+    total_cents: 0,
+    approx_wealth_in_pounds: 4614,
+  },
+  default::NPC {
+    name: 'Quincey Morris',
+    total_pence: 27395,
+    total_cents: 197076,
+    approx_wealth_in_pounds: 360,
+  },
+  default::NPC {
+    name: 'Mina Murray',
+    total_pence: 27722,
+    total_cents: 0,
+    approx_wealth_in_pounds: 116,
+  },
+  default::Crewman {
+    name: 'Crewman 2',
+    total_pence: 25928,
+    total_cents: 0,
+    approx_wealth_in_pounds: 108,
+  },
+  default::Crewman {
+    name: 'Crewman 4',
+    total_pence: 25554,
+    total_cents: 0,
+    approx_wealth_in_pounds: 106,
+  },
+  default::NPC {
+    name: 'The innkeeper',
+    total_pence: 24409,
+    total_cents: 0,
+    approx_wealth_in_pounds: 102,
+  },
+  # And so on...
+}
+```
 
 ## Cleaning up the schema
 
