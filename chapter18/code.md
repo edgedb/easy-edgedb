@@ -69,7 +69,7 @@ module default {
   }
 
   abstract type Person extending HasMoney {
-    name: str {
+    required name: str {
       delegated constraint exclusive;
     }
     multi places_visited: Place;

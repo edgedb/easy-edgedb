@@ -18,7 +18,7 @@ module default {
   # Abstract object types
 
   abstract type Person {
-    name: str {
+    required name: str {
       delegated constraint exclusive;
     }
     multi places_visited: Place;
