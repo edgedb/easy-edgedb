@@ -326,7 +326,7 @@ db> select Person {*};
 }
 ```
 
-Notice the difference? The `PC` type contains a `class` that the two others don't, while `NPC` has an `age` property. The base `PC`type doesn't hold either of these two properties.
+Notice the difference? The `PC` type contains a `class` that the two others don't, while `NPC` has an `age` property. The base `Person` type doesn't hold either of these two properties.
 
 ## The double splat operator
 
