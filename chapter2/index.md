@@ -9,7 +9,7 @@ We continue to read the story as we think about the database we need to store th
 
 > Jonathan Harker has found a hotel in **Bistritz**, called the **Golden Krone Hotel**. He gets a welcome letter there from Dracula, who is waiting in his **castle**. Jonathan Harker will have to take a horse-driven carriage to get there tomorrow. Jonathan Harker is originally from **London**. The innkeeper at the Golden Krone Hotel seems very afraid of Dracula. He doesn't want Jonathan to leave and says it will be dangerous, but Jonathan doesn't listen. An old lady gives Jonathan a golden crucifix and says that it will protect him. Jonathan is embarrassed, and takes it to be polite. Jonathan has no idea how much it will help him later.
 
-Now we are starting to see some detail about the city. Reading the story, we see that we could add another property to `City`, and we will call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if the places will be their own types yet, so we'll just make it an array of strings: `important_places: array<str>;` We can put the names of important places in there and maybe develop it more later. It will now look like this:
+Now we are starting to see some detail about the city of Bistritz: it contains a hotel. To represent this, we could add another property to `City`, and call it `important_places`. That's where places like the **Golden Krone Hotel** could go. We're not sure if places will be their own object types yet, so we'll just make it an array of strings for now: `important_places: array<str>;` We can put the names of important places in there for the time being and maybe develop it into a link later. It will now look like this:
 
 ```sdl
 type City {
@@ -19,7 +19,7 @@ type City {
 }
 ```
 
-Now our insert for Bistritz will look like this:
+After doing a migration, let's insert Bistritz with the `important_places` property:
 
 ```edgeql
 insert City {
@@ -29,27 +29,46 @@ insert City {
 };
 ```
 
-After this insert, our database will have two cities called Bistritz. To delete one of them, we will need to know two more keywords: `filter` and `delete`. We will learn `filter` in this chapter, and `delete` in the next, and then we will delete our duplicate Bistritz.
+After this insert, our database will have two cities called Bistritz. It would be nice to delete one of them but first we will need to learn the `filter` and `delete` keywords to do so. We will learn `filter` in this chapter, and `delete` in the next, and then we will delete our duplicate Bistritz.
 
 ## Enums, scalar types, and extending
 
-Our game is going to need to have player characters in it, which means that users of the game are going to have to choose what type of character they want to be. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use classes that make sense for this time period. Here an `enum` (enumeration) is probably the best choice, because an `enum` is about choosing one of several options. The values of the enum should be written in UpperCamelCase.
+Our game is going to need to have player characters in it, which means that users of the game are going to have to choose what type of character they want to be. The book is [probably based in 1893](https://vampvault.jimdofree.com/tidbits/timeframe/), and our game will let the characters use classes that make sense for this time period. That means that we will need some sort of type that allows us to select from a number of options. EdgeDB has a type called an `enum` that will let us do this.
 
-Here we see the word `scalar` for the first time: this is a `scalar type`, which means that it only holds a single value at a time. The other types (`City`, `NPC`) are `object types` because they can hold multiple values at the same time.
+Simple types like `int64` are what are known as `scalar types`, which means that they only hold a single value at a time. An enum allows us to select from multiple options, but it is a scalar type too because you can only pick one. The other types (`City`, `NPC`) are `object types` because they can hold multiple values at the same time.
 
-The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This keyword gives you all the power of the type that you are extending, and lets you add more on top. There will probably be more character classes in a real game, but for the moment we will write our `Class` type like this with three classes:
+The other keyword we will see for the first time is `extending`, which means to take a type as a base and extend it. This keyword gives you all the power of the type that you are extending, and lets you add more on top. Enums in EdgeDB are created by `extending` a base enum type with the list of values (choices) we want to choose from. The syntax looks like this:
 
 ```sdl
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
 ```
 
-Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the other types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
+Feel free to add more classes if you want! But in our schema we will just have three classes for simplicity.
 
-To choose between the values (the choices) in an enum, you just use a `.` (a dot). For our enum, that means we can choose `Class.Rogue`, `Class.Mystic`, or `Class.Merchant`.
+Did you notice that `scalar type` ends with a semicolon and the other types don't? That's because the object types have a `{}` to make a full expression. But here on a single line we don't have `{}` so we need the semicolon to show that the expression ends here.
 
-This `Class` type is going to be for player characters in our game, not the people in the book (their stories, choices and statistics are already decided). That means that we will need both an `PC` type and an `NPC` type. These two types are pretty similar to each other: they both have a `name`, `places_visited`, and probably  some other properties that we will add later. This is a good case for an abstract type. Inside this abstract type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
+To choose between the values in an enum, you just use a `.` (a dot). For our enum, that means we can choose `Class.Rogue`, `Class.Mystic`, or `Class.Merchant`.
 
-So now this part of the schema looks like this:
+This `Class` type is going to be for player characters in our game, not the `NPC` objects from the book (their stories, choices and statistics are already decided). That means that we will need both an `PC` type and an `NPC` type. These two types need to be different, but they are pretty similar to each other! They both have a `name`, `places_visited`, and probably some other properties that we will add later. This is a good case for a base type. Inside this base type we can put all the properties that are common to `PC` and `NPC`, which will use the `extending` keyword to gain the properties that `Person` has.
+
+This part of the schema will look like this...except for one change we will make.
+
+```sdl
+type Person {
+  required name: str;
+  multi places_visited: City;
+}
+
+type PC extending Person {
+  required class: Class;
+}
+
+type NPC extending Person;
+```
+
+So what change should we make? Well, the `Person` type at the moment is a concrete type, which means that we would be able to insert `Person` objects, `PC` objects, and `NPC` objects. But we only want to use `Person` as a base for other types to extend from, not a concrete type that we can insert. So in this case we will change `type Person` to `abstract type Person`.
+
+With that change done, the schema now looks like this. Let's do a migration now.
 
 ```sdl
 abstract type Person {
@@ -64,7 +83,13 @@ type PC extending Person {
 type NPC extending Person;
 ```
 
-The characters from the book are still `NPC`s (non-player characters), while `PC` is being made with our game in mind. And because `Person` is an abstract type, we can't insert directly anymore. It will give us this error if we try to do something like `insert Person {name := 'Mr. HasAName'};`:
+Because `Person` is an abstract type, we can't insert it directly. Let's try it though and see what the error is! Give this query a try:
+
+```edleql
+insert Person {name := 'Mr. HasAName'};
+```
+
+As expected, we can't insert this `Person` type because it is abstract.
 
 ```
 error: QueryError: cannot insert into abstract object type 'default::Person'
@@ -74,9 +99,7 @@ error: QueryError: cannot insert into abstract object type 'default::Person'
   │        ^^^^^^ error
 ```
 
-No problem - just change `Person` to `NPC` and it will work.
-
-However, `select` on an abstract type is just fine - it will select all the types that extend from it. Let's add a `PC` object now to make a `select` on the abstract `Person` type more interesting. 
+However, `select` on an abstract type is just fine. A `select` on a `Person` type will select all of the objects of all the types that extend `Person`. So let's add a `PC` object now so that the result of a `select Person` query will be more interesting.
 
 We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just type `City` for his `places_visited` link which will link him to all three cities.
 
@@ -88,7 +111,7 @@ insert PC {
 };
 ```
 
-Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `Mystic`, because we have to choose the enum `Class` and then make a choice of one of the values.
+Note that we didn't just write `Mystic`, because we have to choose the enum `Class` and then make a choice of one of the values. Just typing `Mystic` would make EdgeDB think that we were trying to link to objects of a type called `Mystic`.
 
 However, EdgeDB also allows you to choose an enum just by writing a string that matches the value. So this insert would have worked too:
 
@@ -100,7 +123,7 @@ insert PC {
 };
 ```
 
-But if you were to type `class := 'Wrestler'` it wouldn't work:
+But if you were to type something like `class := 'Wrestler'` it wouldn't work, because `Wrestler` is not one of the values inside the `Class` enum.
 
 ```
 edgedb error: InvalidValueError: invalid input value for enum 
@@ -141,15 +164,15 @@ This gives us an output showing objects of both the `PC` and `NPC` type.
 }
 ```
 
-## Casting 
+## Casting
 
-Casting means to quickly change one type into another. Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. For example:
+Casting means to quickly change one type into another. Casting is used a lot in EdgeDB because it is strict about types, and will refuse to do operations on two types that are different. A lot of casting is done automatically out of convenience, such as with numbers. Take this query for example:
 
 ```edgeql
 select 9 + 9.9;
 ```
 
-The 9 in this example is an `int64`, while 9.9 is a `float64`. And though 9 and 9.9 are different types, EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
+The 9 in the query is an `int64`, while 9.9 is a `float64`. And though 9 and 9.9 are different types, EdgeDB will not generate an error here and will just give the output of `18.9`, returning a `float64`. You can confirm that here:
 
 ```edgeql
 select (9 + 9.9) is float64;
@@ -184,7 +207,7 @@ select <int64>'9' + 9;
 
 And you will get `18`, a 64-bit integer.
 
-Of course, a cast won't work if the input is invalid:
+But don't worry, a cast won't work if the input is invalid. You can't just cast a bunch of letters into an `<int64>` for example:
 
 ```
 db> select <int64>"Hi I'm a number please add me to" + 9;
@@ -198,21 +221,19 @@ You can cast more than once at a time if you need to. This example isn't somethi
 select <str><int64><str><int32>50 is str;
 ```
 
-That also gives us `{true}` because all we did is ask if it is a `str`, which it is.
+Did you notice that the output for this query is `{true}`? That's because casting works from right to left, with the final cast on the far left. You can follow the casts by reading from right to left using the word "into":
 
-Casting works from right to left, with the final cast on the far left. Take the following example with a lot of casting:
+- "The number 50 into an int32 into a string into an int64 into a string".
 
-```edgeql
-select <str><int64><str><int32>50;
-```
+Or you can read it from left to right using the word "from":
 
-You can read it as "50 into an int32 into a string into an int64 into a string". Or you can read it left to right like this: "A string from an int64 from a string from an int32 from the number 50".
+- "A string from an int64 from a string from an int32 from the number 50".
 
 Also note that casting is only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into each other.
 
-## Filter
+## Filtering, like and ilike, and indexing
 
-To finish up the second chapter, let's learn how to `filter`. You can use `filter` after the curly brackets in `select` to only show certain objects instead of showing every object for a type. Let's `filter` to only show `Person` types that have the name 'Emil Sinclair':
+To finish up the second chapter, let's learn how to `filter`. You can use `filter` after the curly brackets in `select` to only show certain objects instead of showing every object for a type. Let's `filter` to only show `Person` types that have the property `name` that equals 'Emil Sinclair':
 
 ```edgeql
 select Person {
@@ -238,19 +259,19 @@ The output now only shows a single `PC` object with a name that matches our filt
 }
 ```
 
-Let's filter the cities now. One flexible way to search is with `like` or `ilike` which allow us to to match on parts of a string.
+Let's filter the cities now. EdgeDB has two keywords called `like` or `ilike` which allow us to to match on parts of a string instead of just a whole string. They are slightly different:
 
-- `like` is case sensitive: "Bistritz" matches "Bistritz" but "bistritz" does not.
+- `like` is case sensitive, so "Bistritz" matches "Bistritz" but "bistritz" does not match "Bistritz".
 - `ilike` is not case sensitive (the i in ilike means **insensitive**), so "Bistritz" matches both "BiStRitz" and "bisTRITz".
 
 You can also add `%` on the left and/or right which means match anything before or after. Here are some examples with the matched part **in bold**:
 
-- `like Bistr%` matches "**Bistr**itz" (but not "bistritz"),
-- `ilike '%IsTRiT%'` matches "B**istrit**z",
-- `like %athan Harker` matches "Jon**athan Harker**",
+- `like Bistr%` matches "**Bistr**itz", but not "bistritz".
+- `ilike '%IsTRiT%'` matches "B**istrit**z".
+- `like %athan Harker` matches "Jon**athan Harker**".
 - `ilike %n h%` matches "Jonatha**n H**arker".
 
-Let's `filter` to get all the cities that start with a capital B. That means we'll need `like` because it's case-sensitive:
+Let's `filter` to get all the cities that start with a capital B. That means we'll need `like` because it needs to be case sensitive:
 
 ```edgeql
 select City {
@@ -277,7 +298,7 @@ J o n a t h a n
 
 So `'Jonathan'[0]` is 'J' and `'Jonathan'[4]` is 't'.
 
-Let's try it:
+We can then use this method to filter too. In the next query we are checking to see if the first character is a 'B' or not:
 
 ```edgeql
 select City {
@@ -293,7 +314,7 @@ edgedb error: InvalidValueError: string index 18 is out of bounds
 (on line 4, column 16)
 ```
 
-Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error. 
+Plus, if you have any `City` types with a name of `''`, even a search for index 0 will cause an error.
 
 Let's try to make that error happen.
 
@@ -346,7 +367,7 @@ J o n a t h a n
 0 1 2 3 4 5 6 7
 ```
 
-Slices represent a part of a string that starts at one index and ends _before_ another one. In other words, if you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friend to tell them that you're 'at their house': you're not telling them that you're inside it.
+Slices represent a part of a string that starts at one index and ends _before_ another one. In other words, if you take a "slice" of it between indexes 2 and 5, you get 'nat' (`'Jonathan'[2:5]` = 'nat'), because it starts at 2 and goes *up to* 5 - but not including index 5. It's sort of like when you phone your friends to tell them that you're 'at their house': you're not telling them that you're inside it. So `[2:5]` represents a slice that starts at index 2 and is "at" (in front of) index 5.
 
 In the same way, selecting a slice of 'Jonathan' up to index 7 will show up to and including index 6:
 
@@ -366,7 +387,7 @@ db> select 'Jonathan'[0:];
 {'Jonathan'}
 ```
 
-This also means that you can use slicing to safely search for values at a certain index even if the value might be an empty string. At the moment we have a `City` object in the database with a `name` of `''`, so `select City.name[0]` generates an error:
+This also means that you can use slicing to safely search for values at a certain index even if the value might be an empty string. We still have that `City` object in the database with a `name` of `''`, so `select City.name[0]` generates an error:
 
 ```
 db> select City.name[0];
@@ -383,9 +404,16 @@ db> select City.name[0:1];
 
 You can also use negative numbers to slice from the other end of a string. Negative index values are counted from the end of 'Jonathan', which is 8, so -1 corresponds to `8 - 1`: index number 7. Let's prove this with a query:
 
-```edgeql
-db> select {'Jonathan'[7] = 'Jonathan'[-1]};
+```
+db> select 'Jonathan'[7] = 'Jonathan'[-1];
 {true}
+```
+
+And this query will show all the characters in the string 'Jonathan' starting from index 1 and going up to the second last index:
+
+```
+db> select 'Jonathan'[1:-1];
+{'onatha'}
 ```
 
 Let's end the chapter with a quick note. Did you notice one of the queries used `#` to add a comment? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
