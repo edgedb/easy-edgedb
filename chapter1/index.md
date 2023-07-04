@@ -657,6 +657,20 @@ Interestingly, Jonathan Harker has been inserted with a link to every city in th
 
 Note that if you inserted "Jonathan Harker" multiple times (or any other `NPC` objects with the same name), you will now have multiple `NPC` objects with that name. The database doesn't give an error for this, because we haven't instructed it to keep an eye out for duplicates. In [Chapter 7](../chapter7/index.md) we will learn how to make sure the database doesn't allow multiple copies of `NPC` with the same name.
 
+Remember how we saw that "each `.` in a path expression moves on to the next path, if there is another one to follow"? We can demonstrate that now that `NPC` links to `City`. The query below uses `.` two times. What do you think it will return?
+
+```edgeql
+select NPC.places_visited.modern_name;
+```
+
+Exactly, it will return a set of strings:
+
+```
+{'Budapest', 'Bistrița'}
+```
+
+In other words, it is a query that first follows the `places_visited` link inside `NPC`, which takes us to the three `City` objects, and then proceeds to their `modern_name` property which is a `str`. Two out of the three have a `modern_name` so the result is a set of two strings. You can use `.` as many times as you like as long as there is still a path to follow!
+
 [Here is all our code so far up to Chapter 1.](code.md)
 
 <!-- quiz-start -->
