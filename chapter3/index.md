@@ -455,7 +455,7 @@ This query almost works but not quite:
 delete City filter .id = 'd1e38192-0bd6-11ee-ba45-d7ecb20723cf';
 ```
 
-Close!
+Close! Remember the casting we did from a `str` to `uuid` in Chapter 2?
 
 ```
 error: InvalidTypeError: operator '=' cannot be applied to operands of type 
@@ -467,7 +467,7 @@ error: InvalidTypeError: operator '=' cannot be applied to operands of type
   Consider using an explicit type cast or a conversion function.
 ```
 
-All we have to do is cast the `str` to a `uuid` and it will now work:
+So let's just cast the `str` to a `uuid` and it will now work:
 
 ```edgeql
 delete City filter .id = <uuid>'d1e38192-0bd6-11ee-ba45-d7ecb20723cf';
