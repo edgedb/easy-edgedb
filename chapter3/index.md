@@ -5,11 +5,13 @@ leadImage: illustration_03.jpg
 
 # Chapter 3 - Jonathan goes to Castle Dracula
 
-In this chapter we are going to start to think about time, as you can see from what Jonathan Harker is doing:
+In this chapter we are going to start to think about time, as you can see from Jonathan Harker's first experiences at Castle Dracula:
 
-> Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires and wolves everywhere. It was night when he arrived. He meets with Count Dracula, goes inside, and they talk all night. Dracula leaves before the sun rises though, because vampires are hurt by sunlight. Days go by, and Jonathan still doesn't know that Dracula is a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds on the table? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
+> Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires, and wolves everywhere. It was **night** when he arrived. He meets with Count Dracula, goes inside, and they talk all night. Dracula leaves **before the sun rises** though, because vampires are hurt by sunlight. **Days** go by, and Jonathan still doesn't know that Dracula is a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds on the table? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
 
-Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type has `name` and `places_visited`, which are good for `Vampire` too. But vampires are different from humans because they can live forever. One possibility is adding `age` to `Person` so that all the other types can use it too. Then `Person' would look like this:
+Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type has `name` and `places_visited`, which are good for `Vampire` too.
+
+One possibility is adding `age` to `Person` so that all the other types can use it too. Then `Person' would look like this:
 
 ```sdl
 abstract type Person {
@@ -21,7 +23,7 @@ abstract type Person {
 
 `int16` means a 16 bit (2 byte) integer, which has enough space for -32768 to +32767. That's enough for age, so we don't need the bigger `int32` or `int64` types which are much larger. We also don't want it to be a `required` property, because we don't care about everybody's age.
 
-But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's remove `age` from the abstract `Person` type and give it only to `Vampire` now. We will think about the other types later. We'll make `Vampire` a type that extends `Person`, and adds age:
+But we don't want `PC`s and `NPC`s to live up to 32767 years, so let's remove `age` from the abstract `Person` type and give it only to `Vampire` for now. We will think about the other types later. We'll make `Vampire` a type that extends `Person`, and adds age:
 
 ```sdl
 type Vampire extending Person {
@@ -29,7 +31,7 @@ type Vampire extending Person {
 }
 ```
 
-Now we can create Count Dracula. We know that he lives in Romania, but that isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
+Now we can create Count Dracula. We know that he lives in Romania, but Romania isn't a city. This is a good time to change the `City` type. We'll change the name to `Place` and make it an `abstract type`, and then `City` can extend from it. We'll also add a `Country` type that does the same thing. Now they look like this:
 
 ```sdl
 abstract type Place {
@@ -54,7 +56,7 @@ abstract type Person {
 
 With these changes done, let's do a migration!
 
-Now it's easy to make a `Country`, just do an insert and give it a name. We'll quickly insert `Country` objects for Hungary and Romania:
+It's easy to make a `Country`, because its only required property is `name`. We'll quickly insert two `Country` objects for Hungary and Romania:
 
 ```edgeql
 insert Country {
@@ -64,8 +66,6 @@ insert Country {
   name := 'Romania'
 };
 ```
-
-You might have noticed that `important_places` is still an `array<str>` and would probably be better as a `multi` link. That's true, and much later on in the book (in Chapter 16, to be precise) we will learn how to change a property into a link while retaining your existing data.
 
 ## Capturing a select expression
 
