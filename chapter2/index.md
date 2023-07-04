@@ -229,7 +229,55 @@ Or you can read it from left to right using the word "from":
 
 - "A string from an int64 from a string from an int32 from the number 50".
 
-Also note that casting is only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into each other.
+Also note that casting is almost always only for scalar types: user-created object types like `City` and `Person` are too complex to simply cast into.
+
+There is one exception to this as of EdgeDB 3.0: a `uuid` can be cast into an object type. This makes sense because each object in EdgeDB has a unique id, and why not be able to cast from this `uuid` into the object it belongs to?
+
+Let's give this a try by first picking any `id` from our `Person` type with `select Person.id;`. Found one? Good, now paste that into the REPL, surround it with quotes to make it a `str`, and then use `<uuid>` to cast it. Like this:
+
+```
+select <uuid>'82348556-1928-11ee-ab8c-efed3acb0f00';
+```
+
+Good! And now let's see if we can cast from a `uuid` into a `City`. Use `select City.id;`, pick an id from the list, and then try casting it into a `City`. Let's also display its `name` and `important_places` property while we are at it.
+
+The query below almost works, but will generate an error. Can you guess why?
+
+```edgedb
+select <City><uuid>'6b62fbc6-1975-11ee-9693-cff543bb8205' {
+  name, 
+  important_places 
+  };
+```
+
+Ah yes, there it is:
+
+```
+error: QueryError: shapes cannot be applied to scalar type 'std::str'
+  ┌─ <query>:1:20
+  │
+1 │   select <City><uuid>'6b62fbc6-1975-11ee-9693-cff543bb8205' {
+  │ ╭────────────────────^
+2 │ │   name,
+3 │ │   important_places
+4 │ │ };
+  │ ╰─^ error
+```
+
+We told EdgeDB to give a shape to `str` which obviously doesn't have properties like `name` and `important_places`. No problem: just wrap everything in parentheses first.
+
+```edgedb
+select (<City><uuid>'6b62fbc6-1975-11ee-9693-cff543bb8205') {
+  name, 
+  important_places 
+  };
+```
+
+With the parentheses, the query can be seen as this: "Take a string, try to cast it into a uuid, and try to cast it into a City. Take this result and display its `name` and `important_places` properties. The query will now work, and display one of the cities we added. It should look something like this.
+
+```
+{default::City {name: 'Munich', important_places: {}}}
+```
 
 ## Filtering, like and ilike, and indexing
 
@@ -320,7 +368,7 @@ Let's try to make that error happen.
 
 First we will insert a `City` object with '' for a name:
 
-```edgeql
+```
 db> insert City {
  name := ''
  };
@@ -329,7 +377,7 @@ db> insert City {
 
 And now our former query doesn't work, because EdgeDB will come across a `City` object with a `name` property that it can't index into.
 
-```edgeql
+```
 db> select City {
   name,
   modern_name,
