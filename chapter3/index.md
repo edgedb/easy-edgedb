@@ -71,7 +71,7 @@ insert Country {
 
 With these countries added, we are now ready to insert Dracula.
 
-We only know that Dracula has been in Romania, so his `places_visited` will be pretty easy: just select all the `Place` types and filter on `.name = 'Romania '`. When doing this, we put the `select` inside `()` brackets (parentheses). The parentheses are used to capture the result of the `select` query. In other words, the parentheses delimit (set the boundaries for) the `select` query which is then assigned to `places_visited`.
+We only know that Dracula has been in Romania, so his `places_visited` will be pretty easy: just select all the `Place` types and filter on `.name = 'Romania'`. When doing this, we put the `select` inside `()` brackets (parentheses). The parentheses are used to capture the result of the `select` query. In other words, the parentheses delimit (set the boundaries for) the `select` query which is then assigned to `places_visited`.
 
 ```edgeql
 insert Vampire {
@@ -81,7 +81,7 @@ insert Vampire {
 };
 ```
 
-The insert worked, with a result that looks something like this: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
+The insert works, with a result that looks something like this: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
 
 Let's check if `places_visited` worked. We only have one `Vampire` object now, so let's `select` it:
 
@@ -103,13 +103,13 @@ Perfect!
 
 ## Adding constraints
 
-Now let's think about `age` again. It was easy to add the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new type called `HumanAge`. Then we can write `constraint` on it and use {ref}`one of the functions <docs:ref_datamodel_constraints>` that it can take. We will use the one called  `max_value()`.
+Now let's think about `age` again. It was easy to add `age` to the `Vampire` type, because they can live forever. But now we want to give `age` to `PC` and `NPC` too, who are humans who don't live forever (we don't want them living up to 32767 years). For this we can add a "constraint" (a limit). Instead of `age`, we'll give them a new scalar type called `HumanAge`. Then we can write `constraint` on it and use {ref}`one of the functions <docs:ref_datamodel_constraints>` that it can take. We will use the one called  `max_value()`.
 
 Here's the signature for `max_value()`:
 
 `std::max_value(max: anytype)`
 
-The `anytype` part is interesting, because that means it can work on types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C', 'D', etc.
+The `anytype` part of the signature is interesting, because that means that the constraint can work on other types like strings too. With a constraint `max_value('B')` for example you couldn't use 'C', 'D', etc.
 
 Now let's go back to our constraint for `HumanAge`, which is 120. The `HumanAge` type looks like this:
 
@@ -147,11 +147,9 @@ Now let's insert the same innkeeper but give him an `age` of 30. This will now w
 
 ## Deleting objects
 
-Deleting in EdgeDB is very easy: just use the `delete` keyword. It's similar to `select` in that you write `delete` and then the type, which will by default delete them all. And in the same way as `select`, if you `filter` then it will only delete the ones that match the filter.
+Deleting in EdgeDB is very easy: just use the `delete` keyword. The `delete` keyword is similar to `select` in that it will apply to all types unless you `filter` them. This similarity to `select` might make you nervous, because if you type something like `select City;` then it will select all of them. Using `delete` is the same: `delete City;` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
 
-This similarity to `select` might make you nervous, because if you type something like `select City` then it will select all of them. Using `delete` is the same: `delete City` deletes every object for the `City` type. That's why you should think carefully before deleting anything.
-
-However, sometimes you may be prevented from deleting an object. Remember our two `Country` objects for Hungary and Romania? Let's try deleting them all:
+However, sometimes you may be prevented from deleting an object. Remember our two `Country` objects for Hungary and Romania? Let's try deleting them all. Interestingly, it won't work:
 
 ```edgeql
 delete Country;
@@ -172,9 +170,9 @@ That's Count Dracula who visited Romania getting in the way. Let's delete him fi
 delete Vampire;
 ```
 
-Just like an insert, it gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
+Just like `insert`, using `delete` gives us the id numbers of the objects that are now deleted: `{default::Vampire {id: 7f5b25ac-ff43-11eb-af59-3f8e155c6686}}`.
 
-Now we can try deleting all of the `Country` objects:
+Now we can try deleting all of the `Country` objects. Count Dracula is no longer in our way so the query will work:
 
 ```edgeql
 delete Country;
@@ -189,7 +187,7 @@ We got confirmation that two `Country` objects have been deleted:
 }
 ```
 
-Okay, let's insert both countries again. This time we will try deleting them with a filter. First let's try deleting every `Country` object that has a name with "States" somewhere inside it. `ilike` will let us do that:
+Okay, let's insert both countries again so that we can delete them once more. This time we will try deleting them with a filter. First let's try deleting every `Country` object that has a name with "States" somewhere inside it. `ilike` will let us do that:
 
 ```edgeql
 delete Country filter .name ilike '%States%';
@@ -201,7 +199,7 @@ Nothing matches, so the output is just an empty set of `{}` - we deleted nothing
 delete Country filter .name ilike '%ania%';
 ```
 
-We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `delete` inside brackets and `select` it. Let's delete all the `Country` objects again but this time we'll select it. With the results of the query for objects selected, we can give it a shape as with any other `select` query:
+We got a `{default::Country {id: 7f3c611c-ff43-11eb-af59-dfe5a152a5cb}}`, which is certainly Romania. Only Hungary is left. What if we want to see what we deleted? No problem - just put the `delete` inside parentheses and `select` it. Since EdgeDB just returns the objects that have been worked on, we can give them a shape to view them even as we are deleting them! So the query will look like this:
 
 ```edgeql
 select (delete Country) {
@@ -209,21 +207,23 @@ select (delete Country) {
 };
 ```
 
+These queries are easier to read if you think about what expressions inside parentheses evaluate into. What does `delete Country` evaluate into? A set of `Country` objects. So the query is essentially just saying "select the country objects (that we are deleting) and display their name".
+
 The output is `{default::Country {name: 'Hungary'}}`, showing us that we deleted Hungary. And now if we do `select Country` we get a `{}`, which confirms that we did delete them all.
 
-(Fun fact: `delete` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `delete (select ...)`. You'll be learning something called `limit` in the next chapter with `select` and as you do so, keep in mind that you can apply the same to `delete` too.)
+Fun fact: `delete` statements in EdgeDB are actually {ref}`syntactic sugar <docs:ref_eql_statements_delete>` for `delete (select ...)`. You'll be learning something called `limit` in the next chapter with `select` and as you do so, keep in mind that you can apply the same to `delete` too.
 
-We should probably delete that `City` object with `''` as its name that we inserted in the last chapter to practice indexing. That's easy:
+We should probably delete that `City` object with `''` as its name that we inserted in the last chapter as we practiced indexing. That's easy:
 
 ```edgeql
 delete City filter .name = '';
 ```
 
-Finally, let's insert Hungary and Romania again to finish the seection on deleting. Plus Count Dracula! We'll leave them alone now.
+Finally, let's insert Hungary and Romania again to finish the section on deleting. Plus Count Dracula! With those three objects inserted again, we'll now leave them alone.
 
 ## The splat operator
 
-Sometimes a query can take some time to type. Let's say we want to look up all of our `PC` objects and their properties, plus check whether their name has changed since Dracula was published. Such a query would look like this:
+Sometimes a query can take some time to type. Let's say we want to look up all of our `PC` objects and their properties, plus check whether their name has changed since Bram Stoker's book Dracula was published. Such a query would look like this:
 
 ```edgeql
 select City {
@@ -265,7 +265,7 @@ This gives us the following output:
 
 Not bad! But we had to type quite a bit to select every property inside `City`. Wouldn't it be nice if EdgeDB had an operator that could do that for us?
 
-It just so happens that EdgeDB does have such an operator! The operator is called the splat operator because it uses a `*` which...looks like a splat. In other languages you sometimes see this called the 'global operator' which also has to do with importing or using everything in a namespace, so the `*` operator was well chosen.
+It just so happens that EdgeDB since 2023 does have such an operator! The operator is called the splat operator because it uses a `*` which...looks like a splat. In other languages you sometimes see this called the 'global operator' which also has to do with importing or using everything in a namespace, so the `*` operator was well chosen. In SQL this is callect "select star", and the splat operator in EdgeDB is a better and more powerful version of that.
 
 Let's try using the splat operator with `City` now.
 
@@ -298,7 +298,7 @@ And that's all there is to it! Here's the output:
 }
 ```
 
-And if we want to include the computed `name_has_changed` property, we can just add it after the splat operator. So the query below will return the same output as the first query we tried.
+And if we want to include the computed `name_has_changed` property, we can just add it after the splat operator. So the quick query below will return the same output as the first query that needed all the extra typing.
 
 ```edgeql
 select City {
@@ -312,11 +312,13 @@ If the splat operator is used for a type that is extended by other types, it wil
 ```
 db> select PC{*};
 {default::PC {name: 'Emil Sinclair', id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35, class: Mystic}}
+
 db> select NPC {*};
 {
   default::NPC {name: 'Jonathan Harker', id: 8ae5923a-0b04-11ee-bd1f-e3545fe0bccf, age: {}},
   default::NPC {name: 'The innkeeper', id: 8bd08f10-0b04-11ee-bd1f-bf2be2316e84, age: 30},
 }
+
 db> select Person {*};
 {
   default::PC {id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35, name: 'Emil Sinclair'},
