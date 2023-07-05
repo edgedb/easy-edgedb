@@ -135,7 +135,8 @@ A `str` is just a string, and goes inside either single quotes: `'Jonathan Harke
 
 An `array` is a collection of the same type, and our array here is an array of `str`s. We want it to look like this:
 
-```["Bistritz", "Munich", "Buda-Pesth"]
+```
+["Bistritz", "Munich", "Buda-Pesth"]
 ```
 
 The idea is to easily search later and see which character has visited where.
