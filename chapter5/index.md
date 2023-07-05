@@ -13,21 +13,38 @@ Poor Jonathan is still at Castle Dracula and is not having much luck. Here's wha
 
 ## std::datetime
 
-Jonathan in Romania was thinking of Mina back in London, which is in a different timezone. This sounds like a good time to give the `std::datetime` type a try. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
+Jonathan in Romania was thinking of Mina back in London, which is in a different timezone. This sounds like a good time to give the `std::datetime` type a try. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. The ISO 8601 format is `YYYY-MM-DDTHH:MM:SSZ`, which next to a concrete example looks like this:
 
-`YYYY-MM-DDTHH:MM:SSZ`
+```
+Format:  YYYY-MM-DDTHH:MM:SSZ
+Example: 2023-06-06T22:12:10Z
+```
 
 So a cast to an actual datetime looks like this:
 
 ```edgeql
-select <datetime>'2020-12-06T22:12:10Z';
+select <datetime>'2023-06-06T22:12:10Z';
 ```
 
-The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
+The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it has no offset — no difference — from UTC: in other words, it _is_ UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here are its signatures <docs:std::to_datetime>`, which show that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you pass in.
+One way to set a timezone is to change the `T` to an offset: the hour difference between the current time zone and UTC. Our query above returns the time "22:12:10Z", so 10:12 PM in London. Let's change the `T` to `+09:00` (the timezone for Korea and Japan) and see what happens:
 
-Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>`. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. The decimal type exists because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows the problem that floats have after too much precision:
+```edgeql
+select <datetime>'2023-06-06T22:12:10+09:00';
+```
+
+The output shows us the time in UTC again. In other words, it's 1:12 pm in London when it's 10:12 pm in Korea and Japan.
+
+```
+{<datetime>'2023-06-06T13:12:10Z'}
+```
+
+One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here are its signatures <docs:std::to_datetime>`, which show that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six function signatures you have chosen depending on what input you pass in.
+
+(Keep that point in mind, by the way! It's a hint for when we learn to write our own functions in Chapter 11.)
+
+Let's do a quick detour before getting back to datetime. Inside one of the `to_datetime()` function signatures you might have noticed one unfamiliar type called a {eql:type}` ``decimal`` <docs:std::decimal>`. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. The decimal type exists because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows the problem that floats have after too much precision:
 
 ```
 db> select 6.777777777777777; # Good so far
@@ -36,7 +53,7 @@ db> select 6.7777777777777777; # Add one more digit...
 {6.777777777777778} # Where did the 8 come from?!
 ```
 
-If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
+To avoid this imprecision you can use a `<decimal>` cast, or just add an `n` to the end. This will return a `decimal` type which will be as precise as it needs to be. Now the rounding errors are gone:
 
 ```
 db> select 6.7777777777777777n;
@@ -73,9 +90,24 @@ std::to_datetime(epochseconds: float64) -> datetime
 std::to_datetime(epochseconds: int64) -> datetime
 ```
 
-The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp.
+The last signature works well if you want to know the `datetime` right now and are getting the epoch seconds (the number of seconds since 1970) from your computer's system time. It's also kind of fun to just experiment with:
 
-Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the timezone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
+```
+db> select to_datetime(0);
+{<datetime>'1970-01-01T00:00:00Z'}
+db> select to_datetime(100);
+{<datetime>'1970-01-01T00:01:40Z'}
+db> select to_datetime(9879879870);
+{<datetime>'2283-01-30T11:04:30Z'}
+db> select to_datetime(87623);
+{<datetime>'1970-01-02T00:20:23Z'}
+db> select to_datetime(98723987213);
+{<datetime>'5098-06-09T17:46:53Z'}
+```
+
+But the easiest signature is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. Let's give that signature a try.
+
+Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep in a coffin somewhere, and Jonathan is trying to use the time during the day to find a way to send Mina a letter. In Romania the timezone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST');
@@ -96,7 +128,7 @@ select to_datetime(2003, 5, 12, 8, 15, 15, 'CET')
 
 This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 2003 6:10 in Korean Standard Time. The result is: `{<duration>'10:05:15'}`, so 10 hours, 5 minutes, and 15 seconds.
 
-Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different timezones but we don't need to calculate it ourselves; we can just specify the timezone and EdgeDB will do the rest:
+Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina was in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different timezones, which makes the calculation a bit annoying. Fortunately, we don't need to calculate it ourselves! We can just specify the timezone and EdgeDB will do the rest.
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST')
