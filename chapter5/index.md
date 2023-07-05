@@ -306,7 +306,7 @@ Later on we will learn to add a constraint to ensure on the schema level that pa
 
 ## Using the 'describe' keyword to look inside types
 
-Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to picture it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the harder it can be to try to picture it all together in your mind. Or you might be in the middle of using the REPL and don't want to switch to the schema file to get some information about a type. EdgeDB has a keyword called `describe` that can help in this case. There are four ways to use `describe`:
 
 - `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is the lower level language that we have seen in our migration files that end in `.edgeql` such as 00001.edgeql, 00002.edgeql, and so on. If we type `describe type MinorVampire` into the REPL, we will see the following output:
 
@@ -318,7 +318,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 }
 ```
 
-The `create` keyword shows that DDL is a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
+The `create` keyword shows that DDL is a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we probably don't want that. The next method is:
 
 - `describe type MinorVampire as sdl` - same thing, but in SDL.
 
@@ -332,9 +332,9 @@ The output is almost the same too, just the SDL version of the above. It's also 
 }
 ```
 
-You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed when it comes to module paths: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
+This output is basically the same as our SDL schema, just a bit more detailed when it comes to module paths: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-- The third method is `describe type MinorVampire as text`. Now the output shows almost everything inside the type, including from the types that it extends. Here's the output:
+- The third method is `describe type MinorVampire as text`. Now the output shows almost everything we need to know inside the type, including from the types that it extends. Here's the output:
 
 ```
 {
@@ -373,11 +373,19 @@ If you want a bit more information, you can add the keyword `verbose` to make th
 }
 ```
 
-The parts that say `readonly := true` we don't need to worry about, as they are automatically generated and we can't touch them (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
+The parts that say `readonly := true` are parts of each type that are automatically generated and which we can't change (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
 
-And for a _really_ long output, try typing `describe schema` or `describe module default` (with `as sdl` or `as text` if you want). You'll get an output showing the whole schema we've built so far.
+The most interesting `readonly` part of an object is `__type__`, which is a link that every object type has to information about itself. We will learn more about this in Chapter 13, but if you are curious about what is inside then give it a try with the splat operator:
 
-So if `type` comes after `describe` for types and `module` after `describe` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, `type`. If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules). So `describe scalar type SleepState` and `describe object SleepState` will both return the same thing.
+```
+select Person.__type__ {*};
+```
+
+For a _really_ long output using `describe`, try typing `describe schema` or `describe module default` (with `as sdl` or `as text` if you want). You'll get an output showing the whole schema we've built so far.
+
+So if we can use `describe` to learn about a `type` or our `schema`, are there other things we can describe? Indeed there are: we can describe an `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, or `type`.
+
+If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules). So `describe scalar type SleepState` and `describe object SleepState` will both return the same thing.
 
 [Here is all our code so far up to Chapter 5.](code.md)
 
