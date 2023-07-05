@@ -189,21 +189,21 @@ You might be curious about how computed links and properties are represented in 
 
 ## Ways to tell time
 
-We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
+We will now learn about time, which is important for our game. Keeping track of time is important in general, but is especially important for us because vampires can only go outside at night.
 
 The part of Romania that Jonathan Harker is visiting has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple we will just use 7 am and 7 pm to decide if it's day or night.
 
 EdgeDB uses two major types for time:
 
-- `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the [ISO 8601 standard](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1154675086).
-- `cal::local_datetime`, which doesn't worry about the timezone.
+- `std::datetime`, which is the most precise because it includes a timezone. Times in `datetime` use the [ISO 8601 standard](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1154675086).
+- `cal::local_datetime`, which includes the date and time but no information about the timezone.
 
-There are two others that are almost the same as `cal::local_datetime`:
+There are two others that each include half of the information found in `cal::local_datetime`:
 
-- `cal::local_time`, when you only need to know the time of day, and
-- `cal::local_date`, when you only need to know the month, the day, and year.
+- `cal::local_time`, for when you only need to know the time,
+- `cal::local_date`, for when you only need to know the month, the day, and year.
 
-We'll start with `cal::local_time` first. Take a close look at the name: this is the first time we have come across something in a different module in the standard library (it's `cal::local_time`, not `std::local_time`).
+Our first concern is whether vampires are sleeping or not, so we'll start with `cal::local_time` first. Take a close look at the name: this is the first time we have come across something in a different module in the standard library (it's `cal::local_time`, not `std::local_time`). The name `cal` here stands for calendar.
 
 `cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
@@ -217,7 +217,7 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game engine has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that will hold this `str` and use it to make two computed properties. It looks like this:
+We will imagine that our game engine has a clock that sends the database the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that will hold this `str` and use it to make two computed properties. It looks like this:
 
 ```sdl
 type Time { 
@@ -292,23 +292,21 @@ So `vampires_are` is calculated like this:
 Now let's do a `select` again with all the properties:
 
 ```edgeql
-select Time {
-  clock,
-  clock_time,
-  hour,
-  vampires_are
- };
+select Time {*};
 ```
 
 We then get this output:
 
 ```
-default::Time {
-  clock: '09:55:05',
-  clock_time: <cal::local_time>'09:55:05',
-  hour: '09',
-  vampires_are: Asleep,
-},
+{
+  default::Time {
+    id: 0fb1d964-1989-11ee-915e-5b585f9c9744,
+    clock: '09:55:05',
+    clock_time: <cal::local_time>'09:55:05',
+    hour: '09',
+    vampires_are: Asleep,
+  },
+}
 ```
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example showing how this could work if we had more values on the `SleepState` enum:
