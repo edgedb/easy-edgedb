@@ -5,9 +5,9 @@ leadImage: illustration_03.jpg
 
 # Chapter 3 - Jonathan goes to Castle Dracula
 
-In this chapter we are going to start to think about time, as you can see from Jonathan Harker's first experiences at Castle Dracula:
+In this chapter we encounter a vampire for the first time - or rather, _the_ vampire. As you can see, Dracula seems human but is actually quite different:
 
-> Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible: there was snow, strange blue fires, and wolves everywhere. It was **night** when he arrived. He meets with Count Dracula, goes inside, and they talk all night. Dracula leaves **before the sun rises** though, because vampires are hurt by sunlight. **Days** go by, and Jonathan still doesn't know that Dracula is a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Who is making his meals that he finds on the table? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
+> Jonathan Harker has just arrived at Castle Dracula after a ride in the carriage through the mountains. The ride was terrible. There was snow, strange blue fires, and wolves everywhere. It was **night** when he arrived. He meets with Count Dracula. Dracula picks up all of Jonathan's luggage **with one hand**, they go inside, and they talk all night. Dracula always leaves **just before the sun rises** though. Curious! Days go by, and Jonathan still doesn't know that Dracula is a vampire. But he does notice something strange: the castle seems completely empty. If Dracula is so rich, where are his servants? Why is he so strong? Who is making his meals that he finds on the table? But Jonathan finds Dracula's stories of history very interesting, and so far is enjoying his trip.
 
 Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type has `name` and `places_visited`, which are good for `Vampire` too.
 
