@@ -7,11 +7,13 @@ leadImage: illustration_05.jpg
 
 Poor Jonathan is still at Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
 
-> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
+> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send a letter to Mina **in London**. He wonders what Mina is doing right about now. **What time is it in London**, and is she okay?
+> He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Dracula is not a human, but a monster! Now Jonathan is very afraid.
+> A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
 ## std::datetime
 
-Since Jonathan in Romania was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
+Jonathan in Romania was thinking of Mina back in London, which is in a different timezone. This sounds like a good time to give the `std::datetime` type a try. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
 
 `YYYY-MM-DDTHH:MM:SSZ`
 
@@ -73,7 +75,7 @@ std::to_datetime(epochseconds: int64) -> datetime
 
 The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp.
 
-Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
+Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the timezone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST');
@@ -94,7 +96,7 @@ select to_datetime(2003, 5, 12, 8, 15, 15, 'CET')
 
 This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 2003 6:10 in Korean Standard Time. The result is: `{<duration>'10:05:15'}`, so 10 hours, 5 minutes, and 15 seconds.
 
-Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
+Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different timezones but we don't need to calculate it ourselves; we can just specify the timezone and EdgeDB will do the rest:
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST')
