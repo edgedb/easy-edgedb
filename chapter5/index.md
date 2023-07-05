@@ -148,7 +148,7 @@ with
 select jonathan_wants_to_escape - mina_has_tea;
 ```
 
-The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
+The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`. 
 
 ## Casting to a duration
 
@@ -162,7 +162,20 @@ select <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 
 This will return `{<duration>'6:06:00.688999'}`.
 
-EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. Even this horrible input will work:
+EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`. It and will ignore plurals, will recognize abbreviations, and so on:
+
+```
+edgedb> select <duration>'2 milliseconds';
+{<duration>'0:00:00.002'}
+edgedb> select <duration>'2 hour';
+{<duration>'2:00:00'}
+edgedb> select <duration>'1 seconds';
+{<duration>'0:00:01'}
+edgedb> select <duration>'1 H';
+{<duration>'1:00:00'}
+```
+
+It even ignores symbols and irrelevant characters so even this horrible input will work:
 
 ```edgeql
 select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds'
@@ -171,6 +184,14 @@ select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds'
 
 The result: `{<duration>'-3:59:04.99401'}`.
 
+It won't just accept anything, however, so there is a limit:
+
+```
+edgedb> select <duration>'three howers';
+edgedb error: InvalidValueError: invalid input syntax for type std::duration: 
+"three howers"
+```
+
 ## Relative duration
 
 The scene in the book today takes place on the 16th of May, 15 days after Jonathan Harker left London. Jonathan Harker was kind enough to even mark down the time of day during his first journal entry, which gives us a good idea of how much time has gone by since then. Here are the two relevant journal entries:
@@ -178,7 +199,9 @@ The scene in the book today takes place on the 16th of May, 15 days after Jonath
 ```
 3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at 
 Vienna early next morning;
+```
 
+```
 The Morning of 16 May.—God preserve my sanity, for to this I am reduced...
 All three had brilliant white teeth that shone like pearls against the 
 ruby of their voluptuous lips. There was something about them that made
@@ -190,7 +213,7 @@ Let's imagine that our `PC` named Emil Sinclair has been accomplishing some miss
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
 select today - game_start;
 ```
 
@@ -217,7 +240,7 @@ The player is currently in Romania so we will choose the EEST timezone. The code
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
   select
     cal::to_local_datetime(today, 'EEST') 
   - cal::to_local_datetime(game_start, 'EEST');
@@ -230,7 +253,7 @@ Another type called `date_duration` is useful when you only care about day to da
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
   select 
     cal::to_local_date(today, 'EEST') 
   - cal::to_local_date(game_start, 'EEST');
@@ -242,7 +265,7 @@ We will get the output `{<cal::date_duration>'P13D'}`. So even though only about
 
 ## Required links
 
-Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`. This is because Dracula controls them and they only exist as `MinorVampire`s because he exists.
+The three female vampires that Jonathan encounters this chapter are controlled by Count Dracula. They have their own thoughts but Dracula can control them if he wants, and they only exist because he exists. We'll need a new type for this sort of vampire, so let's call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`:
 
 ```sdl
 type MinorVampire extending Person {
@@ -260,49 +283,26 @@ insert MinorVampire {
 };
 ```
 
-Trying this insert will give us this error: `edgedb error: MissingRequiredError: missing value for required link 'master' of object type 'default::MinorVampire'`. This is what we want. Now let's insert the same `MinorVampire` but this time we will connect her to Dracula. This next insert almost works, but not quite. Can you guess why?
+Trying this insert will give us this error: `edgedb error: MissingRequiredError: missing value for required link 'master' of object type 'default::MinorVampire'`. This is what we want. Now let's insert the same `MinorVampire` but this time we will connect her to Dracula. This link is to a single object, which means that we should filter on the name 'Count Dracula' and then use the `assert_single()` function to ensure that `master` doesn't link to more than one object.
+
+Our three `MinorVampire` inserts look like this:
 
 ```edgeql
 insert MinorVampire {
   name := 'Vampire Woman 1',
-  master := (select Vampire filter .name = 'Count Dracula')
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
-```
-
-The error is due to the fact that there might be more than one `Vampire` object with the name 'Count Dracula', because at the moment our schema allows this. And EdgeDB rightfully disallows us from trying to return a result that might be multiple links instead of a single link:
-
-```
-error: QueryError: possibly more than one element returned by an expression 
-for a link 'master' declared as 'single'
-  ┌─ <query>:3:3
-  │
-3 │   master := (select Vampire filter .name = 'Count Dracula')
-  │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
-```
-
-One way to get the insert to work would be to add `limit 1`:
-
-```edgeql
 insert MinorVampire {
-  name := 'Vampire Woman 1',
-  master := (select Vampire filter .name = 'Count Dracula' limit 1)
+  name := 'Vampire Woman 2',
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
-```
-
-But note that `limit 1` simply returns the first match to the filter. If our database had multiple `Vampire` objects called `Count Dracula`, it would return the first one it found. That's not ideal. Instead, we can wrap the `select` inside a function called `assert_single()`:
-
-```edgeql
 insert MinorVampire {
-  name := 'Vampire Woman 1',
-  master := assert_single(select Vampire filter .name = 'Count Dracula')
+  name := 'Vampire Woman 3',
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
 ```
 
-This function makes sure that there's no more than a single element in the set it is given.
-
-Also note that `assert_single()` will return an error (a `CardinalityViolationError`) if more than one element is returned, so make sure to only use `assert_single()` if you are sure that there is only one element. In principle it's sort of like a "trust me, there is only one element" sort of function.
-
-Later on we will learn to add a constraint to ensure on the schema level that parameters like `name` have to be unique.
+Later on we will learn to add a constraint to ensure on the schema level that parameters like `name` have to be unique. And we will also learn how to insert three objects at the same time instead of doing three separate inserts like we did here.
 
 ## Using the 'describe' keyword to look inside types
 

@@ -125,4 +125,12 @@ insert MinorVampire {
   name := 'Vampire Woman 1',
   master := assert_single((select Vampire Filter .name = 'Count Dracula')),
 };
+insert MinorVampire {
+  name := 'Vampire Woman 2',
+  master := assert_single((select Vampire Filter .name = 'Count Dracula')),
+};
+insert MinorVampire {
+  name := 'Vampire Woman 3',
+  master := assert_single((select Vampire Filter .name = 'Count Dracula')),
+};
 ```
