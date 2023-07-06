@@ -15,8 +15,7 @@ Looks like Lucy, an `NPC`, has become a `MinorVampire`. How should we show this 
 Right now `MinorVampire` is nothing special, just a type that extends `Person`:
 
 ```sdl
-type MinorVampire extending Person {
-}
+type MinorVampire extending Person;
 ```
 
 Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` object named Count Dracula.

@@ -11,8 +11,7 @@ tags: Introspection, Type Union Operator
 当前的 `MinorVampire` 还没什么特别的属性，只是一个扩展自 `Person` 的类型：
 
 ```sdl
-type MinorVampire extending Person {
-}
+type MinorVampire extending Person;
 ```
 
 接着，按小说的描述，露西似乎带来了一个新的人类“类型”。旧的露西已经消失了，新的露西是一个名为德古拉伯爵的 `Vampire`（吸血鬼）的 `slaves`（奴隶）。

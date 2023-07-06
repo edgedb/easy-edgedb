@@ -39,8 +39,7 @@ module default {
 
   type Country extending Place;
 
-  type MinorVampire extending Person {
-  }
+  type MinorVampire extending Person;
 
   type NPC extending Person {
     age: HumanAge;
