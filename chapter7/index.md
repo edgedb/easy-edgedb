@@ -123,9 +123,9 @@ With the offending object gone, the `edgedb migrate` command now works!
 
 ## Passing constraints with delegated
 
-Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making any real `PC` type objects. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
+Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making many real `PC` type objects. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
 
-Fortunately there's an easy way to get around this: the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. So the type is exactly the same except for this keyword:
+Fortunately there's an easy way to get around this: by putting the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so that the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. That makes the `Person` type exactly the same except for the `delegated` keyword:
 
 ```sdl
 abstract type Person {
@@ -140,7 +140,7 @@ abstract type Person {
 
 With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
-The `delegated constraint` should also apply to `Place` since a `Country` can have the same name as `City`, and so on for any other types that will extend `Place`. So let's update the constraint on the `name` property for the `Place` type:
+The `delegated constraint` should also apply to `Place` since a `Country` can have the same name as `City`, and so on for any other types that will extend `Place`. So let's update the constraint on the `name` property for the `Place` type to add `delegated` there too.
 
 ```sdl
 abstract type Place {
@@ -154,7 +154,7 @@ abstract type Place {
 
 ## Using functions in queries
 
-Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
+Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it would be more complicated but we can try something simple to mimic this:
 
 - Doors have a strength, and people have strength as well.
 - A `Person` with greater strength than the door will be able to open it.
@@ -180,7 +180,7 @@ update Castle filter .name = 'Castle Dracula'
   };
 ```
 
-Now we'll give Jonathan a strength of 5.  And now we can update Jonathan with `update` and `set` like before:
+Now we'll give Jonathan a strength of 5. That's another easy `update`:
 
 ```edgeql
 update Person filter .name = 'Jonathan Harker'
@@ -189,7 +189,7 @@ set {
 };
 ```
 
-Great. We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
+We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
 
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
@@ -222,7 +222,7 @@ Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::ar
 ```edgeql
 with
   jonathan := (select Person filter .name = 'Jonathan Harker'),
-  castle :=   (select Castle filter .name = 'Castle Dracula'),
+  castle   := (select Castle filter .name = 'Castle Dracula'),
   select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
@@ -231,29 +231,29 @@ That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any
 Unsurprisingly, along with `min()` there is also a function called `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` type objects:
 
 ```edgeql
-select (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
+select ('Length of "' ++ NPC.name ++ '" is: ' ++ <str>len(NPC.name));
 ```
 
 Don't forget that we need to cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. Here is the result:
 
 ```
 {
-  ('The innkeeper', 'Name length is: 13'),
-  ('Mina Murray', 'Name length is: 11'),
-  ('Jonathan Harker', 'Name length is: 15'),
+  'Length of "Mina Murray" is: 11',
+  'Length of "Jonathan Harker" is: 15',
+  'Length of "The innkeeper" is: 13',
 }
 ```
 
-The other example is with `count()`, which also has a cast to a `<str>`:
+This next example uses `count()`, which also uses a cast to a `<str>`:
 
 ```edgeql
 select 'There are ' ++ <str>(select count(Place) 
       - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 8 more places than castles'}`. (Your query might return a different number if you have been experimenting with inserting `Place` objects.)
+It prints: `{'There are 8 more places than castles'}`. Or your query might return a different number if you have been experimenting with inserting `Place` objects.
 
-In a few chapters we will learn how to create our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
+In Chapter 11 we will learn how to write our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
 
 ## Using $ to set parameters
 
