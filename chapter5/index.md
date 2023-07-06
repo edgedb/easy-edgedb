@@ -8,7 +8,9 @@ leadImage: illustration_05.jpg
 Poor Jonathan is still at Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
 
 > During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send a letter to Mina **in London**. He wonders what Mina is doing right about now. **What time is it in London**, and is she okay?
+>
 > He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Dracula is not a human, but a monster! Now Jonathan is very afraid.
+>
 > A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
 ## std::datetime
