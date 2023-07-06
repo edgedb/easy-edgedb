@@ -233,9 +233,9 @@ with london := <tuple<str, float64>>('London', 3500000),
 
 The output is `{3605000}`.
 
-## Ordering results and using math
+## More on ordering and using math
 
-Now that we have some numbers, we can start playing around with ordering and math. Ordering is quite simple: type `order by` and then indicate the property/link you want to order by. Here we order them by population:
+Now that we have some numbers, we can start playing around with ordering and math. We tried out ordering for the first time in Chapter 7 and it was quite simple: type `order by` and then indicate the property/link you want to order by. Here we order them by population:
 
 ```edgeql
 select City {

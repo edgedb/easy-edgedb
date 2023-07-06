@@ -14,9 +14,13 @@ tags: Constraint Delegation, $ Parameters
 >
 > After writing "Good-bye, all! Mina!" in his journal, Jonathan begins to climb the wall.
 
-## More constraints
+## More constraints and simple ordering
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
+While Jonathan climbs the wall, we can continue to work on our database schema. Let's give it some more constraints so that we are sure what data is acceptable and what is not.
+
+No character in our book has the same name, so so there should only be one Mina Murray, one Count Dracula, and so on. No `PC` object should have the same name either: imagine that you created a `PC` to play the game but the next day someone else shows up with the same name as you! Even worse, any `update` done to a `PC filter .name = your_name` might end up updating both characters at the same time.
+
+To avoid this, we can put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
 
 ```constraint max_value(120);```
 
@@ -24,15 +28,15 @@ We can give `name` a constraint too called `constraint exclusive` which prevents
 
 ```sdl
 abstract type Person {
-  required name: str { ## Add a block
-      constraint exclusive;       ## and the constraint
+  required name: str {      # Add a block
+      constraint exclusive; # and the constraint
   }
   multi places_visited: Place;
   lover: Person;
 }
 ```
 
-Now we know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
+With this constraint added, we now know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
 
 ```sdl
 abstract type Place {
@@ -44,12 +48,78 @@ abstract type Place {
 }
 ```
 
-Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we tried to insert a `MinorVampire` object that had the same name as an existing `MinorVampire` object, we would see this output:
+We are going to do a migration now, but first let's insert an object that will violate the `exclusive` constraint. Remember the innkeeper from the city of Bistritz? Let's add him again:
+
+```edgeql
+insert NPC { name := 'The innkeeper' };
+```
+
+Great! Now our migration is going to fail. However, `edgedb migration create` will work, because this simply creates the commands to carry out the migration. After that comes `migration create`, which is when the database will apply the constraint to the existing objects. Fortunately, the output will tell us what has gone wrong:
 
 ```
-Detail: value of property 'name' of object type 'default::MinorVampire'
-violates exclusivity constraint
+edgedb error: ConstraintViolationError: name violates exclusivity constraint
+  Detail: property 'name' of object type 'default::NPC' violates exclusivity constraint
+edgedb error: error in one of the migrations
 ```
+
+"Property 'name' of object type 'default::NPC' violates exclusivity constraint" is a pretty clear error message.
+
+```edgeql
+select NPC { name };
+```
+
+The output shows us that there are two `NPC` objects called 'The innkeeper', which is not okay in our new schema.
+
+```
+{
+  default::NPC {name: 'The innkeeper'},
+  default::NPC {name: 'Mina Murray'},
+  default::NPC {name: 'Jonathan Harker'},
+  default::NPC {name: 'The innkeeper'},
+}
+```
+
+We are going to have to delete one, but let's order those results first. After all, there could have been 10 or 20 or more objects and trying to find a duplicate name would have been pretty tough.
+
+Ordering is pretty easy: just add `order by` and the property to order by: 
+
+```edgeql
+select NPC { name } order by .name;
+```
+
+Now the output shows 'The innkeeper' right next to the other object of the same name.
+
+```
+{
+  default::NPC {name: 'Jonathan Harker'},
+  default::NPC {name: 'Mina Murray'},
+  default::NPC {name: 'The innkeeper'},
+  default::NPC {name: 'The innkeeper'},
+}
+```
+
+We will learn more about ordering in Chapter 10. But in the meantime, let's get back to our duplicate objects so we can delete one. They are identical in every way except their `id`, so let's find out what they are:
+
+```
+select NPC { id } filter .name = 'The innkeeper';
+```
+
+Your `id` values will be different, but the output will look like this:
+
+```
+{
+  default::NPC {id: ebe395c4-19cc-11ee-bae7-f7a7bff901b9},
+  default::NPC {id: dbb3bb4c-19e6-11ee-9981-03a7bead0c6b},
+}
+```
+
+And now we'll just pick one id, put it inside a `str` and cast it to a `uuid` as a filter to delete the one `NPC` object. 
+
+```edgedb
+delete NPC filter .id = <uuid>'ebe395c4-19cc-11ee-bae7-f7a7bff901b9';
+```
+
+With the offending object gone, the `edgedb migrate` command now works!
 
 ## Passing constraints with delegated
 
