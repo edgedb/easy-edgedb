@@ -382,13 +382,15 @@ We have a nice output that shows them all together:
 }
 ```
 
+Speaking of output, EdgeDB lets you display your output in a number of different ways. One of them is JSON!
+
 ## Just type \<json> to generate json
 
-What do we do if we want the same output in JSON? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB can be cast to JSON this easily:
+What do we do if we want to see output in JSON? It couldn't be easier: just cast using `<json>`. Any type in EdgeDB can be cast to JSON this easily:
 
 ```edgeql
+# <json> is the only difference from the select above
 select <json>Vampire {
-  # <json> is the only difference from the select above
   name,
   slaves: {name}
 };
@@ -404,7 +406,7 @@ This will transform the results into JSON. However, what the REPL will show by d
 
 Let's go through the result together. The outer curly braces are just telling you that what's inside is one or more results returned by the query. Then the actual result is a string containing JSON. Because the JSON part is inside a string all the `"` there need to be escaped, so they appear as `\"`.
 
-To make REPL show JSON in a nicer format just type `\set output-format json-pretty`. Then the results will look more familiar:
+That's a great JSON output for computers to handle, but it's a little bit ugly for us. Fortunately we can change this: to make the REPL show JSON in a nicer format just type `\set output-format json-pretty`. Then the results will look more familiar:
 
 ```json
 {
@@ -438,7 +440,55 @@ select <int64><str><json>'18930503';
 
 Now it works: we get `{18930503}` which began as an EdgeDB `str`, turned into a JSON string, then back into an EdgeDB `str`, and finally was cast into an `int64`.
 
-The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types turn into which EdgeDB types, lists functions for working with JSON values, and is good to bookmark if you need to convert from JSON a lot.
+The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types turn into which EdgeDB types, lists functions for working with JSON values, and is good to bookmark if you need to convert from JSON a lot. Here is a simplified explanation from the documentation:
+
+* JSON strings can be cast to a `str`. Casting uuid and date/time types to JSON returns a JSON string. You can cast back into those types, as long as the formatting is correct.
+* JSON numbers can be cast to any numeric type.
+* JSON booleans can be cast to a bool type.
+* JSON null is unique because it can be cast to an empty set ({}) of any type.
+* JSON arrays can be cast to any valid array type, but its items must be all the same time, the array cannot contain null, and it can't contain another array.
+
+One quick way to turn JSON into a more usable form is to use the `json_object_unpack()` function, which returns a set of `tuple<str, json>`.
+
+So this query:
+
+```edgeql
+with json_dracula := <json>(select Vampire {*}),
+  select json_object_unpack(json_dracula);
+```
+
+Will generate this output:
+
+```
+{
+  ('id', Json("\"3bc8e902-19d9-11ee-92bf-b3c5cf277bc7\"")),
+  ('age', Json("800")),
+  ('name', Json("\"Count Dracula\"")),
+  ('is_single', Json("true")),
+}
+```
+
+Change the splat operator from `*` to `**` and it gets even more verbose!
+
+```
+{
+  ('id', Json("\"3bc8e902-19d9-11ee-92bf-b3c5cf277bc7\"")),
+  ('age', Json("800")),
+  ('name', Json("\"Count Dracula\"")),
+  ('lover', Json("null")),
+  (
+    'slaves',
+    Json("[
+      {\"id\": \"3bc8f1b8-19d9-11ee-92bf-1bd2fcb94b84\", \"name\": \"Vampire Woman 1\", \"is_single\": true}, 
+      {\"id\": \"3bc8fc08-19d9-11ee-92bf-0f167ba34818\", \"name\": \"Vampire Woman 2\", \"is_single\": true}, 
+      {\"id\": \"3bc8fcee-19d9-11ee-92bf-cfa75bcb2757\", \"name\": \"Vampire Woman 3\", \"is_single\": true}]"),
+  ),
+  ('is_single', Json("true")),
+  ('places_visited', Json("[]")),
+}
+```
+
+There are quite a few other functions related to JSON in the documentation, so do take a look if you need to work with JSON in some other way. Some of the functions include `json_array_unpack()`, `json_get()`, `json_set()`, `json_typeof()`, and `json_object_pack()`.
 
 [Here is all our code so far up to Chapter 6.](code.md)
 
