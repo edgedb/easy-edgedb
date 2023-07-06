@@ -6,10 +6,13 @@ tags: Constraint Delegation, $ Parameters
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire.
 >
-> A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped.
+> A few days later Count Dracula comes with some news. He tells Jonathan that he will leave the castle tomorrow, and that Jonathan's stay at the castle has also come to an end. Jonathan thinks this is a chance, and asks to leave now instead of tomorrow.
 >
-> Later, Jonathan hears Dracula tell the vampire women that he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women.
->He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
+> Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and getting ready to attack. Dracula smiles and begins to open the door as he says, "You are free to leave! Goodbye!" Jonathan knows that Dracula called the wolves, and panics. "Shut the door! I shall wait till morning!" says Jonathan. Dracula laughs, slams the door shut and walks away.
+>
+> Later, Jonathan hears Dracula tell the vampire women they can have Jonathan once he is alone in the castle. Some workers come to take Dracula away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan has no choice and decides to climb out the window. It is better to die by falling than to be alone with the vampire women.
+>
+> After writing "Good-bye, all! Mina!" in his journal, Jonathan begins to climb the wall.
 
 ## More constraints
 
