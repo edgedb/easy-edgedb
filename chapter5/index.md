@@ -377,7 +377,7 @@ If you want a bit more information, you can add the keyword `verbose` to make th
 
 The parts that say `readonly := true` are parts of each type that are automatically generated and which we can't change (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
 
-The most interesting `readonly` part of an object is `__type__`, which is a link that every object type has to information about itself. We will learn more about this in Chapter 13, but if you are curious about what is inside then give it a try with the splat operator:
+The most interesting `readonly` part of an object is `__type__`, which is a link that every object type has to information about itself. We will learn more about this in Chapters 8 and 13, but if you are curious about what is inside then give it a try with the splat operator:
 
 ```
 select Person.__type__ {*};

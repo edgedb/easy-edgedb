@@ -215,7 +215,7 @@ select Person {
 };
 ```
 
-So is there a way to include `age` if the type is an `NPC` and `number` if the type is a `Crewman`? Yes, there is! We can use the `is` keyword inside square brackets to specify the type. Here's how it works:
+So is there a way to include `age` if the type is an `NPC` and `number` if the type is a `Crewman`? Yes, there is! We can use the `is` keyword inside square brackets to specify the type. Here's how it works in our query on `Person` objects:
 
 - `.name`: this stays the same, because `Person` has this property
 - `.age`: this belongs to the `NPC` type, so change it to `[is NPC].age`
@@ -236,8 +236,8 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 ```
 {
   # ... /snip
-  default::Crewman {name: {}, age: {}, number: 4},
-  default::Crewman {name: {}, age: {}, number: 5},
+  default::Crewman {name: 'Crewman 4', age: {}, number: 4},
+  default::Crewman {name: 'Crewman 5', age: {}, number: 5},
   default::PC {name: 'Emil Sinclair', age: {}, number: {}},
   default::NPC {name: 'The innkeeper', age: 30, number: {}},
   default::NPC {name: 'Mina Murray', age: {}, number: {}},
@@ -296,7 +296,7 @@ The result is close to what we want, but not quite. Take a look at two of the re
 }
 ```
 
-We can see that they are two different types now, but the type name isn't readable. To fix this, we can add the `name` property after `__type__` to display this instead of the id.
+The `id` property shows us that they are two different types, but the type name isn't readable. To fix this, we can add the `name` property after `__type__` to display this instead of the id.
 
 ```edgeql
 select <json>Person {
