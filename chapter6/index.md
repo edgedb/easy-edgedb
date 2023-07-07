@@ -196,7 +196,7 @@ select Person {name, lover: {name}} filter .name = 'Jonathan Harker';
 The output is now as follows:
 
 ```
-{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Mina Murray'}}}```
+{default::NPC {name: 'Jonathan Harker', lover: default::NPC {name: 'Mina Murray'}}}
 ```
 
 Success!
