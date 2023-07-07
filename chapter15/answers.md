@@ -24,7 +24,7 @@ type Horse {
 };
 ```
 
-#### 3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+#### 3. How would you make sure that `name` for type `NPC` is always between 5 and 30 characters in length?
 
 First of all, here is the type right now:
 
@@ -32,9 +32,6 @@ First of all, here is the type right now:
 type NPC extending Person {
   overloaded age: int16 {
     constraint max_value(120)
-  }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -48,9 +45,6 @@ type NPC extending Person {
   }
   overloaded age: int16 {
     constraint max_value(120)
-  }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
   }
 }
 ```

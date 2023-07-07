@@ -213,9 +213,6 @@ type NPC extending Person {
   overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
-  }
 }
 ```
 

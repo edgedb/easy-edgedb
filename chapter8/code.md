@@ -53,7 +53,11 @@ module default {
 
   type Country extending Place;
 
-  type Crewman extending HasNumber, Person;
+  type Crewman extending HasNumber, Person {
+    overloaded name: str {
+      default := 'Crewman ' ++ <str>.number;
+    }
+  }
 
   type MinorVampire extending Person;
 

@@ -60,7 +60,11 @@ module default {
 
   type Country extending Place;
 
-  type Crewman extending HasNumber, Person;
+  type Crewman extending HasNumber, Person {
+    overloaded name: str {
+      default := 'Crewman ' ++ <str>.number;
+    }
+  }
 
   type Event {
     required description: str;
@@ -81,9 +85,6 @@ module default {
   type NPC extending Person {
     overloaded age: int16 {
       constraint max_value(120);
-  }
-    overloaded multi places_visited: Place {
-      default := (select City filter .name = 'London');
     }
   }
 

@@ -6,17 +6,17 @@ tags: Multiple Inheritance, Polymorphism
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
-> Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him.
+> Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Dracula is also on the ship inside a coffin, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One crewman tells the others that he saw a strange man walking around the deck, but the others don't believe him.
 >
 > The days go by and more and more sailors disappear...
 >
 > Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him.
 >
-> The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
+> The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula disguised as a wolf. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
 >
 > Meanwhile, Mina and her friend Lucy are in Whitby on vacation...
 
-## Multiple inheritance
+## Multiple inheritance, defaults, and the overloaded keyword
 
 While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance means to do this with more than one type at the same time.
 
@@ -28,12 +28,43 @@ abstract type HasNumber {
 }
 ```
 
-We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
+Now let's put the `Crewman` type together, which will use multiple inheritance. Multiple inheritance is very simple: just add a comma between every type you want to extend.
 
-Now let's put the `Crewman` type together, which will use multiple inheritance. It's very simple: just add a comma between every type you want to extend.
+```sdl
+type Crewman extending HasNumber, Person;
+```
+
+However, here we have a problem: we never learn the names of the crewmen in the book, but the property `name` on `Person` is required. We know that every `Crewman` object will have a `number`, so it would be nice to use this to give them a name like "Crewman 1", "Crewman 2", and so on. How can we make this happen?
+
+We can make this happen by giving `name` a default for the `Crewman` type. To give a default value, just add `{}` after the parameter and then give an expression for the default value. So far that gives us a `Crewman` type that looks like the code below. However, a migration won't quite work yet. Can you guess why?
 
 ```sdl
 type Crewman extending HasNumber, Person {
+  name: str {
+    default := '' ++ <str>.number;
+  }
+}
+```
+
+Fortunately, the error message tells us _exactly_ what to do.
+
+```
+error: property 'name' of object type 'default::Crewman' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
+  ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:6:5
+  │
+6 │ ╭     name: str {
+7 │ │       default := '' ++ <str>.number;
+8 │ │     }
+  │ ╰─────^ error
+```
+
+In other words, `Person` is where the definition for `name` is, and this definition doesn't include any information about a default value. We still want to use `name`, but in a slightly different way. That's where the word `overloaded` comes in. Adding `overloaded` will keep the other rules for `name` (that it must be a `str`, and that it must be `exclusive`) and will add our new specification that it will have a `default` value for the `Crewman` type. So just add `overloaded` and our work is done!
+
+```sdl
+type Crewman extending HasNumber, Person {
+  overloaded name: str {
+    default := 'Crewman ' ++ <str>.number;
+  }
 }
 ```
 
@@ -43,7 +74,7 @@ Next is the `Sailor` type. The sailors have ranks, so first we will make an enum
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 ```
 
-And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
+And then we will make a `Sailor` type that uses `Person` and this `Rank` enum. The sailors in the book all have their own names, so we don't need to overload their `name` keyword.
 
 ```sdl
 type Sailor extending Person {
@@ -51,7 +82,7 @@ type Sailor extending Person {
 }
 ```
 
-Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `Ship` object can move on its own without anyone alive on it so we won't make its sailors or crew `required`.
+Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `Ship` object can move on its own even if all of its sailors and crewmen are dead, so we won't make its sailors or crew `required`.
 
 ```sdl
 type Ship {
@@ -72,15 +103,15 @@ with next_number := count(Crewman) + 1,
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `select Crewman {number};` to see the result. It gives us:
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. After the five inserts we can `select Crewman {name, number};` to see the result. It gives us:
 
 ```
 {
-  default::Crewman {number: 1},
-  default::Crewman {number: 2},
-  default::Crewman {number: 3},
-  default::Crewman {number: 4},
-  default::Crewman {number: 5},
+  default::Crewman {name: 'Crewman 1', number: 1},
+  default::Crewman {name: 'Crewman 2', number: 2},
+  default::Crewman {name: 'Crewman 3', number: 3},
+  default::Crewman {name: 'Crewman 4', number: 4},
+  default::Crewman {name: 'Crewman 5', number: 5},
 }
 ```
 
@@ -128,6 +159,7 @@ select Ship {
     rank,
   },
   crew: {
+    name,
     number
   },
 };
@@ -142,15 +174,15 @@ The result is:
     sailors: {
       default::Sailor {name: 'The Captain', rank: Captain},
       default::Sailor {name: 'Petrofsky', rank: FirstMate},
-      default::Sailor {name: 'The First Mate', rank: SecondMate},
+      default::Sailor {name: 'The Second Mate', rank: SecondMate},
       default::Sailor {name: 'The Cook', rank: Cook},
     },
     crew: {
-      default::Crewman {number: 1},
-      default::Crewman {number: 2},
-      default::Crewman {number: 3},
-      default::Crewman {number: 4},
-      default::Crewman {number: 5},
+      default::Crewman {name: 'Crewman 1', number: 1},
+      default::Crewman {name: 'Crewman 2', number: 2},
+      default::Crewman {name: 'Crewman 3', number: 3},
+      default::Crewman {name: 'Crewman 4', number: 4},
+      default::Crewman {name: 'Crewman 5', number: 5},
     },
   },
 }

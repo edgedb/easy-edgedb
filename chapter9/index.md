@@ -10,7 +10,17 @@ The episode for this chapter is a flashback to see why everybody is in the town 
 
 ## Working with dates some more
 
-It looks like we have some more people to insert. But first, let's think about the ship a little more. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1893).
+It looks like we have some more people to insert, starting with Lucy:
+
+```edgeql
+```edgeql
+insert NPC {
+  name := 'Lucy Westenra',
+  places_visited := (select City filter .name = 'London')
+};
+```
+
+But let's think about the ship a little more before we insert the rest. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1893).
 
 This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
@@ -59,57 +69,6 @@ set {
 ```
 
 These dates will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we would need more precise dates and would need to make these properties into a `datetime`. But we're fine with these approximate dates for now.
-
-## Adding defaults to a type, and the overloaded keyword
-
-Now let's get back to inserting the new characters. First we'll insert Lucy:
-
-```edgeql
-insert NPC {
-  name := 'Lucy Westenra',
-  places_visited := (select City filter .name = 'London')
-};
-```
-
-The other characters are from London too, which is the largest city in the world at the time. If we wanted to save ourselves some work, we could make London the default for `places_visited` for `NPC`. Let's give that a try. To do this we will need two things: `default` to declare a default, and the keyword `overloaded`. The word `overloaded` indicates that we are using `places_visited` in a different way than the `Person` type that we got it from.
-
-Let's first see what error EdgeDB gives us if we forget the `overloaded` keyword. Try changing the `NPC` type to this and migrating the schema:
-
-```sdl
-type NPC extending Person {
-age: HumanAge;
-multi places_visited: Place {
-  default := (select City filter .name = 'London');
-  }
-}
-```
-
-Impressive! It not only gives an error but tells us exactly what to do.
-
-```
-error: link 'places_visited' of object type 'default::NPC' must be 
-declared using the `overloaded` keyword because it is defined in 
-the following ancestor(s): default::Person
-   ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:27:3
-   │
-27 │ ╭   multi places_visited: Place {
-28 │ │     default := (select City filter .name = 'London');
-29 │ │   }
-   │ ╰───^ error
-
-edgedb error: cannot proceed until .esdl files are fixed
-```
-
-With `default` and `overloaded` added, it now looks like this:
-
-```sdl
-type NPC extending Person {
-  age: HumanAge;
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
-  }
-}
-```
 
 ## datetime_current() and datetime_of_statement()
 
@@ -409,15 +368,12 @@ scalar type HumanAge extending int16 {
 }
 ```
 
-You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there. Now `NPC` uses `overloaded` twice:
+You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there:
 
 ```sdl
 type NPC extending Person {
   overloaded age: int16 {
     constraint max_value(120);
-  }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
   }
 }
 ```
