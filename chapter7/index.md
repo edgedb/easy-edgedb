@@ -260,10 +260,10 @@ In Chapter 11 we will learn how to write our own functions to make queries like 
 Imagine we need to look up `City` type objects all the time, with this sort of query:
 
 ```edgeql
-select City {
+select Place {
   name,
   modern_name
-} filter .name ilike '%i%' and exists (.modern_name);
+} filter .name ilike '%i%' and exists .modern_name;
 ```
 
 This works fine, returning one city:
@@ -272,22 +272,24 @@ This works fine, returning one city:
 {default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
 ```
 
-But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) and would like to pass in parameters instead of rewriting the query every time.
+But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) for languages like TypeScript, Python and Rust, and would like to pass in parameters instead of rewriting the query every time.
 
-This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and on the REPL it will ask us what value to give it. Let's start with something very simple:
+This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and in the REPL it will ask us what value to give it. Let's start with something very simple:
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = 'London';
+} filter .name ilike '%ondon%';
 ```
+
+No surprise here: this will return the `City` object with the name `London`.
 
 Now let's change 'London' to `$name`. Note: this won't work yet. Try to guess why!
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = $name;
+} filter .name ilike $name;
 ```
 
 The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error gives us a hint for what to do:
@@ -296,52 +298,55 @@ The problem is that `$name` could be anything, and EdgeDB doesn't know what type
 error: QueryError: missing a type cast before the parameter
   ┌─ <query>:3:18
   │
-3 │ } filter .name = $name;
-  │                  ^^^^^ error
+3 │ } filter .name ilike $name;
+  │                      ^^^^^ error
 ```
 
-In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
+In this case we want to enter a `str`, so we can use `<str>` to let EdgeDB know ahead of time that this is the type to expect.
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = <str>$name;
+} filter .name ilike <str>$name;
 ```
 
-When we do that, we get a prompt asking us to enter the value:
+When we do that we get a prompt asking us to enter the value:
 
 ```
 Parameter <str>$name:
 ```
 
-Just typing London and hitting enter will lead to this expected result:
+And now, just typing `%ondon%` or `London` and hitting enter will lead to this expected result:
 
 ```
 {default::City {name: 'London'}}
 ```
 
-Note that on the REPL it knows to expect a string so you don't need to type `'London'`. Give `'London'` a try though! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
+Here are two points to keep in mind before we continue:
 
-Now let's take that to make a much more complicated (and useful) query, using two parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
+* The REPL now knows to expect a string so you don't need to surround it with quotes. Give `'London'` a try though and see what happens! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
+* The `<>` cast notation in EdgeDB actually has two uses: casting and type specification (letting the compiler know which type to expect). In this case, it is being used for type specification. That means that the compiler is not using `<str>` to cast input into a `str`, but simply to know to expect a `str` - and to reject input that is of a different type. The REPL is smart enough to not allow us to give it improper input when it expects a `str`, but if you are using a client library then there is no REPL to check a query before you send it to EdgeDB. So make sure that you are sending a string when it expects a `str`!
+
+Now let's use what we know to make a more useful query, using two parameters. We'll call them `$name` and `$name_has_changed`. Don't forget to use the cast notation for both:
 
 ```edgeql
-select City {
+select Place {
   name,
   modern_name
 } filter
     .name ilike '%' ++ <str>$name ++ '%'
   and
-    exists (.modern_name) = <bool>$has_modern_name;
+    exists .modern_name = <bool>$name_has_changed;
 ```
 
 Since there are two of them, EdgeDB will ask us to input two values. Here's one example of what it looks like:
 
 ```
 Parameter <str>$name: b
-Parameter <bool>$has_modern_name: true
+Parameter <bool>$name_has_changed: true
 ```
 
-So that will give all `City` type objects with "b" in the name and that have a different modern name. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
+So that will give all `Place` type objects with "b" in the name and which have a different name today than their name in the book. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
 
 ```
 {
@@ -350,23 +355,17 @@ So that will give all `City` type objects with "b" in the name and that have a d
 }
 ```
 
-Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
+Parameters work just as well in inserts too. Here's an update for our global `Time` object that prompts the user for the hour, minute, and second:
 
 ```
-with time := (
-   insert Time {
-     clock := <str>$hour ++ <str>$minute ++ <str>$second
-   }
- ),
- select time {
- clock,
- clock_time,
- hour,
- vampires_are
- };
-Parameter <str>$hour: 10
-Parameter <str>$minute: 09
-Parameter <str>$second: 09
+with new_time := <str>$hour ++ ':' ++ <str>$minute ++ ':' ++ <str>$second,
+ current_time := (update Time set {
+ clock := new_time
+ })
+ select current_time {*};
+Parameter <str>$hour: 20
+Parameter <str>$minute: 19
+Parameter <str>$second: 00
 ```
 
 And the output:
@@ -374,35 +373,69 @@ And the output:
 ```
 {
   default::Time {
-    clock: '100909',
-    clock_time: <cal::local_time>'10:09:09',
-    hour: '10',
-    vampires_are: Asleep,
+    id: eae7edc8-19cc-11ee-bae7-e3434cce8ad7,
+    clock: '20:19:00',
+    clock_time: <cal::local_time>'20:19:00',
+    hour: '20',
+    vampires_are: Awake,
   },
 }
 ```
 
-Note that the cast means you can just type 10, not '10'.
-
-## Optional parameters
-
-So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `City` object names above to allow a second filter for letters in the name:
+After doing this query, our `global time` will be updated as well:
 
 ```edgeql
-select City {
-  name,
-  modern_name
-} filter
-    .name ilike '%' ++ <str>$input1 ++ '%'
-  and
-    .name ilike '%' ++ <optional str>$input2 ++ '%';
+select global time {*};
 ```
 
-In this case you could search for cities containing both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or just search for cities containing `B` and not enter anything for the second input.
+The output will be the same as the `Time` object directly above.
+
+## Optional parameters and the coalescing operator
+
+There is also a way to do queries that just give the _option_ of a parameter. To do this, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `Place` object names above to allow a second filter for letters in the name.
+
+With an optional parameter you could search for places that:
+
+* contain both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or
+* contain `B`, and not provide anything for the second input. In this case the query would return both `Bistritz` and `Buda-Pesth`.
 
 The opposite of `optional` is `required`, but `required` is the default so you don't need to write it.
 
-The `update` keyword that we learned last chapter can also take parameters, so that's four in total where you can use them: `select`, `insert`, `update`, and `delete`.
+Putting all this together ends up with a query like the following. Note that we want to check to see if the optional query `exists`, and to filter for `ilike '%'` if it doesn't (that is, to match everything).
+
+```edgeql
+with
+  f1 := <str>$filter_1,
+  f2 := <optional str>$filter_2,
+ select Place {
+   name,
+   modern_name
+ } filter 
+   .name ilike '%' ++ f1 ++ '%' and .name ilike '%' ++ f2 ++ '%' 
+     if exists f2 else 
+   .name ilike '%' ++ f1 ++ '%';
+```
+
+Here are two sample outputs for this query from the REPL:
+
+```
+Parameter <str>$filter_1: B
+Parameter <str>$filter_2 (Ctrl+D for empty set `{}`): z
+{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
+```
+
+And:
+
+```
+Parameter <str>$filter_1: B
+Parameter <str>$filter_2 (Ctrl+D for empty set `{}`):
+{
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
+}
+```
+
+The second parameter which asks us if we want to enter an empty string or an empty set is interesting, and has to do with some concepts called Cartesian multiplication and the "coalescing operator". But those subjects are too large to fit into the end of this chapter, so we'll have to wait until Chapter 11 to learn them.
 
 [Here is all our code so far up to Chapter 7.](code.md)
 
