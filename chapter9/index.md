@@ -236,7 +236,7 @@ And as we hoped, they are all connected to Lucy now.
 }
 ```
 
-By the way, now we could use the `for` keyword to insert our five `Crewman` objects inside one `insert` instead of doing it five times. Previously we used the `count()` function to insert their numbers, but we know that the book only ever has five crewmen so it will be easier to just use a `for` loop now. With this we can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
+By the way, now we could also use the `for` keyword to insert our five `Crewman` objects inside one `insert` instead of doing it five times. Previously we used the `count()` function to insert their numbers, but we know that the book only ever has five crewmen so it will be easier to just use a `for` loop now. With this we can put their numbers inside a single set, and use the same `for` and `union` method to insert them. Of course, we already used `update` to change the inserts but from now on in our code their insert will look like this:
 
 ```edgeql
 for n in {1, 2, 3, 4, 5}
@@ -263,9 +263,9 @@ The important part is the *iterator-expr* which needs to be a single simple expr
 
 ## An interesting migration
 
-Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a single link. We'll rename the `lover` link to `multi lovers` to make it a multi link instead and do a migration so that we can add all three of the men. This makes sense in any case, as other `Person` types could easily have more than one lover.
+Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a single link. We'll rename the `lover` link to `multi lovers` to make it a multi link instead and do a migration so that she can be linked to all three of the men. This change makes sense in any case, as other `Person` types could easily have more than one lover.
 
-The migration output this time is a little interesting, as EdgeDB needed a bit of help to understand what we were trying to do. It first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it.
+The migration output this time is a little interesting, as EdgeDB needed a bit of help to understand what we were trying to do. It first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it. This is a good reminder to pay attention to the questions when doing a migration, because (though rare) EdgeDB will sometimes misunderstand what you are trying to do.
 
 ```
 c:\easy-edgedb>edgedb migration create
@@ -278,7 +278,7 @@ did you convert link 'lovers' of object type 'default::Person' to 'multi' cardin
 > y
 ```
 
-Looking at the ddl output in the most recent `.edgeql` migration file in our `migrations` folder shows what commands were used to change the link:
+In a case such as this you might feel the need to make sure that EdgeDB has understood what you have asked it to do before typing `edgedb migrate`. Looking at the ddl output in the most recent `.edgeql` migration file in our `migrations` folder shows what commands were used to change the link:
 
 ```edgeql
 ALTER TYPE default::Person {
@@ -293,7 +293,9 @@ ALTER TYPE default::Person {
   };
 ```
 
-If we had said yes to dropping `link 'lover'`, then it would have created these commands instead:
+That looks correct!
+
+If, on the other hand, we had said yes to dropping `link 'lover'`, then we would have seen these commands instead:
 
 ```edgeql
 ALTER TYPE default::Person {
@@ -337,7 +339,7 @@ Now we'll select her to make sure it worked. Let's use `like` this time for fun 
   } filter .name like 'Lucy%';
 ```
 
-And this does indeed print her out with her three lovers.
+And this does indeed return Lucy with a link to her three lovers.
 
 ```
 {
@@ -354,7 +356,7 @@ And this does indeed print her out with her three lovers.
 
 ## Overloading instead of making a new type
 
-We can improve our schema a bit after having learned the `overloaded` keyword in this chapter. With this keyword we don't need the `HumanAge` type for `NPC` anymore. Right now it looks like this:
+Last chapter we learned the `overloaded` keyword, and we can use it now to improve our schema a bit. Remember the `HumanAge` scalar type we created before? Right now it looks like this:
 
 ```sdl
 scalar type HumanAge extending int16 {
@@ -362,7 +364,7 @@ scalar type HumanAge extending int16 {
 }
 ```
 
-You will remember that we made this type because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there:
+We originally made `HumanAge` for humans to use because vampires can live forever, but humans only live up to 120. But now we can simplify things. First we move the `age` property over to the `Person` type. Then (inside the `NPC` type) we use `overloaded` to add a constraint on it there:
 
 ```sdl
 type NPC extending Person {
@@ -372,7 +374,7 @@ type NPC extending Person {
 }
 ```
 
-This is convenient because we can delete `age` from `Vampire` too. We don't need to `overload` here because vampires by default live forever the maximum value of 32767 for `int16` is, as far as we are concerned, forever. The type will now look like this:
+This is convenient because we can delete `age` from `Vampire` too. We don't need to use `overloaded` here because vampires can live up to the maximum value of 32767 for `int16` which, as far as we are concerned, is forever. The `Vampire` type will now look like this:
 
 ```sdl
 type Vampire extending Person {
@@ -381,11 +383,13 @@ type Vampire extending Person {
 }
 ```
 
-Okay, let's do the migration and then read the rest of the introduction for this chapter. It continues to explain what Lucy is up to:
+Okay, let's do another migration and then read the rest of the introduction for this chapter. It continues to explain what Lucy is up to:
 
-> ...She chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately the three men become friends with each other. Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax not far outside London. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them?! He's not a vampire, but seems to act similar sometimes.
+> ...Lucy chooses to marry Arthur Holmwood, and says sorry to the other two. The other two men are sad, but fortunately all three men become friends with each other.
+>
+> Dr. Seward is depressed and tries to concentrate on his work. He is a psychiatrist who works in an asylum close to a large mansion called Carfax not far outside London. Inside the asylum is a strange man named Renfield that Dr. Seward finds most interesting. Renfield is sometimes calm, sometimes completely crazy, and Dr. Seward doesn't know why he changes his mood so quickly. Also, Renfield seems to believe that he can get power from living things by eating them!! Renfield isn't exactly a vampire, but seems to act similar sometimes.
 
-Oops! Looks like Lucy doesn't have three lovers anymore.  We will have to remove her as a lover from the other two gentlemen. We'll just give them a sad empty set.
+Oops! Looks like Lucy doesn't have three lovers anymore.  We will have to remove her as a lover from the other two gentlemen. We'll just update each of them a sad empty set.
 
 ```edgeql
 update NPC filter .name in {'John Seward', 'Quincey Morris'}
