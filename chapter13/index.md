@@ -471,7 +471,7 @@ scalar type PCNumber extending sequence;
 
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
+  required created_at: datetime {
     default := datetime_of_statement()
   }
   required number: PCNumber {

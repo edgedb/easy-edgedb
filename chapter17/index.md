@@ -498,7 +498,7 @@ A mutation rewrite makes it really easy to keep track of when an object was last
 ```sdl
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
+  required created_at: datetime {
     default := datetime_of_statement()
   }
   required number: PCNumber {
@@ -535,7 +535,7 @@ Putting all those together, here are the changes to make to the schema:
 ```sdl
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
+  required created_at: datetime {
     default := datetime_of_statement()
   }
   required number: PCNumber {

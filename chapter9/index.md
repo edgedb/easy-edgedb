@@ -69,7 +69,7 @@ The date type to choose will of course depend on our game. Can a `PC` actually v
 
 ## datetime_current() and datetime_of_statement()
 
-Two convenient functions are {eql:func}` ``datetime_current()`` <docs:std::datetime_current>` and {eql:func}` ``datetime_of_statement()`` <docs:std::datetime_of_statement>`, which give the datetime right now. Let's try the first one out:
+Speaking of dates and datetimes, sometimes it can be useful to know the datetime right now. EdgeDB has two convenient functions for this: {eql:func}` ``datetime_current()`` <docs:std::datetime_current>` and {eql:func}` ``datetime_of_statement()`` <docs:std::datetime_of_statement>`. Let's try the first one out and see what it returns:
 
 ```
 db> select datetime_current();
@@ -80,35 +80,38 @@ This can be useful if you want a post date when you insert an object. With this 
 
 Note though that `datetime_current()` will not return the exact same date as another call to `datetime_current()` inside the same statement. This is because `datetime_current()` returns the datetime at which the _function is called_, not the datetime of the statement that it's in.
 
-We can see this in the following example in which we create three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
+We can easily see this by calling the function twice. The timestamp is almost the same, but not quite: one is a few microseconds after the other.
 
 ```
-db> with three_dates := {
-  datetime_current(),
-  datetime_current(),
-  datetime_current()
-  },
-select three_dates union max(three_dates);
+db> select (datetime_current(), datetime_current());
 {
-  <datetime>'2023-05-28T10:26:55.744720Z',
-  <datetime>'2023-05-28T10:26:55.744733Z',
-  <datetime>'2023-05-28T10:26:55.744735Z',
-  <datetime>'2023-05-28T10:26:55.744735Z',
+  (<datetime>'2023-07-16T10:55:55.498380Z', 
+   <datetime>'2023-07-16T10:55:55.498394Z')
 }
 ```
 
 However, if we change the function to `datetime_of_statement()`, then the exact same datetime will be returned no matter how many times we call it:
 
 ```
-edgedb> select {datetime_of_statement(), datetime_of_statement(), datetime_of_statement()};
+edgedb> select (datetime_of_statement(), datetime_of_statement());
 {
-  <datetime>'2023-06-18T08:34:10.621754Z',
-  <datetime>'2023-06-18T08:34:10.621754Z',
-  <datetime>'2023-06-18T08:34:10.621754Z',
+  (<datetime>'2023-07-16T10:58:03.384721Z', 
+   <datetime>'2023-07-16T10:58:03.384721Z')
 }
 ```
 
-Our game will have its `NPC` objects already in the database because they are all detailed in the book, but `PC` objects will only show up when a player decides to make a character. It could be useful to add a `date_created` property to the `PC` type so that we know when it was first made.
+Or even simpler, a query to see if one function output equals the other.
+
+```
+select (
+  datetime_of_statement() = datetime_of_statement(),
+  datetime_current() = datetime_current(), 
+);
+```
+
+This should return `true` followed by `false` - unless EdgeDB was fast enough to call `datetime_current()` twice in the same microsecond.
+
+We can put one of these functions to use in our schema too. Our game will have its `NPC` objects already in the database because they are all detailed in the book, and they will be in the database long before anybody begins playing our game. However, `PC` objects will only show up when a player decides to make a character. It could be useful to add a `date_created` property to the `PC` type so that we know when it was first made.
 
 Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
 
@@ -119,12 +122,12 @@ type PC extending Person {
 }
 ```
 
-Because `created_at` is a computable here, and computables are calculated when you *query* an object, this would generate the date when the query happens instead of when the object is inserted. So to make our `PC` objects have the date when you insert it, we can use `default` instead:
+Because `created_at` is a computable here, and computables are calculated when you *query* an object, this would generate the date when the query happens instead of when the object is inserted. It would effectively be a `datetime_of_the_query_you_just_made` property. So to make our `PC` objects have the date when you first inserted it, we can use `default` instead. And since we are adding a default value, we might as well make `created_at` a `required` property.
 
 ```sdl
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
+  required created_at: datetime {
     default := datetime_of_statement()
   }
 }
