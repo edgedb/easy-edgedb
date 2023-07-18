@@ -388,6 +388,13 @@ insert NPC {
 };
 ```
 
+John Seward is a doctor too so let's be sure to update him with the proper title.
+
+```edgeql
+update NPC filter .name = 'John Seward'
+set { title := 'Dr.' };
+```
+
 Now we can make use of these properties to liven up our conversation engine in the game. For example:
 
 ```edgeql
