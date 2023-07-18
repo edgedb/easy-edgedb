@@ -318,11 +318,17 @@ And now the two objects from out previous output have human-readble names.
 
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). You can visualize it like this:
 
-In our schema, that means that `select PC is Person` returns `{true}`, while `select Person is PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
+* abstract type Person (supertype, above)
+* ↳ type PC (subtype, under)
+* ↳ type NPC (subtype, under)
 
-To make a query that will show this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
+Because inheriting a type gives you all of its features, a query on objects with `subtype is supertype` will always return `{true}`. In our schema a `PC` object is always a `Person`, and an `NPC` object is always a `Person`.
+
+Conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned. A `Person` object _might_ be a `PC` object, and it _might_ be an `NPC` object.
+
+To make a query that will check this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
 
 ```edgeql
 select Person {
