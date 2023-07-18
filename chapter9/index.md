@@ -4,7 +4,7 @@ tags: Defaults, Overloading, For Loops
 
 # Chapter 9 - Strange events in England
 
-The episode for this chapter is a flashback to see why everybody is in the town of Whitby in the first place. We've gone back in time a few weeks to when the ship left Varna and Mina and Lucy haven't left for Whitby yet. The introduction is also split into two parts. Here's the first:
+The episode for this chapter is a flashback to see why everybody is in the town of Whitby in the first place. Our characters are from London, after all, not a small town on the east coast of England. We'll go back in time a few weeks to when the ship carrying Dracula left Varna, when Mina and Lucy were still back home. The introduction is also split into two parts. Here's the first:
 
 > We still don't know where Jonathan is, and the ship The Demeter is on its way to England with Dracula inside. Meanwhile, Mina Harker is in London writing letters to her friend Lucy Westenra. Lucy has three boyfriends (named Dr. John Seward, Quincey Morris, and Arthur Holmwood), and they all want to marry her....
 
@@ -13,28 +13,35 @@ The episode for this chapter is a flashback to see why everybody is in the town 
 It looks like we have some more people to insert, starting with Lucy:
 
 ```edgeql
-```edgeql
 insert NPC {
   name := 'Lucy Westenra',
   places_visited := (select City filter .name = 'London')
 };
 ```
 
-But let's think about the ship a little more before we insert the rest. Everyone on the ship was killed by Dracula, but we don't want to delete the crew because they are still part of our game. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August (in 1893).
+But let's think about the ship a little more before we insert the rest. Everyone on the ship was killed by Dracula, but that doesn't mean that we want to delete them from the database. After all, the crewmembers on the ship were alive before and could have interacted with some `PC` objects during that time. The book tells us that the ship left on the 6th of July, and the last person (the captain) died on the 4th of August.
 
-This is a good time to add two new properties to the `Person` type to indicate when a character is present. We'll call them `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
+This is a good time to add two new properties to the `Person` type to indicate when a character is alive and present in the game. We'll call these properties `first_appearance` and `last_appearance`. The name `last_appearance` is a bit better than `death`, because for the game it doesn't matter: we just want to know when characters are there or not.
 
-For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also a `cal::local_datetime` type that includes the time, but we should be fine with just the date. (And of course there is the `cal::local_time` type with just the time of day that we have in our `Date` type.)
+For these two properties we will just use `cal::local_date` for the sake of simplicity. There is also a `cal::local_datetime` type that includes the time, but we should be fine with just the date.
 
-Before we used the function `std::to_datetime` which took seven parameters; this time we'll use a similar but shorter {eql:func}`docs:cal::to_local_date` function. It just takes three integers.
+We used the `std::to_datetime` function before which took seven parameters to make a `DateTime`, and `cal::local_date` has a similar but but shorter function called {eql:func}`docs:cal::to_local_date`. It just takes three integers.
 
-Here are its signatures (we're using the third):
+Here are all of its signatures (we're using the third one):
 
 ```
 cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
 cal::to_local_date(dt: datetime, zone: str) -> local_date
 cal::to_local_date(year: int64, month: int64, day: int64) -> local_date
 ```
+
+In addition, `cal::local_date` has a pretty simple YYYYMMDD format so casting from a string is pretty easy too:
+
+```edgeql
+select <cal::local_date>'1893-07-08';
+```
+
+But we decided before that the dates and datetimes in our game are being generated from a source that gives us individual numbers instead of strings, so we will continue to use that method.
 
 So let's do a migration now that these `first_appearance` and `last_appearance` properties have been added.
 
@@ -48,17 +55,7 @@ insert Crewman {
 };
 ```
 
-But since we have a lot of `Crewman` objects already inserted, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise). We'll do that in a second.
-
-By the way, `cal::local_date` has a pretty simple YYYYMMDD format so casting from a string is pretty easy too:
-
-```edgeql
-select <cal::local_date>'1893-07-08';
-```
-
-But we decided before that the dates and datetimes in our game are being generated from a source that gives us individual numbers instead of strings, so we will continue to use that method.
-
-Now we can update the `Crewman` objects. We'll give them all the same date to keep things simple:
+But since we already have the `Crewman` objects in the database, we can easily use the `update` and `set` syntax on all of them if we assume they all died at the same time (or if we don't care about being super precise). The query to update them looks like this:
 
 ```edgeql
 update Crewman
@@ -68,7 +65,7 @@ set {
 };
 ```
 
-These dates will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we would need more precise dates and would need to make these properties into a `datetime`. But we're fine with these approximate dates for now.
+The date type to choose will of course depend on our game. Can a `PC` actually visit the ship when it's sailing to England? Will there be missions to try to save the crew before Dracula kills them? If so, then we would need more precision and a `cal::local_datetime` would make more sense. But we're fine with these approximate dates for now.
 
 ## datetime_current() and datetime_of_statement()
 
