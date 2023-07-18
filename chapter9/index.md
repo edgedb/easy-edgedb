@@ -146,7 +146,7 @@ with new_pc := (insert PC {
  };
 ```
 
-The output will depend on when you do the insert, but it will look like this:
+The output will depend on when you do the insert, but will look something like this:
 
 ```
 {default::PC {name: 'Max Demian', 
@@ -155,7 +155,7 @@ created_at: <datetime>'2023-05-30T01:13:28.022340Z'}}
 
 ## Using the 'for' and 'union' keywords
 
-We're almost ready to insert our three new characters, and now we don't need to add `(select City filter .name = 'London')` every time. But wouldn't it be nice if we could use a single insert instead of three?
+We're almost ready to insert our three new characters. They are all `NPC`s that have been to London before, so the only difference between them at the moment is their name. Wouldn't it be nice if we could use a single insert instead of three?
 
 To do this, we can use a `for` loop, followed by the keyword `union`. First, here's the `for` part:
 
@@ -163,7 +163,7 @@ To do this, we can use a `for` loop, followed by the keyword `union`. First, her
 for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 ```
 
-In other words: take this set of three strings and do something to each one. `character_name` is the variable name we chose to call each string in this set.
+In other words: take this set of three strings and do something with each one. `character_name` is the variable name we chose to call each string in this set.
 
 `union` comes next, because it is the keyword used to join sets together. To understand why we need to write `union` in a `for` loop, take this example without `union`:
 
@@ -172,26 +172,27 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 select character_name ++ ' is great';
 ```
 
-This generates an error because we are asking EdgeDB to give three query results at the same time. But what we want instead is a single query result (a single set) that contains the unified results of selecting each name. It will now work if we add `union` and surround `select` in parentheses, indicating that we are capturing the result of each `select` and joining them together:
+This generates an error because we are asking EdgeDB to make three queries when we are actually trying to do one. But what we want instead is a single query result (a single set) that contains the *unified* results of selecting each name. That's what the `union` keyword is for here, as it will join the sets together for us. We will also have to surround `select` in parentheses, indicating that we are capturing the result of each `select` and joining them together. Altogether the query now looks like this:
 
 ```edgeql
 for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 union (select character_name ++ ' is great');
 ```
 
-With this, EdgeDB will select one name at a time, concatenate `' is great'` to the end, and unify them into a single set that it returns to us as follows:
+With this EdgeDB will select one name at a time, concatenate `' is great'` on the end, and unify them into a single set that it returns to us as follows:
 
 ```
 {'John Seward is great', 'Quincey Morris is great', 'Arthur Holmwood is great'}
 ```
 
-Now let's return to the `for` loop with the variable name `character_name`, which looks like this:
+Now let's use what we learned to insert the three characters at once! This query will start with the three character names, but now each time we will insert an `NPC` with its name:
 
 ```edgeql
 for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 union (
   insert NPC {
     name := character_name,
+    places_visited := (select City filter .name = 'London'),
     lover := (select Person filter .name = 'Lucy Westenra'),
   }
 );
