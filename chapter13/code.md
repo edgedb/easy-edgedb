@@ -285,7 +285,7 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 update NPC filter .name = 'John Seward'
 set { 
   title := 'Dr.',
-  degrees := 'M.D.'
+  degrees := ['M.D.']
 };
 
 update NPC filter .name = 'Lucy Westenra'
@@ -338,7 +338,7 @@ for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
 insert NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
-  degrees := 'M.D., Ph. D. Lit., etc.'
+  degrees := ['M.D.', 'Ph. D. Lit.', 'etc.']
 };
 
 insert Event {
