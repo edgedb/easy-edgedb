@@ -420,7 +420,10 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
 });
 
 update NPC filter .name = 'John Seward'
-set { title := 'Dr.' };
+set { 
+  title := 'Dr.',
+  degrees := 'M.D.'
+};
 
 update NPC filter .name = 'Lucy Westenra'
 set {

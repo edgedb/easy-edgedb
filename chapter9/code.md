@@ -237,9 +237,6 @@ for character_name in {'John Seward', 'Quincey Morris', 'Arthur Holmwood'}
     lovers := (select Person filter .name = 'Lucy Westenra'),
 });
 
-update NPC filter .name = 'John Seward'
-set { title := 'Dr.' };
-
 update NPC filter .name = 'Lucy Westenra'
 set {
   lovers := (

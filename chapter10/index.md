@@ -378,25 +378,40 @@ The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interestin
 
 Title | First name | Last name | Degree
 
-So there is:
+Here are some examples:
 
 * 'Count Dracula' (title + name),
 * 'Dr. Seward' (title + name),
-* 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees)
+* 'John Seward, M.D.' (name + degree),
+* 'Mr. Renfield' (title + name),
+* 'Dr. Abraham Van Helsing, M.D, Ph. D. Lit.' (title + first name + last name + degrees),
+* 'Lord Godalming' (title + name)
 
-And so on.
+That would lead us to think that we should have properties like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. It's also somewhat rare to use all four of these properties together: Van Helsing's friends call him "Doctor Van Helsing", not "Dr. Abraham Van Helsing, M.D, Ph. D. Lit."!
 
-That would lead us to think that we should have titles like `first_name`, `last_name`, and `title` and then join them together using a computed property. But then again, not every character has these exact four parts to their name. Some others that don't are 'Vampire Woman 1' and 'The Innkeeper', and our game would certainly have a lot more of these. So it's probably not a good idea to get rid of `name` or always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
+So it's probably not a good idea to get rid of `name` and to always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
 
-We could try a middle of the road approach  for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
+We could try a middle of the road approach for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
 
 ```sdl
-title: str;
-degrees: str;
-property conversational_name := .title ++ ' ' 
-  ++ .name if exists .title else .name;
-property pen_name := .name ++ ', ' 
-  ++ .degrees if exists .degrees else .name;
+abstract type Person {
+  required name: str {
+    delegated constraint exclusive;
+  }
+  multi places_visited: Place;
+  multi lovers: Person;
+  property is_single := not exists .lovers;
+  strength: int16;
+  first_appearance: cal::local_date;
+  last_appearance: cal::local_date;
+  age: int16;
+  title: str;
+  degrees: str;
+  property conversational_name := .title ++ ' ' 
+    ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' 
+    ++ .degrees if exists .degrees else .name;
+}
 ```
 
 We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
@@ -411,26 +426,28 @@ insert NPC {
 };
 ```
 
-John Seward is a doctor too so let's be sure to update him with the proper title.
+John Seward is a doctor too so let's be sure to update him with a proper title and degree.
 
 ```edgeql
 update NPC filter .name = 'John Seward'
-set { title := 'Dr.' };
+set { 
+  title := 'Dr.',
+  degrees := 'M.D.'
+};
 ```
 
 Now we can make use of these properties to liven up our conversation engine in the game. For example:
 
 ```edgeql
-with helsing := (select NPC filter .name ilike '%helsing%')
-select (
-  'There goes ' ++ helsing.name ++ '.',
-  'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name 
-    ++ ',\n\tI am sorry to say that I bring bad news about Lucy.'
-);
+with educated := (select Person filter exists .title and exists .degrees)
+  select (
+  'There goes ' ++ educated.name ++ '.',
+  'I say! Are you ' ++ educated.conversational_name ++ '?',
+  'I have a letter from you signed as follows:\n\t'
+     ++ educated.pen_name);
 ```
 
-By the way, the `\n` inside the string creates a new line, while `\t` moves it one tab to the right.
+By the way, the `\n` inside the string creates a *new* line, while `\t` moves it one *tab* to the right.
 
 This gives us:
 
@@ -439,8 +456,14 @@ This gives us:
   (
     'There goes Abraham Van Helsing.',
     'I say! Are you Dr. Abraham Van Helsing?',
-    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.,
-        I am sorry to say that I bring bad news about Lucy.',
+    'I have a letter from you signed as follows:
+        Abraham Van Helsing, M.D., Ph. D. Lit., etc.',
+  ),
+  (
+    'There goes John Seward.',
+    'I say! Are you Dr. John Seward?',
+    'I have a letter from you signed as follows:
+        John Seward, M.D.',
   ),
 }
 ```
