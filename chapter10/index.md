@@ -270,7 +270,7 @@ This returns:
 
 What's `desc`? It means descending, so largest first and then going down. If we didn't write `desc` then it would have assumed that we wanted to sort ascending. You can also write `asc` (to make it clear to somebody reading the code for example), but you don't need to.
 
-For some actual math, you can check out the functions in `std` {eql:func}`here <docs:std::sum>` as well as the `math` module {ref}`here <docs:ref_std_math>`. Instead of looking at each one, let's do a single big query to show some of them all together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
+For some actual math, you can check out the functions in `std` {eql:func}`here <docs:std::sum>` as well as the `math` module {ref}`here <docs:ref_std_math>`. Instead of looking at each function separately, let's do a single big query to show many of them together. To make the output nice, we will write it together with strings explaining the results and then cast them all to `<str>` so we can join them together using `++`.
 
 ```edgeql
 with pop := City.population
@@ -290,8 +290,8 @@ This query used quite a few functions, all of which work on sets:
 - `count()` to count the number of items,
 - `all()` to return `{true}` if all items match and `{false}` otherwise,
 - `sum()` to add them all together,
-- `max()` to give the highest value,
-- `min()` to give the lowest one,
+- `max()` to return the highest value,
+- `min()` to return the lowest value,
 - `math::mean()` to give the average,
 - `any()` to return `{true}` if any item matches and `{false}` otherwise, and
 - `math::stddev()` for the standard deviation.
@@ -349,6 +349,17 @@ select M::mean(City.population);
 ```
 
 That gives us the mean: `{831245.8}`.
+
+You can also set a module as the default just by typing `set module` followed by the module name. This will unset the default module though. So the same query as above would look like this:
+
+```
+db> set module math;
+OK: SET ALIAS
+# Note: default::City instead of just City
+db> select mean(default::City.population);
+```
+
+This makes it easy to have separate modules (`module test` for example with test types and data) that you can quickly switch to and query without needing to type too much.
 
 ## Some more computed properties for names
 
