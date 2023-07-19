@@ -232,13 +232,13 @@ for n in {1, 2, 3, 4, 5}
   last_appearance := cal::to_local_date(1893, 7, 16),
 });
 
- Ship {
+insert Ship {
   name := 'The Demeter',
   sailors := Sailor,
   crew := Crewman
 };
 
- NPC {
+insert NPC {
   name := 'Lucy Westenra',
   places_visited := (select City filter .name = 'London')
 };
