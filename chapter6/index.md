@@ -450,14 +450,20 @@ The {ref}`documentation on JSON <docs:ref_std_json>` explains which JSON types t
 
 One quick way to turn JSON into a more usable form is to use the `json_object_unpack()` function, which returns a set of `tuple<str, json>`.
 
-So this query:
+We will learn a lot more about tuples in Chapter 10, but for now just remember that they use `()`` parentheses, can contain different types, and that you access their items by using a dot. So this query will return `{10}`:
+
+```edgeql
+select ('Jonathan Harker', 10).1;
+```
+
+Now let's look at the `json_object_unpack()` function with a simple query:
 
 ```edgeql
 with json_dracula := <json>(select Vampire {*}),
   select json_object_unpack(json_dracula);
 ```
 
-Will generate this output:
+The output will look as follows:
 
 ```
 {
