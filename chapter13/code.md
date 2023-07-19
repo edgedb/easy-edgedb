@@ -310,6 +310,17 @@ insert NPC {
 };
 
 insert City {
+  name := 'Munich',
+  population := 261023,
+} unless conflict on .name
+else (
+  update City
+  set {
+    population := 261023,
+  }
+);
+
+insert City {
   name := 'Whitby',
   population := 14400,
   important_places := ['Whitby Abbey']

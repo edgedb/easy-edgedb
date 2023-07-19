@@ -474,7 +474,7 @@ If this were just a standard database with website users it would be much simple
 
 Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` and unicode escape character with `\u` are two that might be useful.
 
-Try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
+For a quick example of unicode escape characters, try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
 
 ```edgeql
 select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D
@@ -488,13 +488,11 @@ select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D
 If you want to ignore escape characters, put an `r` (which stands for _raw_) in front of the quote. Let's try it with the example above. Only the last part has an `r`:
 
 ```edgeql
-with helsing := (select NPC filter .name ilike '%helsing%')
-select (
-  'There goes ' ++ helsing.name ++ '.',
-  'I say! Are you ' ++ helsing.conversational_name ++ '?',
-  'Letter from ' ++ helsing.pen_name 
-    ++ r',\n\tI am sorry to say that I bring bad news about Lucy.'
-);
+with educated := (select Person filter exists .title and exists .degrees)
+  select (
+  'I say! Are you ' ++ educated.conversational_name ++ '?',
+  r'I have a letter from you signed as follows:\n\t'
+     ++ educated.pen_name);
 ```
 
 Now we get:
@@ -502,14 +500,17 @@ Now we get:
 ```
 {
   (
-    'There goes Abraham Van Helsing.',
     'I say! Are you Dr. Abraham Van Helsing?',
-    'Letter from Abraham Van Helsing, M.D., Ph. D. Lit., etc.,\\n\\tI am sorry to say that I bring bad news about Lucy.',
+    'I have a letter from you signed as follows:\\n\\tAbraham Van Helsing, M.D., Ph. D. Lit., etc.',
+  ),
+  (
+    'I say! Are you Dr. John Seward?',
+    'I have a letter from you signed as follows:\\n\\tJohn Seward, M.D.',
   ),
 }
 ```
 
-Finally, there is a raw string literal that uses `$$` on each side thas is useful if you want an entire raw string. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
+Finally, EdgeDB can also use `$$` to make raw string literals. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
 select $$ 
@@ -519,7 +520,7 @@ but he'd sound crazy."
 $$;
 ```
 
-Without the `$$` it will look like four separate strings with three unknown keywords between them, and will generate an error:
+Without the `$$` EdgeDB would generate an error as it would treat the input as four separate strings with three unknown keywords between them. From EdgeDB's point of view the input would look like this:
 
 ```
 "Dr. Van Helsing would like to tell "
@@ -533,7 +534,7 @@ kill
 
 ## Using `unless conflict on` + `else` + `update`
 
-We put an `constraint exclusive` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
+We have an `constraint exclusive` on `name` so that we won't be able to have two characters with the same name. The idea is that someone might see a character in the book and insert it, and then someone else would try to do the same. So this character named Johnny will work:
 
 ```edgeql
 insert NPC {
@@ -549,7 +550,7 @@ edgedb error: ConstraintViolationError: name violates exclusivity constraint
 
 But sometimes just generating an error isn't enough - maybe we want something else to happen instead of just giving up. This is where `unless conflict on` comes in, followed by an `else` to explain what to do to the existing object.
 
-`unless conflict on` is easiest to explain through an example. Let's imagine that we have already populated our database with city data for the year 1880, but then came across some data for 1885 instead which is closer to the setting in the book. (Larger cities have better items, more NPCs and quests to do in our game, so having an accurate population is important.) We can't just use `insert` everywhere, because cities like Munich are already in the database. So this would just generate an error:
+`unless conflict on` is easiest to explain through an example. We've already populated our database with some city data that comes from the year 1880, but what if we came across some data for 1885 instead which is closer to the setting in the book? Larger cities have better items, more NPCs and quests to do in our game, so having an accurate population is important. But we can't just use `insert` everywhere, because cities like Munich are already in the database. So this insert would just generate an error and give up:
 
 ```edgeql
 # Munich had a population of 230,023 in 1880 and 261,023 in 1885
@@ -559,7 +560,9 @@ insert City {
 };
 ```
 
-However, we also can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to `insert` a new `City` object. The way to accomplish this is by first trying an insert, then using `unless conflict on`, `else` and `update`.
+However, we also can't just `update` every `City` object either, because a lot of the cities in the 1885 data aren't in the 1880 data - they are new cities. In this case we would like to *try* to insert a new `City` object. But if the object already exists, then update its population instead of just giving up.
+
+The way to accomplish this is by first trying an insert, then following with `unless conflict on`, `else` and `update`.
 
 Here is how we would do it for Munich:
 
@@ -601,7 +604,6 @@ With this, we are guaranteed to get a `City` object called Munich with a populat
    Hint: the length of `''` is 0, which may be a problem.
 
 5. Dr. Van Helsing has a list of `MinorVampire`s with their names and strengths. We already have some `MinorVampire`s in the database. How would you `insert` them while making sure to `update` if the object is already there?
-
 
 [See the answers here.](answers.md)
 

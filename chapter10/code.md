@@ -290,9 +290,20 @@ for data in {('Buda-Pesth', 402706), ('London', 3500000), ('Munich', 230023), ('
     population := data.1
 });
 
- NPC {
+insert NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
   degrees := 'M.D., Ph. D. Lit., etc.'
 };
+
+insert City {
+  name := 'Munich',
+  population := 261023,
+} unless conflict on .name
+else (
+  update City
+  set {
+    population := 261023,
+  }
+);
 ```

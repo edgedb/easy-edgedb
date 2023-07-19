@@ -338,6 +338,17 @@ insert NPC {
   degrees := 'M.D., Ph. D. Lit., etc.'
 };
 
+insert City {
+  name := 'Munich',
+  population := 261023,
+} unless conflict on .name
+else (
+  update City
+  set {
+    population := 261023,
+  }
+);
+
 insert Event {
   description := "Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.",
   start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
