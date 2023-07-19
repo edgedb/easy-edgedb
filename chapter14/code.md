@@ -41,9 +41,11 @@ module default {
     last_appearance: cal::local_date;
     age: int16;
     title: str;
-    degrees: str;
-    property conversational_name := .title ++ ' ' ++ .name if exists .title else .name;
-    property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
+    degrees: array<str>;
+    property conversational_name := .title ++ ' ' 
+      ++ .name if exists .title else .name;
+    property pen_name := .name ++ ', ' 
+      ++ array_join(.degrees, ', ') if exists .degrees else .name;
   }
 
   abstract type Place {

@@ -391,7 +391,23 @@ That would lead us to think that we should have properties like `first_name`, `l
 
 So it's probably not a good idea to get rid of `name` and to always build names from separate parts. But in our game we might have characters writing letters or talking to each other, and they will have to use things like titles and degrees.
 
-We could try a middle of the road approach for our `Person` type instead. We'll keep `name`, and add some computed properties below it:
+We could try a middle of the road approach for our `Person` type instead. We'll keep `name`, and add some computed properties below it. The property `degrees` will be an `array<str>`. We can then use the `array_join()` function to join them together. This function takes an array, plus a string called a `delimeter` to tell the function what to place in between each item in the array.
+
+Here are two quick examples of `array_join()`:
+
+```
+# No delimiter, so just joins the two strings
+db> select array_join(['Jonathan ', 'Harker'], '');
+{'Jonathan Harker'}
+# Delimiter of comma and space
+db> select array_join(['And a one', 'and a two', 'and a three'], ', ');
+{'And a one, and a two, and a three'}
+# Without the delimiter:
+db> select array_join(['And a one', 'and a two', 'and a three'], '');
+{'And a oneand a twoand a three'}
+```
+
+Now here is the `Person` type with its new properties:
 
 ```sdl
 abstract type Person {
@@ -406,15 +422,13 @@ abstract type Person {
   last_appearance: cal::local_date;
   age: int16;
   title: str;
-  degrees: str;
+  degrees: array<str>;
   property conversational_name := .title ++ ' ' 
     ++ .name if exists .title else .name;
   property pen_name := .name ++ ', ' 
-    ++ .degrees if exists .degrees else .name;
+     ++ array_join(.degrees, ', ') if exists .degrees else .name;
 }
 ```
-
-We could try to do something fancier with `degrees` by making it an `array<str>` for each degree, but our game probably doesn't need that much precision. We are just using this for our conversation engine.
 
 Let's do a migration now, and try an insert for Van Helsing...or rather, Dr. Van Helsing!
 
@@ -422,7 +436,7 @@ Let's do a migration now, and try an insert for Van Helsing...or rather, Dr. Van
 insert NPC {
   name := 'Abraham Van Helsing',
   title := 'Dr.',
-  degrees := 'M.D., Ph. D. Lit., etc.'
+  degrees := ['M.D.', 'Ph. D. Lit.', 'etc.']
 };
 ```
 
@@ -432,7 +446,7 @@ John Seward is a doctor too so let's be sure to update him with a proper title a
 update NPC filter .name = 'John Seward'
 set { 
   title := 'Dr.',
-  degrees := 'M.D.'
+  degrees := ['M.D.']
 };
 ```
 
