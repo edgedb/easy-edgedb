@@ -265,7 +265,7 @@ The important part is the *iterator-expr* which needs to be a single simple expr
 
 Now it's time to update Lucy with three lovers. Lucy has already ruined our plans to have `lover` as just a single link. We'll rename the `lover` link to `multi lovers` to make it a multi link instead and do a migration so that she can be linked to all three of the men. This change makes sense in any case, as other `Person` types could easily have more than one lover.
 
-The migration output this time is a little interesting, as EdgeDB needed a bit of help to understand what we were trying to do. It first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it. This is a good reminder to pay attention to the questions when doing a migration, because (though rare) EdgeDB will sometimes misunderstand what you are trying to do.
+Sometimes migration output can be a little interesting, as EdgeDB doesn't always exactly know what we are trying to do. For example, during this migration via a previous version of EdgeDB in the summer of 2023, EdgeDB first concluded that we were dropping the `lover` link, but after being told no, asked if we instead were trying to rename it. This is a good reminder to pay attention to the questions when doing a migration, because (though rare) EdgeDB will sometimes misunderstand what you are trying to do. Here is the migration output from that time:
 
 ```
 c:\easy-edgedb>edgedb migration create
