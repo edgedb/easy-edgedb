@@ -6,7 +6,7 @@ tags: Tuples, Computed Properties, Math
 
 > Mina and Lucy are enjoying their time in Whitby. They spend a lot of time hiking nearby the coast and enjoying the view from the ruins of Whitby Abbey, an old church from long ago. One night there is a huge storm and a ship arrives in the fog - it's the Demeter, carrying Dracula. Lucy later begins to sleepwalk at night and looks very pale, and always says strange things. Mina tries to stop her, but sometimes Lucy gets outside.
 >
-> One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help. Dr. Seward does an examination on Lucy. She is pale and weak, but he doesn't know why. Dr. Seward decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
+> One night Lucy watches the sun go down and says: "His red eyes again! They are just the same." Mina is worried and asks Dr. Seward for help, who examines Lucy. She is pale and weak, but Dr. Seward doesn't know why. He decides to call his old teacher Abraham Van Helsing, who comes from the Netherlands to help. Van Helsing examines Lucy and looks shocked. Then he turns to the others and says, "Listen. We can help this girl, but you are going to find the methods very strange. You are going to have to trust me..."
 
 The city of Whitby is in the northeast of England. Right now our `City` type just extends `Place`, which only gives us the properties `name`, `modern_name` and `important_places`. This could be a good time to give it a `population` property which can help us draw the cities in our game. It will be an `int64` to give us the size we need:
 
@@ -49,7 +49,7 @@ If we have all the city data together, we can do a single insert with a `for` an
 
 In this case, the type is called a `tuple<str, int64>`.
 
-Before we start using these tuples, let's make sure that we understand the difference between tuplys and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
+Before we start using these tuples, let's make sure that we understand the difference between tuples and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
 
 Previously we learned how to use square brackets to access part of an array or a string. So this query:
 
@@ -59,13 +59,13 @@ select ['Mina Murray', 'Lucy Westenra'][1];
 
 will give the output `{'Lucy Westenra'}` (that's index number 1).
 
-You'll also remember that we can separate the starting and ending index with a colon, like in this example:
+We also learned that we can use a colon to indicate the starting and ending index, like in this example:
 
 ```edgeql
 select NPC.name[0:10];
 ```
 
-This prints the first ten letters of every NPC's name:
+The output shows the first ten letters of every NPC's name:
 
 ```
 {
@@ -101,7 +101,7 @@ This prints from index 2 up to 2 indexes away from the end (in other words, it'l
 }
 ```
 
-Tuples are very different. You can think of them as similar to object types with properties that have numbers instead of names. This is why tuples can hold different types together: `str` with `array<bool>`, `int64` with `float32`, you name it.
+Tuples are very different. You can think of them as similar to object types with properties that are numbered instead of named. This is why tuples can hold different types together: `str` with `array<bool>`, `int64` with `float32`, you name it.
 
 So this is completely fine:
 
@@ -121,7 +121,18 @@ The output is:
 }
 ```
 
-But now that the type is set (this one is type `tuple<str, int64, cal::local_date>`) you can't mix it up with other tuple types. So this is not allowed:
+You can really see how similar tuples are to object types by doing a query on one of their properties. Here is the same query as above, except that we will select property `.0` instead of the whole set:
+
+```edgedb
+select {
+  ('Bistritz', 9100, cal::to_local_date(1893, 5, 6)),
+  ('Munich', 230023, cal::to_local_date(1893, 5, 8))
+}.0; # Only the .0 is different from the query above
+```
+
+The output is `{'Bistritz', 'Munich'}`, so pretty much the same as doing a `select City.name`;
+
+Tuples can hold multiple types (this one is type `tuple<str, int64, cal::local_date>`), but you can't work with tuples of different types. So this is not allowed:
 
 ```edgeql
 select {(1, 2, 3), (4, 5, '6')};
@@ -146,8 +157,6 @@ You'll notice that the error suggests that we cast one of the items inside one o
 select {(1, 2, 3), (4, 5, <int64>'6')};
 ```
 
-To access the fields of a tuple you still start from the number 0, but you write the numbers after a `.` instead of inside a `[]`. This makes sense if you remember that tuples are like object types, which as we know use a `.` in front of the names of their properties.
-
 Now that we know all this, we can update all our cities at the same time. It looks like this:
 
 ```edgeql
@@ -163,7 +172,7 @@ union (
 
 So this query accesses each tuple one at a time in the `for` loop, filters by the string (which is `data.0`) and then updates with the population (which is `data.1`).
 
-You can actually choose to give names to the items inside tuples if you like. Here are the same cities except now we can access them by name:
+You can actually choose to give names to the items inside tuples if you like. This makes them feel even more like the object types in our schema. Here are the same cities except now we can access them by name:
 
 ```edgeql
 with cities := 
@@ -208,12 +217,14 @@ And also note that if you choose to name the items inside a tuple you have to na
 select ('Jonathan Harker', age := 25).age;
 ```
 
-Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`, like this:
+Let's finish this section with a final note about casting. We know that we can cast into any scalar type, and this works for tuples of scalar types too. It uses the same format with `<>` except that you put it inside of `<tuple>`. This is a convenient way to do multiple casts at the same time. Take this query for example:
 
 ```edgeql
 with london := ('London', 3500000),
 select <tuple<json, int32>>london;
 ```
+
+Using `<tuple<json, int32>>` lets us cast the whole tuple instead of doing a cast for each individual type inside the tuple.
 
 That gives us this output:
 
@@ -221,17 +232,18 @@ That gives us this output:
 {(Json("\"London\""), 3500000)}
 ```
 
-Here's another example if we need to do some math with floats on London's population:
+Here's another example if we need to do some math with floats to calculate an increase in London's population:
 
 ```edgeql
-with london := <tuple<str, float64>>('London', 3500000),
-# After a population increase
-  london_after := (london.1 * 1.035),
-  select (london.0, <int32>london_after);
-{('London', 3622500)}
+with 
+  london := ('London', 3500000),
+  # Cast into a float so we can do some precise math
+  float_london := <tuple<str, float64>>(london),
+  # Increase population, cast back for readability
+  select <tuple<str, int32>>(float_london.0, float_london.1 * 1.035);
 ```
 
-The output is `{3605000}`.
+The output is `{('London', 3622500)}`.
 
 ## More on ordering and using math
 
