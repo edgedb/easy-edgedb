@@ -252,11 +252,41 @@ It might also be a good idea to add `assert_single()` when doing a filter for th
 
 ## Cartesian multiplication
 
-Cartesian multiplication sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+Cartesian multiplication is a key concept in EdgeDB. The name sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you do operations on multiple sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![A chart displaying the Cartesian product of 1, 2, 3 multiplied by x, y, and z](cartesian_product.svg)
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
+
+Here is a quick example of a query that operates on two sets. Since it will "evaluate every item in one set with every item in the other set", what do you think the output will be?
+
+```
+select { 'Jonathan', 'Lucy' } ++ ' ' ++ { 'Harker', 'Westenra'};
+```
+
+That's right, it is using `++` to concatenate and will concatenate every item in one set with every item in the other. So that will return a set of four strings:
+
+```
+{'Jonathan Harker', 'Jonathan Westenra', 'Lucy Harker', 'Lucy Westenra'}
+```
+
+The extra `' '` in the middle doesn't increase the number of items in the set because it is just one item, and one multiplied by four is still four.
+
+And if you add 'Mina' to the first set of names and 'Murray' to the second, the output will be a set of nine strings:
+
+```
+{
+  'Jonathan Harker',
+  'Jonathan Westenra',
+  'Jonathan Murray',
+  'Lucy Harker',
+  'Lucy Westenra',
+  'Lucy Murray',
+  'Mina Harker',
+  'Mina Westenra',
+  'Mina Murray',
+}
+```
 
 This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
