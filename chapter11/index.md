@@ -42,7 +42,7 @@ The `ns_suffix` property is either `_N_` or `_S_` depending on whether the latit
 
 The `url` property is then computed using the two suffixes, plus the absolute values of the locations so that they show up as positive numbers in the url. EdgeDB just happens to have a function called `math::abs()` that will let us turn any number into an absolute number. So Whitby, which is located at 54.4858 and -0.6206, should show up as `54.4858_N_0.6206_W` in the url: both absolute numbers, but with a `W` to represent that Whitby is at 0.6206 degrees to the *west*.
 
-![An image showing how latitude and longitude are divided into north and south, and east and west](lat_long.svg)
+![An image showing how latitude and longitude are divided into north and south, and east and west](Lat_long.svg)
 
 Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
