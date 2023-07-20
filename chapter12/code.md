@@ -61,10 +61,11 @@ module default {
     required multi place: Place;
     required multi people: Person;
     location: tuple<float64, float64>;
-    ns_suffix := '_N_' if .location > 0.0 else '_S_';
-    ew_suffix := '_E' if .location > 0.0 else '_W';
-    property url := get_url() ++ <str>.location.0 ++ .ns_suffix 
-      ++ <str>.location.1 ++ .ew_suffix;
+    property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+    property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+    property url := get_url() 
+      ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+      ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
   }
 
   abstract type HasNumber {

@@ -12,7 +12,7 @@ tags: Writing Functions, Multiplication, Coalescing, Grouping
 
 We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. In our game, we could use a sort of `Event` type to group everything together: the people, the time, the place, and so on.
 
-This `Event` type is a bit long, but it would be the main type for our events in the game so it needs to be detailed. We can put it together like this:
+This `Event` type is a bit long, but it could be the main type for our events in the game so it needs to be detailed. We can put it together like this:
 
 ```sdl
 type Event {
@@ -22,14 +22,15 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  ns_suffix := '_N_' if .location > 0.0 else '_S_';
-  ew_suffix := '_E' if .location > 0.0 else '_W';
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
   property url := 'https://geohack.toolforge.org/geohack.php?params=' 
-    ++ <str>.location.0 ++ .ns_suffix ++ <str>.location.1 ++ .ew_suffix;
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
-You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
+You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want, which can then be looked up on the Geohack tool used by Wikipedia. This property is not `required` because not every event in the book is in a perfectly known location.
 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
@@ -37,13 +38,13 @@ The url that we are generating needs to know whether a location is east or west 
 https://geohack.toolforge.org/geohack.php?params=47.8_N_24.30_E
 ```
 
-The `url` property is not too hard to compute, thanks to the other two computed properties `ns_suffix` and `ew_suffix` which are used to show which part of the globe an event is taking place: either north or south, and either east or west.
+The `ns_suffix` property is either `_N_` or `_S_` depending on whether the latitute is greater than or less than zero. And `ew_suffix` is either `_E` or `_W` depending on whether the longitute is greater than or less than zero. The events in the book all take place in the north half of the planet, but we might as well give the possibility of exploring the south part of the globe. Who knows where the `PC` objects might end up exploring!
 
-The `ns_suffix` property is either `_N_` or `_S_` depending on whether the latitute is greater than or less than zero. And `ew_suffix` is either `_E` or `_W` depending on whether the longitute is greater than or less than zero. The events in the book all take place in the north half of the planet, but who knows where the `PC` objects might end up exploring.
+The `url` property is then computed using the two suffixes, plus the absolute values of the locations so that they show up as positive numbers in the url. EdgeDB just happens to have a function called `math::abs()` that will let us turn any number into an absolute number. So Whitby, which is located at 54.4858 and -0.6206, should show up as `54.4858_N_0.6206_W` in the url: both absolute numbers, but with a `W` to represent that Whitby is at 0.6206 degrees to the *west*.
 
 ![An image showing how latitude and longitude are divided into north and south, and east and west](Lat_long.svg)
 
-Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
 ```edgeql
 insert Event {
@@ -53,7 +54,7 @@ insert Event {
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike 
     {'%helsing%', '%westenra%', '%seward%'}),
-  location := (54.4858, 0.6206),
+  location := (54.4858, -0.6206),
 };
 ```
 
@@ -137,10 +138,11 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  ns_suffix := '_N_' if .location > 0.0 else '_S_';
-  ew_suffix := '_E' if .location > 0.0 else '_W';
-  property url := get_url() ++ <str>.location.0 ++ .ns_suffix 
-    ++ <str>.location.1 ++ .ew_suffix;
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  property url := get_url() 
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
