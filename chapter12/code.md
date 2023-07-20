@@ -356,9 +356,21 @@ insert Event {
   start_time := cal::to_local_datetime(1893, 9, 11, 18, 0, 0),
   end_time := cal::to_local_datetime(1893, 9, 11, 23, 0, 0),
   place := (select Place filter .name = 'Whitby'),
-  people := (select Person filter .name ilike {'%helsing%', '%westenra%', '%seward%'}),
-  location := (54.4858, 0.6206),
-  east := false
+  people := (select Person filter .name ilike 
+    {'%helsing%', '%westenra%', '%seward%'}),
+  location := (54.4858, -0.6206),
+};
+
+with 
+  ship_people := (select Ship.sailors union Ship.crew filter Ship .name = 'The Demeter'),
+  dracula := (select Vampire filter .name = 'Count Dracula'),
+insert Event {
+  description := "On 11 July at dawn entered Bosphorus. Boarded by Turkish Customs officers. Backsheesh. All correct. Under way at 4 p.m.",
+  start_time := cal::to_local_datetime(1893, 7, 11, 7, 0, 0),
+  end_time := cal::to_local_datetime(1893, 7, 11, 16, 0, 0),
+  place := (insert OtherPlace {name := 'Rumeli Feneri'}),
+  people := ship_people union dracula,
+  location := (41.2350, 29.1100)
 };
 
 update Person

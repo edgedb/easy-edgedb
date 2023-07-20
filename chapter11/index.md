@@ -44,7 +44,12 @@ The `url` property is then computed using the two suffixes, plus the absolute va
 
 ![An image showing how latitude and longitude are divided into north and south, and east and west](Lat_long.svg)
 
-Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+Let's do a migration to add this `Event` type, and then insert two of the events from the story that we are familiar with.
+
+One event takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. The other takes place when the Demeter left the Black Sea, entered the Bosphorous and was boarded by Turkish customs officials on its long and tragic journey to England. We aren't sure exactly where the boarding took place, but the lighthouse called Rumeli Feneri looks like a good place for Turkish government officials to notice a ship, so let's insert that as an `OtherPlace` as we insert the `Event`. And the `people` involved in this `Event` are all the sailors on the ship, plus Dracula. To join them together we can use the `union` keyword in a few places: once to join the Ship.sailors with the Ship.crew, and then finally to join them with the `Vampire` object named 'Count Dracula'.
+
+You can see that the `description` property in the `Event` type is just a string to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+
 
 ```edgeql
 insert Event {
@@ -56,22 +61,31 @@ insert Event {
     {'%helsing%', '%westenra%', '%seward%'}),
   location := (54.4858, -0.6206),
 };
+
+with 
+  ship_people := (select Ship.sailors union Ship.crew filter Ship .name = 'The Demeter'),
+  dracula := (select Vampire filter .name = 'Count Dracula'),
+insert Event {
+  description := "On 11 July at dawn entered Bosphorus. Boarded by Turkish Customs officers. Backsheesh. All correct. Under way at 4 p.m.",
+  start_time := cal::to_local_datetime(1893, 7, 11, 7, 0, 0),
+  end_time := cal::to_local_datetime(1893, 7, 11, 16, 0, 0),
+  place := (insert OtherPlace {name := 'Rumeli Feneri'}),
+  people := ship_people union dracula,
+  location := (41.2350, 29.1100)
+};
 ```
 
 With all this information we can now find events by description, character, location, and so on.
 
-Now let's do a query for all events with the word `garlic flowers` in them:
+Let's do a query to show the location, place names, person names, and description for our events so far.
 
 ```edgeql
 select Event { 
-  *, 
-  place: {
-    name
-  }, 
-  people: {
-    name
-    } 
-  } filter .description ilike '%garlic flowers%';
+  place_name := .place.name,
+  map_url := .url,
+  people_names := .people.name,
+  description,
+  };
 ```
 
 It generates a nice output that shows us everything about the event:
@@ -79,24 +93,32 @@ It generates a nice output that shows us everything about the event:
 ```
 {
   default::Event {
-    place: {default::City {name: 'Whitby'}},
-    people: {
-      default::NPC {name: 'Lucy Westenra'},
-      default::NPC {name: 'John Seward'},
-      default::NPC {name: 'Abraham Van Helsing'},
-    },
-    id: 7fa1ddc6-0de7-11ee-98fc-2f8d7602e3a2,
-    east: false,
-    location: (54.4858, 0.6206),
-    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
+    place_name: {'Whitby'},
+    map_url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
+    people_names: {'John Seward', 'Abraham Van Helsing', 'Lucy Westenra'},
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
-    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
+  },
+  default::Event {
+    place_name: {'Rumeli Feneri'},
+    map_url: 'https://geohack.toolforge.org/geohack.php?params=41.235_N_29.11_E',
+    people_names: {
+      'The Captain',
+      'Petrofsky',
+      'The First Mate',
+      'The Cook',
+      'Crewman 1',
+      'Crewman 2',
+      'Crewman 3',
+      'Crewman 4',
+      'Crewman 5',
+      'Count Dracula',
+    },
+    description: 'On 11 July at dawn entered Bosphorus. Boarded by Turkish Customs officers. Backsheesh. All correct. Under way at 4 p.m.',
   },
 }
 ```
 
-The url works nicely too. Here it is: <https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W> Clicking on it takes you directly to the city of Whitby.
+The urls work nicely too. Here is one of them: <https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W> Clicking on it takes you directly to the city of Whitby.
 
 ## Writing our own functions
 
