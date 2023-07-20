@@ -394,9 +394,9 @@ The output is indeed a bit weird:
 }
 ```
 
-The objects returning `false` do come before those that return `true`, but this isn't really an ordering. A true ordering would be more along the lines of single*ness* (let's say from 0 to 100) where a singleness of 0 represents one extreme (someone who is married and never ever has time alone), and a singleness of 100 the other extreme: someone who is absolutely always alone. And most people would have a number somewhere in between.
+The objects returning `false` do come before those that return `true`, but this isn't really an ordering. A true ordering would be more along the lines of single*ness* (let's say from 0 to 100) where a singleness of 0 represents one extreme (someone who is married and never ever has time alone), and a singleness of 100 the other extreme (someone who is absolutely always alone). And most people would have a number somewhere in between.
 
-So what we are looking for here with `is_single` is not an ordering, but a grouping: one group of NPC objects that are single, and another group of NPC objects that are not. EdgeDB has an operator called `group` which does just that. To do a `group` query, just change `select` to `group`!
+So what we are looking for here with `is_single` is not an ordering, but a grouping: one group of NPC objects that are single, and another group of NPC objects that are not. EdgeDB has an operator called `group` which does just that! To do a `group` query, just change `select` to `group`:
 
 ```edgeql
 group NPC {
@@ -436,7 +436,7 @@ The output for the `group` operator is quite nice, as each set includes two extr
 }
 ```
 
-Grouping can be a lot more complex than adding `by` and a property name. For referenc, here is what the full syntax looks like.
+Grouping can be a lot more complex than adding `by` and a property name. For reference, here is what the full syntax looks like.
 
 ```
 [ with with-item [, ...] ]
@@ -464,7 +464,7 @@ group City {name, population}
   by is_big;
 ```
 
-With that, we now have our cities divided into big and small.
+With that, we now have our cities divided into big and small while displaying their names and populations.
 
 ```
 {
