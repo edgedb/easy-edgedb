@@ -22,10 +22,10 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  east: bool;
+  ns_suffix := '_N_' if .location > 0.0 else '_S_';
+  ew_suffix := '_E' if .location > 0.0 else '_W';
   property url := 'https://geohack.toolforge.org/geohack.php?params=' 
-    ++ <str>.location.0 ++ '_N_' 
-    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+    ++ <str>.location.0 ++ .ns_suffix ++ <str>.location.1 ++ .ew_suffix;
 }
 ```
 
@@ -34,12 +34,14 @@ You can see that most of the properties are `required`, because an `Event` type 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
 ```
-https://geohack.toolforge.org/geohack.php?params=47_8_N_24_30_E
+https://geohack.toolforge.org/geohack.php?params=47.8_N_24.30_E
 ```
 
-Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
+The `url` property is not too hard to compute, thanks to the other two computed properties `ns_suffix` and `ew_suffix` which are used to show which part of the globe an event is taking place: either north or south, and either east or west.
 
-(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+The `ns_suffix` property is either `_N_` or `_S_` depending on whether the latitute is greater than or less than zero. And `ew_suffix` is either `_E` or `_W` depending on whether the longitute is greater than or less than zero. The events in the book all take place in the north half of the planet, but who knows where the `PC` objects might end up exploring.
+
+![An image showing how latitude and longitude are divided into north and south, and east and west](Lat_long.svg)
 
 Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
 
@@ -52,7 +54,6 @@ insert Event {
   people := (select Person filter .name ilike 
     {'%helsing%', '%westenra%', '%seward%'}),
   location := (54.4858, 0.6206),
-  east := false
 };
 ```
 
@@ -86,7 +87,7 @@ It generates a nice output that shows us everything about the event:
     id: 7fa1ddc6-0de7-11ee-98fc-2f8d7602e3a2,
     east: false,
     location: (54.4858, 0.6206),
-    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W54.4858_N_0.6206_W',
+    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
     end_time: <cal::local_datetime>'1893-09-11T23:00:00',
     start_time: <cal::local_datetime>'1893-09-11T18:00:00',
@@ -123,7 +124,7 @@ function make_string(input: int64) -> str
 
 That's all there is to it!
 
-Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params='` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition can be 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
 
 ```sdl
 function get_url() -> str
@@ -136,9 +137,10 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  east: bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
-  ++ '_' ++ ('E' if .east else 'W');
+  ns_suffix := '_N_' if .location > 0.0 else '_S_';
+  ew_suffix := '_E' if .location > 0.0 else '_W';
+  property url := get_url() ++ <str>.location.0 ++ .ns_suffix 
+    ++ <str>.location.1 ++ .ew_suffix;
 }
 ```
 

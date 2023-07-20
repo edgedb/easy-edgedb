@@ -97,10 +97,11 @@ module default {
     required end_time: cal::local_datetime;
     required multi place: Place;
     required multi people: Person;
-    multi excerpt: BookExcerpt; # Only this is new
     location: tuple<float64, float64>;
-    east: bool;
-    property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+    ns_suffix := '_N_' if .location > 0.0 else '_S_';
+    ew_suffix := '_E' if .location > 0.0 else '_W';
+    property url := get_url() ++ <str>.location.0 ++ .ns_suffix 
+      ++ <str>.location.1 ++ .ew_suffix;
   }
 
   type Landmark {
