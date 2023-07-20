@@ -46,10 +46,11 @@ The `url` property is then computed using the two suffixes, plus the absolute va
 
 Let's do a migration to add this `Event` type, and then insert two of the events from the story that we are familiar with.
 
-One event takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. The other takes place when the Demeter left the Black Sea, entered the Bosphorous and was boarded by Turkish customs officials on its long and tragic journey to England. We aren't sure exactly where the boarding took place, but the lighthouse called Rumeli Feneri looks like a good place for Turkish government officials to notice a ship, so let's insert that as an `OtherPlace` as we insert the `Event`. And the `people` involved in this `Event` are all the sailors on the ship, plus Dracula. To join them together we can use the `union` keyword in a few places: once to join the Ship.sailors with the Ship.crew, and then finally to join them with the `Vampire` object named 'Count Dracula'.
+One event takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. The other event takes place when the Demeter left the Black Sea, entered the Bosphorous and was boarded by Turkish customs officials on its long and tragic journey to England. We aren't sure exactly where the boarding took place, but the lighthouse called Rumeli Feneri looks like a good place for Turkish government officials to notice a ship, so let's insert that as an `OtherPlace` as we insert the `Event`. And the `people` involved in this `Event` are all the sailors on the ship, plus Dracula. To join them together we can use the `union` keyword in a few places: once to join the `Ship.sailors` with the `Ship.crew`, and then finally to join them with the `Vampire` object named 'Count Dracula'.
 
-You can see that the `description` property in the `Event` type is just a string to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+You can see that the `description` property in the `Event` type is just a string to make it easy to search later on. It can be as long or as short as we like, and we can even outright paste in parts of the book.
 
+Here are the inserts for these two `Event`s:
 
 ```edgeql
 insert Event {
@@ -74,8 +75,6 @@ insert Event {
   location := (41.2350, 29.1100)
 };
 ```
-
-With all this information we can now find events by description, character, location, and so on.
 
 Let's do a query to show the location, place names, person names, and description for our events so far.
 
@@ -122,9 +121,9 @@ The urls work nicely too. Here is one of them: <https://geohack.toolforge.org/ge
 
 ## Writing our own functions
 
-We saw that Renfield is quite strong: he has a strength of 10, compared to Jonathan's 5.
+We have seen quite a few functions in EdgeDB so far, but the number of functions is actually unlimited because you can also write your own! Similar to other languages, functions in EdgeDB take an input, apply some logic, and generate an output. But EdgeQL is strongly typed, so it won't accept just anything as is the case with languages like Javascript. That means that you have to indicate both the input type and the return type in the signature.
 
-We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate both the input type and the return type in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
+A function that takes an `int16` and returns a `float64` for example would have this signature:
 
 ```sdl
 function does_something(input: int16) -> float64
@@ -145,9 +144,9 @@ function make_string(input: int64) -> str
   using (<str>input);
 ```
 
-That's all there is to it!
+That's all there is to it! If you put this into your schema and do a migration then you will now be able to use this function.
 
-Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params='` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition can be 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+Now let's make something a little more useful: a quick function to make our `Event` type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params='` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition can be 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
 
 ```sdl
 function get_url() -> str
@@ -168,7 +167,9 @@ type Event {
 }
 ```
 
-Next, let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+Next, let's write a function that's less useful but more fun and which will teach us some interesting concepts in EdgeDB. The function will have two `Person` objects fight each other, so we'll call it `fight()`. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+
+You might be tempted to write this function as follows, but it doesn't quite work!
 
 ```sdl
 function fight(one: Person, two: Person) -> str
@@ -179,27 +180,43 @@ function fight(one: Person, two: Person) -> str
   );
 ```
 
-The function _looks_ good, but when you try to create it, you'll get an error:
+The function _looks_ good, but when you try to create it, you'll get an error. The line at the bottom of the error is the one to pay attention to.
 
 ```
-InvalidFunctionDefinitionError: return cardinality mismatch in function
-  declared to return exactly one value
+error: return cardinality mismatch in function declared to return exactly one value
+    ┌─ C:\rust\easy-edgedb\dbschema\default.esdl:118:9
+    │
+118 │     using (
+    │ ╭─────────^
+119 │ │     one.name ++ ' wins!'
+120 │ │     if one.strength > two.strength
+121 │ │     else two.name ++ ' wins!'
+122 │ │   );
+    │ ╰───^ error
+    │
+    = Function may return an empty set.
 ```
 
-This happens because `name` and `strength` are not required on our `Person` type. If we pass this function at least one `Person` without a value for one of these properties, the function will return an empty set. (More on that in the next chapter.) EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
+This happens because `strength` is not required on our `Person` type. That means that we might pass in one or two `Person` objects that have an empty set for `strength`, and then the function will return an empty set instead of a `str`. EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
 
-We could go back and require the `name` and `strength` properties. We'd need to make sure all of our `Person` objects have values for each of them. That's a lot of trouble, and it's not something we're ready to do right now.
+We could go back and make `strength` a `required` property, but we would need to decide on values for all of our `Person` objects already in the database. That's a lot of trouble, and it's not something we're ready to do right now.
 
 ## Providing fallbacks with the coalescing operator
 
-The easiest way to fix our function would be to provide some sort of fallback for the properties that might not be set. If `one` doesn't have a name, we could just refer to them as `Fighter 1`. If someone doesn't have a strength, we could just default their strength to `0`.
+The easiest way to fix our function would be to provide some sort of fallback for the properties that might not be set. If someone doesn't have a strength, we could just default their strength to `0`.
 
 To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which is written `??`. It evaluates to whatever is on the left if that's not empty. Otherwise, it evaluates to whatever is on the right.
 
-Here is a quick example:
+Here is a quick example of an empty set when the coalescing operator is not used:
 
+```edgeql
+select <str>{} ++ 'Count Dracula is now in Whitby';
 ```
-db> select <str>{} ?? 'Count Dracula is now in Whitby';
+
+Interestingly, the output is `{}`! An empty set combined with anything else is an empty set. But if we change `++` to `??` for the coalescing operator, we can return a default value even if there is an empty set to the left.
+
+```edgeql
+select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 Since the set on the left is empty, the coalescing operator turns its attention to the set on the right and returns that: `{'Count Dracula is now in Whitby'}` If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
@@ -209,13 +226,12 @@ Here's how we can use the coalescing operator to fix our function:
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    (one.name ?? 'Fighter 1') ++ ' wins!'
-    if (one.strength ?? 0) > (two.strength ?? 0)
-    else (two.name ?? 'Fighter 2') ++ ' wins!'
+    one.name ++ ' wins!' if (one.strength ?? 0) > (two.strength ?? 0)
+    else two.name ++ ' wins!'
   );
 ```
 
-With this change, EdgeDB now has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+With this change, EdgeDB now has fallbacks in the event that a `Person` object has an empty set for its `strength` property: it will return a 0 instead of an empty set. This ensures that the function can always return the string response we promised.
 
 Now that our function works, let's do a migration.
 
