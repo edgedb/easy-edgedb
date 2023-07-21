@@ -4,11 +4,13 @@ tags: Introspection, Type Union Operator
 
 # Chapter 13 - Meet the new Lucy
 
-> This time it was too late to save Lucy, and she is dying. Suddenly she opens her eyes - they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!”
+> This time it was too late to save Lucy, and she is dying. Suddenly she opens her eyes, but they look very strange. She looks at Arthur and says “Arthur! Oh, my love, I am so glad you have come! Kiss me!”
 >
-> Arthur tries to kiss her, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire inside her that was talking. She soon dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (crucifixes have that power over vampires). Unfortunately, the nurse steals the crucifix to sell when nobody is looking...
+> Arthur tries to kiss her, but Van Helsing grabs him and says "Don't you dare!" It was not Lucy, but the vampire spirit inside her that was talking. Lucy soon dies, and Van Helsing puts a golden crucifix on her lips to stop her from moving (crucifixes have that power over vampires). Unfortunately, the nurse steals the crucifix to sell when nobody is looking and vampire Lucy is able to move again...
 >
-> A few days later there is news about a lady who is stealing and biting children - it's Vampire Lucy. The newspaper calls it the "Bloofer Lady", because the young children try to call her the "Beautiful Lady" but can't pronounce _beautiful_ right. Now Van Helsing tells the other people the truth about vampires, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife. Van Helsing says, "Fine, you don't believe me. Let's go to the graveyard together tonight and see what happens. Maybe then you will."
+> A few days later there is news about a lady who is stealing and biting children. The newspaper calls it the "Bloofer Lady", because the young children try to call her the "Beautiful Lady" but can't pronounce _beautiful_ right.
+>
+> Van Helsing decides that it's time to tell the other people the truth about vampires, but Arthur doesn't believe him and becomes angry that he would say crazy things about his wife. Van Helsing says, "Fine, you don't believe me. Let's go to the graveyard together tonight and see what happens. Maybe then you will."
 
 Looks like Lucy, an `NPC`, has become a `MinorVampire`. How should we show this in the database? Let's look at the types again first.
 
@@ -18,7 +20,7 @@ Right now `MinorVampire` is nothing special, just a type that extends `Person`:
 type MinorVampire extending Person;
 ```
 
-Fortunately, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` object named Count Dracula.
+Fortunately for us, according to the book she is a new "type" of person. The old Lucy is gone, and this new Lucy is now one of the `slaves` linked to the `Vampire` object named Count Dracula. We can treat them as two separate objects.
 
 So instead of trying to change the `NPC` type, we can just give `MinorVampire` an optional link to `Person`:
 
@@ -39,9 +41,9 @@ set {
 };
 ```
 
-After doing the migration, let's practice a big insert to add Dracula along with all of the `MinorVampire` objects. We haven't done much with them so we'll just `delete Vampire;` and `delete MinorVampire;` and insert them all again.
+After doing the migration, let's practice a big insert to add Dracula along with all of the `MinorVampire` objects. We haven't done much our existing objects so let's just  `delete Vampire;` and `delete MinorVampire;` and insert them all again.
 
-Note the first line of the insert where we create a variable called `lucy`. We can then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we add 5 to that, because vampires are stronger.
+Note the first line of the insert where we create a variable called `lucy`. We can then use that to bring in all the data to make her a `MinorVampire`, which is much more efficient than manually inserting all the information. It also includes her strength: we should add 5 to that, because vampires are generally stronger than humans.
 
 We could give her the name 'Lucy Westenra' here because the `name` property is a delegated constraint from the `Person` type, but we'll just call her Lucy now.
 
