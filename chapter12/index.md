@@ -6,7 +6,7 @@ tags: Overloading Functions, Coalescing
 
 There is no good news for our heroes this chapter:
 
-> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive.
+> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing's advice, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive.
 >
 > Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife, causing him to bleed. The moment Renfield sees Dr. Seward's blood he stops and tries to drink it, repeating: “The blood is the life! The blood is the life!”. The asylum security men take Renfield away and Dr. Seward is left confused and trying to understand him. Dr. Seward thinks there is a connection between him and the other events.
 >
@@ -16,7 +16,7 @@ But there is good news for us, because we are going to keep learning about Carte
 
 ## Overloading functions
 
-Functions can be overloaded in EdgeDB. Overloading a function means to give a function with the same name more than one signature, allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
+Functions can be overloaded in EdgeDB. Overloading a function means to create a function with the same name as another function but with a different signature, thereby allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
 
 ```
 cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
@@ -36,13 +36,15 @@ set {
 };
 ```
 
-Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
+Every other human should have a strength between 0 and 5. EdgeDB has a function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. If we multiply this by 5, we will get a `float64` in between 0.0 and 5.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
 
 ```edgeql
-select <int16>round(random() * 5);
+with before_rounded := random() * 5,
+  after_rounded := round(before_rounded),
+  select (before_rounded, after_rounded);
 ```
 
-So now we'll use it to update our `Person` objects (except for Jonathan, Dracula and Renfield) and give them all a random strength.
+The number will differ every time, but the output will look something like `{(3.9557656033819555, 4)}`. After that we'll just need to cast the rounded number into an `int16` and that will work as a random `strength` value for each of our `Person` objects (except for Jonathan, Dracula and Renfield). Here is what the update looks like:
 
 ```edgeql
 update Person
@@ -61,17 +63,40 @@ update MinorVampire
   };
 ```
 
-Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
+Now let's `select Person { name, strength };` and see if it works. The output should have mostly random numbers now, something similar to this:
 
 ```
-{1, 1, 7, 8, 10, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
+{
+  default::Crewman {name: 'Crewman 1', strength: 1},
+  default::Crewman {name: 'Crewman 2', strength: 4},
+  default::Crewman {name: 'Crewman 3', strength: 3},
+  default::Crewman {name: 'Crewman 4', strength: 2},
+  default::Crewman {name: 'Crewman 5', strength: 3},
+  default::MinorVampire {name: 'Vampire Woman 1', strength: 1},
+  default::MinorVampire {name: 'Vampire Woman 2', strength: 4},
+  default::MinorVampire {name: 'Vampire Woman 3', strength: 3},
+  default::Sailor {name: 'The Captain', strength: 0},
+  default::Sailor {name: 'Petrofsky', strength: 3},
+  default::Sailor {name: 'The First Mate', strength: 4},
+  default::Sailor {name: 'The Cook', strength: 1},
+  default::PC {name: 'Emil Sinclair', strength: 5},
+  default::PC {name: 'Max Demian', strength: 3},
+  default::NPC {name: 'Renfield', strength: 10},
+  default::NPC {name: 'Jonathan Harker', strength: 5},
+  default::NPC {name: 'The innkeeper', strength: 2},
+  default::NPC {name: 'Mina Murray', strength: 2},
+  default::NPC {name: 'Quincey Morris', strength: 3},
+  default::NPC {name: 'Arthur Holmwood', strength: 2},
+  default::NPC {name: 'John Seward', strength: 1},
+  default::NPC {name: 'Abraham Van Helsing', strength: 1},
+  default::NPC {name: 'Lucy Westenra', strength: 3},
+  default::Vampire {name: 'Count Dracula', strength: 20},
+}
 ```
 
 Looks like it worked.
 
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight.
-
-(Note: the array_join function in the signature joins an array of strings into a single string)
 
 ```sdl
 function fight(people_names: array<str>, opponent: Person) -> str
@@ -81,7 +106,7 @@ function fight(people_names: array<str>, opponent: Person) -> str
     select
         array_join(people_names, ', ') ++ ' win!'
         if sum(people.strength) > (opponent.strength ?? 0)
-        else (opponent.name ?? 'Opponent') ++ ' wins!'
+        else opponent.name ++ ' wins!'
   );
 ```
 
@@ -90,8 +115,6 @@ With this overloaded function we accept two arguments: an array of the names of 
 - We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
 - `sum` in the next line of our `select` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
 
-You may wonder why we provide a default value for the opponent name (`opponent.name ?? 'Opponent'`) but not for the names of the people in the group. This is because, if the array of names is empty, the group cannot win since no `Person` object will be returned from the query. We can't have a case where `people_names` is empty but the party won the fight, so no need for a fallback name to call the group! The `.name` property isn't required though, so since you pass in the opponent's `Person` object directly, you could pass in a powerful opponent without a name. The group is selected by their names, so there's no way to do the same for their side.
-
 Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
 
 ```sdl
@@ -99,7 +122,7 @@ fight(one: Person, two: Person) -> str
 fight(people_names: array<str>, opponent: Person) -> str
 ```
 
-If we tried to overload our function with an input of `(Person, Person)`, it wouldn't work because that's the same as the original signature. EdgeDB uses the input we give it to know which form of the function to use, so without different signatures, it would have no way to decide between the two.
+If we tried to overload our function with an input of `(Person, Person)`, it wouldn't work because that's the same as the original signature. EdgeDB uses the input we give it to decide which form of the function to use, so without different signatures, it would have no way to decide between the two.
 
 The function name is the same, but to call it, we enter an array of the fighters' names and the `Person` they are fighting.
 
@@ -144,8 +167,6 @@ At this point it is most likely that the random `strength` values for everyone t
 ```
 
 So that's how function overloading works - you can create functions with the same name as long as the signature is different.
-
-You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which we used earlier to get our party strength. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
 
 `fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter.
 
