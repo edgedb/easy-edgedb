@@ -203,7 +203,14 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 ## More about Cartesian products and the coalescing operator
 
-Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
+Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single empty set always results in an output of `{}` when working with multiple sets:
+
+```
+edgedb> select 'My name is ' ++ <str>{} ++ '!';
+{}
+```
+
+That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
 Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to concatenate the names of places that start with b with those that start with x.
 
@@ -213,13 +220,13 @@ with b_places := (select Place filter Place.name ilike 'b%'),
 select b_places.name ++ ' ' ++ x_places.name;
 ```
 
-The result may not be what you'd expect.
+Yep, it's an empty set.
 
 ```
 {}
 ```
 
-Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's make sure that the output is the same when we manually type out the city names:
+Let's explore this a bit more. A search for places that start with "b" should give us `{'Buda-Pesth', 'Bistritz'}`. Let's manually type out the city names this time just to make sure and add an empty set after:
 
 ```edgeql
 select {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -238,7 +245,7 @@ using an explicit type cast or a conversion function.
 
 Ah, that's right - we saw one example of an empty set with a cast in the last chapter when we tried the query `select <str>{} ?? 'Count Dracula is now in Whitby';`. EdgeDB requires a cast for an empty set, because there's no way to know the type of a set if all EdgeDB sees is `{}`.
 
-You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+You can probably guess that the same is true for array or set constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`. And `select {};` too.
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
@@ -247,14 +254,12 @@ db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 
-Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
+Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But we would like to do the following:
 
 - Concatenate the two strings if they exist, and
-- Return what we have if one is an empty set?
+- Return what we have if one is an empty set.
 
-In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
-
-To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
+In other words, we would like to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty. So we use the {eql:op}`coalescing operator <docs:coalesce>` to make it work:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
@@ -272,7 +277,7 @@ This returns:
 
 That's better.
 
-But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
+But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. Let's see what happens if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich). We would like to get the result `{'Buda-Pesth, Bistritz, Munich'}`, but it doesn't quite work that way:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
@@ -282,13 +287,13 @@ select b_places.name ++ ' ' ++ m_places.name
   else b_places.name ?? m_places.name;
 ```
 
-Then we'll get this result:
+We get this result instead:
 
 ```
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
-instead of something like 'Buda-Pesth, Bistritz, Munich'.
+In other words, we concatenated each item inside each set with each item inside the other. How can we just join one set with another one instead?
 
 One way to join the two together without thinking about Cartesian multiplication is to turn them into an array. The {eql:func}`docs:std::array_agg` function will do this: it 'aggregates' them.
 
@@ -326,21 +331,31 @@ This gives us the result:
 {'Slovakia', 'France', 'Castle Dracula', 'Buda-Pesth'}
 ```
 
-Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
+Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So if you can write a query like this:
 
 ```edgeql
-with cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
-     cities2 := <str>{}, # Don't forget to cast to <str>
-select cities1 ?= cities2;
+with city_names := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+     city_name := (select City.name filter City.name = "Hi I'm a City"),
+select city_names = city_name;
 ```
 
-This will return the output `{false, false, false}` instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
+It will return `{}` because `city_name` has returned an empty set. Now if we change `=` to `?=` then the query will work as we would like:
 
 ```edgeql
-select Vampire.lovers.name ?= Crewman.name;
+with city_names := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+     city_name := (select City.name filter City.name = "Hi I'm a City"),
+select city_names ?= city_name;
 ```
 
-It returns `{true}` because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
+This will return the output `{false, false, false}` instead of `{}` for the whole thing. 
+
+In addition, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
+
+```edgeql
+select Vampire.lovers.name ?= Crewman.lovers.name;
+```
+
+It returns `{true}` because neither Dracula nor any of the Crewmen have a lover: both sides of the query return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
 
 [Here is all our code so far up to Chapter 12.](code.md)
 
