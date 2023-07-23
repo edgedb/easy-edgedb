@@ -105,18 +105,21 @@ This gives us the following input (though strength will vary):
 
 Other filters such as `filter .name in Person.name and .first_appearance in Person.last_appearance;` are possible too but checking if the link `exists` is easiest. We could also switch to `cal::local_datetime` instead of `cal::local_date` to get the exact time down to the minute. But we won't need to get that precise just yet.
 
+<!-- 
+-->
+
 ## The type union operator: |
 
-Another operator related to types is `|`, which is used to combine them (similar to writing `or`). This query for example pulling up all `Person` types will return true:
+Another operator related to types is `|`, which is used to combine them (similar to writing `or`). This query for example pulling up all `Person` types will return `{true}`:
 
 ```edgeql
 with lucy := (select Person filter .name like 'Lucy%'),
 select lucy is NPC | MinorVampire | Vampire;
 ```
 
-It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since both Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
+It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
 
-One cool thing about the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control another less powerful vampire. Right now though a `Vampire` can only control a `MinorVampire`:
+But the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control another less powerful vampire. Right now though a `Vampire` can only control a `MinorVampire`:
 
 ```
 type Vampire extending Person {
@@ -132,7 +135,31 @@ type Vampire extending Person {
 }
 ```
 
-We only have Count Dracula in our database as the main `Vampire` type so we won't change our schema in this way, but keep this `|` operator in mind in case you need it.
+We only have Count Dracula in our database as the main `Vampire` type so we won't change our schema in this way, but keep the `|` operator in mind in case you need it.
+
+<!--
+Content to change for when https://github.com/edgedb/edgedb/issues/5823 is solved:
+
+But how about our `Ship` type? Let's look at it again.
+
+```
+type Ship {
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman;
+}
+```
+
+Both `sailors` and `crew` link to pretty similar objects, so this could be a good place to try out the type union operator by turning them into a single link called `crew: Sailor | Crewman;`. This will take two migrations though, because we don't want to lose any of the `crew` data. So we will first change the `Ship` to have `crew` hold both types:
+
+```
+type Ship {
+  required name: str;
+  multi sailors: Sailor;
+  multi crew: Crewman | Sailor;
+}
+```
+-->
 
 ## On target delete
 
