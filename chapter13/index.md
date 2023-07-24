@@ -119,7 +119,7 @@ select lucy is NPC | MinorVampire | Vampire;
 
 It returns true if the `Person` type selected is of type `NPC`, `MinorVampire`, or `Vampire`. Since Lucy the `NPC` and Lucy the `MinorVampire` match any of the three types, the return value is `{true, true}`.
 
-But the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control another less powerful vampire. Right now though a `Vampire` can only control a `MinorVampire`:
+One cool thing about the type union operator is that you can also add it to links in your schema. Let's say for example there are other `Vampire` objects in the game, and one `Vampire` that is extremely powerful can control another less powerful vampire. Right now though a `Vampire` can only control a `MinorVampire`:
 
 ```
 type Vampire extending Person {
