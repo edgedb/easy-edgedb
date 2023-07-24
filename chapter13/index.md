@@ -300,26 +300,136 @@ select Person filter .name = 'Brian';
 
 The query returns `{}`. Thanks to the `on source delete delete target` deletion policy, Brian is gone too!
 
-## Using the 'distinct' keyword
+## Set operators (distinct, intersect, except) and losing shape
 
-The `distinct` keyword is used if we want to remove duplicate values in a set, and is easy: just change `select` to `select distinct`. We can see that right now there are quite a few duplicate values in our `Person` objects if we `select Person.strength;`. The output will vary because it comes from the `random` function, but it will look something like this:
+We are already familiar with one of the set operators in EdgeDB: `union`. This is used to join two sets together. So `select MinorVampire.name union MinorVampire.name;` will return the following:
+
+```
+{
+  'Vampire Woman 1',
+  'Vampire Woman 2',
+  'Vampire Woman 3',
+  'Vampire Woman 1',
+  'Vampire Woman 2',
+  'Vampire Woman 3',
+}
+```
+
+The `distinct` keyword is used if we want to remove duplicate values in a set, and is easy: just change `select` to `select distinct`. 
+
+A quick example of a property that has a lot of duplicates is the `strength` property on the `Person` type. A quick `select Person.strength;` will show this. The output will vary because it comes from the `random` function, but it will look something like this:
 
 ```
 {1, 1, 7, 8, 9, 9, 5, 3, 0, 0, 5, 10, 2, 0, 
 2, 5, 3, 4, 0, 1, 4, 20, 5, 5, 5, 5, 5}
 ```
 
-Change it to `select distinct Person.strength;` and the output will now be:
+Change it to `select distinct Person.strength;` and now only the distinct values remain:
 
-`{0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 20}`
+```
+{0, 1, 2, 3, 4, 5, 10, 20}
+```
 
-Note that `distinct` works by item and doesn't unpack or aggregate, so something like a set of arrays will check to see if the entire array is distinct or not, not each of the values inside. Thus the following query:
+Note that `distinct` works by item and doesn't unpack or aggregate, so something like a set of arrays will check to see if the entire array is distinct or not, not each of the values inside. Thus using `distinct` on the following query won't do anything!
 
 ```edgeql
 select distinct {[7, 8], [7, 8], [9]};
 ```
 
-Will return `{[7, 8], [9]}` and not `{7, 8, 9}`.
+It will simply return the original `{[7, 8], [9]}`, and not `{7, 8, 9}`.
+
+The next set operator is called `intersect` and returns all the items in one set that match any item in the other set. Let's try this one out on the `places_visited` property on the `Person` type. First let's look at the places visited by all our `NPC` and `PC` objects:
+
+```
+db> select PC.places_visited.name;
+{'Buda-Pesth', 'Bistritz', 'Munich'}
+db> select NPC.places_visited.name;
+{'Romania', 'Castle Dracula', 'Buda-Pesth', 'Bistritz', 'London', 'Munich'}
+```
+
+Now let's intersect them!
+
+```edgeql
+select PC.places_visited.name intersect NPC.places_visited.name;
+```
+
+This will simply return `{'Bistritz', 'Buda-Pesth', 'Munich'}`.
+
+What if we want to use `intersect` on some object types and give them a shape? Let's try giving a shape to all these `Place` objects instead of just showing their name. Simply putting a `{*}` after an `intersect` might seem to be the right way to make this happen:
+
+```edgeql
+select PC.places_visited intersect NPC.places_visited {*};
+```
+
+And indeed the query does work, but the output is a bit unexpected. The shape is gone!
+
+```
+{
+  default::City {id: da23b4be-268c-11ee-ab5e-0bda71669b0c},
+  default::City {id: da317478-268c-11ee-ab5e-8b58f378092b},
+  default::City {id: da41f9ec-268c-11ee-ab5e-e3cd443a19f2},
+}
+```
+
+The issue here is that set operators don't preserve the original expression type, so they don't preserve the shape of an expression either. There is in effect no shape for us to work with.
+
+Fortunately, the solution here is fairly simple: we can use `with` to capture the result of a set operator, and then *that* will have a shape that we can work with. So a small change to our query will do the job:
+
+```edgedb
+with common_locations := PC.places_visited intersect NPC.places_visited,
+  select common_locations {*};
+```
+
+The result is what we hoped to see: not just the names of the places visited by both `PC` and `NPC` objects, but their properties too.
+
+```
+{
+  default::City {
+    id: da41f9ec-268c-11ee-ab5e-e3cd443a19f2,
+    important_places: ['Golden Krone Hotel'],
+    modern_name: 'Bistrița',
+    name: 'Bistritz',
+  },
+  default::City {
+    id: da23b4be-268c-11ee-ab5e-0bda71669b0c,
+    important_places: {},
+    modern_name: {},
+    name: 'Munich',
+  },
+  default::City {
+    id: da317478-268c-11ee-ab5e-8b58f378092b,
+    important_places: {},
+    modern_name: 'Budapest',
+    name: 'Buda-Pesth',
+  },
+}
+```
+
+The last set operator to learn is called `except`, and it's the opposite of `intersect`. While `intersect` returns items that are in the first set as well as the other, `except` returns items from the first set that are *not* shared with the second set.
+
+The `except` operator is a good opportunity to demonstrate that order can matter when using a set operator. Our `PC` objects have been to three cities: `{'Buda-Pesth', 'Bistritz', 'Munich'}`. The `NPC` objects have been to more places: `{'Romania', 'Castle Dracula', 'Buda-Pesth', 'Bistritz', 'London', 'Munich'}`. What do you think will happen in the query below that uses `intersect`? Note the order in which it is done.
+
+```edgeql
+select PC.places_visited.name except NPC.places_visited.name;
+```
+
+That's right, the query simply returns a `{}` empty set. That's because EdgeDB went through the three names returned by `PC.places_visited.name` as follows:
+
+- 'Buda-Pesth': Is this one inside PC.places_visited.name? Yes. So don't return it.
+- 'Bistritz': Same.
+- 'Munich': Same.
+
+And then the query was done.
+
+But if we reverse the query then it will return some names:
+
+```edgeql
+select NPC.places_visited.name except PC.places_visited.name;
+```
+
+The result is `{'Castle Dracula', 'London', 'Romania'}`, because this time EdgeDB began with the names of the places visited by the NPC objects and found three names that didn't have a matching value in the set of names returned by the `PC` objects.
+
+In other words, you can sort of think of `except` as meaning `minus`.
 
 ## Getting `__type__` all the time
 
