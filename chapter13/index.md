@@ -161,53 +161,144 @@ type Ship {
 ```
 -->
 
-## On target delete
+## On target delete, on source delete
 
-We've decided to keep the old `NPC` object for Lucy, because that Lucy will be in the game as an `NPC` until September 1893. Other `PC` objects could interact with her as an `NPC` up to this time, for example. 
+We've decided to keep the existing `NPC` object for Lucy, because that Lucy will be in the game as an `NPC` until September 1893. Other `PC` objects could interact with her as an `NPC` up to this time, for example. 
 
-But what if we had chosen to delete her, what would have happened to the objects she is linked to? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? We won't do that for our game, but you can do it with `on target delete`. This `on target delete` means "when the target is deleted", or in other words "when the object that is linked to is deleted". It goes inside `{}` after the link declaration. For this we have {ref}`four options <docs:ref_datamodel_link_deletion>`:
+But what if we had chosen to delete her, what would have happened to the objects she is linked to? Or more realistically, what if all `MinorVampire` types connected to a `Vampire` should be deleted when the vampire dies? This is the way vampire physics works in Bram Stoker's book: vampires drain people of their blood and turn them into minor vampires, who are only alive because the vampire is still controlling them. But when the master vampire dies, the souls of the minor vampires are finally set free and they disappear too.
 
-- `restrict`: forbids you from deleting the target object.
+We can begin thinking about these vampire physics in our game by learning about how to set a deletion policy. We'll start with the keywords `on target delete`. This `on target delete` means "when the target is deleted", or in other words "when the object that is linked to is deleted". It goes inside `{}` after the link declaration. After this point there are some options {ref}`four options <docs:ref_datamodel_link_deletion>` to choose.
 
-So if you declared `MinorVampire` like this:
+One deletion policy is `restrict`, and forbids you from deleting the target object. This is the default setting. In other words, anything you link to can't be deleted unless you specify otherwise in the schema. So when you declare a `type Vampire` like this:
 
 ```sdl
-type MinorVampire extending Person {
-  former_self: Person {
+type Vampire extending Person {
+  multi slaves: MinorVampire;
+}
+```
+
+It is as if you had written the following:
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
     on target delete restrict;
   }
 }
 ```
 
-then you wouldn't be able to delete Lucy the `NPC` once she was connected to Lucy the `MinorVampire`.
-
-- `delete source`: in this case, deleting Lucy the `Person` (the target of the link) will automatically delete Lucy the `MinorVampire` (the source of the link).
-
-- `allow`: this one simply lets you delete the target (this is the default setting).
-
-- `deferred restrict`: forbids you from deleting the target object, unless it is no longer a target object by the end of a transaction. So this option is like `restrict` but with a bit more flexibility.
-
-So if you wanted to have all the `MinorVampire` types automatically deleted when their `Vampire` dies, you would add a link from `MinorVampire` to the `Vampire` type. Then you would add `on target delete delete source`. `Vampire` is the target of the link, and `MinorVampire` is the source that gets deleted. It would look like this in the schema:
+We can test this out right now with an attempt to delete one of the vampire women:
 
 ```edgeql
-type MinorVampire extending Person {
-  former_self: Person;
-  master: Vampire {
-    on target delete delete source
+delete MinorVampire filter .name = 'Vampire Woman 1';
+```
+
+Here is the error:
+
+```
+edgedb error: ConstraintViolationError: deletion of default::MinorVampire (db56215a-268c-11ee-ab5e-6322976b513c) is prohibited by link target policy
+  Detail: Object is still referenced in link slaves of default::Vampire (db561336-268c-11ee-ab5e-b338ce4886f8).
+```
+
+Another deletion policy is `allow`, and simply allows you to delete the target. Inside the `Vampire` type it would look like this, which would let us delete any `MinorVampire` linked to a `Vampire` object.
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on target delete allow;
   }
 }
 ```
 
-Be careful when using this! Using `delete source` can result in quite a few automatic deletions, so be sure to double check which types are linking and being linked to. As the EdgeDB documentation states:
+A third deletion policy is called `delete source`, which deletes the source of a link when the target is deleted. Be careful with this deletion policy! You want to be absolutely certain when setting a policy that results in automatic deletions, because EdgeDB won't let you know about the automatic deletions that happen as a result of another deletion query. And if you have an automatic deletion policy that leads to another type that has its own automatic deletion policy...you'll end up with a cascade of deletions that maybe you didn't expect to happen.
+
+Now in our case, using `on target delete delete source` would delete Count Dracula if we deleted the `MinorVampire` (the target) called `Vampire Woman 1`. So this schema is the opposite of what we want!
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on target delete delete source;
+  }
+}
+```
+
+Fortunately, to switch the target and source around we can just change the keyword `target` to `source`. This gives us a deletion policy of `on source delete delete target`, which looks like this:
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+  }
+}
+```
+
+Again, you want to be careful when setting a deletion policy like this one. But our database is small and controlled, so let's add this `on source delete delete target` deletion policy to the `Vampire` type and do a migration.
+
+Now let's give this deletion policy a quick test. We'll insert a `Vampire` named 'Alucard' who has bitten a man named Brian, and made him into a `MinorVampire`. We'll insert both together:
 
 ```
-If a link uses the `delete source` policy, then deleting a target 
-of the link will also delete the object that links to it (the source).
-This behavior can be used to implement cascading deletes;
-be careful with this power!
+insert Vampire {
+  name := 'Alucard',
+  slaves := (insert MinorVampire {name := "Brian"})
+};
 ```
 
-Now let's look at some tips for making queries.
+Now let's make sure that both of them are in the database:
+
+```edgeql
+select Vampire {**} filter .name = 'Alucard';
+```
+
+There they are! Selecting Alucard leads us to Brian as well thanks to the link.
+
+```
+{
+  default::Vampire {
+    strength: {},
+    last_appearance: {},
+    first_appearance: {},
+    degrees: {},
+    title: {},
+    name: 'Alucard',
+    pen_name: 'Alucard',
+    conversational_name: 'Alucard',
+    age: {},
+    is_single: true,
+    id: 5d3a42da-286a-11ee-9442-9fa367e8a4c0,
+    places_visited: {},
+    lovers: {},
+    slaves: {
+      default::MinorVampire {
+        strength: {},
+        last_appearance: {},
+        first_appearance: {},
+        degrees: {},
+        title: {},
+        name: 'Brian',
+        pen_name: 'Brian',
+        conversational_name: 'Brian',
+        age: {},
+        is_single: true,
+        id: 5d3a4a96-286a-11ee-9442-c31d83f69190,
+      },
+    },
+  },
+}
+```
+
+Now if Alucard is killed, Brian should turn to dust and vanish as well:
+
+```edgeql
+delete Vampire filter .name = 'Alucard';
+```
+
+And then let's do a query to see if we can find Brian anywhere:
+
+```
+select Person filter .name = 'Brian';
+```
+
+The query returns `{}`. Thanks to the `on source delete delete target` deletion policy, Brian is gone too!
 
 ## Using the 'distinct' keyword
 

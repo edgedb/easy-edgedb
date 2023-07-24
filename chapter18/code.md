@@ -227,7 +227,9 @@ module default {
   } 
 
   type Vampire extending Person {
-    multi slaves: MinorVampire;
+    multi slaves: MinorVampire {
+      on source delete delete target;
+    }
   }
 
   # Aliases
