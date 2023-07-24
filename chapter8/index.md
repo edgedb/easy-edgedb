@@ -316,6 +316,54 @@ And now the two objects from out previous output have human-readble names.
 {"age": null, "name": "The Captain", "number": null, "__type__": {"name": "default::Sailor"}}
 ```
 
+So what is `__type__`, exactly? Well, it's a link that all objects have that are used to describe it. You can see this if you type `describe type PC as text;` (or with any other object in the schema). Inside the description returned you'll see this:
+
+```
+required single link __type__: schema::ObjectType {
+    readonly := true;
+};
+```
+
+Interesting! So it's just an object that can be queried like any other. Let's give it a try with `PC` and the splat operator to see everything inside:
+
+```edgeql
+select PC.__type__ {*};
+```
+
+This will show all of the properties for `ObjectType`, including the `name`:
+
+```
+{
+  schema::ObjectType {
+    id: c7c1983a-268c-11ee-8c82-c79bbe432a02,
+    name: 'default::PC',
+    internal: false,
+    builtin: false,
+    computed_fields: [],
+    final: false,
+    is_final: false,
+    abstract: false,
+    is_abstract: false,
+    inherited_fields: [],
+    from_alias: false,
+    is_from_alias: false,
+    expr: {},
+    compound_type: false,
+    is_compound_type: false,
+  },
+}
+```
+
+So that can be pretty useful.
+
+But if you *really* want to understand the inner workings of EdgeDB, try the same query with the double splat operator:
+
+```
+select PC.__type__ {**};
+```
+
+This will return pages and pages of information. You'll see a link called `pointers` that points to just about everything: a link to `__type__`, a link to `strength`, a link to `is_single` and that it is a computable made from the expression `not exists .lover`...and so on and so on. If you want to get a good feel for how EdgeDB works on the inside, definitely grab a cup of coffee and give this query a try!
+
 ## Supertypes, subtypes, and generic types
 
 The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). You can visualize it like this:
