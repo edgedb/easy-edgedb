@@ -481,6 +481,11 @@ So hopefully that explanation should help. You can see that you have a lot of ch
 
 [Here is all our code so far up to Chapter 8.](code.md)
 
+<!--
+Todo: demonstrate turning array<int64> into multi int64 once this resolved:
+https://github.com/edgedb/edgedb/issues/5749
+ -->
+
 <!-- quiz-start -->
 
 ## Time to practice
