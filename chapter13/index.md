@@ -431,9 +431,9 @@ The result is `{'Castle Dracula', 'London', 'Romania'}`, because this time EdgeD
 
 In other words, you can sort of think of `except` as meaning `minus`.
 
-## Getting `__type__` all the time
+## Being introspective
 
-We saw that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names that extend the `Person` type:
+We saw back in Chapter 8 that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names that extend the `Person` type:
 
 ```edgeql
 select Person.__type__ {
@@ -454,31 +454,9 @@ The output shows us all the types attached to `Person` so far:
 }
 ```
 
-Or we can use it in a regular query to see the type names as well. Let's see what types there are that have the name `Lucy`:
+EdgeDB has a keyword called `introspect` that is very similar to this sort of query, as it lets us look inside objects (indeed, the word *introspect* also literally means to "look inside").
 
-```edgeql
-select Person {
-  __type__: {
-    name
-  },
-  name
-} filter .name like 'Lucy%';
-```
-
-This shows us the objects that match, and of course they are `NPC` and `MinorVampire`.
-
-```
-{
-  default::NPC {__type__: schema::ObjectType 
-    {name: 'default::NPC'}, name: 'Lucy Westenra'},
-  default::MinorVampire {__type__: schema::ObjectType 
-    {name: 'default::MinorVampire'}, name: 'Lucy'},
-}
-```
-
-## Being introspective
-
-The word introspect literally means to "look inside", and is also an EdgeDB keyword. Using the keyword `introspect` allows us to see more details about types. Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
+Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
 
 ```sdl
 type Ship {
