@@ -375,7 +375,7 @@ The issue here is that set operators don't preserve the original expression type
 
 Fortunately, the solution here is fairly simple: we can use `with` to capture the result of a set operator, and then *that* will have a shape that we can work with. So a small change to our query will do the job:
 
-```edgedb
+```edgeql
 with common_locations := PC.places_visited intersect NPC.places_visited,
   select common_locations {*};
 ```
@@ -433,147 +433,169 @@ In other words, you can sort of think of `except` as meaning `minus`.
 
 ## Being introspective
 
-We saw back in Chapter 8 that we can use `__type__` to get object types in a query, and that `__type__` always has `.name` that shows us the type's name (otherwise we will only get the `uuid`). In the same way that we can get all the names with `select Person.name`, we can get all the type names that extend the `Person` type:
+We saw back in Chapter 8 that we can use `__type__` to get object types in a query, and that `__type__` always has a `name` property that shows us the type's name (otherwise we will only see its `uuid`). In the same way that we can get all the names of `Person` objects with `select Person.name`, we can use `` get all the type names that extend the `Person` type:
+
+```edgeql
+select Person.__type__.name;
+```
+
+The output shows us all the names of types attached to `Person` so far, namely the types that extend `Person`:
+
+```
+{
+  'default::NPC',
+  'default::Sailor',
+  'default::MinorVampire',
+  'default::Crewman',
+  'default::Vampire',
+  'default::PC',
+}
+```
+
+On top of the `name` property, the two most useful fields inside `__type__` are `properties` and `links`. (You can also just choose the field `pointers` which holds both `properties` and `links` together.) If we add these to the query the output will get quite long.
 
 ```edgeql
 select Person.__type__ {
-  name
+   name,
+   properties: {name},
+   links: {name}
 };
 ```
 
-The output shows us all the types attached to `Person` so far:
-
-```
-{
-  schema::ObjectType {name: 'default::NPC'},
-  schema::ObjectType {name: 'default::Crewman'},
-  schema::ObjectType {name: 'default::MinorVampire'},
-  schema::ObjectType {name: 'default::Vampire'},
-  schema::ObjectType {name: 'default::PC'},
-  schema::ObjectType {name: 'default::Sailor'},
-}
-```
-
-EdgeDB has a keyword called `introspect` that is very similar to this sort of query, as it lets us look inside objects (indeed, the word *introspect* also literally means to "look inside").
-
-Every type has the following fields that we can access: `name`, `properties` and `links`, and `introspect` lets us see them. Let's give that a try and see what we get. We'll start with this on our `Ship` type, which is fairly small but has all three. Here are the properties and links of `Ship` again so we don't forget:
-
-```sdl
-type Ship {
-  name: str;
-  multi sailors: Sailor;
-  multi crew: Crewman;
-}
-```
-
-First, here is the simplest `introspect` query:
-
-```edgeql
-select (introspect Ship);
-```
-
-This query isn't very useful to us but it does show how it works: it returns the following.
-
-```
-{schema::ObjectType {id: 28e74d09-0209-11ec-99f6-f587a1696697}}
-```
-
-Note that `introspect` and the type go inside brackets; it's sort of a `select` expression for types that you then select again to capture.
-
-Now let's put `name`, `properties` and `links` inside the introspection:
-
-```edgeql
-select (introspect Ship) {
-  name,
-  properties,
-  links,
-};
-```
-
-This gives us:
+The output contains the name, properties and links of each and every type that extends `Person`:
 
 ```
 {
   schema::ObjectType {
-    name: 'default::Ship',
+    name: 'default::NPC',
     properties: {
-      schema::Property {id: 28e76c59-0209-11ec-adaa-85e1ecb99e47},
-      schema::Property {id: 28e94e33-0209-11ec-9818-fb533a2c495f},
+      schema::Property {name: 'strength'},
+      schema::Property {name: 'last_appearance'},
+      schema::Property {name: 'first_appearance'},
+      schema::Property {name: 'degrees'},
+      schema::Property {name: 'title'},
+      schema::Property {name: 'name'},
+      schema::Property {name: 'pen_name'},
+      schema::Property {name: 'conversational_name'},
+      schema::Property {name: 'is_single'},
+      schema::Property {name: 'id'},
+      schema::Property {name: 'age'},
     },
     links: {
-      schema::Link {id: 28e87ca8-0209-11ec-9ba8-71ef0b23db38},
-      schema::Link {id: 28e8ee51-0209-11ec-b47e-8fd9b07debd3},
-      schema::Link {id: 29176353-0209-11ec-a6c5-797987ef08b5},
+      schema::Link {name: '__type__'},
+      schema::Link {name: 'places_visited'},
+      schema::Link {name: 'lovers'},
     },
   },
-}
+  schema::ObjectType {
+    name: 'default::Sailor',
+    # And so on...
 ```
 
-Just like using `select` on a type, we will only get an id even if the output contains items such as other properties and links. So we will have to specify what we want to see there as well.
+For such type-related queries, EdgeDB has a keyword called `introspect` that is specialized for looking inside types. (Indeed, the word *introspect* itself means to "look inside".) It's a little bit similar to adding `__type__` to a query, but is more focused and has certain abilities and uses that you can't get by using `__type__`.
 
-So let's add some more to the query to get the information we want:
+A good rule of thumb is that:
+
+- If you are doing a query on objects and want to add some type information on the object itself, adding `__type__` lets you do this.
+- If you want to do a query exclusively on the type itself, go with `introspect`.
+
+To do an `introspect` query, just wrap it in parentheses inside a `select`. Here is how we can use `introspect` to look inside the `Person` type:
 
 ```edgeql
-select (introspect Ship) {
-  name,
-  properties: {
+select (introspect Person) {
     name,
-    target: {
-      name
-    }
-  },
-  links: {
-    name,
-    target: {
-      name
-    },
-  },
+    pointers: {name}
 };
 ```
 
-So what this will give is:
-
-1. The type name for `Ship`,
-2. The properties, and their names. But we also use `target`, which is what a property points to (the part after the `:`). For example, the target of `name: str` is `std::str`. And we want the target name too; without it we'll get an output like `target: schema::ScalarType {id: 00000000-0000-0000-0000-000000000100}`.
-3. The links and their names, and the targets to the links...and the names of _their_ targets too.
-
-With all that together, we get something readable and useful. The output looks like this:
+Both the query and output are now quite clean:
 
 ```
 {
   schema::ObjectType {
-    name: 'default::Ship',
-    properties: {
-      schema::Property {name: 'id', 
-        target: schema::ScalarType {name: 'std::uuid'}},
-      schema::Property {name: 'name', 
-        target: schema::ScalarType {name: 'std::str'}},
-    },
-    links: {
-      schema::Link {name: '__type__', 
-        target: schema::ObjectType {name: 'schema::Type'}},
-      schema::Link {name: 'crew', 
-        target: schema::ObjectType {name: 'default::Crewman'}},
-      schema::Link {name: 'sailors', 
-        target: schema::ObjectType {name: 'default::Sailor'}},
+    name: 'default::Person',
+    pointers: {
+      schema::Link {name: '__type__'},
+      schema::Property {name: 'id'},
+      schema::Link {name: 'lovers'},
+      schema::Property {name: 'is_single'},
+      schema::Link {name: 'places_visited'},
+      schema::Property {name: 'age'},
+      schema::Property {name: 'name'},
+      schema::Property {name: 'title'},
+      schema::Property {name: 'conversational_name'},
+      schema::Property {name: 'degrees'},
+      schema::Property {name: 'pen_name'},
+      schema::Property {name: 'first_appearance'},
+      schema::Property {name: 'last_appearance'},
+      schema::Property {name: 'strength'},
     },
   },
 }
 ```
 
-This type of query seems complex but it is just built on top of adding things like {name} every time you get output that only a machine can understand.
-
-Plus, if the query isn't too complex (like ours), you might find it easier to read without so many new lines and indentation. Here's the same query written that way, which looks much simpler now:
+Using `introspect` also lets us look inside scalar types, which isn't possible with `__type__` (which only works on object types). So this query won't work:
 
 ```edgeql
-select (introspect Ship) {
-  name,
-  properties: {name, target: {name}},
-  links: {name, target: {name}},
-};
+select Class.__type__ {*};
 ```
 
-As of EdgeDB 3.0, the easiest way to see all the possible introspection of a type is to use the splat operator. And when using the `**` double splat operator, you will see pages and pages of output. If you want to know everything there is to know about our `Ship` type, just type `select (introspect Ship) {**};`!
+But `introspect` will:
+
+```edgeql
+select (introspect Class);
+```
+
+That query just returns a `{schema::ScalarType {id: c7c181cc-268c-11ee-980e-a10f818aefc0}}`. But `ScalarType` looks like an object type of its own that we can use the splat operator on! Let's see what's inside:
+
+```edgeql
+select (introspect Class) {*};
+```
+
+There it is! Lots of info about our `Class` enum:
+
+```
+{
+  schema::ScalarType {
+    final: false,
+    is_final: false,
+    abstract: false,
+    is_abstract: false,
+    id: c7c181cc-268c-11ee-980e-a10f818aefc0,
+    name: 'default::Class',
+    internal: false,
+    builtin: false,
+    computed_fields: [],
+    expr: {},
+    from_alias: false,
+    is_from_alias: false,
+    inherited_fields: [],
+    default: {},
+    enum_values: ['Rogue', 'Mystic', 'Merchant'],
+    arg_values: {},
+  },
+}
+```
+
+You can even `introspect` the most basic of EdgeDB's scalar types:
+
+```edgeql
+select ((introspect str), (introspect int64), (introspect int16));
+```
+
+The output for this query is actually pretty interesting. We can see that the `id`s for EdgeDB's basic scalar types have been manually chosen instead of automatically generated.
+
+```
+{
+  (
+    schema::ScalarType {id: 00000000-0000-0000-0000-000000000101},
+    schema::ScalarType {id: 00000000-0000-0000-0000-000000000105},
+    schema::ScalarType {id: 00000000-0000-0000-0000-000000000103},
+  ),
+}
+```
+
+But the `introspect` keyword isn't limited to doing queries on types for our own information and fun. EdgeDB has one type that requires you to `introspect` it whenever it gets used! Let's take a look at that now.
 
 ## The sequence type
 
