@@ -4,11 +4,13 @@ tags: Type Annotations, Backlinks
 
 # Chapter 14 - A ray of hope
 
-> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Buda-Pesth (Budapest) in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+> Finally there is some good news: Jonathan Harker is alive. It seems that he managed to escape Castle Dracula, after which he found his way to Buda-Pesth (Budapest) in August and then to a hospital. The staff at the hospital are worried about Jonathan's mental health and send Mina a letter in which they say that he had "had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+>
+> Poor Jonathan! Sitting in the hospital he begins to wonder if he has just gone insane. Was Count Dracula real? Were the vampire women real too? Or did he just imagine the whole thing? How can Mina marry a man who is slowly going insane?
 >
 > Mina takes a train to the hospital where Jonathan is recovering, after which they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it.
 >
-> Meanwhile, Van Helsing continues to contact his associates in universities around Europe to search for information on vampires and their activities. The men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
+> Meanwhile, Van Helsing continues to contact his associates in universities around Europe to search for information on vampires and their activities. The men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees Lucy he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but also happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
 Looks like we have a new city called Exeter, which is easy to add:
 
@@ -19,7 +21,7 @@ insert City {
 };
 ```
 
-That's the population of Exeter at the time (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
+That's the population of Exeter at the time of the book (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
 
 We can also update the city of Buda-Pesth to add the name of the hospital where Jonathan Harker was staying. In addition, one of the universities that Van Helsing contacted for information is in the same city. Let's add them both:
 
@@ -32,11 +34,89 @@ update City filter .name = 'Buda-Pesth'
   };
 ```
 
-## Adding annotations to types and using @
+## Adding and accessing properties to links
 
-Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
+One interesting thing about links is that they can hold properties too. Since a link doesn't exist without a connection between objects, properties on a link usually have something to do with the relationship between these objects as well. Or they may be a computed value that only makes sense when you have objects joined by a link.
 
-Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `description` for this:
+We can add a link property to our schema too by thinking of some more vampire physics. We know that `Vampire` objects control `MinorVampire` objects, and are so powerful that `MinorVampire`s are even deleted when their controlling `Vampire` dies. We represented this in our schema by adding a deletion policy:
+
+```edgeql
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+  }
+}
+```
+
+Now let's add a link property as well. Both `MinorVampire`s and `Vampire`s have the property `strength`, and let's now say that a `Vampire`, with enough concentration, is able to give some of its own strength to the `MinorVampire`s that it controls. We'll call this link property `combined_strength`, and say that it will be the combined strength of both divided by two. So if one Vampire has a strength of 16 and a MinorVampire has a strength of 10, their combined strength will be 13 (16 plus 10, then divided by 2).
+
+Added to the `Vampire` type, the `combined_strength` link property looks like this:
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+}
+```
+
+And then we can add another interesting property to the `Vampire` type, called `army_strength`. This will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
+
+Here is what the `Vampire` type looks like after these changes. Notice anything different in the schema?
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+  property army_strength := sum(.slaves@combined_strength);
+}
+```
+
+That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties as they are structurally somewhat different from regular properties. We don't need to get into the internal details except for two things: link properties can only be `single`, and they must always be optional.
+
+And with those schema changes made, we can do a query on Count Dracula to see what his army looks like. Don't forget the `@` when doing queries too!
+
+```edgeql
+select Vampire {
+  name,
+  age,
+  strength,
+  slaves: {
+    name,
+    strength,
+    @combined_strength
+  },
+  army_strength
+};
+```
+
+Dracula's vampire slaves have a random strength property so the query output will look different on your end, but it will be similar to the output below. You can see that the `MinorVampire` types that Dracula controls are significantly stronger when he concentrates to control them as directly as possible.
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    age: 800,
+    strength: 20,
+    slaves: {
+      default::MinorVampire {name: 'Vampire Woman 1', strength: 5, @combined_strength: {12.5}},
+      default::MinorVampire {name: 'Vampire Woman 2', strength: 9, @combined_strength: {14.5}},
+      default::MinorVampire {name: 'Vampire Woman 3', strength: 8, @combined_strength: {14}},
+      default::MinorVampire {name: 'Lucy', strength: 9, @combined_strength: {14.5}},
+    },
+    army_strength: 55.5,
+  },
+}
+```
+
+## Adding annotations to types
+
+Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it when using an `introspect` query or when we put `__type__` into a query on an object type. By default, annotations can use the titles `title` or `description`.
+
+Let's imagine that in our game a `City` needs at least 50 buildings, and we want the other developers to know this. Let's use `description` for this:
 
 ```sdl
 type City extending Place {
@@ -68,6 +148,34 @@ Uh oh, not quite. The `annotations` part of the `introspect` query just says `st
       schema::Property {name: 'important_places'},
       schema::Property {name: 'id'},
       schema::Property {name: 'population'},
+    },
+  },
+}
+```
+
+Let's do an `introspect` query on `City` again, but this time using the splat operator on the annotations to see what is inside.
+
+```edgeql
+select (introspect City) { annotations: {*}};
+```
+
+There it is!
+
+```
+{
+  schema::ObjectType {
+    annotations: {
+      schema::Annotation {
+        id: 6478af55-27fe-11ee-a636-8f86ec27644b,
+        name: 'std::description',
+        internal: false,
+        builtin: true,
+        computed_fields: [],
+        inheritable: false,
+        @is_owned: true,
+        @owned: true,
+        @value: 'A place with 50 or more buildings. Anything else is an OtherPlace',
+      },
     },
   },
 }
