@@ -241,9 +241,7 @@ We've come a long way since first setting up our database and doing our early ob
 First, we have two inserts here where we could only have one.
 
 ```edgeql
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'London',

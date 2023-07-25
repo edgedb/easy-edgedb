@@ -26,12 +26,8 @@ insert NPC {
 This was fine when we only had cities, but now we have the `Place` and `Country` types. First we'll insert two more `Country` types to have some more variety:
 
 ```edgeql
-insert Country {
-  name := 'France'
-};
-insert Country {
-  name := 'Slovakia'
-};
+insert Country { name := 'France' };
+insert Country { name := 'Slovakia' };
 ```
 
 (In Chapter 9 we'll learn how to do this with just one `insert`!)

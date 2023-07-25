@@ -102,9 +102,7 @@ module default {
 
 insert Time { clock := '09:00:00' };
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',
@@ -123,30 +121,20 @@ insert PC {
   class := Class.Mystic,
 };
 
-insert Country {
-  name := 'Hungary'
-};
+insert Country { name := 'Hungary' };
 
-insert Country {
-  name := 'Romania'
-};
+insert Country { name := 'Romania' };
 
-insert Country {
-  name := 'France'
-};
+insert Country { name := 'France' };
 
-insert Country {
-  name := 'Slovakia'
-};
+insert Country { name := 'Slovakia' };
 
 insert Castle {
     name := 'Castle Dracula',
     doors := [6, 19, 10],
 };
 
-insert City {
-    name := 'London',
-};
+insert City { name := 'London' };
 
 insert NPC {
   name := 'Jonathan Harker',

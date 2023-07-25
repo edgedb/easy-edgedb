@@ -317,9 +317,7 @@ Let's start inserting some `City` objects with the simple schema we already have
 Don't forget to separate each property by a comma, and finish the `insert` with a semicolon. Indentation isn't relevant in EdgeQL like it is in languages such as Python and F#, but EdgeDB prefers two spaces for indentation. Our first three cities look like this:
 
 ```edgeql
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',

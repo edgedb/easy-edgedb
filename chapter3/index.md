@@ -59,12 +59,8 @@ With these changes done, let's do a migration!
 It's easy to make a `Country`, because its only required property is `name`. We'll quickly insert two `Country` objects for Hungary and Romania:
 
 ```edgeql
-insert Country {
-  name := 'Hungary'
-};
-insert Country {
-  name := 'Romania'
-};
+insert Country { name := 'Hungary' };
+insert Country { name := 'Romania' };
 ```
 
 ## Capturing a select expression

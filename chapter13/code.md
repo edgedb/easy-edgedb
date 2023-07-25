@@ -162,9 +162,7 @@ module default {
 
 insert Time { clock := '09:00:00' };
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',
@@ -188,30 +186,20 @@ insert PC {
  class := Class.Mystic
 };
 
-insert Country {
-  name := 'Hungary'
-};
+insert Country { name := 'Hungary' };
 
-insert Country {
-  name := 'Romania'
-};
+insert Country { name := 'Romania' };
 
-insert Country {
-  name := 'France'
-};
+insert Country { name := 'France' };
 
-insert Country {
-  name := 'Slovakia'
-};
+insert Country { name := 'Slovakia' };
 
 insert Castle {
     name := 'Castle Dracula',
     doors := [6, 19, 10],
 };
 
-insert City {
-    name := 'London',
-};
+insert City { name := 'London' };
 
 insert NPC {
   name := 'Jonathan Harker',
@@ -366,46 +354,36 @@ insert Event {
   location := (41.2350, 29.1100)
 };
 
-update Person
-  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
-  set {
-    strength := <int16>round(random() * 5)
-  };
-
 update Person filter .name = 'Lucy Westenra'
-  set {
-  last_appearance := cal::to_local_date(1893, 9, 20)
-};
+  set { last_appearance := cal::to_local_date(1893, 9, 20) };
 
-with lucy := assert_single(
-    (select Person filter .name = 'Lucy Westenra')
-)
+with lucy := assert_single((select Person filter .name = 'Lucy Westenra'))
 insert Vampire {
   name := 'Count Dracula',
   age := 800,
+  strength := 20,
+  places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'}),
   slaves := {
-    (insert MinorVampire {
-      name := 'Vampire Woman 1',
-  }),
-    (insert MinorVampire {
-     name := 'Vampire Woman 2',
-  }),
-    (insert MinorVampire {
-     name := 'Vampire Woman 3',
-  }),
+    (insert MinorVampire { name := 'Vampire Woman 1'}),
+    (insert MinorVampire { name := 'Vampire Woman 2'}),
+    (insert MinorVampire { name := 'Vampire Woman 3'}),
     (insert MinorVampire {
      name := "Lucy",
      former_self := lucy,
      first_appearance := lucy.last_appearance,
      strength := lucy.strength + 5,
     }),
- },
- places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
+ }
 };
 
-update Vampire
-filter .name = 'Count Dracula'
-set {
-  strength := 20
-};
+update Person
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
+  set {
+    strength := <int16>round(random() * 5)
+  };
+
+update MinorVampire
+  set {
+    strength := <int16>round(random() * 5) + 5
+  };
 ```

@@ -505,12 +505,6 @@ insert Event {
   location := (41.2350, 29.1100)
 };
 
-update Person
-  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
-  set {
-    strength := <int16>round(random() * 5)
-  };
-
 update Person filter .name = 'Lucy Westenra'
   set {
   last_appearance := cal::to_local_date(1893, 9, 20)
@@ -521,28 +515,30 @@ insert Vampire {
   name := 'Count Dracula',
   age := 800,
   strength := 20,
+  places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'}),
   slaves := {
+    (insert MinorVampire { name := 'Vampire Woman 1'}),
+    (insert MinorVampire { name := 'Vampire Woman 2'}),
+    (insert MinorVampire { name := 'Vampire Woman 3'}),
     (insert MinorVampire {
-     name := 'Vampire Woman 1',
-     strength := <int16>round(random() * 5) + 5,
-  }),
-    (insert MinorVampire {
-     name := 'Vampire Woman 2',
-     strength := <int16>round(random() * 5) + 5,
-  }),
-    (insert MinorVampire {
-     name := 'Vampire Woman 3',
-     strength := <int16>round(random() * 5) + 5,
-  }),
-    (insert MinorVampire {
-     name := 'Lucy',
+     name := "Lucy",
      former_self := lucy,
      first_appearance := lucy.last_appearance,
      strength := lucy.strength + 5,
     }),
- },
- places_visited := (select Place filter .name in {'Romania', 'Castle Dracula'})
+ }
 };
+
+update Person
+  filter .name not in {'Jonathan Harker', 'Count Dracula', 'Renfield'}
+  set {
+    strength := <int16>round(random() * 5)
+  };
+
+update MinorVampire
+  set {
+    strength := <int16>round(random() * 5) + 5
+  };
 
 insert City {
   name := 'Exeter',
@@ -550,14 +546,10 @@ insert City {
 };
 
 update Crewman
-  set {
-    name := 'Crewman ' ++ <str>.number
-};
+  set { name := 'Crewman ' ++ <str>.number };
 
 update City filter .name = 'London'
-  set {
-    coffins := 21
- };
+  set { coffins := 21 };
 
 insert BookExcerpt {
   date := cal::to_local_datetime(1893, 10, 1, 4, 0, 0),
@@ -612,9 +604,7 @@ for city in {'Varna', 'Galatz'}
    name := city
 });
 
-insert OtherPlace {
-  name := 'Bosphorus'
-};
+insert OtherPlace { name := 'Bosphorus' };
 
 for visit in {
     ('The Demeter', 'Varna', '1893-07-06'),
