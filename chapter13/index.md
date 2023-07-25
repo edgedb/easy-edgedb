@@ -641,7 +641,7 @@ Let's experiment first. We'll add a `SomeSequenceNumber` to our schema with the 
 scalar type SomeSequenceNumber extending sequence;
 ```
 
-And now let's play around with this sequence type a bit before we make a `PCNumber` to put on our `PC` type as a property. Basic sequence behavior is pretty simple: you increment them with the `sequence_next()` function, and reset them with `sequence_reset()`. Inside these functions you specify the sequence type that we want to increment.
+And now let's play around with this sequence type a bit before we make a `PCNumber` to put on our `PC` type as a property. Basic sequence behavior is pretty simple: you increment them with the `sequence_next()` function, and reset them with `sequence_reset()`. But here's an important point: inside these functions you need to specify the sequence type that we want to increment.
 
 In other words, just typing `sequence_next()` won't work because EdgeDB doesn't know which sequence type we want to increment:
 
@@ -665,7 +665,7 @@ error: InvalidReferenceError: object type or alias 'default::SomeSequenceNumber'
   │                      ^^^^^^^^ error
 ```
 
-But did you notice that the function is expecting an argument of `ScalarType`? We saw this just above when we learned the `introspect` keyword. Let's try replacing `SomeSequenceNumber` with `introspect SomeSequenceNumber` which returns a `ScalarType`:
+But did you notice that the function is expecting an argument of `ScalarType`? We saw this just above when we learned the `introspect` keyword. So let's try replacing `SomeSequenceNumber` with `introspect SomeSequenceNumber` which returns a `ScalarType`:
 
 ```
 db> select sequence_next(introspect SomeSequenceNumber);
@@ -674,7 +674,7 @@ db> select sequence_next(introspect SomeSequenceNumber);
 
 Success! Just add `introspect` and the `sequence_next()` and `sequence_reset()` functions will know which sequence type to increment.
 
-Let's play around with this sequence number of ours for a bit. As you can see, it can be incremented or reset, but can't be reset to anything less than 1.
+Now that we know how sequences work, let's play around with this sequence number of ours for a bit. As you can see, it can be incremented or reset, but can't be reset to anything less than 1.
 
 ```
 db> select sequence_next(introspect SomeSequenceNumber);
@@ -720,7 +720,7 @@ select PC {
 };
 ```
 
-And with that, the sequence incrementing just works. That was easy!
+And with that, the sequence incrementing just works. That was easy! And thanks to the default value we provided, EdgeDB has even updated our existing object types with the `number` property.
 
 ```
 {
