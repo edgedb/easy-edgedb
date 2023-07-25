@@ -120,12 +120,11 @@ module default {
 
   # Functions
 
-  function fight(one: Person, two: Person) -> str 
-    using (
-      (one.name ?? 'Fighter 1') ++ ' wins!'
-      if (one.strength ?? 0) > (two.strength ?? 0)
-      else (two.name ?? 'Fighter 2') ++ ' wins!'
-    );
+  function fight(one: Person, two: Person) -> str
+  using (
+    one.name ++ ' wins!' if (one.strength ?? 0) > (two.strength ?? 0)
+    else two.name ++ ' wins!'
+  );
 
   function get_url() -> str 
     using (

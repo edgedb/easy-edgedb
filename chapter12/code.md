@@ -121,12 +121,11 @@ module default {
 
   # Functions
 
-  function fight(one: Person, two: Person) -> str 
-    using (
-      (one.name ?? 'Fighter 1') ++ ' wins!'
-      if (one.strength ?? 0) > (two.strength ?? 0)
-      else (two.name ?? 'Fighter 2') ++ ' wins!'
-    );
+  function fight(one: Person, two: Person) -> str
+  using (
+    one.name ++ ' wins!' if (one.strength ?? 0) > (two.strength ?? 0)
+    else two.name ++ ' wins!'
+  );
 
   function fight(people_names: array<str>, opponent: Person) -> str
     using (
@@ -135,8 +134,8 @@ module default {
       select
           array_join(people_names, ', ') ++ ' win!'
           if sum(people.strength) > (opponent.strength ?? 0)
-          else (opponent.name ?? 'Opponent') ++ ' wins!'
-    );
+          else opponent.name ++ ' wins!'
+  );
 
   function get_url() -> str
     using (<str>'https://geohack.toolforge.org/geohack.php?params=');
