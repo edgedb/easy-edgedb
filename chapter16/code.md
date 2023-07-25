@@ -167,7 +167,9 @@ module default {
   type Vampire extending Person {
     multi slaves: MinorVampire {
       on source delete delete target;
+      property combined_strength := (Vampire.strength + .strength) / 2;
     }
+    property army_strength := sum(.slaves@combined_strength);
   }
 
   # Functions
