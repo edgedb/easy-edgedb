@@ -500,6 +500,8 @@ And the advantage to this deletion is that it will return all three deleted obje
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
 
+5. How would you give the `Place` type a backlink to every `Person` type that visited it?
+
 [See the answers here.](answers.md)
 
 <!-- quiz-end -->
