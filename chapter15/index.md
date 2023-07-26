@@ -72,7 +72,7 @@ function can_enter(person_name: str, place: HasCoffins) -> optional str
     );
 ```
 
-The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
+The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a str that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
 
 If we can't trust the user of the function to always enter a `Vampire` or `MinorVampire` object, there are some options:
 
@@ -130,7 +130,7 @@ In this case we are still ignoring the argument `place` (the `City` type) but ma
 A notable example of a function that gets called on empty input is the coalescing operator.
 ```
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 11. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
 
 `optional anytype ?? set of anytype -> set of anytype`
 
