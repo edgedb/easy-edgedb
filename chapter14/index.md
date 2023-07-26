@@ -271,7 +271,7 @@ Another global type could help here. We've had a global `Time` object in our dat
 
 A global scalar isn't an object though, so changing its value is a bit different: instead, we use the `set` and `unset` keywords to work with it.
 
-To do this we can add an enum called `Mode`, and give it two values: `Info` or `Debug`. `Info` will be the default, while `Debug` will be the mode that provides extra information for the testers. After this we can make a global called `tester_mode`:
+To try using a global scalar we can add an enum called `Mode`, and give it two values: `Info` or `Debug`. `Info` will be the default, while `Debug` will be the mode that provides extra information for the testers. After this we can make a global called `tester_mode`:
 
 ```sdl
 scalar type Mode extending enum<Info, Debug>;
@@ -287,7 +287,7 @@ A `required` global always needs a default value, which makes sense: a global is
 error: required globals must have a default
   ┌─ c:\easy-edgedb\dbschema\default.esdl:9:3
   │
-9 │   required global tester_mode: str;
+9 │   required global tester_mode: Mode;
   │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
 
 edgedb error: cannot proceed until .esdl files are fixed
@@ -313,9 +313,9 @@ The output here is simple too, just a message informing us that the value was su
 OK: SET GLOBAL
 ```
 
-The other keyword is `reset`, which resets a global to its default value. In our case the default value is `Mode.Info`, but if we hadn't specified that `tester_mode` is `required` then the default value would have been `{}`, an empty set.
+The opposite of the `set` keyword is `reset`, which resets a global to its default value. In our case the default value is `Mode.Info`, but if we hadn't specified that `tester_mode` is `required` then the default value would have been `{}`, an empty set.
 
-Pretty easy! The output below shows the sort of output you will see when setting and resetting a global scalar value.
+Pretty easy! The output below shows the sort of feedback you will see in the REPL when setting and resetting a global scalar value.
 
 ```
 db> select global tester_mode;
@@ -331,7 +331,9 @@ OK: RESET GLOBAL
 And with this global value in place, we can now do queries that match on the `tester_mode` enum. Here is an example of a query that a tester using the `PC` named Emil Sinclair might use. During regular `Info` mode the query will only show the character's own info, but during `Debug` mode it will also show info on all the `NPC` objects as well. In a more complex schema we can imagine that this could be used to show a tester the health, location and so on of all the NPCs in a game, which could then be used to show them on a map or in a separate chart on the screen that is only visible during debug mode.
 
 ```edgeql
-with info := NPC if global tester_mode = Mode.Debug else <NPC>{},
+# Select all NPC objects in Debug mode
+with info := NPC if global tester_mode = Mode.Debug 
+             else <NPC>{},
   select PC {
     name,
     class,
@@ -344,7 +346,7 @@ with info := NPC if global tester_mode = Mode.Debug else <NPC>{},
 } filter .name = 'Emil Sinclair';
 ```
 
-The output is pretty short during `Info` mode:
+The output is pretty short during `Info` mode, which only provides the necessary info to play the game in the same way as every other player.
 
 ```
 {
@@ -382,11 +384,15 @@ But if you use `set global tester_mode := Mode.Debug;` then all of a sudden the 
 }
 ```
 
+You could imagine some other combinations of global modes such as a "God Mode" that also makes the character invincible - because it's annoying to try to debug test a game when other `PC`s think you are a regular player and keep killing your character without knowing that you are just there to test the game mechanics.
+
 ## Backlinks
 
-Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.
+It's finally time to learn one of EdgeDB's most powerful and useful features: backlinks. A backlink is like a regular link, except that it works in the other direction: instead of a link from your object to other objects, it's a computed property that shows the objects that link to you!
 
-We know how to get Count Dracula's `slaves` by name with something like this:
+Understanding backlinks and the syntax can take a bit of effort, but it's well worth it.
+
+First let's start by looking at some regular links. We know how to get Count Dracula's `slaves` by name with something like this:
 
 ```edgeql
 select Vampire {
@@ -413,7 +419,7 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite? Namely, starting from `select MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
+But what if we are doing the opposite? Namely, starting from `select MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now the `MinorVampire` type only gives us access to properties and links that belong to the `MinorVampire` and `Person` type. Imagine that we want to have a `master` link that shows the `Vampire` object that links to a `MinorVampire`...how do we do it?
 
 ```edgeql
 select MinorVampire {
@@ -425,9 +431,22 @@ select MinorVampire {
 
 Since there's no `master: Vampire` link, how do we go backwards to see the `Vampire` type that links to it?
 
-This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[is Vampire]`.
+This is where backlinks come in, by doing the following:
 
-First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
+- Select the type that is being linked back to. Here that would be `MinorVampire`, because we want to see links to `MinorVampire` objects. If you are inside a type's schema, you don't need to write the type name.
+- Create a link that uses the `.<` syntax instead of `.`
+- Indicate the name of the link. We want to see `slaves` links from the `Vampire` type, so type `slaves` next.
+- Specify the type that we are looking for: `[is Vampire]`. This isn't strictly necessary, but helpful. We'll see why in a moment.
+
+So let's follow these steps to make our first backlink query. We want:
+
+- A link to `MinorVampire` objects, so `select MinorVampire`
+- The link to be a backlink, so add `.<`: `select MinorVampire.<`
+- To look for links via a link called `slaves`, so add `slaves`: `select MinorVampire.<slaves`
+- The link to be from a `Vampire` object, so add `Vampire`: `select MinorVampire.<slaves[is Vampire]`
+
+
+This will return us one or more `Vampire` objects, on which of course we can add a shape. So the query will now look like this:
 
 ```edgeql
 select MinorVampire.<slaves[is Vampire] {
@@ -436,9 +455,9 @@ select MinorVampire.<slaves[is Vampire] {
 };
 ```
 
-Because it goes in reverse order, it is selecting `Vampire` that has a link called `slaves` that are of type `MinorVampire`.
+Because it goes in reverse order, it is selecting the `Vampire` objects that have a link called `slaves` that goes back `.<` to the type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
+You can think of the human readable version of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -502,7 +521,9 @@ In this case, we are asking EdgeDB to show us each and every object that is link
 }
 ```
 
-You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again).
+
+So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
 
 ```
 db> select Place {
