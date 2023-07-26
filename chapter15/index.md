@@ -198,7 +198,7 @@ vampire.name ++ ' is already dead on ' ++ <str>.date
 
 Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type. `NPC`s won't need this constraint because their names are already decided by us the creators of the game, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. This constraint doesn't exist on the original `Person` type, so we'll also need to add the `overloaded` keyword here. The `PC` type with the new constraint now looks like this:
 
 ```sdl
 type PC extending Person {
@@ -233,7 +233,7 @@ than 30 characters.
   must be no longer than 30 characters.
 ```
 
-Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
+Another convenient constraint is called `one_of`, and is sort of like a quick enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
 ```sdl
 title: str {
@@ -241,7 +241,7 @@ title: str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Dr., Ph.D., etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, the German _Herr_, Lady, Dr., Ph.D., etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
@@ -257,7 +257,7 @@ Now let's learn about perhaps the most interesting constraint in EdgeDB: an expr
 
 ## `expression on`: the most flexible constraint
 
-One particularly flexible constraint is called {eql:constraint}` ``expression on`` <docs:std::expression>`, which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type _as long as_ (insert expression here)".
+One particularly flexible constraint is called {eql:constraint}` ``expression on`` <docs:std::expression>`, which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must return `true` to create an object. In other words: "Create this object _as long as_ (insert expression here)".
 
 Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called {eql:func}`docs:std::contains` that looks like this:
 
@@ -265,14 +265,14 @@ Let's say we need a type `Lord` for some reason later on, and all `Lord` types m
 std::contains(haystack: str, needle: str) -> bool
 ```
 
-It returns `{true}` if the `haystack` (a string) contains the `needle` (usually a shorter string).
+This function returns `{true}` if the `haystack` (a string) contains the `needle` (usually a shorter string).
 
 We can write the constraint with `expression on` and `contains()` like this:
 
 ```sdl
 type Lord extending Person {
   constraint expression on (
-    contains(__subject__.name, 'Lord');
+    contains(__subject__.name, 'Lord')
   );
 }
 ```
