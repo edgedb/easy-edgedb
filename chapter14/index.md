@@ -36,7 +36,7 @@ update City filter .name = 'Buda-Pesth'
 
 ## Adding and accessing properties to links
 
-One interesting thing about links is that they can hold properties too. Since a link doesn't exist without a connection between objects, properties on a link usually have something to do with the relationship between these objects as well. Or they may be a computed value that only makes sense when you have objects joined by a link.
+One interesting thing about links is that they can hold properties too. Since a link doesn't exist without a connection between objects, properties on a link usually have something to do with the relationship between these objects as well. Or link properties may be a computed value that only makes sense when you have objects joined by a link.
 
 We can add a link property to our schema too by thinking of some more vampire physics. We know that `Vampire` objects control `MinorVampire` objects, and are so powerful that `MinorVampire`s are even deleted when their controlling `Vampire` dies. We represented this in our schema by adding a deletion policy:
 
@@ -48,7 +48,7 @@ type Vampire extending Person {
 }
 ```
 
-Now let's add a link property as well. Both `MinorVampire`s and `Vampire`s have the property `strength`, and let's now say that a `Vampire`, with enough concentration, is able to give some of its own strength to the `MinorVampire`s that it controls. We'll call this link property `combined_strength`, and say that it will be the combined strength of both divided by two. So if one Vampire has a strength of 16 and a MinorVampire has a strength of 10, their combined strength will be 13 (16 plus 10, then divided by 2).
+Now let's add a link property as well. Both `MinorVampire`s and `Vampire`s have the property `strength`, and let's now say that a `Vampire`, with enough concentration, is able to give some of its own strength to the `MinorVampire`s that it controls. We'll call this link property `combined_strength`, and define it as the combined strength of both divided by two. So if one `Vampire` has a strength of 16 and a `MinorVampire` has a strength of 10, their combined strength will be 13 (16 plus 10, then divided by 2).
 
 Added to the `Vampire` type, the `combined_strength` link property looks like this:
 
@@ -61,9 +61,9 @@ type Vampire extending Person {
 }
 ```
 
-And then we can add another interesting property to the `Vampire` type, called `army_strength`. This will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
+And then we can add another interesting property to the `Vampire` type, called `army_strength`. This property will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this number will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
 
-Here is what the `Vampire` type looks like after these changes. Notice anything different in the schema?
+Here is what the `Vampire` type looks like after these changes. Notice anything in the syntax that looks different from what we've seen so far?
 
 ```sdl
 type Vampire extending Person {
@@ -75,7 +75,7 @@ type Vampire extending Person {
 }
 ```
 
-That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties as they are structurally somewhat different from regular properties. We don't need to get into the internal details except for two things: link properties can only be `single`, and they must always be optional.
+That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties as they are structurally somewhat different from regular properties. We don't need to get into the internal details but there are two things to keep in mind about link properties: they can only be `single`, and must always be optional.
 
 And with those schema changes made, we can do a query on Count Dracula to see what his army looks like. Don't forget the `@` when doing queries too!
 
@@ -93,7 +93,7 @@ select Vampire {
 };
 ```
 
-Dracula's vampire slaves have a random strength property so the query output will look different on your end, but it will be similar to the output below. You can see that the `MinorVampire` types that Dracula controls are significantly stronger when he concentrates to control them as directly as possible.
+The `strength` property of Dracula's vampire slaves is determined randomly so the query output will look different on your end, but it will be similar to the output below. You can see that the `MinorVampire` types that Dracula controls are significantly stronger when he concentrates to control them as directly as possible.
 
 ```
 {
@@ -116,7 +116,7 @@ Dracula's vampire slaves have a random strength property so the query output wil
 
 Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it when using an `introspect` query or when we put `__type__` into a query on an object type. By default, annotations can use the titles `title` or `description`.
 
-Let's imagine that in our game a `City` needs at least 50 buildings, and we want the other developers to know this. Let's use `description` for this:
+Let's imagine that in our game a `City` needs at least 50 buildings, and we want the other developers to know this. Let's use an `annotation description` for this:
 
 ```sdl
 type City extending Place {
@@ -181,9 +181,9 @@ There it is!
 }
 ```
 
-Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. In other words, it's a link, and the target of a link just tells us the kind of annotation that gets used. But we're looking for the value inside it.
+Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. In other words, it's a link, and the target of a link just tells us the kind of annotation that gets used. But we're looking for the value inside it. And we can see from the `@` in the output above that the value of an annotation is a link property.
 
-This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+Let's try the query one more time:
 
 ```edgeql
 select (introspect City) {
@@ -196,7 +196,7 @@ select (introspect City) {
 };
 ```
 
-Now we see the actual annotation:
+And now the actual annotation shows up in the output.
 
 ```
 {
@@ -219,13 +219,13 @@ Now we see the actual annotation:
 }
 ```
 
-What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning for other developers to read so that's what we'll call it:
+What if we want an annotation with a different name besides `title` and `description`? This is surprisingly easy, just declare a new annotation by typing `abstract annotation` inside the schema and give it a name. We want to add a `warning` for other developers to read so that's what we'll call it:
 
 ```sdl
 abstract annotation warning;
 ```
 
-We'll imagine that it is important to use `Castle` instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` gives that information along with the other annotation:
+Maybe it is important to use `Castle` instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` gives that information along with the other annotation. Here are the two annotations to add to `OtherPlace`:
 
 ```sdl
 type OtherPlace extending Place {
@@ -262,86 +262,6 @@ And here it is:
   },
 }
 ```
-
-## Even more working with dates
-
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
-
-There is also a function called {eql:func}`docs:std::enumerate` that returns tuples of the index numbers and the items in set that we give it (a `set of tuple<int64, anytype>`). We'll use this to compare to our `count()` function to make sure that our number is right.
-
-First a simple example of how to use `enumerate()`:
-
-```edgeql
-with three_things := {'first', 'second', 'third'},
-select enumerate(three_things);
-```
-
-The output is:
-
-```
-{(0, 'first'), (1, 'second'), (2, 'third')}
-```
-
-Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
-
-```
-{
-  (0, 'Jonathan Harker'),
-  (1, 'Renfield'),
-  (2, 'The innkeeper'),
-  (3, 'Mina Murray'),
-  (4, 'John Seward'),
-  (5, 'Quincey Morris'),
-  (6, 'Arthur Holmwood'),
-  (7, 'Abraham Van Helsing'),
-  (8, 'Lucy Westenra'),
-  (9, 'Vampire Woman 1'),
-  (10, 'Vampire Woman 2'),
-  (11, 'Vampire Woman 3'),
-  (12, 'Lucy'),
-  (13, 'Count Dracula'),
-  (14, 'The Captain'),
-  (15, 'Petrofsky'),
-  (16, 'The First Mate'),
-  (17, 'The Cook'),
-  (18, 'Emil Sinclair'),
-}
-```
-
-There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up.
-
-The `Crewman` types are now just numbers, so let's give them each a name based on their numbers. This will be easy:
-
-```edgeql
-update Crewman
-set {
-  name := 'Crewman ' ++ <str>.number
-};
-```
-
-So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
-
-```edgeql
-with p := (select Person),
-     date := <cal::local_date>'1893-08-16',
-select (p.name, p.last_appearance, 
-  'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
-```
-
-Here is the output:
-
-```
-{
-  ('Lucy Westenra', <cal::local_date>'1893-09-20', 'Dead on 1893-08-16? false'),
-  ('Crewman 1', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-}
-```
-
-We could of course turn this into a function if we use it enough.
 
 ## Global scalars
 
@@ -631,7 +551,7 @@ One final note: this is why backlinks in EdgeDB are `multi` by default, as oppos
 
 ## Time to practice
 
-1. How would you display just the numbers for all the `Person` objects? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
+1. How would you create a global str that tells you whether vampires are currently asleep or awake?
 
 2. Using a computed backlink, how would you display 1) all the `Place` objects (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 
