@@ -124,7 +124,7 @@ This can be useful if you want a post date when you insert an object. With this 
 
 Note though that `datetime_current()` will not return the exact same date as another call to `datetime_current()` inside the same statement. This is because `datetime_current()` returns the datetime at which the _function is called_, not the datetime of the statement that it's in.
 
-We can see this in the following example in which we create three datetimes and then picks the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
+We can see this in the following example in which we create three datetimes and then pick the most recent one using the `max()` function. Note that the third datetime created - the most recent - is the one returned by `max()`.
 
 ```
 db> with three_dates := {
