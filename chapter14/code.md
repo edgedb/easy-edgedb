@@ -21,6 +21,8 @@ module default {
     default := Mode.Info;
   }
 
+  global time := assert_single((select Time));
+
   abstract annotation warning;
 
   # Abstract object types
