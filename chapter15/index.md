@@ -333,16 +333,16 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Setting your own error messages
 
-Since `expression on` is so flexible, you can use it in almost any way you can imagine. But it's not certain that the user will know how this constraint is meant to work - there's no message informing the user of this. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. But that flexibility also means that there is no built-in way to let the user know how any `expression on` is supposed to work when a constraint is violated. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
 
 ```
 edgedb error: ConstraintViolationError: invalid Lord
   Detail: invalid value of object type 'default::Lord'
 ```
 
-So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, all constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
+So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, all constraints allow you to set your own error message just by opening up a block with `{}` and specifying an `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
 
-Here's the `Lord` type now:
+Let's do that with our `Lord` type now:
 
 ```sdl
 type Lord extending Person {
@@ -363,7 +363,7 @@ Much better!
 
 ## Putting backlinks into the schema
 
-Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
+Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because deleting without a deletion policy becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
@@ -394,7 +394,7 @@ type MinorVampire extending Person {
 };
 ```
 
-Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink.
+Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust ourselves to input `master_name` correctly — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink. The syntax is the same as the syntax we used last chapter except that we don't need to specify that the link is to a `MinorVampire`, because we are already inside the `MinorVampire` type.
 
 ```sdl
 type MinorVampire extending Person {
@@ -462,13 +462,19 @@ And the result:
 
 Beautiful! All the information is right there.
 
-We won't see Kain and his slaves anymore so let's get rid of them with a quick delete query. We can just filter on their names because we know that no other objects are called Kain, Billy or Bob.
+We won't see Kain and his slaves anymore so let's get rid of them with a quick delete query. The `on source delete delete target` deletion policy on the `Vampire` policy makes this easy: just delete Kain.
 
 ```edgeql
+delete Vampire filter .name = 'Kain';
+```
+
+Of course, you don't have to depend on a deletion policy to delete objects. We could have deleted all three using this query for example:
+
+```
 delete Person filter .name in {'Kain', 'Billy', 'Bob'};
 ```
 
-You should see the three `id`s of the three objects and their types to show us that the deletion has worked.
+And the advantage to this deletion is that it will return all three deleted objects and their types (and even their properties and links if we wanted to show them) instead of just a single deleted `Vampire` object with the other two deletions happening unseen to us.
 
 ```
 {
