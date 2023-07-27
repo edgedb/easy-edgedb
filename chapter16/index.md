@@ -37,9 +37,7 @@ type BookExcerpt {
 }
 ```
 
-The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and means to create an index to make future queries faster. Lookups are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match. Indexing makes a lookup by an exact match faster compared to always scanning everything.
-
-We could do this for certain other types too - it might be good for types like `Place` and `Person`.
+The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and is a way to make queries that use `filter`, `order by`, or `group` faster. These three operations are faster with `index on` because now the database doesn't need to scan the whole set of objects in sequence to find objects that match.
 
 ```{eval-rst}
 .. note::
@@ -51,12 +49,14 @@ We could do this for certain other types too - it might be good for types like `
 If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so.
 ```
 
-Finally, here are two times when you don't need to create an `index`:
+Indexing on `date` on the `BookExcerpt` type seems like a good idea because the `BookExcerpt` data all comes from a single book, is done once, and doesn't need to be updated. An index on a property inside `PC` probably makes less sense, because `PC` objects are going to be inserted and updated all the time.
+
+EdgeDB will automatically index in a few cases. You don't need to think about adding `index` on:
 
 - on links,
 - on exclusive constraints for a property.
 
-Indexes are automatically created in these two cases so you don't need to use indexes for them. The automatically generated `id` property on every item is also always indexed.
+The automatically generated `id` property on every item is also always indexed.
 
 So let's do a migration and insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
@@ -123,6 +123,10 @@ type Event {
 ```
 
 You can see that `description` is a short string that we write, while `excerpt` links to the longer pieces of text that come directly from the book.
+
+## The 'analyze' keyword
+
+
 
 ## More functions for strings
 
