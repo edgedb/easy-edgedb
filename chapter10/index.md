@@ -49,7 +49,7 @@ If we have all the city data together, we can do a single insert with a `for` an
 
 In this case, the type is called a `tuple<str, int64>`.
 
-Before we start using these tuples, let's make sure that we understand the difference between tuplys and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
+Before we start using these tuples, let's make sure that we understand the difference between tuples and arrays. To start, let's look at slicing arrays and strings in a bit more detail.
 
 Previously we learned how to use square brackets to access part of an array or a string. So this query:
 
