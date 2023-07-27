@@ -194,6 +194,7 @@ module default {
 
   type Party {
     name: str;
+    link members := .<party[is PC];
   }
 
   type PC extending Person {

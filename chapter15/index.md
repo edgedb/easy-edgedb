@@ -484,6 +484,17 @@ And the advantage to this deletion is that it will return all three deleted obje
 }
 ```
 
+Finally, let's add a backlink to the Party type that we created in Chapter 13. That's easy! The `PC` type links to `Party` via a link called `party` so all we have to do is turn that around.
+
+```sdl
+type Party {
+  name: str;
+  link members := .<party[is PC];
+}
+```
+
+As you can see, once you understand how to write backlinks you start to wonder how you ever got anything done without them. They're one of the best reasons to use EdgeDB.
+
 [Here is all our code so far up to Chapter 15.](code.md)
 
 <!-- quiz-start -->
