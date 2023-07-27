@@ -6,9 +6,9 @@ tags: Indexing, String Functions
 
 > Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
 >
-> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. He is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But later, Renfield doesn't want to talk and just calls him an idiot. Very confusing.
+> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. Van Helsing is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But the next time Van Helsing sees him Renfield doesn't want to talk and just calls him an idiot. Very confusing.
 >
-> ne night, Renfield becomes very serious and asks the men to let him leave. Renfield says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” They want to believe him, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
+> One night, Renfield becomes very serious and asks the men to let him leave. Renfield says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” The men want to believe Renfield, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
 
 ## `index on` for quicker lookups
 
@@ -56,7 +56,7 @@ Finally, here are two times when you don't need to create an `index`:
 - on links,
 - on exclusive constraints for a property.
 
-Indexes are automatically created in these two cases so you don't need to use indexes for them.
+Indexes are automatically created in these two cases so you don't need to use indexes for them. The automatically generated `id` property on every item is also always indexed.
 
 So let's do a migration and insert two book excerpts. The strings in these entries are very long (pages long, sometimes) so we will only show the beginning and the end here:
 
