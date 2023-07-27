@@ -300,6 +300,170 @@ select Person filter .name = 'Brian';
 
 The query returns `{}`. Thanks to the `on source delete delete target` deletion policy, Brian is gone too!
 
+## Adding 'if orphan' to a deletion policy
+
+Deletion policies can be pretty tricky to get right so let's put together another concrete example of one in our schema and walk through it step by step.
+
+PCs can join together as parties inside games to work together on a common goal. We could allow players of our game to create a party that can then be joined by anyone who is interested. To start, let's make a simple `Party` type that `PC` can link to.
+
+```sdl
+type Party {
+  name: str;
+}
+
+type PC extending Person {
+  required class: Class;
+  required created_at: datetime {
+    default := datetime_of_statement();
+  }
+  multi party: Party; # New link here
+}
+```
+
+Easy enough! Now let's think about what the `multi party: Party` line means in practice. It has a default `on target delete restrict` placed on it, which means that we can't delete any `Party` that is linked to by a PC. Let's give this a try by adding a Party and two PC objects:
+
+```edgeql
+insert Party { name := "Ye olde party" };
+insert PC {
+  name := "Talloon",
+  class := Class.Merchant,
+  party := (select Party filter .name = "Ye olde party")
+};
+insert PC {
+  name := "Alena",
+  class := Class.Rogue,
+  party := (select Party filter .name = "Ye olde party")
+};
+```
+
+And now any attempt to `delete Party;` will give this error:
+
+```
+edgedb error: ConstraintViolationError: deletion of default::Party (86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
+  Detail: Object is still referenced in link party of default::PC (9a6eaabe-299c-11ee-8bd8-c76e1f17a3f2).
+```
+
+We don't want old `Party` objects to just sit around in our database when no `PC`s are using them anymore, so let's set up a deletion policy to delete any `Party` when all `PC` objects linking to it are deleted.
+
+There are two items to think about here. First of all, simply adding a `on source delete delete target` as below will not work. But let's give it a try and see what happens. First change the `PC` type to have this deletion policy and do a migration:
+
+```sdl
+type PC extending Person {
+  required class: Class;
+  required created_at: datetime {
+    default := datetime_of_statement();
+  }
+  multi party: Party {
+    on source delete delete target;
+  }
+}
+```
+
+And then let's try to delete both PC objects that link to the `Party` object:
+
+```edgeql
+delete PC filter .name in { "Alena", "Talloon" };
+```
+
+We get an error!
+
+```
+edgedb error: ConstraintViolationError: deletion of default::Party (86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
+  Detail: Object is still referenced in link party of default::PC (a2bb7ce2-299c-11ee-8bd8-431f1e9112d6).
+```
+
+This is because EdgeDB is attempting to delete `Party` when we delete each `PC` object, but there is still an invisible `on target delete restrict` policy that prevents the `Party` object from being deleted. In other words, our query tries to delete the `PC` called Alena but can't because the `PC` called Talloon still links to the Party object.
+
+So let's add an `on target delete allow` to the `PC` type to allow the linked to `Party` object to be deleted. This is closer to what we want, but not quite! But let's do a migration and see what happens in this case.
+
+```sdl
+type PC extending Person {
+  required class: Class;
+  required created_at: datetime {
+    default := datetime_of_statement();
+  }
+  multi party: Party {
+    on source delete delete target;
+    on target delete allow;
+  }
+}
+```
+
+Okay, now let's delete Talloon.
+
+```edgeql
+delete PC filter .name = "Talloon";
+```
+
+Success! Talloon is now deleted. But hold on a second...where did the Party go?
+
+```edgeql
+select Party;
+```
+
+The query returns an empty set! The `PC` named Alena is still in the database but her `Party` has outright disappeared. This `Party` object was automatically deleted because that's what we instructed EdgeDB to do: adding `on source delete delete target` means "delete the target every time any object linking to it is deleted". That's not what we want.
+
+The solution here is to add two new keywords: `if orphan`. Here is the difference once `if orphan` is added:
+
+- `on source delete delete target` means "delete the target if any object linking to it is deleted"
+- `on source delete delete target if orphan` means "delete the target if the last object linking to it is deleted".
+
+That's what we want! So now let's change the PC type to add these two new words and do another migration:
+
+```sdl
+type PC extending Person {
+  required class: Class;
+  required created_at: datetime {
+    default := datetime_of_statement();
+  }
+  multi party: Party {
+    on source delete delete target;
+    on target delete allow;
+  }
+}
+```
+
+Next we have a bit of work to insert the `Party` object again, link the existing `PC` named Alena to it, and then to insert the `PC` named Talloon again...
+
+```edgeql
+insert Party { name := "Ye olde party" };
+update PC filter .name = "Alena" 
+  set { 
+    party := (select Party filter .name = "Ye olde party") 
+  };
+insert PC { 
+  name := "Talloon",
+  class := Class.Merchant,
+  party := (select Party filter .name = "Ye olde party") 
+  };
+```
+
+And with that we are ready to delete our PC objects one at a time again. We'll start with Talloon again:
+
+```edgeql
+delete PC filter .name = "Talloon";
+```
+
+Alena is still linking to the Party object, so it should still be there. Let's check:
+
+```edgeql
+select Party { name };
+```
+
+It sure is!
+
+```
+{default::Party {name: 'Ye olde party'}}
+```
+
+And with just a single (orphan) link left, deleting Alena the PC should delete the Party object as well. Let's try it:
+
+```edgeql
+delete PC filter .name = "Alena";
+```
+
+Now if we try `select Party;` we will get an empty set, just as we hoped!
+
 ## Set operators (distinct, intersect, except) and losing shape
 
 We are already familiar with one of the set operators in EdgeDB: `union`. This is used to join two sets together. So `select MinorVampire.name union MinorVampire.name;` will return the following:

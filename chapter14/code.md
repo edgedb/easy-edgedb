@@ -106,6 +106,10 @@ module default {
     annotation warning := 'Castles and castle towns do not count! Use the Castle type for that';
   }
 
+  type Party {
+    name: str;
+  }
+
   type PC extending Person {
     required class: Class;
     required created_at: datetime {
@@ -113,6 +117,10 @@ module default {
     }
     required number: PCNumber {
       default := sequence_next(introspect PCNumber);
+    }
+    multi party: Party {
+      on source delete delete target;
+      on target delete allow;
     }
   }
 

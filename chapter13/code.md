@@ -94,6 +94,10 @@ module default {
 
   type OtherPlace extending Place;
 
+  type Party {
+    name: str;
+  }
+
   type PC extending Person {
     required class: Class;
     required created_at: datetime {
@@ -101,6 +105,10 @@ module default {
     }
     required number: PCNumber {
       default := sequence_next(introspect PCNumber);
+    }
+    multi party: Party {
+      on source delete delete target;
+      on target delete allow;
     }
   }
 
