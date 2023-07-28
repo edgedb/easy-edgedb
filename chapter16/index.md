@@ -26,7 +26,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text).
+This is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text). This type has a keyword that we haven't seen before:
 
 ```sdl
 type BookExcerpt {
@@ -46,15 +46,19 @@ The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and i
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
 
-If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so.
+If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so. A good rule of thumb for indexes might be to think of them in the context of a real book:
+
+- Faster search but database size increases: You can find content inside a book yourself, but you could also add an index. An index increases the book size somewhat, but helps you find content faster.
+- Inserts take longer: each book you print has that many extra pages to print.
+- Updates take longer: If you just update the content in a book, the update itself is the end of the operation. But if you have an index, then you'll have to update that as well to match the changes.
 ```
 
-Indexing on `date` on the `BookExcerpt` type seems like a good idea because the `BookExcerpt` data all comes from a single book, is done once, and doesn't need to be updated. An index on a property inside `PC` probably makes less sense, because `PC` objects are going to be inserted and updated all the time.
+Indexing on `date` on the `BookExcerpt` type seems like a good idea because the `BookExcerpt` data all comes from a single book, is inserted once, and doesn't need to be updated. An index on a property inside `PC` probably makes less sense, because `PC` objects are going to be inserted and updated all the time.
 
 EdgeDB will automatically index in a few cases. You don't need to think about adding `index` on:
 
-- on links,
-- on exclusive constraints for a property.
+- links,
+- exclusive constraints for a property.
 
 The automatically generated `id` property on every item is also always indexed.
 
@@ -124,9 +128,11 @@ type Event {
 
 You can see that `description` is a short string that we write, while `excerpt` links to the longer pieces of text that come directly from the book.
 
+With this done, let's get back to the `BookExcerpt` type and the indexing it uses. We now know that indexing speeds up `filter`, `order` and `group` queries, but by how much? Fortunately EdgeDB has a keyword that can provide some insight into this.
+
 ## The 'analyze' keyword
 
-
+One particularly nice addition to EdgeDB 3.0 which released in 2023 is the `analyze` keyword, which just might be EdgeDB's easiest keyword to use.
 
 ## More functions for strings
 
