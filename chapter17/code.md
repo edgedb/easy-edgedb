@@ -101,6 +101,7 @@ module default {
     required multi place: Place;
     required multi people: Person;
     location: tuple<float64, float64>;
+    index on (.location);
     property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
     property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
     property url := get_url() 
