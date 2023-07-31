@@ -132,7 +132,175 @@ With this done, let's get back to the `BookExcerpt` type and the indexing it use
 
 ## The 'analyze' keyword
 
-One particularly nice addition to EdgeDB 3.0 which released in 2023 is the `analyze` keyword, which just might be EdgeDB's easiest keyword to use.
+One particularly nice addition to EdgeDB 3.0 which released in 2023 is the `analyze` keyword, which just might be EdgeDB's easiest keyword to use. To analyze a query...just put the word `analyze` in front of it and you're done!
+
+Let's give it a try with perhaps the smallest and simplest query possible: `analyze select true;`. Here is the output:
+
+```
+───────── Coarse-grained Query Plan ─────────
+     │ Time Cost Loops Rows Width │ Relations
+root │  0.0 0.01   1.0  1.0     1 │
+```
+
+That's quite a bit of output even for a query as small as this one. Let's look at one part of the output at a time to make sure we understand it.
+
+Width: This refers to the average size in bytes per row. This is pretty easy to see by changing the query: `analyze select 9;` shows a width of 8 bytes, `analyze select <int16>9;` a width of 2 bytes. In Chapter 8 we learned that "The `__type__` link and `id` property together always make up 32 bytes", and this can be seen in an `analyze` query too. Try `analyze select Person;` and you'll see a width of 32.
+
+Rows: This refers to the number of items returned. Let's take a look at the output of `analyze select {8, 9};` to show this:
+
+```
+───────── Coarse-grained Query Plan ─────────
+     │ Time Cost Loops Rows Width │ Relations
+root │  0.0 0.03   1.0  2.0     8 │
+```
+
+As you can see, there are two items inside this set so the number of rows is 2.
+
+Now let's change this query to a tuple instead and see what happens:
+
+```edgeql
+analyze select (8, 9);
+```
+
+This time we see a single row with a different width.
+
+```
+───────── Coarse-grained Query Plan ─────────
+     │ Time Cost Loops Rows Width │ Relations
+root │  0.0 0.01   1.0  1.0    32 │
+```
+
+And if you try an `analyze select Person;` you should see about 25 rows at this point in the book.
+
+Time: This is the actual time in milliseconds of a query. This is pretty easy to show by giving EdgeDB a massive query that takes more than a few seconds so that we can count along. Remember the chapter on Cartesian multiplication and how an operation on multiple sets with multiple items will return a number of items equal to their product? In other words, `select {1, 2} + {1, 2};` will return four items instead of two.
+
+So let's do that with a query that returns about 32 million items:
+
+```edgeql
+analyze select {8, 8, 1} + {8, 1, 8} + {8, 1, 8} + {8, 1, 8} + {9, 0, 10} + {8, 9, 10} + {9, 0, 0} + {0, 0, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {8, 8, 8, 8} + {8, 8, 8, 8, 8} + {9, 9, 0};
+```
+
+Once the analyze query is done, you should see an output like this showing that the query took about five and a half seconds.
+
+```
+──────────────── Coarse-grained Query Plan ────────────────
+     │   Time       Cost Loops       Rows Width │ Relations
+root │ 5636.6 1514820.07   1.0 31886460.0     8 │
+```
+
+Cost: This is an arbitrary number used for comparison, so it doesn't mean dollars or cents or anything of the sort.
+
+Loops: Loops refers to the number of "executions of the node", which is information that comes from EdgeDB's Postgres backend. You could think of loops as a number representing the complexity of a query.
+
+Relations: This refers to the links involved in a query. So while `analyze select NPC {*};` will not show any relations except to the type itself:
+
+```
+─────────── Coarse-grained Query Plan ───────────
+       │ Time    Cost Loops Rows Width │ Relations
+➊ root │  0.3 1577.23   1.0  9.0    32 │ NPC
+```
+
+Changing the single-splat operator to the double-splat operator will:
+
+```
+───────────────────────────────── Coarse-grained Query Plan ─────────────────────────────────                      
+                      │ Time       Cost  Loops Rows Width │ Relations
+➊ root                │  0.6  313151.13    1.0  9.0    32 │ NPC
+├──.lovers            │  0.3      493.9    9.0  1.0    32 │ NPC.lovers, PC, Vampire, Lord,
+│                     │                                   │ Sailor, NPC, Crewman,
+│                     │                                   │ MinorVampire
+╰──.places_visited    │  0.1      93.98    9.0  1.0    32 │ Country, OtherPlace, Castle,
+                      │                                   │ NPC.places_visited, City
+```
+
+So now that we know the basics of how to use `analyze`, let's learn a bit more about indexes and see what effect another index will have on our cost.
+
+## Indexes again
+
+Our `Event` type has a property called `location` that might be nice to filter or order by. Let's see how much it costs to use. And while we're at it, let's check the cost for the related `url` property too.
+
+edgedb> analyze select Event order by .location;
+────────────────── Query ──────────────────
+analyze select ➊  Event order by .location;
+
+────────── Coarse-grained Query Plan ──────────
+       │ Time  Cost Loops Rows Width │ Relations
+➊ root │  0.0 48.49   1.0  2.0    64 │ Event
+edgedb> analyze select Event order by .url;
+─────────────── Query ───────────────
+analyze select ➊  Event order by .url;
+
+─────────── Coarse-grained Query Plan ───────────
+       │ Time   Cost Loops Rows Width │ Relations
+➊ root │  0.0 145.99   1.0  2.0    64 │ Event
+
+Okay, so these two operations cost 48.49 and 145.99 units. (Remember, this doesn't represent dollars and cents or anything like that)
+
+Next, just add a line to the `Event` type:
+
+```sdl
+type Event {
+  required description: str;
+  required start_time: cal::local_datetime;
+  required end_time: cal::local_datetime;
+  required multi place: Place;
+  required multi people: Person;
+  location: tuple<float64, float64>;
+  index on (.location); # <-------- Right here
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  property url := get_url() 
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
+}
+```
+
+And then do a migration. Let's see what the cost is now! We'll try the same two queries with `order` that we just did. Here is the result:
+
+```
+edgedb> analyze select Event order by .location;
+────────────────── Query ──────────────────
+analyze select ➊  Event order by .location;
+
+────────── Coarse-grained Query Plan ──────────
+       │ Time Cost Loops Rows Width │ Relations
+➊ root │  0.0 1.03   1.0  2.0    64 │ Event
+edgedb> analyze select Event order by .url;
+─────────────── Query ───────────────
+analyze select ➊  Event order by .url;
+
+────────── Coarse-grained Query Plan ──────────
+       │ Time Cost Loops Rows Width │ Relations
+➊ root │  0.0 1.33   1.0  2.0    64 │ Event
+```
+
+That's a big difference! The cost for both operations is barely over 1 of these imaginary units, compared to before where we saw 48.49 and 145.99.
+
+## Two more notes on `index on`
+
+Another nice thing about `index on` is that it can also be used on expressions that you we make ourselves. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+
+```sdl
+type City extending Place {
+  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
+  population: int64;
+  index on (.name ++ ': ' ++ <str>.population);
+}
+```
+
+Also don't forget that you can add add an annotation to this as well. `(.name ++ ': ' + <str>.population)` might be a good case for an annotation if you think readers of the code might not know what it's for:
+
+```
+type City extending Place {
+    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
+    population: int64;
+    index on (.name ++ ': ' ++ <str>.population) {
+      annotation title := 'Lists city name and population for use in game function get_city_names';
+    }
+}
+```
+
+`get_city_names` isn't a real function; we're just pretending that it's used somewhere in the game and is important to remember.
 
 ## More functions for strings
 
@@ -291,32 +459,6 @@ The `.` wildcard operator still determines the length of the slice of the string
 db> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
 {['the door?']}
 ```
-
-## Two more notes on `index on`
-
-By the way, `index on` can also be used on expressions that you we make ourselves. This is especially useful now that we know all of these string functions. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
-
-```sdl
-type City extending Place {
-  annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-  population: int64;
-  index on (.name ++ ': ' ++ <str>.population);
-}
-```
-
-Also don't forget that you can add add an annotation to this as well. `(.name ++ ': ' + <str>.population)` might be a good case for an annotation if you think readers of the code might not know what it's for:
-
-```
-type City extending Place {
-    annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
-    population: int64;
-    index on (.name ++ ': ' ++ <str>.population) {
-      annotation title := 'Lists city name and population for use in game function get_city_names';
-    }
-}
-```
-
-`get_city_names` isn't a real function; we're just pretending that it's used somewhere in the game and is important to remember.
 
 ## Changing a property to a link
 
