@@ -6,13 +6,13 @@ tags: Indexing, String Functions
 
 > Arthur Holmwood's father has died and now Arthur is the head of the house. His new title is Lord Godalming, and he has a lot of money. With this money he helps the team to find the houses where Dracula has hidden his boxes.
 >
-> Meanwhile, Van Helsing is curious and asks John Seward if he can meet Renfield. Van Helsing is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But the next time Van Helsing sees him Renfield doesn't want to talk and just calls him an idiot. Very confusing.
+> Meanwhile, Van Helsing has become curious about Renfield and asks John Seward if he can meet him. They meet, and Van Helsing is surprised to see that Renfield is very educated and well-spoken. Renfield talks about Van Helsing's research, politics, history, and so on - he doesn't seem crazy at all! But the next time Van Helsing sees him Renfield doesn't want to talk and just calls him an idiot. Very confusing. Why does Renfield's mood keep changing?
 >
 > One night, Renfield becomes very serious and asks the men to let him leave. Renfield says: “Don’t you know that I am sane and earnest...a sane man fighting for his soul? Oh, hear me! hear me! Let me go! let me go! let me go!” The men want to believe Renfield, but can't trust him. Finally Renfield stops and calmly says: “Remember, later on, that I did what I could to convince you tonight.”
 
 ## `index on` for quicker lookups
 
-We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the book that might be useful but we're not ready to organize yet. Fortunately, the original text of Dracula is organized into letters, diary entries, newspaper reports, etc. that begin with the date and sometimes the time. They tend to start out like this:
+We're getting closer to the end of the book and there is a lot of data that we haven't entered yet. There is also a lot of data from the original book that might be useful. Fortunately, the original text of Dracula is organized into letters, diary entries, newspaper reports, etc. that begin with the date and sometimes the time. They tend to start out like this:
 
 ```
 Dr. Seward’s Diary.
@@ -26,7 +26,7 @@ Mina Murray’s Journal.
 8 August. — Lucy was very restless all night, and I, too, could not sleep...
 ```
 
-This is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text). This type has a keyword that we haven't seen before:
+Having so many dates in the book is convenient for us. With this we can make a type that holds a date and a string from the book for us to search through later. Let's call it `BookExcerpt` (an "excerpt" meaning one small part of a larger text). This type has a keyword that we haven't seen before. Can you see where it is?
 
 ```sdl
 type BookExcerpt {
@@ -46,14 +46,14 @@ The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and i
 - It makes the queries faster, but increases the database size.
 - This may make `insert`s and `update`s slower if you have too many.
 
-If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so. A good rule of thumb for indexes might be to think of them in the context of a real book:
+If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so. A good rule of thumb for indexes might be to compare them to an index in a real book:
 
 - Faster search but database size increases: You can find content inside a book yourself, but you could also add an index. An index increases the book size somewhat, but helps you find content faster.
 - Inserts take longer: each book you print has that many extra pages to print.
 - Updates take longer: If you just update the content in a book, the update itself is the end of the operation. But if you have an index, then you'll have to update that as well to match the changes.
 ```
 
-Indexing on `date` on the `BookExcerpt` type seems like a good idea because the `BookExcerpt` data all comes from a single book, is inserted once, and doesn't need to be updated. An index on a property inside `PC` probably makes less sense, because `PC` objects are going to be inserted and updated all the time.
+Indexing on `date` on the `BookExcerpt` type seems like a good idea because the `BookExcerpt` data all comes from a single book, is inserted once, and doesn't need to be updated. For comparison, an index on a property inside `PC` might make less sense, because `PC` objects are going to be inserted and updated all the time.
 
 EdgeDB will automatically index in a few cases. You don't need to think about adding `index` on:
 
@@ -80,7 +80,7 @@ insert BookExcerpt {
 };
 ```
 
-Then later on we could do this sort of query to get all the entries in order and displayed as JSON. Perhaps the `PC` objects can visit a library where they can search for game details, and this requires sending a message in JSON format to the software that displays it on the screen:
+Then later on we could do this sort of query to get all the entries in order and displayed as JSON. Perhaps the players in the game can visit a library where they can search for game details, and this requires sending a message in JSON format to the software that displays it on the screen. In any case, here is what such a query would look like:
 
 ```edgeql
 select <json>(
@@ -94,7 +94,7 @@ select <json>(
 );
 ```
 
-Here's the JSON output (remember, set with `\set output-format json-pretty`) which looks pretty nice:
+Here's the JSON output (remember to make the output pretty with `\set output-format json-pretty`) which looks pretty nice:
 
 ```
 {
@@ -144,7 +144,7 @@ root │  0.0 0.01   1.0  1.0     1 │
 
 That's quite a bit of output even for a query as small as this one. Let's look at one part of the output at a time to make sure we understand it.
 
-Width: This refers to the average size in bytes per row. This is pretty easy to see by changing the query: `analyze select 9;` shows a width of 8 bytes, `analyze select <int16>9;` a width of 2 bytes. In Chapter 8 we learned that "The `__type__` link and `id` property together always make up 32 bytes", and this can be seen in an `analyze` query too. Try `analyze select Person;` and you'll see a width of 32.
+Width: This refers to the average size in bytes per row. This is pretty easy to play around with by changing the query: `analyze select 9;` shows a width of 8 bytes, `analyze select <int16>9;` a width of 2 bytes. In Chapter 8 we learned that "The `__type__` link and `id` property together always make up 32 bytes", and this can be seen in an `analyze` query too. Try `analyze select Person;` and you'll see a width of 32.
 
 Rows: This refers to the number of items returned. Let's take a look at the output of `analyze select {8, 9};` to show this:
 
@@ -162,7 +162,7 @@ Now let's change this query to a tuple instead and see what happens:
 analyze select (8, 9);
 ```
 
-This time we see a single row with a different width.
+This tuple holds two values, but the tuple is a single object so the `analyze` output shows a single row with a different width.
 
 ```
 ───────── Coarse-grained Query Plan ─────────
@@ -174,18 +174,18 @@ And if you try an `analyze select Person;` you should see about 25 rows at this 
 
 Time: This is the actual time in milliseconds of a query. This is pretty easy to show by giving EdgeDB a massive query that takes more than a few seconds so that we can count along. Remember the chapter on Cartesian multiplication and how an operation on multiple sets with multiple items will return a number of items equal to their product? In other words, `select {1, 2} + {1, 2};` will return four items instead of two.
 
-So let's do that with a query that returns about 32 million items:
+So let's do that with a query that returns about 21 million items:
 
 ```edgeql
-analyze select {8, 8, 1} + {8, 1, 8} + {8, 1, 8} + {8, 1, 8} + {9, 0, 10} + {8, 9, 10} + {9, 0, 0} + {0, 0, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {8, 8, 8, 8} + {8, 8, 8, 8, 8} + {9, 9, 0};
+analyze select {8, 8, 1} + {8, 1, 8} + {8, 1, 8} + {8, 1, 8} + {9, 0, 10} + {8, 9, 10} + {9, 0, 0} + {0, 0, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {9, 9, 0} + {8, 8, 8, 8} + {8, 8, 8, 8, 8} + {9, 9};
 ```
 
-Once the analyze query is done, you should see an output like this showing that the query took about five and a half seconds.
+You can count to four as you watch this query happen. Once it is done, you should see an output like this showing that the query took about four seconds.
 
 ```
 ──────────────── Coarse-grained Query Plan ────────────────
      │   Time       Cost Loops       Rows Width │ Relations
-root │ 5636.6 1514820.07   1.0 31886460.0     8 │
+root │ 4113.0 1009921.25   1.0 21257640.0     8
 ```
 
 Cost: This is an arbitrary number used for comparison, so it doesn't mean dollars or cents or anything of the sort.
@@ -211,6 +211,34 @@ Changing the single-splat operator to the double-splat operator will:
 │                     │                                   │ MinorVampire
 ╰──.places_visited    │  0.1      93.98    9.0  1.0    32 │ Country, OtherPlace, Castle,
                       │                                   │ NPC.places_visited, City
+```
+
+The `analyze` keyword shows us that the splat operators, as fun as they might be to use, have a performance impact. So be sure to use them only when experimenting with your code but not during production when you are paying the cost of every query.
+
+Take this query for example:
+
+```edgeql
+analyze select Place {*};
+```
+
+The output is as follows:
+
+```
+────────────────────── Coarse-grained Query Plan ──────────────────────
+       │ Time  Cost Loops Rows Width │ Relations
+➊ root │  0.2 135.9   1.0 12.0    32 │ City, Country, Castle, OtherPlace
+```
+
+But if you didn't need to include `modern_name` on `Place` (for example), just removing that from the query improves performance a bit:
+
+```
+edgedb> analyze select Place {name, coffins, id};
+────────────────── Query ──────────────────
+analyze select ➊  Place {name, coffins, id};
+
+────────────────────── Coarse-grained Query Plan ──────────────────────
+       │ Time  Cost Loops Rows Width │ Relations
+➊ root │  0.1 108.5   1.0 12.0    32 │ City, Country, Castle, OtherPlace
 ```
 
 So now that we know the basics of how to use `analyze`, let's learn a bit more about indexes and see what effect another index will have on our cost.
