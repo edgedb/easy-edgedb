@@ -326,7 +326,9 @@ If you are a Postgres user, you might be familiar with the multiple ways that yo
 
 ## More functions for strings
 
-The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
+The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). They are pretty easy to use, so a quick example for each of them should be enough to understand how they work.
+
+One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
 
 ```
 db> select str_lower('RENFIELD WAS HERE');
@@ -355,7 +357,7 @@ It uses `len()` which is then cast to a string, and `str_lower()` to compare aga
 }
 ```
 
-Another way to make this `the_date` parameter is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a string. This function also allows us to change the format of the date depending on how readable we want to make it:
+Another way to make this `the_date` parameter is with the {eql:func}`docs:std::to_str` method, which (as you can probably guess) will turn it into a `str`. This function also allows us to change the format of a date depending on how readable we want to make it:
 
 ```edgeql
 select BookExcerpt {
@@ -385,11 +387,15 @@ Here's the output for that long query:
 
 Some other functions for strings are:
 
-- `find()` This gives the index of the first match it finds, and returns `-1` if it can't find anything:
+- `find()` This gives the index of the first match it finds, and returns `-1` if it can't find anything. A `-1` is returned because that's the last character in a string, meaning that the function has reached the end but has found nothing. One example:
 
-`select find(BookExcerpt.excerpt, 'sofa');` produces `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
+```edgeql
+select find(BookExcerpt.excerpt, 'sofa');
+```
 
-- `str_split()` lets you make an array from a string, split however you like. Most common is to split by `' '` to separate words:
+This will return `{-1, 151}`. That's because first `BookExcerpt.excerpt` doesn't have the word `sofa`, while the second has it at index 151.
+
+- `str_split()` lets you make an array from a string, split however you like. It is most commonly used by using `' '` to separate words:
 
 ```
 db> select str_split('Oh, hear me! hear me! Let me go! let me go! let me go!', ' ');
@@ -417,24 +423,22 @@ But we can choose a letter to split at too:
 
 ```edgeql
 select MinorVampire {
-  names := (select str_split(.name, 'n'))
+  names := (select str_split(.name, 'ampire'))
 };
 ```
 
-Now, the names have been split into arrays at each instance of `n`:
+Now the names have been split into arrays at each instance of `ampire`. Note that `Lucy` remains unchanged.
 
 ```
 {
-  default::MinorVampire {names: ['Vampire Woma', ' 1']},
-  default::MinorVampire {names: ['Vampire Woma', ' 2']},
-  default::MinorVampire {names: ['Vampire Woma', ' 3']},
+  default::MinorVampire {names: ['V', ' Woman 1']},
+  default::MinorVampire {names: ['V', ' Woman 2']},
+  default::MinorVampire {names: ['V', ' Woman 3']},
   default::MinorVampire {names: ['Lucy']},
-  default::MinorVampire {names: ['Billy']},
-  default::MinorVampire {names: ['Bob']},
 }
 ```
 
-You can also split by `\n` to split by new line. You can’t see it as a human but from the point of view of the computer every new line has a `\n` in it. Take this for example:
+You can also split by `\n` to split by new line. You can’t see it as a human but from the point of view of the computer every line has an `\n` at the end if it is followed by another line. Take this for example:
 
 ```edgeql
 select str_split('Oh, hear me!
@@ -450,23 +454,27 @@ The output is an array of the text split by line:
 {['Oh, hear me!', 'hear me!', 'Let me go!', 'let me go!', 'let me go!']}
 ```
 
-- Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be useful because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
+- Two functions called `re_match()` (for the first match) and `re_match_all()` (for all matches) if you know how to use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) (regexes) and want to use those. This could be especially useful for us because the book Dracula was written over 100 years ago and has different spelling sometimes. The word `tonight` for example is always written with the older `to-night` spelling in Dracula. We can use these functions to take care of that:
+
+```edgeql
+with text := 'Dracula is an old book,
+so the word tonight is written to-night.
+Tonight we know how to write both tonight and to-night.',
+select re_match_all('[Tt]o-?night', text);
+```
+
+Here is the output:
 
 ```
-db> select re_match_all('[Tt]o-?night', 'Dracula is an old book,
-so the word tonight is written to-night.
-Tonight we know how to write both tonight and to-night.');
 {['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}
 ```
 
-The function signature is `std::re_match_all(pattern: str, string: str) -> set of array<str>`, and as you can see the pattern comes first, then the string. The pattern `[Tt]o-?night` means words that:
+The function signature is `std::re_match_all(pattern: str, string: str) -> set of array<str>`, and as you can see the pattern comes first, then the string to match against. The pattern `[Tt]o-?night` means words that:
 
 - start with a `T` or a `t`,
 - then have an `o`,
 - maybe have an `-` in between,
-- and end in `night`,
-
-Here is the output: `{['tonight'], ['to-night'], ['Tonight'], ['tonight'], ['to-night']}`
+- and end in `night`.
 
 And to match anything, you can use the wildcard character: `.`
 
@@ -475,7 +483,7 @@ db> select re_match_all('.oo.', 'Noo, Lord Dracula, why did you lock the door?')
 {['Noo,'], ['door']}
 ```
 
-The `.` wildcard operator still determines the length of the slice of the string to match on, so you can use more of them to lengthen the part of the string in which we are looking for a match.
+The `.` wildcard operator still determines the length of the slice of the string to match on, so you can use more of them to lengthen the part of the string in which we are looking for a match:
 
 ```
 db> select re_match_all('.h...oo..', 'Noo, Lord Dracula, why did you lock the door?');
