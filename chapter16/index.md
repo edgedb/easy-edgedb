@@ -197,15 +197,15 @@ Relations: This refers to the links involved in a query. So while `analyze selec
 ```
 ─────────── Coarse-grained Query Plan ───────────
        │ Time    Cost Loops Rows Width │ Relations
-➊ root │  0.3 1577.23   1.0  9.0    32 │ NPC
+① root │  0.3 1577.23   1.0  9.0    32 │ NPC
 ```
 
 Changing the single-splat operator to the double-splat operator will:
 
 ```
-───────────────────────────────── Coarse-grained Query Plan ─────────────────────────────────                      
+───────────────────────────────── Coarse-grained Query Plan ─────────────────────────────
                       │ Time       Cost  Loops Rows Width │ Relations
-➊ root                │  0.6  313151.13    1.0  9.0    32 │ NPC
+① root                │  0.6  313151.13    1.0  9.0    32 │ NPC
 ├──.lovers            │  0.3      493.9    9.0  1.0    32 │ NPC.lovers, PC, Vampire, Lord,
 │                     │                                   │ Sailor, NPC, Crewman,
 │                     │                                   │ MinorVampire
@@ -213,7 +213,7 @@ Changing the single-splat operator to the double-splat operator will:
                       │                                   │ NPC.places_visited, City
 ```
 
-The `analyze` keyword shows us that the splat operators, as fun as they might be to use, have a performance impact. So be sure to use them only when experimenting with your code but not during production when you are paying the cost of every query.
+The `analyze` keyword shows us that the splat operators, as fun and educational as they might be to use, have a performance impact. So be sure to use them only when experimenting with your code but not during production when you are paying the cost of every query.
 
 Take this query for example:
 
@@ -226,45 +226,42 @@ The output is as follows:
 ```
 ────────────────────── Coarse-grained Query Plan ──────────────────────
        │ Time  Cost Loops Rows Width │ Relations
-➊ root │  0.2 135.9   1.0 12.0    32 │ City, Country, Castle, OtherPlace
+① root │  0.2 135.9   1.0 12.0    32 │ City, Country, Castle, OtherPlace
 ```
 
 But if you didn't need to include `modern_name` on `Place` (for example), just removing that from the query improves performance a bit:
 
 ```
-edgedb> analyze select Place {name, coffins, id};
-────────────────── Query ──────────────────
-analyze select ➊  Place {name, coffins, id};
+db> analyze select Place {name, coffins, id};
 
 ────────────────────── Coarse-grained Query Plan ──────────────────────
        │ Time  Cost Loops Rows Width │ Relations
-➊ root │  0.1 108.5   1.0 12.0    32 │ City, Country, Castle, OtherPlace
+① root │  0.1 108.5   1.0 12.0    32 │ City, Country, Castle, OtherPlace
 ```
 
 So now that we know the basics of how to use `analyze`, let's learn a bit more about indexes and see what effect another index will have on our cost.
 
 ## Indexes again
 
-Our `Event` type has a property called `location` that might be nice to filter or order by. Let's see how much it costs to use. And while we're at it, let's check the cost for the related `url` property too.
+Our `Event` type has a property called `location` that might be nice to filter or order by. Let's see how much it costs to use. And while we're at it, let's check the cost for the related `url` property too:
 
-edgedb> analyze select Event order by .location;
-────────────────── Query ──────────────────
-analyze select ➊  Event order by .location;
+```
+db> analyze select Event order by .location;
 
 ────────── Coarse-grained Query Plan ──────────
        │ Time  Cost Loops Rows Width │ Relations
-➊ root │  0.0 48.49   1.0  2.0    64 │ Event
-edgedb> analyze select Event order by .url;
-─────────────── Query ───────────────
-analyze select ➊  Event order by .url;
+① root │  0.0 48.49   1.0  2.0    64 │ Event
+
+db> analyze select Event order by .url;
 
 ─────────── Coarse-grained Query Plan ───────────
        │ Time   Cost Loops Rows Width │ Relations
-➊ root │  0.0 145.99   1.0  2.0    64 │ Event
+① root │  0.0 145.99   1.0  2.0    64 │ Event
+```
 
 Okay, so these two operations cost 48.49 and 145.99 units. (Remember, this doesn't represent dollars and cents or anything like that)
 
-Next, just add a line to the `Event` type:
+Next we'll a line to the `Event` type to index the `location` property:
 
 ```sdl
 type Event {
@@ -286,20 +283,17 @@ type Event {
 And then do a migration. Let's see what the cost is now! We'll try the same two queries with `order` that we just did. Here is the result:
 
 ```
-edgedb> analyze select Event order by .location;
-────────────────── Query ──────────────────
-analyze select ➊  Event order by .location;
+db> analyze select Event order by .location;
 
 ────────── Coarse-grained Query Plan ──────────
        │ Time Cost Loops Rows Width │ Relations
-➊ root │  0.0 1.03   1.0  2.0    64 │ Event
-edgedb> analyze select Event order by .url;
-─────────────── Query ───────────────
-analyze select ➊  Event order by .url;
+① root │  0.0 1.03   1.0  2.0    64 │ Event
+
+db> analyze select Event order by .url;
 
 ────────── Coarse-grained Query Plan ──────────
        │ Time Cost Loops Rows Width │ Relations
-➊ root │  0.0 1.33   1.0  2.0    64 │ Event
+① root │  0.0 1.33   1.0  2.0    64 │ Event
 ```
 
 That's a big difference! The cost for both operations is barely over 1 of these imaginary units, compared to before where we saw 48.49 and 145.99.
@@ -323,12 +317,10 @@ type City extending Place {
     annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     population: int64;
     index on (.name ++ ': ' ++ <str>.population) {
-      annotation title := 'Lists city name and population for use in game function get_city_names';
+      annotation title := 'Lists city name and population for display in Long Library stage';
     }
 }
 ```
-
-`get_city_names` isn't a real function; we're just pretending that it's used somewhere in the game and is important to remember.
 
 ## More functions for strings
 

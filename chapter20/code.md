@@ -125,7 +125,9 @@ module default {
   type City extending Place {
     annotation description := 'A place with 50 or more buildings. Anything else is an OtherPlace';
     population: int64;
-    index on (.name ++ ': ' ++ <str>.population);
+    index on (.name ++ ': ' ++ <str>.population) {
+      annotation title := 'Lists city name and population for display in Long Library stage';
+    } on (.name ++ ': ' ++ <str>.population);
   }
 
   type Country extending Place {
