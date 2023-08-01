@@ -322,6 +322,8 @@ type City extending Place {
 }
 ```
 
+If you are a Postgres user, you might be familiar with the multiple ways that you can index values. These indexes are available in EdgeDB as of version 3.0 inside a module called `pg`. Using them is pretty simple: just put the name of the index in between `index` and `on`. For example: `index pg::gin on (.name)` instead of `index on (.name)`. The Postgres indexes are known as `hash`, `btree`, `gin`, `gist`, `spgist`, and `brin`. You can read more about these indexes [here](https://www.edgedb.com/docs/datamodel/indexes).
+
 ## More functions for strings
 
 The {ref}`functions for strings <docs:ref_std_string>` can be particularly useful when doing queries on our `BookExcerpt` type (or `BookExcerpt` via `Event`). One is called {eql:func}`docs:std::str_lower` and makes strings lowercase:
