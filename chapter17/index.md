@@ -291,7 +291,7 @@ And the result:
 
 Looks like the Demeter and Castle Dracula got their coffins!
 
-## Aliases: creating subtypes when you need them
+## Object type aliases: creating subtypes when you need them
 
 We've used abstract types a lot in this book. You'll notice that abstract types by themselves are generally made from very general concepts, such as `Person` and `HasNameAndCoffins`. In databases in real life you'll probably see them in the forms `HasEmail`, `HasID` and so on, which get extended to make subtypes.
 
@@ -307,18 +307,19 @@ alias AliasPerson := Person {
 };
 ```
 
-The first difference is that an alias uses `:=` instead of `extending`. In other words, an alias is a computed expression. Also note that `alias Vampire` ends in a semicolon - again, because it is an expression. And since aliases are expressions and not standalone types, they can't be inserted into a database. Instead, they point to data—usually a type that exists in the database—and can give it an extra shape on top of the original. You can query an alias, but you can't insert one.
+The first difference is that an alias uses `:=` instead of `extending`. In other words, an alias is a computed expression. Also note that `alias Vampire` ends in a semicolon - again, because it is an expression. And since aliases are expressions and not standalone types, they can't be inserted into a database. Instead, they point to data — often a type that exists in the database — and can give it an extra shape on top of the original. So you can query an alias, but you can't insert one.
 
-One other difference is that `extending` can only be used on an `abstract type`, while an alias can be used on just about anything.
-
-Let's make an alias for our schema too. Looking at the Demeter again, we see that the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
+Let's make an alias for fun for our schema too. Looking at the Demeter again, we see that the ship left from Varna in Bulgaria and reached London. We'll imagine in our game that we have built Varna up into a big port for the characters to explore, and are changing the schema to reflect this. Right now our `Crewman` type just looks like this:
 
 ```sdl
 type Crewman extending HasNumber, Person {
+  overloaded name: str {
+    default := 'Crewman ' ++ <str>.number;
+  }
 }
 ```
 
-Imagine that we would like a `CrewmanInBulgaria` type as well, because Bulgarians call each other 'Gospodin' (Bulgarian for "Mister") and our game would like to reflect that. A Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. In addition, the fresh Bulgarian air gives sailors extra strength in our game so our `CrewmanInBulgaria` objects will also be a bit stronger. But an entirely separate type doesn't feel right here - we just want to have a slightly different shape to work with when making queries. Here's how to do that:
+Imagine that we would like a `CrewmanInBulgaria` type as well, because Bulgarians use the term 'Gospodin' to be polite (Bulgarian for "Mister") and our game would like to reflect that. A Crewman will be called "Gospodin (name)" whenever they are in Bulgaria. In addition, the fresh Bulgarian air gives sailors extra strength in our game so our `CrewmanInBulgaria` objects will also be a bit stronger. You can see that an alias is much better than an entirely separate type here, because all we want to do is have a different shape to work with when making queries. Here's how to do that:
 
 ```sdl
 alias CrewmanInBulgaria := Crewman {
@@ -365,8 +366,6 @@ db> select CrewmanInBulgaria { original_name, name, strength };
 ```
 
 The expression works well, giving names that start with Gospodin and strength values a bit higher than outside of Bulgaria. But note that the expression still returns a `default::Crewman`, as the alias is just an expression on top of the original type.
-
-Aliases can be used in a number of other ways too, such as on scalar types. The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` has a number of other interesting examples of how you might want to use an alias in your project.
 
 ## Creating new names for types in a query (local expression aliases)
 
@@ -557,6 +556,10 @@ Here's the output:
   },
 }
 ```
+
+## Other types of aliases
+
+Aliases can be used in a number of other ways too, such as on scalar types. The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` has a number of other interesting examples of how you might want to use an alias in your project.
 
 ## Mutation rewrites
 
