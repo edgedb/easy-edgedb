@@ -367,11 +367,11 @@ db> select CrewmanInBulgaria { original_name, name, strength };
 
 The expression works well, giving names that start with Gospodin and strength values a bit higher than outside of Bulgaria. But note that the expression still returns a `default::Crewman`, as the alias is just an expression on top of the original type.
 
-## Creating new names for types in a query (local expression aliases)
+## Local expression aliases: creating new names for types in a query
 
 It's somewhat interesting that our alias is just declared using a `:=` when we wrote `alias CrewmanInBulgaria := Crewman`. Would it be possible to do something similar inside a query? The answer is yes: we can use `with` and then give a new name for an existing type. (In fact, the keyword `with` that we have been using the whole time is defined as a "{ref}`block used to define aliases <docs:ref_eql_with>`").
 
-Let's say that we want to compare the strengths of all our `MinorVampire` objects. This first query won't quite work, and you can probably guess why:
+Let's say that we want to compare the strengths of all our `MinorVampire` objects. This first query won't work the way we want it to, and you can probably guess why:
 
 ```edgeql
 select MinorVampire.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' 
@@ -389,7 +389,7 @@ It doesn't work because we are simply comparing one object against itself every 
 }
 ```
 
-We know that the `detached` keyword can help by pulling up a separate set of objects for a type. It won't help us here though unfortunately as we have to use it twice: once two concatenate the names, and again to compare strengths:
+We know that the `detached` keyword can help by pulling up a separate set of objects for a type. It won't help us here though unfortunately as we have to use it twice: once to concatenate the names, and again to compare strengths:
 
 ```edgeql
 select MinorVampire.name ++ ' is stronger than ' ++ detached MinorVampire.name ++ '? '
@@ -418,7 +418,7 @@ select M.name ++ ' is stronger than ' ++ MinorVampire.name ++ '? ' ++
 <str>(M.strength > MinorVampire.strength);
 ```
 
-The output is now closer to what we want, except that we are still comparing the same objects with each other. Here is part of the output (it's still pretty long):
+The output is now closer to what we want, except that some objects with the same values are still being compared with each other. Here is part of the output (it's still pretty long):
 
 ```
 {
@@ -460,7 +460,7 @@ And now we no longer have any duplicate names.
 }
 ```
 
-But we aren't limited to just writing `:= MinorVampire` either. Because an alias is simply an expression, we can make some modifications to the set of objects we have been calling `M`. Let's make a set of `MinorVampire` objects that have a bit more strength than the regular set and compare them to the regular set of `MinorVampire` objects. While we're at it, let's change their names a bit too. The query now looks like this:
+But we aren't limited to just writing `:= MinorVampire` either. Because an alias is simply an expression, we can make some modifications to the set of objects we have been calling `M`. Let's make a set of `MinorVampire` objects (an "expression alias" of `MinorVampire`) that have a bit more strength than the regular set and compare them to the regular set of `MinorVampire` objects. While we're at it, let's change their names a bit too. This is starting to feel a lot like the alias we have in our schema, don't you think? The query now looks like this:
 
 ```edgeql
 with PumpedUp := MinorVampire {
@@ -519,20 +519,18 @@ And here's the result. Looks like nobody wins:
 }
 ```
 
-Finally, let's create a quick type alias where Dracula has achieved all his goals and now rules London. We can give it the alias `DraculaKingOfLondon`, and a link to `subjects` (= people under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
+Finally, let's create a quick type alias where Dracula has achieved all his goals and now rules London. We can give it the alias `DraculaKingOfLondon`, and a link to `subjects` (people who live under a king) that will be every `Person` that has been to London. Then we'll select this type, and also count how many subjects there are. It looks like this:
 
 ```edgeql
-with DraculaKingOfLondon := (
-    select Vampire {
+with DraculaKingOfLondon := Vampire {
       name := .name ++ ', King of London',
       subjects := (select Person filter 'London' in .places_visited.name),
-    }
-  )
+    } 
 select DraculaKingOfLondon {
   name,
   subjects: {name},
   number_of_subjects := count(.subjects)
-};
+} filter .name = 'Count Dracula';
 ```
 
 Here's the output:
@@ -556,6 +554,8 @@ Here's the output:
   },
 }
 ```
+
+Note that this expression works because Count Dracula is our only `Vampire` object: he's almost like a unique global object. If we had more `Vampire` objects in the database we would need to filter by `name`.
 
 ## Other types of aliases
 
