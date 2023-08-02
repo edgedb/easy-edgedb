@@ -538,7 +538,7 @@ abstract type Place extending HasCoffins {
 }
 ```
 
-We don't want to make this change yet because we will lose our data if we just change the type of `important_ places` to something else. Instead, we can change our schema to add the `Landmark` type in addition to a new link on `Place` we'll call `linked_important_places`. Let's make those changes and migrate the schema now:
+We don't want to make this change yet because we will lose our data if we just change the type of `important_ places` to something else. Instead, we can first change our schema to add the `Landmark` type as a new `multi` link on `Place` we'll call `linked_important_places`. Let's make those changes and migrate the schema now:
 
 ```sdl
 type Landmark {
@@ -556,7 +556,9 @@ abstract type Place extending HasCoffins {
 }
 ```
 
-After doing a migration we now have the type `Landmark`, and our `important_places` data is untouched. Now we can create some `Landmark` objects. Let's just insert them with the required `name` property to start. We can use the `array_unpack()` method to grab each `str` from all the `important_places` in all the `Place` objects we have so far, and use that to do the inserts:
+After doing a migration we now have the type `Landmark` in the schema, `Place` has a link to them, our `important_places` data is untouched, and we can now create some `Landmark` objects.
+
+We can use the `array_unpack()` method to grab each `str` from all the `important_places` in all the `Place` objects we have so far, and use that to do the inserts:
 
 ```edgeql
 for place_name in select (array_unpack(Place.important_places))
@@ -565,7 +567,7 @@ union (insert Landmark {
 });
 ```
 
-After that we can update our `Place` objects to have the link called `linked_important_places` to the `Landmark` objects that we have just inserted.
+And now we can update our `Place` objects to have the link called `linked_important_places` to the `Landmark` objects that we have just inserted.
 
 ```edgeql
 update Place filter exists .important_places set {
@@ -609,7 +611,7 @@ The output shows us that it worked! We can compare the existing data inside `imp
 }
 ```
 
-And now that our data is safe, we can now do two more migrations. First we remove `important_places` and migrate.
+And now that our data is safe, we can now do two more migrations. First we will remove `important_places` and migrate.
 
 ```sdl
 abstract type Place extending HasCoffins {
