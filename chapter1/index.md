@@ -63,7 +63,7 @@ Project initialized.
 To connect to easy_edgedb, run `edgedb`
 ```
 
-That was easy! Now try typing `edgedb`, which will take you into the EdgeDB REPL. You can also type `edgedb ui` if you prefer to use the EdgeDB UI, which includes a REPL and a lot of other nice tools like a data explorer and a query editor to help you put queries together. See [this short video](https://www.youtube.com/watch?v=iwnP_6tkKgc) for an introduction to the EdgeDB UI.
+That was easy! Now try typing `edgedb`, which will take you into the EdgeDB REPL. (You can leave the REPL whenever you like by typing `\q`.) You can also type `edgedb ui` if you prefer to use the EdgeDB UI, which includes its own REPL and a lot of other nice tools like a data explorer and a query editor to help you put queries together. See [this short video](https://www.youtube.com/watch?v=iwnP_6tkKgc) for an introduction to the EdgeDB UI.
 
 Now type `select 'Jonathan Harker';` and hit enter. You should see some output that looks like this, with your folder name instead of `db>` in the sample below:
 
@@ -73,7 +73,7 @@ db> select "Jonathan Harker";
 db>
 ```
 
-You just made your first query in EdgeDB! Now type `\q` to escape the REPL and get back to the command line.
+You just made your first query in EdgeDB!
 
 So now let's take a look at the schema so we can create our `NPC` type. The CLI has already let us know that the schema is inside the `\edgedb\dbschema` directory, so go inside there and look for a file called `default.esdl`. This is your schema. At the moment, all it holds is a module called `default`:
 
@@ -83,7 +83,7 @@ module default {
 }
 ```
 
-A module is a space to the types for our database, including our `NPC` type. Let's give it a try! Add the `NPC` type that we made above, as follows:
+A module is a space containing the types for our database, including our `NPC` type. Let's give it a try! Add the `NPC` type that we made above, as follows:
 
 ```sdl
 module default {
@@ -92,13 +92,15 @@ module default {
 }
 ```
 
-Make sure the file is saved, then type `edgedb migration create`. You should see some output that looks like the following:
+Make sure the file is saved, and then create a migration. You can do this by typing `edgedb migration create` if you are on the command line, or (even easier) by typing `\migration create` inside the REPL. Commands that start with `edgedb` on the command line are done in the same way in the REPL except that you replace `edgedb` with a backslash.
+
+You should see some output that looks like the following:
 
 ```
 Created c:\easy-edgedb\dbschema\migrations\00001.edgeql, id: m14c35zu7lzg46r2337nwehaihkv6d4xwcatu6ulogd5kqafjtrnra
 ```
 
-Now type `edgedb migrate`. The CLI will apply the migration with the following output:
+Now type `edgedb migrate` (or `\migrate` inside the REPL). The CLI will apply the migration with the following output:
 
 ```
 Applied m14c35zu7lzg46r2337nwehaihkv6d4xwcatu6ulogd5kqafjtrnra (00001.edgeql)
@@ -109,8 +111,8 @@ And you are done!
 To sum up, an EdgeDB migration simply consists of the following:
 
 * Changing your schema,
-* Typing `edgedb migration create`,
-* Typing `edgedb migrate`.
+* Typing `edgedb migration create` (or `\migration create`),
+* Typing `edgedb migrate` (or `\migrate`).
 
 We will be doing a lot of that in this book! Even by the second chapter you will be very used to this process.
 
