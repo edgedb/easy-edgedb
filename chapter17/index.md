@@ -4,13 +4,38 @@ tags: Aliases, Named Tuples, Mutation Rewrites
 
 # Chapter 17 - Poor Renfield. Poor Mina.
 
-> Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! That night, Dracula found out that the heroes were destroying his coffins and decided to attack Mina. Dracula succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
+> Last chapter Dr. Seward and Dr. Van Helsing wanted to let Renfield out, but couldn't trust him. But it turns out that Renfield was telling the truth! Dracula had found out that night that the heroes were destroying his coffins and decided to attack Mina. Dracula succeeded, and now Mina is slowly turning into a vampire. She is still human, but has a connection with Dracula now.
 >
 > The group finds Renfield in a pool of blood, dying. Renfield is sorry and tells them the truth. Renfield had been in communication with Dracula because he wanted to become a vampire too, so he let Dracula into the house. But once inside Dracula ignored Renfield, and headed for Mina's room. Renfield attacked Dracula to try to stop him from hurting Mina, but Dracula was much stronger and won.
 >
-> Mina has not given up though, and has a good idea. If she is now connected to Dracula, what happens if Van Helsing uses hypnotism on her? Could that work? He takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
+> Mina has not given up though, and has an idea. If she is now connected to Dracula, what happens if Van Helsing uses hypnotism on her? Could that work? Could they use the connection to Dracula to their advantage? Van Helsing takes out his pocket watch and tells her: "Please concentrate on this watch. You are beginning to feel sleepy...what do you feel? Think about the man who attacked you, try to feel where he is..."
 
-## Named tuples
+Renfield is no longer alive, so to start the chapter we need to use `update` to give him a `last_appearance`. Let's do a fancy one where we grab the output from `update` to display some interesting properties, including one where we use `last_appearance` minus `first_appearance` to show how long the character Renfield appears in the book:
+
+```edgeql
+with updated := (update NPC filter .name = 'Renfield' set { last_appearance := <cal::local_date>'1893-10-03' })
+  select updated {
+    name,
+   first_appearance,
+   last_appearance,
+   days_in_book := .last_appearance - .first_appearance
+};
+```
+
+This gives us:
+
+```
+{
+  default::NPC {
+    name: 'Renfield',
+    first_appearance: <cal::local_date>'1893-05-26',
+    last_appearance: <cal::local_date>'1893-10-03',
+    days_in_book: <cal::date_duration>'P130D',
+  },
+}
+```
+
+## A bit more on named tuples
 
 Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, int16, str)` as input. Let's give it Dracula and Renfield:
 
@@ -59,23 +84,6 @@ The output is:
 {('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'),
 ('Vampire Woman 3', 'Lucy')}
 ```
-
-Renfield is no longer alive, so we need to use `update` to give him a `last_appearance`. Let's do a fancy one again where we `select` the update we just made and display that information:
-
-```edgeql
-select ( # Put the whole update inside
-  update NPC filter .name = 'Renfield'
-  set {
-    last_appearance := <cal::local_date>'1893-10-03'
-  }
-) # then use it to call up name and last_appearance
-{
-  name,
-  last_appearance
-};
-```
-
-This gives us: `{default::NPC {name: 'Renfield', last_appearance: <cal::local_date>'1893-10-03'}}`
 
 One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return `true`:
 
