@@ -93,7 +93,7 @@ select
   = (character1 := 'Lucy Westenra', character2 := 'Renfield');
 ```
 
-## Putting abstract types together
+## Building up abstract types
 
 Wherever there are vampires, there are vampire hunters. Sometimes they will destroy a vampire's coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
 
@@ -101,7 +101,7 @@ Wherever there are vampires, there are vampire hunters. Sometimes they will dest
 - places that can have coffins are `Place` and all the types from it, plus `Ship`,
 - the best way to filter is by `.name`, but `HasCoffins` doesn't have this property.
 
-So maybe we can turn this type into something else called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises. It's essentially a "Has name and can vampires terrorize it" property.
+So maybe it's time to turn this abstract type into a larger one called `HasNameAndCoffins`, and put the `name` and `coffins` properties inside there. This won't be a problem because every place needs a name and a number of coffins in our game. Remember, 0 coffins means that vampires can't stay in a place for long: just quick trips in at night before the sun rises. It's essentially a "Has name and can vampires terrorize it" property. And that will let us do queries on `HasNameAndCoffins` which is guaranteed to have these two properties.
 
 Here is the type with its new property. We'll give it two constraints: `exclusive` and `max_len_value` to keep names from being too long.
 
@@ -117,7 +117,7 @@ abstract type HasNameAndCoffins {
 }
 ```
 
-So now we can change our `Ship` type (notice that we removed `name`)
+So now we can change our `Ship` type (notice that we removed `name`):
 
 ```sdl
 type Ship extending HasNameAndCoffins {
@@ -131,7 +131,7 @@ And the `Place` type. It's much simpler now.
 ```sdl
 abstract type Place extending HasNameAndCoffins {
   modern_name: str;
-  important_places: array<str>;
+  multi important_places: Landmark;
 }
 ```
 
@@ -164,16 +164,82 @@ function can_enter(person_name: str, place: str) -> optional str
   );
 ```
 
-And now let's do a migration. One of the migration questions will ask us what default name to give the existing objects, because `name` is a required property. We can just type `''` to give an empty string by default.
+And now let's do a migration. The migration questions this time have some interesting ones, which are:
 
 ```
-Please specify an expression to populate existing objects in order to make property 'name' of object type 'default::HasNameAndCoffins' required:
-fill_expr_2> ''
+did you drop function 'default::can_enter'? [y,n,l,c,b,s,q,?]
+> y
+did you create function 'default::can_enter'? [y,n,l,c,b,s,q,?]
+> y
+did you alter object type 'default::Place'? [y,n,l,c,b,s,q,?]
+> y
+did you alter object type 'default::Ship'? [y,n,l,c,b,s,q,?]
+> y
+The following extra DDL statements will be applied:
+    ALTER TYPE default::Ship {
+        ALTER PROPERTY name {
+            RESET OPTIONALITY;
+            DROP OWNED;
+            RESET TYPE;
+        };
+    };
 ```
 
-And now we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
+The CLI first asks us if we dropped the function `default::can_enter`, which we might be tempted to say no to - because from our point of view we changed, not dropped, this function. But remember that from the compiler's point of view a function with a different signature is a different function, so we are effectively dropping it and creating another one. And that means that the fact that they both have the same `can_enter` name is irrelevant!
 
-Finally, we can put together a query that takes arguments to change the number of coffins in a number of places. It's easy:
+The next few questions show that EdgeDB understands that we are using an abstract type to hold the `name` property that `Place` and `Ship` have held themselves all this time. It does this with a few extra DDL commands that alter the `name` property from one owned by `Ship` to one that is still inside the `Ship` type, just not owned anymore. The migration file holds the rest of the DDL commands, some of which are:
+
+```ddl
+  ALTER TYPE default::Place {
+      DROP EXTENDING default::HasCoffins;
+      EXTENDING default::HasNameAndCoffins LAST;
+      ALTER PROPERTY name {
+          ALTER CONSTRAINT std::exclusive {
+              RESET DELEGATED;
+              DROP OWNED;
+          };
+          RESET OPTIONALITY;
+          DROP OWNED;
+          RESET TYPE;
+      };
+  };
+  ALTER TYPE default::Ship {
+      DROP EXTENDING default::HasCoffins;
+      EXTENDING default::HasNameAndCoffins LAST;
+  };
+  ALTER TYPE default::Ship {
+      ALTER PROPERTY name {
+          RESET OPTIONALITY;
+          DROP OWNED;
+          RESET TYPE;
+      };
+  };
+```
+
+How nice that we don't have to type all of that ourselves! And if we do a query on the `Ship` and `Place` names we can see that all the data is still there.
+
+```
+db> select {Ship.name, Place.name};
+{
+  'The Demeter',
+  'Castle Dracula',
+  'Rumeli Feneri',
+  'Whitby',
+  'Buda-Pesth',
+  'Bistritz',
+  'Munich',
+  'Exeter',
+  'London',
+  'Hungary',
+  'Romania',
+  'France',
+  'Slovakia',
+}
+```
+
+Meanwhile, with the new function in our schema we can just enter `can_enter('Count Dracula', 'Munich')` to get `'Count Dracula cannot enter.'`. That makes sense: Dracula didn't bring any coffins there.
+
+Finally, thanks to this larger abstract type we can now put together a query that takes arguments to change the number of coffins in a number of places. It's easy:
 
 ```edgeql
 update HasNameAndCoffins filter .name = <str>$place_name
@@ -186,20 +252,20 @@ Now let's give the ship `The Demeter` some coffins.
 
 ```
 db> update HasNameAndCoffins filter .name = <str>$place_name
-....... set {
-.......   coffins := .coffins + <int16>$number
-....... };
+  set {
+    coffins := .coffins + <int16>$number
+  };
 Parameter <str>$place_name: The Demeter
 Parameter <int16>$number: 10
 ```
 
-Castle Dracula naturally should have some coffins too. Let's go with 50.
+Castle Dracula naturally should have some coffins too. 50 feels about right.
 
 ```
 db> update HasNameAndCoffins filter .name = <str>$place_name
-....... set {
-.......   coffins := .coffins + <int16>$number
-....... };
+  set {
+    coffins := .coffins + <int16>$number
+  };
 Parameter <str>$place_name: Castle Dracula
 Parameter <int16>$number: 50
 ```

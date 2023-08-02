@@ -577,15 +577,13 @@ insert BookExcerpt {
   excerpt := '1 October, 5 a.m. -- I went with the party to the search with an easy mind, for I think I never saw Mina so absolutely strong and well...I rest on the sofa, so as not to disturb her.',
 };
 
-select (
-  update NPC filter .name = 'Renfield'
-    set {
-  last_appearance := <cal::local_date>'1893-10-03'
-})
-  {
-  name,
-  last_appearance
-  };
+update NPC filter .name = 'Renfield' set {
+    last_appearance := <cal::local_date>'1893-10-03'
+};
+
+update HasNameAndCoffins filter .name = 'The Demeter' set { coffins := 10 };
+
+update HasNameAndCoffins filter .name = 'Castle Dracula' set { coffins := 50 };
 
   update Person filter .name in { 'Arthur Holmwood', 'Count Dracula' }
   set {
