@@ -267,11 +267,31 @@ module default {
 
   # Aliases
 
+  alias AllNames := (
+    distinct (HasNameAndCoffins.name union
+    Place.modern_name union
+    Landmark.name union 
+    Person.name)
+  );
+
   alias CrewmanInBulgaria := Crewman {
-      name := 'Gospodin ' ++ .name,
-      strength := .strength + <int16>1,
-      original_name := .name,
+    name := 'Gospodin ' ++ .name,
+    strength := .strength + <int16>1,
+    original_name := .name,
   };
+
+  alias GameInfo := (
+    title := ( 
+      en := "Dracula the Immortal",
+      fr := "Dracula l'immortel",
+      no := "Dracula den udødelige",
+      ro := "Dracula, nemuritorul"
+    ),
+    country := "Norway",
+    date_published := 2023,
+    website := "www.draculatheimmortal.com"
+  );
+
 
   # Functions
 

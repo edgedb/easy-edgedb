@@ -559,7 +559,47 @@ Note that this expression works because Count Dracula is our only `Vampire` obje
 
 ## Other types of aliases
 
-Aliases can be used in a number of other ways too, such as on scalar types. The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` has a number of other interesting examples of how you might want to use an alias in your project.
+Aliases can be used in a number of other ways too. So far we have used object type aliases, but an alias is just an expression which makes them really quite open-ended. An alias can be a single scalar, a set of scalars, a tuple or set of tuples, a query, and so on. In this case an alias can feel a bit like a global value because it gives us quick access to some data that otherwise would be stored in a format like JSON somewhere.
+
+For example, we could take an expression that helps us keep track of all the names we have in our database and turn it into an alias for convenience. At the moment, we have names for every `HasNameAndCoffins` object, plus every `modern_name` inside `Place`, `name` inside `Landmark` and of course the `name` property for the `Person` type:
+
+```
+alias AllNames := (
+  distinct (HasNameAndCoffins.name union
+  Place.modern_name union
+  Landmark.name union 
+  Person.name)
+);
+```
+
+Another alias we could put together is a tuple that holds all of the metadata for our game. This has a sort of JSON-like feel but is baked into our schema as an EdgeDB tuple. You could imagine this alias used for the player menu which displays differently depending on the language of the user:
+
+```sdl
+alias GameInfo := (
+  title := ( 
+    en := "Dracula the Immortal",
+    fr := "Dracula l'immortel",
+    no := "Dracula den udødelige",
+    ro := "Dracula, nemuritorul"
+  ),
+  country := "Norway",
+  date_published := 2023,
+  website := "www.draculatheimmortal.com"
+);
+```
+
+After doing a migration you can see how easy and readable these queries become:
+
+```
+db> select GameInfo.title.ro;
+{'Dracula, nemuritorul'}
+db> select 'Max Demian' in AllNames;
+{true}
+db> select 'Canada' in AllNames;
+{false}
+```
+
+The {ref}`documentation on aliases <docs:ref_cheatsheet_aliases>` has a number of other interesting examples of how you might want to use an alias in your project.
 
 ## Mutation rewrites
 
