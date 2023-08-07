@@ -610,7 +610,7 @@ rewrite {insert | update} [, ...]
   using expr
 ```
 
-A mutation rewrite makes it really easy to keep track of when an object was last updated. To do this, just add a property to the object and a mutation rewrite that calls `datetime_of_statement()` whenever the object is inserted or updated. Here it is added to the `PC` type:
+A mutation rewrite makes it really easy to keep track of when an object was last updated. To do this, just add a property to the object and a mutation rewrite that calls `datetime_of_statement()` whenever the object is inserted or updated. Let's give this a try on our `PC` type:
 
 ```sdl
 type PC extending Person {
@@ -644,7 +644,7 @@ Most of the time a lottery ticket will be nothing, but sometimes it will be a bo
     LotteryTicket.ChainWhip      if rnd = 8 else
     LotteryTicket.Crucifix       if rnd = 9 else
     LotteryTicket.Garlic)
-  )
+  );
 ```
 
 Putting all those together, here are the changes to make to the schema:
@@ -675,7 +675,7 @@ function get_ticket() -> LotteryTicket using (
   LotteryTicket.ChainWhip if rnd = 8 else
   LotteryTicket.Crucifix if rnd = 9 else
   LotteryTicket.Garlic)
-)
+);
 ```
 
 Once the migration is done, let's insert a new `PC` and see what she gets! First the insert:
@@ -687,7 +687,13 @@ insert PC {
 };
 ```
 
-And now a few queries to see what Sypha's bonus item is. This will return something different every time, so let's "update" her by...just giving her the same name as before. This will still count as an update to the object and thus the `last_updated` property will change, while the `bonus_item` is _likely_ to change depending on the random number chosen. The output will look something like this:
+And now a few queries to see what Sypha's bonus item is. This will return something different every time, so let's "update" her by...just giving her the same name as before.
+
+```edgeql
+update PC filter .name = 'Sypha' set { name := .name };
+```
+
+This will still count as an update to the object and thus the `last_updated` property will change, while the `bonus_item` is _likely_ to change depending on the random number chosen. The output will look something like this:
 
 ```
 db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
@@ -699,9 +705,9 @@ db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
     last_updated: <datetime>'2023-06-18T07:50:56.181567Z',
   },
 }
-edgedb> update PC filter .name = 'Sypha' set { name := .name };
+db> update PC filter .name = 'Sypha' set { name := .name };
 {default::PC {id: 803d4486-0dac-11ee-9250-4746f54d7008}}
-edgedb> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
+db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
 {
   default::PC {
     name: 'Sypha',
