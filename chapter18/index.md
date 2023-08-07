@@ -370,9 +370,9 @@ Much better!
 
 ## Triggers
 
-Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help?) Count Dracula.
+Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help??) Count Dracula.
 
-However the game takes shape, it will require some sort of account type to hold the information for the people using our game. A simplified example of what we might need is as follows:
+However the game takes shape, it will require some sort of account type to hold the information for the people using our game in real life. A simplified example of what we might need is as follows:
 
 ```sdl
 type Account {
@@ -397,7 +397,9 @@ Every single property in these types is required, which makes sense - it's all p
 
 Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. With the `on source delete delete target` deletion policy, we have the `credit_card` link set up to delete any linked `CreditCardInfo` when an `Account` object is deleted. (A reminder: `on source delete delete target` means that when the source of the link is deleted, the target of the link gets deleted as well.) Deleting an `Account` object will delete absolutely everything to do with the user of our game.
 
-However, users often delete their accounts but then want to restore them again! But we can't keep the `Account` and `CreditCardInfo` objects around just in case, because we are legally obliged to remove the user's information. An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
+However, users tend to be fickle. They might delete their accounts and regret doing so, they might delete an account by mistake, and so on. In that case they will get into contact with us asking if an account can be restored. Legally, however, we can't just keep the `Account` and `CreditCardInfo` objects around just in case! We are obligated to delete all of a user's information when they ask. How to solve this issue?
+
+An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
 
 ```
 type type-name "{"
@@ -413,24 +415,25 @@ In other words:
 
 - Decide on a name for a trigger (like `validate_input` or `check_length`),
 - Add the keyword `after`,
-- Decide for which cases we want a trigger to happen (only on `insert`, or for `insert` and `update`, etc.),
+- Decide for which cases we want a trigger to happen (only after an `insert`, after either an `insert` or an `update`, etc.),
 - Decide whether a trigger should happen on `each` object or once per query with `all`,
 - And finally the expression of the trigger itself.
 
-Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, depending on the operation. When you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
+Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, though this depends on the operation. For example, when you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
 
-And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
+And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. None of this information can be used to track down a person in real life so it is safe to hold, and at the same time it is enough information for us to restore an account. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
 
-The `MinimalUserInfo` type is pretty simple:
+The `MinimalUserInfo` type is pretty simple, just a person's `username`, the `PC`s that they own, and an `int16` to hold a random number.
 
 ```sdl
 type MinimalUserInfo {
   username: str;
   multi pcs: PC;
+  passcode: int16;
 }
 ```
 
-And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it.
+And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it. It will also hold a `passcode` which holds a number in between 100 and 500.
 
 All together, the changes now look as follows:
 
@@ -447,7 +450,8 @@ type Account {
   trigger user_info_insert after delete for each do (
   insert MinimalUserInfo {
     username := __old__.name,
-    pcs := __old__.pcs
+    pcs := __old__.pcs,
+    passcode := <int16>(random() * 400) + 100,
   }
 );
 }
@@ -455,17 +459,17 @@ type Account {
 type CreditCardInfo {
   required name: str;
   required number: str;
-
   link card_holder := .<credit_card[is Account]
 }
 
 type MinimalUserInfo {
   username: str;
   multi pcs: PC;
+  passcode: int16;
 }
 ```
 
-Okay, let's do a migration and then insert an `Account` object!
+Okay, let's do a migration and then insert an `Account` object. Look at all the personal information inside!
 
 ```
 insert Account {
@@ -523,7 +527,7 @@ We have only one `Account` object so far so let's query with `select Account {**
 Looks good! That is, until Deborah decides she has been playing too many vampire games recently and would like to delete her account. We are sad to see her go but comply with her request:
 
 ```edgeql
-delete Account filter .name = 'Deborah Brown';
+delete Account filter .user_name = 'deb_deb_999';
 ```
 
 And now Deborah's personal information is all gone, as requested. But thanks to the trigger we added, we now have a `MinimalUserInfo` object in the database that was added automatically at the moment that we deleted Deborah's account. Let's take a look at it:
@@ -539,6 +543,7 @@ Here is the output:
   default::MinimalUserInfo {
     id: 5c17b0de-0d91-11ee-946c-6f411083ab25,
     username: 'deb_deb_999',
+    passcode: 453,
     pcs: {
       default::PC {
         last_appearance: {},
@@ -561,7 +566,19 @@ Here is the output:
 }
 ```
 
-With that we are holding none of Deborah's personal information anymore. All we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! And if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username.
+With that we are holding none of Deborah's personal information anymore. All that we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! Our software will check for new `MinimalUserInfo` objects and send off an email to users that have deleted their accounts to let them know how to restore their account if they wish. It would look something like this:
+
+```
+We're sorry to see you go...
+
+Your personal information has been deleted from our database. Your PCs have been kept on file for the next 30 days should you choose to restore your account. Keep the passcode safe if you think you might want to restore your account! It's the only way to verify your identity now that all of your personal information has been removed.
+
+Account name: deb_deb_999
+PC names: LordOfSalty
+Passcode: 453
+```
+
+So if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username and passcode.
 
 [Here is all our code so far up to Chapter 18.](code.md)
 

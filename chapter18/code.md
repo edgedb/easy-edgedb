@@ -106,7 +106,8 @@ module default {
     trigger user_info_insert after delete for each do (
       insert MinimalUserInfo {
         username := __old__.name,
-        pcs := __old__.pcs
+        pcs := __old__.pcs,
+        passcode := <int16>(random() * 400) + 100,
       }
     );
   }
@@ -174,6 +175,7 @@ module default {
   type MinimalUserInfo {
     username: str;
     multi pcs: PC;
+    passcode: int16;
   }
 
   type MinorVampire extending Person {
