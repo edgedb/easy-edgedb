@@ -6,11 +6,13 @@ tags: Complex Inserts, Schema Cleanup, Triggers
 
 > Van Helsing was correct: Mina is connected to Dracula. Van Helsing continues to use hypnotism to find out more about where Dracula is and what he is doing. 
 >
-> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula.
+> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and only has one thought in his mind: find Dracula, destroy him, and save Mina.
 >
-> Our heroes eventually find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Our heroes eventually find Dracula's other house in London with all of his money. Knowing that Dracula will come to get it, they wait for him to arrive.
+>
+> Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good reminder that we should probably think about money in our game. Money in a regular fantasy game is generally pretty easy: you can use a parameter called `gold` or something, call that the currency and give everyone a `gold` property. But our game is based on the real world. The characters have been to countries like England, Romania, and Germany, and each of those have their own money.
+This is a good reminder that we should probably think about money in our game. Money in a regular fantasy game is generally pretty easy: you can use a parameter called `gold` or something, call that the currency and give everyone a `gold` property. But our game is based on the real world. The characters have been to countries like England, Romania, and Germany, each of which have their own money.
 
 On top of this is an extra difficulty: in the 1800s, monetary systems were more complicated than they are today. For example, the United Kingdom at the time didn't use a simple 100 pence to 1 pound conversion. Instead, it was as follows:
 
@@ -20,11 +22,11 @@ On top of this is an extra difficulty: in the 1800s, monetary systems were more 
 
 (There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
 
-Fortunately, even in this case we can default to the smallest unit of money when it comes to things like buying and selling.  By using the smallest unit of currency possible, we can do all calculations with integers instead of floats. For example, if a `Person` object with 5 pounds, 3 shillings and 5 pence wants to buy something that costs 1 shilling and 15 pence, the buyer has:
+Fortunately, even in this case we can default to the smallest unit of money when it comes to things like buying and selling.  By using the smallest unit of currency possible, we can do all calculations with integers instead of floats. For example, if a `Person` object with 5 pounds, 3 shillings and 5 pence wants to buy something that costs 1 shilling and 15 pence, we can calculate how much money the buyer has in pence:
 
-- 5 pounds * 240 = 1200 pence
-- 3 shillings * 3 = 60 pence
-- 5 pence
+- 5 pounds, which equals 5 * 240 = 1200 pence,
+- 3 shillings, which equals 3 * 20 = 60 pence,
+- 5 pence.
 
 Which makes a total of 1265 pence for the buyer minus the item that costs 75 pence (3 shillings * 20, plus 15 pence). And since shopkeepers like to have small currencies (so they can give people change) and people like to have large currencies (so they aren't weighed down with too many coins), you can always subtract pence first, then shillings, and finally pounds when making a purchase.
 
@@ -78,7 +80,7 @@ Next, we can make all of these properties `required` and give them a default val
 
 And finally, to top it off let's add three computed properties called `total_pence`, `total_cents`, and `approx_wealth_in_pounds`. The first two represent the smallest units of currency in their respective countries, and so will represent a person's total wealth.
 
-The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this as a general benchmark and won't be using it to buy or sell anything so we will cast it to an `int64` for readability.
+The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this for general comparisons and won't be using it to buy or sell anything. So we will cast it to an `int64` for readability.
 
 At the time of the book, the exchange rate was about 8 US dollars to one pound (so 800 cents to one pound). Putting all that together, the final `HasMoney` type looks like this:
 
