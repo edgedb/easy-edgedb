@@ -325,14 +325,14 @@ So this (a set) will work: `select any({5, 6, 7} = 7);`
 
 But this (an array) will not: `select any([5, 6, 7] = 7);`
 
-Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
+Our next type is `BookExcerpt`, which we imagined being useful for the developers creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. We chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `date` property, which will then be faster when we need to order by date. Remember to use indexes only where needed: they speed up queries that filter, order, and group, but make the database larger overall and slow down inserts and updates.
 
 ```sdl
 type BookExcerpt {
   required date: cal::local_datetime;
-  required author: Person;
   required excerpt: str;
-  index on (.excerpt);
+  index on (.date);
+  required author: Person;
 }
 ```
 
@@ -345,11 +345,13 @@ type Event {
   required end_time: cal::local_datetime;
   required multi place: Place;
   required multi people: Person;
-  multi excerpt: BookExcerpt;
   location: tuple<float64, float64>;
-  east: bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' 
-    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  index on (.location);
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  property url := get_url() 
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
@@ -417,9 +419,7 @@ And the output for the `Event` type is especially nice as JSON. You can imagine 
 }
 ```
 
-You'll notice that the `excerpt` part is empty. To fix this, we could add a computed property to `Event` that links to any `BookExcerpt` objects that have a `date` that falls between the `start_time` and `end_time` for `Event`.
-
-The last two types in our schema, `Currency` and `Pound`, were created just two chapters ago so they are still fresh in our Mind. We won't review them here.
+The last two types in our schema, `Currency` and `Pound`, were created just two chapters ago so they are still fresh in our mind. We won't need to review them here.
 
 ## Navigating EdgeDB documentation
 
@@ -473,7 +473,7 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
 
 The `{ | }` in documentation is used to show the possible options available to you. So `[{required | optional}]` means that you don't need to write either required or optional (because both are inside `[]` square brackets), but if you choose to use it, you must choose either `required` or `optional`, not both.
 
-You can think of the syntax as a helpful guide to keep your declarations in the right order.
+You can think of the syntax as a helpful guide to keep your declarations in the right order, and to give you ideas of the full range of possibilities.
 
 ### Dipping into DDL
 
