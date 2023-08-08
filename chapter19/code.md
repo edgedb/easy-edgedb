@@ -449,8 +449,7 @@ insert Ship {
         last_appearance := cal::to_local_date(1893, 7, 16),
       }
     )
-  )
-};
+  )};
 
 insert NPC {
   name := 'Lucy Westenra',
