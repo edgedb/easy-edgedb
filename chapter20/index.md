@@ -4,11 +4,11 @@ tags: Ddl, Sdl, Edgedb Community
 
 # Chapter 20 - The final battle
 
-You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
+You made it to the final chapter, congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending in case you now plan to read the original book:
 
 > Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin.
 >
-> Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
+> At the same time the four other heroes (Jonathan Harker, Quincy Morris, Doctor Seward, Arthur Holmwood) are approaching from the south to try to catch up to Dracula. The sun is still up, so Dracula is inside his box protected from the sunlight on a wagon that his friends are taking to the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. A fight ensues, and the heroes drive back Dracula's friends and finally reach the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down and night begins. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) and search for "the look of hate in them turned to triumph".
 
@@ -62,40 +62,40 @@ We could have gone with {eql:type}` ``int32`` <docs:std::int32>`, {eql:type}` ``
 Next is `abstract type Person`. This type is by far the largest, and does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`, so they can extend from it too.
 
 ```sdl
-abstract type Person {
-  first: str;
-  last: str;
-  title: str;
-  degrees: str;
+abstract type Person extending HasMoney {
   required name: str {
     delegated constraint exclusive;
   }
-  age: int16;
-  property conversational_name := .title ++ ' ' ++ .name 
-    if exists .title else .name;
-  property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  strength: int16;
   multi places_visited: Place;
   multi lovers: Person;
+  property is_single := not exists .lovers;
+  strength: int16;
   first_appearance: cal::local_date;
   last_appearance: cal::local_date;
+  age: int16;
+  title: str;
+  degrees: array<str>;
+  property conversational_name := .title ++ ' ' 
+    ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' 
+    ++ array_join(.degrees, ', ') if exists .degrees else .name;
 }
 ```
 
 `exclusive` is probably the most common {ref}`constraint <docs:ref_datamodel_constraints>`, which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard database used to record the data for users of an app, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
-Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
+Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`. On the other hand, with a computed property you do have to tell EdgeDB whether it is a `property` or a `link`.
 
-The two links are `multi` links, without which a link is to only one object: without the keyword `multi` it will be a single link. It means that you may need to add `assert_single()` when creating a link or it will give this error:
+The two links on the `Person` type are `multi` links. Without the keyword `multi` it will be a single link and can only link to a single other object. This means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
 error: possibly more than one element returned by an expression
 for a computed link 'former_self' declared as 'single'
 ```
 
-Meanwhile, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
+On the other hand, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
 
 For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and ISO8601 compliant.
 
@@ -119,19 +119,26 @@ We only used this for the `Crewman` type, which only extends two abstract types 
 
 ```sdl
 type Crewman extending HasNumber, Person {
+  overloaded name: str {
+    default := 'Crewman ' ++ <str>.number;
+  }
 }
 ```
 
-This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
+This `HasNumber` type was used for the five `Crewman` objects, who don't have names. Because their `name` property inherited from `Person` is required, we used their `number` property to give them each a name: Crewman 1, Crewman 2, and so on.
 
 ```edgeql
-update Crewman
-set {
-  name := 'Crewman ' ++ <str>.number
-};
+for n in {1, 2, 3, 4, 5}
+  union (
+    insert Crewman {
+      number := n,
+      first_appearance := cal::to_local_date(1893, 7, 6),
+      last_appearance := cal::to_local_date(1893, 7, 16),
+    }
+  );
 ```
 
-So even though it was rarely used, it could become useful later on. For types later in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
+So even though `HasNumber` was rarely used, it could become useful later on. For types later in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
 
 Our vampire types extend `Person`, while `MinorVampire` also has a single and non-required link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
 
