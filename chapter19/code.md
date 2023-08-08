@@ -714,5 +714,5 @@ insert Account {
   )
 };
 
-delete Account filter .name = 'Deborah Brown';
+delete Account filter .username = 'deb_deb_999';
 ```

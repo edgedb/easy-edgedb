@@ -4,25 +4,25 @@ tags: Backlinks, Schema Cleanup
 
 # Chapter 19 - Dracula escapes
 
-> Van Helsing hypnotizes Mina, who is now half vampire and can feel Dracula. He asks her questions:
+> Mina can feel Dracula's presence more and more as the days go by, and is slowly becoming a vampire herself. But she is still human, and is holding on. Van Helsing hypnotizes her to ask questions about where Dracula is now. Mina can feel where Dracula is...
 >
-> “Where are you now?”
+> Van Helsing: “Where are you now?”
 >
-> “I do not know. It is all strange to me!”
+> Mina: “I do not know. It is all strange to me!”
 >
-> “What do you see?”
+> Van Helsing: “What do you see?”
 >
-> “I can see nothing; it is all dark.”
+> Mina: “I can see nothing; it is all dark.”
 >
-> “What do you hear?”
+> Van Helsing: “What do you hear?”
 >
-> “The water... and little waves.”
+> Mina: “The water... and little waves.”
 >
-> “Then you are on a ship?”
+> Van Helsing: “Then you are on a ship?”
 >
-> “Oh, yes!”
+> Mina: “Oh, yes!”
 >
-> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
+> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: Dracula's ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
