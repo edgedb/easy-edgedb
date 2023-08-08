@@ -144,12 +144,18 @@ Our vampire types extend `Person`, while `MinorVampire` also has a single and no
 
 ```sdl
 type Vampire extending Person {
-  multi slaves: MinorVampire;
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+  property army_strength := sum(.slaves@combined_strength);
 }
 
 type MinorVampire extending Person {
   former_self: Person;
-}
+  single link master := assert_single(.<slaves[is Vampire]);
+  property master_name := .master.name;
+};
 ```
 
 With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
@@ -167,22 +173,35 @@ The `PC` and `Sailor` types show two enums and one sequence that we used:
 
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
 type Sailor extending Person {
   rank: Rank;
 }
 
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
 scalar type PCNumber extending sequence;
+
 type PC extending Person {
   required class: Class;
   required created_at: datetime {
-    default := datetime_of_statement()
+    default := datetime_of_statement();
   }
   required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
+  multi party: Party {
+    on source delete delete target;
+    on target delete allow;
+  }
   overloaded required name: str {
     constraint max_len_value(30);
+  }
+  last_updated: datetime {
+    rewrite insert, update using (datetime_of_statement());
+  }
+  bonus_item: LotteryTicket {
+    rewrite insert, update using (get_ticket());
   }
 }
 ```
@@ -194,7 +213,7 @@ with latest := (select <str>max(PC.number)),
 select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
 ```
 
-`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
+`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole some of it from the `Time` type that we created earlier and later decided to turn into a single global object. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
@@ -240,7 +259,7 @@ Annotations: we used `abstract annotation` to add a new annotation:
 abstract annotation warning;
 ```
 
-because by default a type {ref}`can only have annotations <docs:ref_datamodel_annotations>` called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
+This was necessary because by default a type {ref}`can only have annotations <docs:ref_datamodel_annotations>` called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
@@ -294,9 +313,9 @@ with
 select any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
-And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
+And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name ('Jonathan Harker' and 'Castle Dracula'), the function would also just take two strings and do the same query.
 
-Don't forget, we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
+Also don't forget that we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
 
 ```sdl
 std::any(values: set of bool) -> bool
