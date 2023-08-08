@@ -490,7 +490,7 @@ error: QueryError: bare DDL statements are not allowed in this database
   = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.  The `edgedb migrate` command normally sets this to avoid accidental schema changes outside of the migration flow.
 ```
 
-If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run.
+If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run. Otherwise, the most recommended way to interact with DDL is by gaining a passive knowledge of it in case you want to double check a migration script before applying it.
 
 ## EdgeDB lexical structure
 
