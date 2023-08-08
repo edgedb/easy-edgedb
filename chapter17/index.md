@@ -35,64 +35,6 @@ This gives us:
 }
 ```
 
-## A bit more on named tuples
-
-Remember the function `fight()` that we made? It was overloaded to take either `(Person, Person)` or `(str, int16, str)` as input. Let's give it Dracula and Renfield:
-
-```edgeql
-with
-  dracula  := (select Person filter .name = 'Count Dracula'),
-  renfield := (select Person filter .name = 'Renfield'),
-select fight(dracula, renfield);
-```
-
-The output is of course `{'Count Dracula wins!'}`. No surprise there.
-
-One other way to do the same query is with a single tuple. Then we can give it to the function with `.0` for Dracula and `.1` for Renfield:
-
-```edgeql
-with fighters := (
-    (select Person filter .name = 'Count Dracula'),
-    (select Person filter .name = 'Renfield')
-  ),
-select fight(fighters.0, fighters.1);
-```
-
-That's not bad, but we learned a few chapters ago about named tuples and this is a good place to use them. Now the query is even more readable:
-
-```edgeql
-with fighters := (
-    dracula  := (select Person filter .name = 'Count Dracula'),
-    renfield := (select Person filter .name = 'Renfield')
-  ),
-select fight(fighters.dracula, fighters.renfield);
-```
-
-Here's one more example of a named tuple:
-
-```edgeql
-with minor_vampires := (
-    women := (select MinorVampire filter .name like '%Woman%'),
-    lucy  := (select MinorVampire filter .name like '%Lucy%')
-  ),
-select (minor_vampires.women.name, minor_vampires.lucy.name);
-```
-
-The output is:
-
-```
-{('Vampire Woman 1', 'Lucy'), ('Vampire Woman 2', 'Lucy'),
-('Vampire Woman 3', 'Lucy')}
-```
-
-One last thing: naming an item in a tuple doesn't have any effect on the items inside. So this query below will return `true`:
-
-```edgeql
-select 
-    ('Lucy Westenra', 'Renfield') 
-  = (character1 := 'Lucy Westenra', character2 := 'Renfield');
-```
-
 ## Building up abstract types
 
 Wherever there are vampires, there are vampire hunters. Sometimes they will destroy a vampire's coffins, and other times vampires will build more. It would be nice to have a generic way to update this information. But the problem right now is this:
@@ -731,8 +673,6 @@ db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
 3. How would you create an alias that contains all the months of the year?
 
 4. How do you make sure that no data is lost when changing a type's properties from owned properties to properties extended from abstract types?
-
-5. 
 
 [See the answers here.](answers.md)
 

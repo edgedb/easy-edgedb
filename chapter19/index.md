@@ -227,7 +227,7 @@ The output is pretty nice! It's basically a report on every ship, who is on them
 }
 ```
 
-## More cleaning up the schema
+## Some schema changes and cleanup
 
 The heroes of the story found out about when the Czarina Catherine arrived thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
 
