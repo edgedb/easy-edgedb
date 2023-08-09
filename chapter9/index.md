@@ -113,7 +113,7 @@ This should return `true` followed by `false` - unless EdgeDB was fast enough to
 
 We can put one of these functions to use in our schema too. Our game will have its `NPC` objects already in the database because they are all detailed in the book, and they will be in the database long before anybody begins playing our game. However, `PC` objects will only show up when a player decides to make a character. It could be useful to add a `date_created` property to the `PC` type so that we know when it was first made.
 
-Let's imagine how it would look if we put it inside the `Place` type. This is close, but not quite:
+Let's imagine how it would look if we put it inside the `Person` type. This is close, but not quite:
 
 ```sdl
 type PC extending Person {

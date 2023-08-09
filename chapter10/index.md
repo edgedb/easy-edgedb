@@ -374,7 +374,7 @@ Letter, Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc., to Dr. Seward.
 “When I have received your letter I am already coming to you.
 ```
 
-The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interesting. This might be a good time to think about more about the `name` property inside our `Person` type. Right now our `name` property is just a single string, but we have people with different types of names, in this order:
+The `Abraham Van Helsing, M. D., D. Ph., D. Lit., etc., etc.` part is interesting. This might be a good time to think more about the `name` property inside our `Person` type. Right now our `name` property is just a single string, but we have people with different types of names, in this order:
 
 Title | First name | Last name | Degree
 
