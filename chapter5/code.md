@@ -67,9 +67,7 @@ module default {
 
 insert Time { clock := '09:00:00' };
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',
@@ -93,13 +91,9 @@ insert PC {
   class := Class.Mystic,
 };
 
-insert Country {
-  name := 'Hungary'
-};
+insert Country { name := 'Hungary' };
 
-insert Country {
-  name := 'Romania'
-};
+insert Country { name := 'Romania' };
 
 insert Vampire {
   name := 'Count Dracula',
@@ -111,9 +105,7 @@ insert NPC {
   age := 30,
 };
 
-insert City {
-    name := 'London',
-};
+insert City { name := 'London' };
 
 insert NPC {
   name := 'Mina Murray',
@@ -123,6 +115,14 @@ insert NPC {
 
 insert MinorVampire {
   name := 'Vampire Woman 1',
+  master := assert_single((select Vampire Filter .name = 'Count Dracula')),
+};
+insert MinorVampire {
+  name := 'Vampire Woman 2',
+  master := assert_single((select Vampire Filter .name = 'Count Dracula')),
+};
+insert MinorVampire {
+  name := 'Vampire Woman 3',
   master := assert_single((select Vampire Filter .name = 'Count Dracula')),
 };
 ```

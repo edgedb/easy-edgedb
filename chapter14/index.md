@@ -4,11 +4,13 @@ tags: Type Annotations, Backlinks
 
 # Chapter 14 - A ray of hope
 
-> Finally there is some good news: Jonathan Harker is alive. After escaping Castle Dracula, it seems that he found his way to Buda-Pesth (Budapest) in August and then to a hospital, which sent Mina a letter. The hospital tells Mina that "He has had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+> Finally there is some good news: Jonathan Harker is alive. It seems that he managed to escape Castle Dracula, after which he found his way to Buda-Pesth (Budapest) in August and then to a hospital. The staff at the hospital are worried about Jonathan's mental health and send Mina a letter in which they say that he had "had some fearful shock and continues to talk about wolves and poison and blood, of ghosts and demons."
+>
+> Poor Jonathan! Sitting in the hospital he begins to wonder if he has just gone insane. Was Count Dracula real? Were the vampire women real too? Or did he just imagine the whole thing? How can Mina marry a man who is slowly going insane?
 >
 > Mina takes a train to the hospital where Jonathan is recovering, after which they take a train back to England to the city of Exeter where they get married. Mina sends Lucy a letter from Exeter about the good news...but it arrives too late and Lucy never opens it.
 >
-> Meanwhile, Van Helsing continues to contact his associates in universities around Europe to search for information on vampires and their activities. The men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees her he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
+> Meanwhile, Van Helsing continues to contact his associates in universities around Europe to search for information on vampires and their activities. The men visit the graveyard as planned and see vampire Lucy walking around. When Arthur sees Lucy he finally believes Van Helsing, and so do the rest of the men. They now know that vampires are real, and manage to destroy her. Arthur is sad but also happy to see that Lucy is no longer forced to be a vampire and can now die in peace.
 
 Looks like we have a new city called Exeter, which is easy to add:
 
@@ -19,7 +21,7 @@ insert City {
 };
 ```
 
-That's the population of Exeter at the time (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
+That's the population of Exeter at the time of the book (it has 130,000 people today), and it doesn't have a `modern_name` that is different from the one in the book.
 
 We can also update the city of Buda-Pesth to add the name of the hospital where Jonathan Harker was staying. In addition, one of the universities that Van Helsing contacted for information is in the same city. Let's add them both:
 
@@ -32,11 +34,89 @@ update City filter .name = 'Buda-Pesth'
   };
 ```
 
-## Adding annotations to types and using @
+## Adding and accessing properties to links
 
-Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it. By default, annotations can use the titles `title` or `description`.
+One interesting thing about links is that they can hold properties too. Since a link doesn't exist without a connection between objects, properties on a link usually have something to do with the relationship between these objects as well. Or link properties may be a computed value that only makes sense when you have objects joined by a link.
 
-Let's imagine that in our game a `City` needs at least 50 buildings. Let's use `description` for this:
+We can add a link property to our schema too by thinking of some more vampire physics. We know that `Vampire` objects control `MinorVampire` objects, and are so powerful that `MinorVampire`s are even deleted when their controlling `Vampire` dies. We represented this in our schema by adding a deletion policy:
+
+```edgeql
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+  }
+}
+```
+
+Now let's add a link property as well. Both `MinorVampire`s and `Vampire`s have the property `strength`, and let's now say that a `Vampire`, with enough concentration, is able to give some of its own strength to the `MinorVampire`s that it controls. We'll call this link property `combined_strength`, and define it as the combined strength of both divided by two. So if one `Vampire` has a strength of 16 and a `MinorVampire` has a strength of 10, their combined strength will be 13 (16 plus 10, then divided by 2).
+
+Added to the `Vampire` type, the `combined_strength` link property looks like this:
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+}
+```
+
+And then we can add another interesting property to the `Vampire` type, called `army_strength`. This property will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this number will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
+
+Here is what the `Vampire` type looks like after these changes. Notice anything in the syntax that looks different from what we've seen so far?
+
+```sdl
+type Vampire extending Person {
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+  property army_strength := sum(.slaves@combined_strength);
+}
+```
+
+That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties as they are structurally somewhat different from regular properties. We don't need to get into the internal details but there are two things to keep in mind about link properties: they can only be `single`, and must always be optional.
+
+And with those schema changes made, we can do a query on Count Dracula to see what his army looks like. Don't forget the `@` when doing queries too!
+
+```edgeql
+select Vampire {
+  name,
+  age,
+  strength,
+  slaves: {
+    name,
+    strength,
+    @combined_strength
+  },
+  army_strength
+};
+```
+
+The `strength` property of Dracula's vampire slaves is determined randomly so the query output will look different on your end, but it will be similar to the output below. You can see that the `MinorVampire` types that Dracula controls are significantly stronger when he concentrates to control them as directly as possible.
+
+```
+{
+  default::Vampire {
+    name: 'Count Dracula',
+    age: 800,
+    strength: 20,
+    slaves: {
+      default::MinorVampire {name: 'Vampire Woman 1', strength: 5, @combined_strength: {12.5}},
+      default::MinorVampire {name: 'Vampire Woman 2', strength: 9, @combined_strength: {14.5}},
+      default::MinorVampire {name: 'Vampire Woman 3', strength: 8, @combined_strength: {14}},
+      default::MinorVampire {name: 'Lucy', strength: 9, @combined_strength: {14.5}},
+    },
+    army_strength: 55.5,
+  },
+}
+```
+
+## Adding annotations to types
+
+Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it when using an `introspect` query or when we put `__type__` into a query on an object type. By default, annotations can use the titles `title` or `description`.
+
+Let's imagine that in our game a `City` needs at least 50 buildings, and we want the other developers to know this. Let's use an `annotation description` for this:
 
 ```sdl
 type City extending Place {
@@ -73,9 +153,37 @@ Uh oh, not quite. The `annotations` part of the `introspect` query just says `st
 }
 ```
 
-Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. In other words, it's a link, and the target of a link just tells us the kind of annotation that gets used. But we're looking for the value inside it.
+Let's do an `introspect` query on `City` again, but this time using the splat operator on the annotations to see what is inside.
 
-This is where `@` comes in. To get the value inside we write something else: `@value`. The `@` is used to directly access the value inside (the string) instead of just the type name. Let's try one more time:
+```edgeql
+select (introspect City) { annotations: {*}};
+```
+
+There it is!
+
+```
+{
+  schema::ObjectType {
+    annotations: {
+      schema::Annotation {
+        id: 6478af55-27fe-11ee-a636-8f86ec27644b,
+        name: 'std::description',
+        internal: false,
+        builtin: true,
+        computed_fields: [],
+        inheritable: false,
+        @is_owned: true,
+        @owned: true,
+        @value: 'A place with 50 or more buildings. Anything else is an OtherPlace',
+      },
+    },
+  },
+}
+```
+
+Ah, of course: the `annotations: {name}` part returns the name of the _type_, which is `std::description`. In other words, it's a link, and the target of a link just tells us the kind of annotation that gets used. But we're looking for the value inside it. And we can see from the `@` in the output above that the value of an annotation is a link property.
+
+Let's try the query one more time:
 
 ```edgeql
 select (introspect City) {
@@ -88,7 +196,7 @@ select (introspect City) {
 };
 ```
 
-Now we see the actual annotation:
+And now the actual annotation shows up in the output.
 
 ```
 {
@@ -111,13 +219,13 @@ Now we see the actual annotation:
 }
 ```
 
-What if we want an annotation with a different name besides `title` and `description`? That's easy, just declare with `abstract annotation` inside the schema and give it a name. We want to add a warning for other developers to read so that's what we'll call it:
+What if we want an annotation with a different name besides `title` and `description`? This is surprisingly easy, just declare a new annotation by typing `abstract annotation` inside the schema and give it a name. We want to add a `warning` for other developers to read so that's what we'll call it:
 
 ```sdl
 abstract annotation warning;
 ```
 
-We'll imagine that it is important to use `Castle` instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` gives that information along with the other annotation:
+Maybe it is important to use `Castle` instead of `OtherPlace` for not just castles, but castle towns too. Thanks to the new abstract annotation, now `OtherPlace` gives that information along with the other annotation. Here are the two annotations to add to `OtherPlace`:
 
 ```sdl
 type OtherPlace extending Place {
@@ -155,86 +263,6 @@ And here it is:
 }
 ```
 
-## Even more working with dates
-
-A lot of characters are starting to die now, so let's think about that. We could come up with a method to see who is alive and who is dead, depending on a `cal::local_date`. First let's take a look at the `Person` objects we have so far. We can easily count them with `select count(Person)`. The `count` function will probably give you a number close to `{24}` at this point in the course.
-
-There is also a function called {eql:func}`docs:std::enumerate` that returns tuples of the index numbers and the items in set that we give it (a `set of tuple<int64, anytype>`). We'll use this to compare to our `count()` function to make sure that our number is right.
-
-First a simple example of how to use `enumerate()`:
-
-```edgeql
-with three_things := {'first', 'second', 'third'},
-select enumerate(three_things);
-```
-
-The output is:
-
-```
-{(0, 'first'), (1, 'second'), (2, 'third')}
-```
-
-Assuming we have 24 `Person` objects, let's use it with `select enumerate(Person.name);` to make sure that we have 24 results. The last index should be 23:
-
-```
-{
-  (0, 'Jonathan Harker'),
-  (1, 'Renfield'),
-  (2, 'The innkeeper'),
-  (3, 'Mina Murray'),
-  (4, 'John Seward'),
-  (5, 'Quincey Morris'),
-  (6, 'Arthur Holmwood'),
-  (7, 'Abraham Van Helsing'),
-  (8, 'Lucy Westenra'),
-  (9, 'Vampire Woman 1'),
-  (10, 'Vampire Woman 2'),
-  (11, 'Vampire Woman 3'),
-  (12, 'Lucy'),
-  (13, 'Count Dracula'),
-  (14, 'The Captain'),
-  (15, 'Petrofsky'),
-  (16, 'The First Mate'),
-  (17, 'The Cook'),
-  (18, 'Emil Sinclair'),
-}
-```
-
-There are only 19? Oh, that's right: the `Crewman` objects don't have a name so they don't show up.
-
-The `Crewman` types are now just numbers, so let's give them each a name based on their numbers. This will be easy:
-
-```edgeql
-update Crewman
-set {
-  name := 'Crewman ' ++ <str>.number
-};
-```
-
-So now that everyone has a name, let's use that to see if they are dead or not. The logic is simple: we input a `cal::local_date`, and if it's greater than the date for `last_appearance` then the character is dead.
-
-```edgeql
-with p := (select Person),
-     date := <cal::local_date>'1893-08-16',
-select (p.name, p.last_appearance, 
-  'Dead on ' ++ <str>date ++ '? ' ++ <str>(date > p.last_appearance));
-```
-
-Here is the output:
-
-```
-{
-  ('Lucy Westenra', <cal::local_date>'1893-09-20', 'Dead on 1893-08-16? false'),
-  ('Crewman 1', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 2', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 3', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 4', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-  ('Crewman 5', <cal::local_date>'1893-07-16', 'Dead on 1893-08-16? true'),
-}
-```
-
-We could of course turn this into a function if we use it enough.
-
 ## Global scalars
 
 Every game needs to be tested before it can be sold, and it's nice to have different possible modes when testing a game. Any game testers should be able to experience the game in the same way that a regular player would, but another mode with extra information would be helpful too.
@@ -243,7 +271,7 @@ Another global type could help here. We've had a global `Time` object in our dat
 
 A global scalar isn't an object though, so changing its value is a bit different: instead, we use the `set` and `unset` keywords to work with it.
 
-To do this we can add an enum called `Mode`, and give it two values: `Info` or `Debug`. `Info` will be the default, while `Debug` will be the mode that provides extra information for the testers. After this we can make a global called `tester_mode`:
+To try using a global scalar we can add an enum called `Mode`, and give it two values: `Info` or `Debug`. `Info` will be the default, while `Debug` will be the mode that provides extra information for the testers. After this we can make a global called `tester_mode`:
 
 ```sdl
 scalar type Mode extending enum<Info, Debug>;
@@ -259,7 +287,7 @@ A `required` global always needs a default value, which makes sense: a global is
 error: required globals must have a default
   ┌─ c:\easy-edgedb\dbschema\default.esdl:9:3
   │
-9 │   required global tester_mode: str;
+9 │   required global tester_mode: Mode;
   │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
 
 edgedb error: cannot proceed until .esdl files are fixed
@@ -285,9 +313,9 @@ The output here is simple too, just a message informing us that the value was su
 OK: SET GLOBAL
 ```
 
-The other keyword is `reset`, which resets a global to its default value. In our case the default value is `Mode.Info`, but if we hadn't specified that `tester_mode` is `required` then the default value would have been `{}`, an empty set.
+The opposite of the `set` keyword is `reset`, which resets a global to its default value. In our case the default value is `Mode.Info`, but if we hadn't specified that `tester_mode` is `required` then the default value would have been `{}`, an empty set.
 
-Pretty easy! The output below shows the sort of output you will see when setting and resetting a global scalar value.
+Pretty easy! The output below shows the sort of feedback you will see in the REPL when setting and resetting a global scalar value.
 
 ```
 db> select global tester_mode;
@@ -303,7 +331,9 @@ OK: RESET GLOBAL
 And with this global value in place, we can now do queries that match on the `tester_mode` enum. Here is an example of a query that a tester using the `PC` named Emil Sinclair might use. During regular `Info` mode the query will only show the character's own info, but during `Debug` mode it will also show info on all the `NPC` objects as well. In a more complex schema we can imagine that this could be used to show a tester the health, location and so on of all the NPCs in a game, which could then be used to show them on a map or in a separate chart on the screen that is only visible during debug mode.
 
 ```edgeql
-with info := NPC if global tester_mode = Mode.Debug else <NPC>{},
+# Select all NPC objects in Debug mode
+with info := NPC if global tester_mode = Mode.Debug 
+             else <NPC>{},
   select PC {
     name,
     class,
@@ -316,7 +346,7 @@ with info := NPC if global tester_mode = Mode.Debug else <NPC>{},
 } filter .name = 'Emil Sinclair';
 ```
 
-The output is pretty short during `Info` mode:
+The output is pretty short during `Info` mode, which only provides the necessary info to play the game in the same way as every other player.
 
 ```
 {
@@ -354,11 +384,15 @@ But if you use `set global tester_mode := Mode.Debug;` then all of a sudden the 
 }
 ```
 
+You could imagine some other combinations of global modes such as a "God Mode" that also makes the character invincible - because it's annoying to try to debug test a game when other `PC`s think you are a regular player and keep killing your character without knowing that you are just there to test the game mechanics.
+
 ## Backlinks
 
-Finally, let's look at how to follow links in reverse direction, one of EdgeDB's most powerful and useful features. Learning to use backlinks can take a bit of effort, but it's well worth it.
+It's finally time to learn one of EdgeDB's most powerful and useful features: backlinks. A backlink is like a regular link, except that it works in the other direction: instead of a link from your object to other objects, it's a computed property that shows the objects that link to you!
 
-We know how to get Count Dracula's `slaves` by name with something like this:
+Understanding backlinks and the syntax can take a bit of effort, but it's well worth it.
+
+First let's start by looking at some regular links. We know how to get Count Dracula's `slaves` by name with something like this:
 
 ```edgeql
 select Vampire {
@@ -385,7 +419,7 @@ That shows us the following:
 }
 ```
 
-But what if we are doing the opposite? Namely, starting from `select MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now, we can only bring up the properties that belong to the `MinorVampire` and `Person` type. Consider the following:
+But what if we are doing the opposite? Namely, starting from `select MinorVampire` and wanting to access the `Vampire` type connected to it. Because right now the `MinorVampire` type only gives us access to properties and links that belong to the `MinorVampire` and `Person` type. Imagine that we want to have a `master` link that shows the `Vampire` object that links to a `MinorVampire`...how do we do it?
 
 ```edgeql
 select MinorVampire {
@@ -397,9 +431,22 @@ select MinorVampire {
 
 Since there's no `master: Vampire` link, how do we go backwards to see the `Vampire` type that links to it?
 
-This is where backlinks come in, where we use `.<` instead of `.` and specify the type we are looking for: `[is Vampire]`.
+This is where backlinks come in, by doing the following:
 
-First let's move out of our `MinorVampire` query and just look at how `.<` works. Here is one example:
+- Select the type that is being linked back to. Here that would be `MinorVampire`, because we want to see links to `MinorVampire` objects. If you are inside a type's schema, you don't need to write the type name.
+- Create a link that uses the `.<` syntax instead of `.`
+- Indicate the name of the link. We want to see `slaves` links from the `Vampire` type, so type `slaves` next.
+- Specify the type that we are looking for: `[is Vampire]`. This isn't strictly necessary, but helpful. We'll see why in a moment.
+
+So let's follow these steps to make our first backlink query. We want:
+
+- A link to `MinorVampire` objects, so `select MinorVampire`
+- The link to be a backlink, so add `.<`: `select MinorVampire.<`
+- To look for links via a link called `slaves`, so add `slaves`: `select MinorVampire.<slaves`
+- The link to be from a `Vampire` object, so add `Vampire`: `select MinorVampire.<slaves[is Vampire]`
+
+
+This will return us one or more `Vampire` objects, on which of course we can add a shape. So the query will now look like this:
 
 ```edgeql
 select MinorVampire.<slaves[is Vampire] {
@@ -408,9 +455,9 @@ select MinorVampire.<slaves[is Vampire] {
 };
 ```
 
-Because it goes in reverse order, it is selecting `Vampire` that has a link called `slaves` that are of type `MinorVampire`.
+Because it goes in reverse order, it is selecting the `Vampire` objects that have a link called `slaves` that goes back `.<` to the type `MinorVampire`.
 
-You can think of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
+You can think of the human readable version of `MinorVampire.<slaves[is Vampire] {name, age}` as "Show the name and age of the Vampire objects with a link called `slaves` that are of type MinorVampire" - from right to left.
 
 Here is the output:
 
@@ -474,7 +521,9 @@ In this case, we are asking EdgeDB to show us each and every object that is link
 }
 ```
 
-You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again). So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
+You can see that Romania has been visited by a `Vampire` object (that's Dracula) and an `NPC` object (that's Jonathan Harker), while Munich has been visited by a `PC` object (Emil Sinclair) and an `NPC` object (Jonthan Harker again).
+
+So if we don't specify with `[is Vampire]` or `[is NPC]` then it will just return each and every object connected via a link called `places_visited`. This is fine, but it limits the shapes that we can make in the query. For example, there is no guarantee that any linking object will have the property `name` so this query won't work:
 
 ```
 db> select Place {
@@ -523,7 +572,7 @@ One final note: this is why backlinks in EdgeDB are `multi` by default, as oppos
 
 ## Time to practice
 
-1. How would you display just the numbers for all the `Person` objects? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
+1. How would you create a global str that tells you whether vampires are currently asleep or awake?
 
 2. Using a computed backlink, how would you display 1) all the `Place` objects (plus their names) that have an `o` in the name and 2) the names of the people that visited them?
 

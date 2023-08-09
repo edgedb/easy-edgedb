@@ -49,3 +49,73 @@ Now the output looks a lot better:
 ```
 
 You could even name the tuple inside the tuple with the city name and population if you wanted.
+
+#### 3. How would you create an alias that contains all the months of the year?
+
+Easy! Just make a set of scalars and precede it with the keyword `alias`. You could make it out of `str`s:
+
+```sdl
+alias Seasons := {
+  'spring',
+  'summer',
+  'fall',
+  'winter'
+};
+```
+
+Or you could put together an enum instead:
+
+```sdl
+scalar type Season extending enum<Spring, Summer, Fall, Winter>;
+
+alias Seasons := {
+  Season.Spring,
+  Season.Summer,
+  Season.Fall,
+  Season.Winter
+};
+```
+
+#### 4. How do you make sure that no data is lost when changing a type's properties from owned properties to properties extended from abstract types?
+
+EdgeDB will recognize that you intend to keep the same properties if the inherited properties have the same name and type. So if you have a type like this one that you would like to inherit its properties instead of owning them:
+
+```sdl
+type User {
+  email: str;
+  number: int64;
+}
+```
+
+You can change the schema to look like this.
+
+```sdl
+type User extending HasEmail, HasNumber;
+
+abstract type HasEmail {
+  email: str;
+}
+
+abstract type HasNumber {
+  number: int64;
+}
+```
+
+You can take a look at the DDL in the created migration script to confirm this, which should look like this:
+
+```
+  ALTER TYPE default::User EXTENDING default::HasEmail,
+  default::HasNumber LAST;
+  ALTER TYPE default::User {
+      ALTER PROPERTY email {
+          DROP OWNED;
+          RESET TYPE;
+      };
+      ALTER PROPERTY number {
+          DROP OWNED;
+          RESET TYPE;
+      };
+  };
+```
+
+The `ALTER PROPERTY` part shows that the property is just being altered, and not dropped.

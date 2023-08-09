@@ -1,21 +1,23 @@
 # Chapter 14 Questions and Answers
 
-#### 1. How would you display just the numbers for all the `Person` types? e.g. if there are 20 of them, displaying `1, 2, 3..., 18, 19, 20`.
+#### 1. How would you create a global str that tells you whether vampires are currently asleep or awake?
 
-One way to do it is with `enumerate()`. This is easy if we are just starting from 0, since `enumerate()` gives a tuple with two items. The first one is an `int64` so we select that:
+We already have a `global time` that returns a single `Time` object, so this can be used to make a global called something like `vampire_state` that is a computable referencing the `vampires_are` property inside `time`, which is an enum that we created before:
 
-```edgeql
-select enumerate(Person).0;
+```sdl
+scalar type SleepState extending enum <Asleep, Awake>;
 ```
 
-That will display: `{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}`
+You could make it this way:
 
-Warning: selecting `.1` will produce a bunch of objects without the details.
+```
+global vampire_state := (select 'Vampires are now ' ++ <str>(global time.vampires_are));
+```
 
-And then to display numbers starting with 1, we just use `enumerate` again and add 1 to it:
+Or for bonus points, add the `str_lower` function to change `Asleep` or `Awake` output to lowercase:
 
-```edgeql
-select enumerate(Person).0 + 1
+```
+global vampire_state := (select 'Vampires are now ' ++ str_lower(<str>(global time.vampires_are)));
 ```
 
 #### 2. Using a computed backlink, how would you display 1) all the `Place` types (plus their names) that have an `o` in the name and 2) the names of the people that visited them?

@@ -162,8 +162,7 @@ ERROR: ConstraintViolationError: deletion of default::Vampire (e5ef5bc6-006f-11e
 因此，我们先简单地将 `MinorVampire` 改为没有 `master` 链接的 `Person` 扩展类型：
 
 ```sdl
-type MinorVampire extending Person {
-}
+type MinorVampire extending Person;
 ```
 
 然后，我们在创建德古拉伯爵时，可以一并创建德古拉控制的小鬼们，如下所示：

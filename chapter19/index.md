@@ -4,29 +4,29 @@ tags: Backlinks, Schema Cleanup
 
 # Chapter 19 - Dracula escapes
 
-> Van Helsing hypnotizes Mina, who is now half vampire and can feel Dracula. He asks her questions:
+> Mina can feel Dracula's presence more and more as the days go by, and is slowly becoming a vampire herself. But she is still human, and is holding on. Van Helsing hypnotizes her to ask questions about where Dracula is now. Mina can feel where Dracula is...
 >
-> “Where are you now?”
+> Van Helsing: “Where are you now?”
 >
-> “I do not know. It is all strange to me!”
+> Mina: “I do not know. It is all strange to me!”
 >
-> “What do you see?”
+> Van Helsing: “What do you see?”
 >
-> “I can see nothing; it is all dark.”
+> Mina: “I can see nothing; it is all dark.”
 >
-> “What do you hear?”
+> Van Helsing: “What do you hear?”
 >
-> “The water... and little waves.”
+> Mina: “The water... and little waves.”
 >
-> “Then you are on a ship?”
+> Van Helsing: “Then you are on a ship?”
 >
-> “Oh, yes!”
+> Mina: “Oh, yes!”
 >
-> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: the ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
+> Now our heroes know that Dracula has escaped on a ship with his last box and is going back to Transylvania. Van Helsing and Mina go to Castle Dracula, while the others go to Varna to try to catch the ship when it arrives. Jonathan Harker just sits there and sharpens his knife. He looks like a different person now. Jonathan has lost all of his fear and only wants to kill Dracula and save his wife. But where is the ship? Every day they wait... and then one day, they get a message: Dracula's ship arrived at Galatz up the river, not Varna! Are they too late? They rush off up the river to try to find Dracula.
 
 ## Adding some new types
 
-We have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
+Looks like we have another ship moving around the map in this chapter. Last time, we made a `Ship` type that looks like this:
 
 ```sdl
 type Ship extending HasNameAndCoffins {
@@ -45,7 +45,7 @@ type ShipVisit {
 }
 ```
 
-This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's do a migration, and then insert a few visits from the ships we know. The other ship that we saw in the book was called The Demeter and left from Varna towards Whitby.
+This new ship that Dracula is on is called the `Czarina Catherine` (a Czarina is a Russian queen). Let's do a migration, and then insert a few visits from the ships we know. The other ship that we saw in the book was called The Demeter and left from Varna on its trip to Whitby.
 
 But first we'll insert a new `Ship` and two new places (`City` objects) so we can link them. We know the name of the ship and that there is one coffin in it: Dracula's last coffin. But we don't know about the crew, so we'll just insert this information:
 
@@ -227,7 +227,7 @@ The output is pretty nice! It's basically a report on every ship, who is on them
 }
 ```
 
-## More cleaning up the schema
+## Some schema changes and cleanup
 
 The heroes of the story found out about when the Czarina Catherine arrived thanks to a telegram by a company in the city of Varna that told them. Here's what it said:
 
@@ -237,7 +237,7 @@ The heroes of the story found out about when the Czarina Catherine arrived thank
 “Czarina Catherine reported entering Galatz at one o’clock to-day.”
 ```
 
-Speaking of time, remember our `Time` type? We made it so that we could enter a string and get some helpful information in return. It looks like this:
+Speaking of time, remember our `Time` type? We originally made it so that we could enter a string and get some helpful information in return. It looks like this:
 
 ```sdl
 type Time { 
@@ -247,65 +247,10 @@ type Time {
   property vampires_are := 
     SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
-} 
-```
-
-Now that we know that the time was one o'clock, let's put that into a query to display some extra information on the visit. See if anything feels weird to you about this query.
-
-```edgeql
-with time := (
-  insert Time {
-    clock := '13:00:00'
-  }
-)
-select ShipVisit {
-  place: {
-    name
-  },
-  ship: {
-    name
-  },
-  date,
-  time_ := time {
-    clock,
-    clock_time,
-    hour,
-    vampires_are
-  },
-} filter .place.name = 'Galatz';
-```
-
-The output looks pretty good, including whether vampires were awake or asleep when the ship arrived:
-
-```
-{
-  default::ShipVisit {
-    place: default::City {name: 'Galatz'},
-    ship: default::Ship {name: 'Czarina Catherine'},
-    date: <cal::local_date>'1893-10-28',
-    time_: default::Time {
-      clock: '13:00:00',
-      clock_time: <cal::local_time>'13:00:00',
-      hour: '13',
-      vampires_are: Asleep,
-    },
-  },
 }
 ```
 
-However, the problem is that we now have a random `Time` type floating around that is not linked to anything. The `Time` type as it stands is essentially just an expression, and would be better as an alias or a function. As a function it would look like this and would not require inserting an object:
-
-```sdl
-function time(clock: str) -> tuple<cal::local_time, str, SleepState> using (
-  with local := <cal::local_time>clock,
-  hour := clock[0:2],
-  vampires_are := SleepState.Asleep if <int16>hour > 7 and <int16>hour < 19
-    else SleepState.Awake,
-    select(local, hour, vampires_are)
-);
-```
-
-So that could be an option for later. But for now, let's just steal all the properties from `Time` to improve the `ShipVisit` type instead:
+We later made the decision to turn this type into a global type, because it didn't make sense to have random `Time` objects floating around in the database. A single `Time` object made much more sense. But looking at the `Time` type again, it looks like some of the properties would be a good fit for the `ShipVisit` type. Let's steal a few of them to make `ShipVisit` a little more expressive:
 
 ```sdl
 type ShipVisit {

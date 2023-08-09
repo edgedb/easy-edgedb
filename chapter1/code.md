@@ -14,9 +14,7 @@ module default {
 
 # Data:
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',

@@ -12,7 +12,7 @@ tags: Writing Functions, Multiplication, Coalescing, Grouping
 
 We are starting to see more and more events in the book with various characters. Some events have the three men and Dr. Van Helsing together, others have just Lucy and Dracula. Previous events had Jonathan Harker and Dracula, Jonathan Harker and the three women, and so on. In our game, we could use a sort of `Event` type to group everything together: the people, the time, the place, and so on.
 
-This `Event` type is a bit long, but it would be the main type for our events in the game so it needs to be detailed. We can put it together like this:
+This `Event` type is a bit long, but it could be the main type for our events in the game so it needs to be detailed. We can put it together like this:
 
 ```sdl
 type Event {
@@ -22,26 +22,35 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  east: bool;
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
   property url := 'https://geohack.toolforge.org/geohack.php?params=' 
-    ++ <str>.location.0 ++ '_N_' 
-    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
-You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want. This one is not `required` because not every event in the book is in a perfectly known location.
+You can see that most of the properties are `required`, because an `Event` type is not useful if it doesn't have all the information we need. It will always need a description, a time, place, and people participating. The interesting part is the `url` property: it's a computed property that gives us an exact url for the location if we want, which can then be looked up on the Geohack tool used by Wikipedia. This property is not `required` because not every event in the book is in a perfectly known location.
 
 The url that we are generating needs to know whether a location is east or west of Greenwich, and also whether they are north or south. Here is the url for Bistritz, for example (modern name Bistrița):
 
 ```
-https://geohack.toolforge.org/geohack.php?params=47_8_N_24_30_E
+https://geohack.toolforge.org/geohack.php?params=47.8_N_24.30_E
 ```
 
-Luckily for us, the events in the book all take place in the north part of the planet. So `N` is always going to be there. But sometimes they are east of Greenwich and sometimes west. To decide between east and west, we can use a simple `bool`. Then in the `url` property we put all the properties together to create a link, and finish it off with 'E' if `east` is `true`, and 'W' otherwise.
+The `ns_suffix` property is either `_N_` or `_S_` depending on whether the latitute is greater than or less than zero. And `ew_suffix` is either `_E` or `_W` depending on whether the longitute is greater than or less than zero. The events in the book all take place in the north half of the planet, but we might as well give the possibility of exploring the south part of the globe. Who knows where the `PC` objects might end up exploring!
 
-(Of course, if we were receiving longitudes as simple positive and negative numbers (+ for east, - for west) then `east` could be a computed property: `property east := true if location.0 > 0 else false`. But for this schema we'll imagine that we are getting numbers from somewhere with this sort of format: `[50.6, 70.1, true]`)
+The `url` property is then computed using the two suffixes, plus the absolute values of the locations so that they show up as positive numbers in the url. EdgeDB just happens to have a function called `math::abs()` that will let us turn any number into an absolute number. So Whitby, which is located at 54.4858 and -0.6206, should show up as `54.4858_N_0.6206_W` in the url: both absolute numbers, but with a `W` to represent that Whitby is at 0.6206 degrees to the *west*.
 
-Let's do a migration to add this `Event` type, and then insert one of the events in this chapter. It takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. You can see that the `description` property is just a string that we write to make it easy to search later on. It can be as long or as short as we like, and we could even just paste in parts of the book.
+![An image showing how latitude and longitude are divided into north and south, and east and west](Lat_long.svg)
+
+Let's do a migration to add this `Event` type, and then insert two of the events from the story that we are familiar with.
+
+One event takes place on the night of September 11th when Dr. Van Helsing is trying to help Lucy. The other event takes place when the Demeter left the Black Sea, entered the Bosphorous and was boarded by Turkish customs officials on its long and tragic journey to England. We aren't sure exactly where the boarding took place, but the lighthouse called Rumeli Feneri looks like a good place for Turkish government officials to notice a ship, so let's insert that as an `OtherPlace` as we insert the `Event`. And the `people` involved in this `Event` are all the sailors on the ship, plus Dracula. To join them together we can use the `union` keyword in a few places: once to join the `Ship.sailors` with the `Ship.crew`, and then finally to join them with the `Vampire` object named 'Count Dracula'.
+
+You can see that the `description` property in the `Event` type is just a string to make it easy to search later on. It can be as long or as short as we like, and we can even outright paste in parts of the book.
+
+Here are the inserts for these two `Event`s:
 
 ```edgeql
 insert Event {
@@ -51,25 +60,31 @@ insert Event {
   place := (select Place filter .name = 'Whitby'),
   people := (select Person filter .name ilike 
     {'%helsing%', '%westenra%', '%seward%'}),
-  location := (54.4858, 0.6206),
-  east := false
+  location := (54.4858, -0.6206),
+};
+
+with 
+  ship_people := (select Ship.sailors union Ship.crew filter Ship .name = 'The Demeter'),
+  dracula := (select Vampire filter .name = 'Count Dracula'),
+insert Event {
+  description := "On 11 July at dawn entered Bosphorus. Boarded by Turkish Customs officers. Backsheesh. All correct. Under way at 4 p.m.",
+  start_time := cal::to_local_datetime(1893, 7, 11, 7, 0, 0),
+  end_time := cal::to_local_datetime(1893, 7, 11, 16, 0, 0),
+  place := (insert OtherPlace {name := 'Rumeli Feneri'}),
+  people := ship_people union dracula,
+  location := (41.2350, 29.1100)
 };
 ```
 
-With all this information we can now find events by description, character, location, and so on.
-
-Now let's do a query for all events with the word `garlic flowers` in them:
+Let's do a query to show the location, place names, person names, and description for our events so far.
 
 ```edgeql
 select Event { 
-  *, 
-  place: {
-    name
-  }, 
-  people: {
-    name
-    } 
-  } filter .description ilike '%garlic flowers%';
+  place_name := .place.name,
+  map_url := .url,
+  people_names := .people.name,
+  description,
+  };
 ```
 
 It generates a nice output that shows us everything about the event:
@@ -77,30 +92,38 @@ It generates a nice output that shows us everything about the event:
 ```
 {
   default::Event {
-    place: {default::City {name: 'Whitby'}},
-    people: {
-      default::NPC {name: 'Lucy Westenra'},
-      default::NPC {name: 'John Seward'},
-      default::NPC {name: 'Abraham Van Helsing'},
-    },
-    id: 7fa1ddc6-0de7-11ee-98fc-2f8d7602e3a2,
-    east: false,
-    location: (54.4858, 0.6206),
-    url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W54.4858_N_0.6206_W',
+    place_name: {'Whitby'},
+    map_url: 'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W',
+    people_names: {'John Seward', 'Abraham Van Helsing', 'Lucy Westenra'},
     description: 'Dr. Seward gives Lucy garlic flowers to help her sleep. She falls asleep and the others leave the room.',
-    end_time: <cal::local_datetime>'1893-09-11T23:00:00',
-    start_time: <cal::local_datetime>'1893-09-11T18:00:00',
+  },
+  default::Event {
+    place_name: {'Rumeli Feneri'},
+    map_url: 'https://geohack.toolforge.org/geohack.php?params=41.235_N_29.11_E',
+    people_names: {
+      'The Captain',
+      'Petrofsky',
+      'The First Mate',
+      'The Cook',
+      'Crewman 1',
+      'Crewman 2',
+      'Crewman 3',
+      'Crewman 4',
+      'Crewman 5',
+      'Count Dracula',
+    },
+    description: 'On 11 July at dawn entered Bosphorus. Boarded by Turkish Customs officers. Backsheesh. All correct. Under way at 4 p.m.',
   },
 }
 ```
 
-The url works nicely too. Here it is: <https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W> Clicking on it takes you directly to the city of Whitby.
+The urls work nicely too. Here is one of them: <https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W> Clicking on it takes you directly to the city of Whitby.
 
 ## Writing our own functions
 
-We saw that Renfield is quite strong: he has a strength of 10, compared to Jonathan's 5.
+We have seen quite a few functions in EdgeDB so far, but the number of functions is actually unlimited because you can also write your own! Similar to other languages, functions in EdgeDB take an input, apply some logic, and generate an output. But EdgeQL is strongly typed, so it won't accept just anything as is the case with languages like Javascript. That means that you have to indicate both the input type and the return type in the signature.
 
-We could use this to experiment with making functions now. Because EdgeQL is strongly typed, you have to indicate both the input type and the return type in the signature. A function that takes an int16 and gives a float64 for example would have this signature:
+A function that takes an `int16` and returns a `float64` for example would have this signature:
 
 ```sdl
 function does_something(input: int16) -> float64
@@ -121,9 +144,9 @@ function make_string(input: int64) -> str
   using (<str>input);
 ```
 
-That's all there is to it!
+That's all there is to it! If you put this into your schema and do a migration then you will now be able to use this function.
 
-Let's write a quick function to make our Event type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params=54.4858_N_0.6206_W'` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition is 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
+Now let's make something a little more useful: a quick function to make our `Event` type a little nicer to read. Instead of putting `'https://geohack.toolforge.org/geohack.php?params='` inside the `Event` type, we can make a function called `get_url()` that simply returns this `str` for us. With that, our `url` property definition can be 42 characters shorter. Let's add this function to the schema and change the `url` in the `Event` type to use it:
 
 ```sdl
 function get_url() -> str
@@ -136,13 +159,17 @@ type Event {
   required multi place: Place;
   required multi people: Person;
   location: tuple<float64, float64>;
-  east: bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' ++ <str>.location.1
-  ++ '_' ++ ('E' if .east else 'W');
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  property url := get_url() 
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
-Next, let's write a function where we have two characters fight. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+Next, let's write a function that's less useful but more fun and which will teach us some interesting concepts in EdgeDB. The function will have two `Person` objects fight each other, so we'll call it `fight()`. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
+
+You might be tempted to write this function as follows, but it doesn't quite work!
 
 ```sdl
 function fight(one: Person, two: Person) -> str
@@ -153,27 +180,43 @@ function fight(one: Person, two: Person) -> str
   );
 ```
 
-The function _looks_ good, but when you try to create it, you'll get an error:
+The function _looks_ good, but when you try to create it, you'll get an error. The line at the bottom of the error is the one to pay attention to.
 
 ```
-InvalidFunctionDefinitionError: return cardinality mismatch in function
-  declared to return exactly one value
+error: return cardinality mismatch in function declared to return exactly one value
+    ┌─ C:\rust\easy-edgedb\dbschema\default.esdl:118:9
+    │
+118 │     using (
+    │ ╭─────────^
+119 │ │     one.name ++ ' wins!'
+120 │ │     if one.strength > two.strength
+121 │ │     else two.name ++ ' wins!'
+122 │ │   );
+    │ ╰───^ error
+    │
+    = Function may return an empty set.
 ```
 
-This happens because `name` and `strength` are not required on our `Person` type. If we pass this function at least one `Person` without a value for one of these properties, the function will return an empty set. (More on that in the next chapter.) EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
+This happens because `strength` is not required on our `Person` type. That means that we might pass in one or two `Person` objects that have an empty set for `strength`, and then the function will return an empty set instead of a `str`. EdgeDB doesn't like this because we've told it in the function definition that the function will return a string.
 
-We could go back and require the `name` and `strength` properties. We'd need to make sure all of our `Person` objects have values for each of them. That's a lot of trouble, and it's not something we're ready to do right now.
+We could go back and make `strength` a `required` property, but we would need to decide on values for all of our `Person` objects already in the database. That's a lot of trouble, and it's not something we're ready to do right now.
 
 ## Providing fallbacks with the coalescing operator
 
-The easiest way to fix our function would be to provide some sort of fallback for the properties that might not be set. If `one` doesn't have a name, we could just refer to them as `Fighter 1`. If someone doesn't have a strength, we could just default their strength to `0`.
+The easiest way to fix our function would be to provide some sort of fallback for the properties that might not be set. If someone doesn't have a strength, we could just default their strength to `0`.
 
 To do that we can use the {eql:op}`coalescing operator <docs:coalesce>`, which is written `??`. It evaluates to whatever is on the left if that's not empty. Otherwise, it evaluates to whatever is on the right.
 
-Here is a quick example:
+Here is a quick example of an empty set when the coalescing operator is not used:
 
+```edgeql
+select <str>{} ++ 'Count Dracula is now in Whitby';
 ```
-db> select <str>{} ?? 'Count Dracula is now in Whitby';
+
+Interestingly, the output is `{}`! An empty set combined with anything else is an empty set. But if we change `++` to `??` for the coalescing operator, we can return a default value even if there is an empty set to the left.
+
+```edgeql
+select <str>{} ?? 'Count Dracula is now in Whitby';
 ```
 
 Since the set on the left is empty, the coalescing operator turns its attention to the set on the right and returns that: `{'Count Dracula is now in Whitby'}` If neither side of the operator is the empty set, the coalescing operator will produce whatever is on the left. If _both_ sides are the empty set, it will produce the empty set.
@@ -183,13 +226,12 @@ Here's how we can use the coalescing operator to fix our function:
 ```sdl
 function fight(one: Person, two: Person) -> str
   using (
-    (one.name ?? 'Fighter 1') ++ ' wins!'
-    if (one.strength ?? 0) > (two.strength ?? 0)
-    else (two.name ?? 'Fighter 2') ++ ' wins!'
+    one.name ++ ' wins!' if (one.strength ?? 0) > (two.strength ?? 0)
+    else two.name ++ ' wins!'
   );
 ```
 
-With this change, EdgeDB now has fallbacks in the event one of those values is an empty set. If `one.name` is the empty set, we get `'Fighter 1'`. If one of the `strength` properties is the empty set, we get `0`. If `two.name` is the empty set, we get `'Fighter 2`. This ensures that the function can always return the string response we promised.
+With this change, EdgeDB now has fallbacks in the event that a `Person` object has an empty set for its `strength` property: it will return a 0 instead of an empty set. This ensures that the function can always return the string response we promised.
 
 Now that our function works, let's do a migration.
 
@@ -210,11 +252,41 @@ It might also be a good idea to add `assert_single()` when doing a filter for th
 
 ## Cartesian multiplication
 
-Cartesian multiplication sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you multiply sets in EdgeDB you are given the Cartesian product, which looks like this:
+Cartesian multiplication is a key concept in EdgeDB. The name sounds intimidating but it really just means "evaluate every item in one set with every item in the other set". It's easiest to understand when viewed as an illustration, which fortunately Wikipedia has already made for us. When you do operations on multiple sets in EdgeDB you are given the Cartesian product, which looks like this:
 
 ![A chart displaying the Cartesian product of 1, 2, 3 multiplied by x, y, and z](cartesian_product.svg)
 
 Source: [user quartl on Wikipedia](https://en.wikipedia.org/wiki/Cartesian_product#/media/File:Cartesian_Product_qtl1.svg)
+
+Here is a quick example of a query that operates on two sets. Since it will "evaluate every item in one set with every item in the other set", what do you think the output will be?
+
+```
+select { 'Jonathan', 'Lucy' } ++ ' ' ++ { 'Harker', 'Westenra'};
+```
+
+That's right, it is using `++` to concatenate and will concatenate every item in one set with every item in the other. So that will return a set of four strings:
+
+```
+{'Jonathan Harker', 'Jonathan Westenra', 'Lucy Harker', 'Lucy Westenra'}
+```
+
+The extra `' '` in the middle doesn't increase the number of items in the set because it is just one item, and one multiplied by four is still four.
+
+And if you add 'Mina' to the first set of names and 'Murray' to the second, the output will be a set of nine strings:
+
+```
+{
+  'Jonathan Harker',
+  'Jonathan Westenra',
+  'Jonathan Murray',
+  'Lucy Harker',
+  'Lucy Westenra',
+  'Lucy Murray',
+  'Mina Harker',
+  'Mina Westenra',
+  'Mina Murray',
+}
+```
 
 This means that if we do a `select` on `Person` for our `fight()` function, it will run the function following this formula:
 
@@ -322,9 +394,9 @@ The output is indeed a bit weird:
 }
 ```
 
-The objects returning `false` do come before those that return `true`, but this isn't really an ordering. A true ordering would be more along the lines of single*ness* (let's say from 0 to 100) where a singleness of 0 represents one extreme (someone who is married and never ever has time alone), and a singleness of 100 the other extreme: someone who is absolutely always alone. And most people would have a number somewhere in between.
+The objects returning `false` do come before those that return `true`, but this isn't really an ordering. A true ordering would be more along the lines of single*ness* (let's say from 0 to 100) where a singleness of 0 represents one extreme (someone who is married and never ever has time alone), and a singleness of 100 the other extreme (someone who is absolutely always alone). And most people would have a number somewhere in between.
 
-So what we are looking for here with `is_single` is not an ordering, but a grouping: one group of NPC objects that are single, and another group of NPC objects that are not. EdgeDB has an operator called `group` which does just that. To do a `group` query, just change `select` to `group`!
+So what we are looking for here with `is_single` is not an ordering, but a grouping: one group of NPC objects that are single, and another group of NPC objects that are not. EdgeDB has an operator called `group` which does just that! To do a `group` query, just change `select` to `group`:
 
 ```edgeql
 group NPC {
@@ -364,7 +436,7 @@ The output for the `group` operator is quite nice, as each set includes two extr
 }
 ```
 
-Grouping can be a lot more complex than adding `by` and a property name. For referenc, here is what the full syntax looks like.
+Grouping can be a lot more complex than adding `by` and a property name. For reference, here is what the full syntax looks like.
 
 ```
 [ with with-item [, ...] ]
@@ -392,7 +464,7 @@ group City {name, population}
   by is_big;
 ```
 
-With that, we now have our cities divided into big and small.
+With that, we now have our cities divided into big and small while displaying their names and populations.
 
 ```
 {

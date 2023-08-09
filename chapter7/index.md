@@ -6,14 +6,21 @@ tags: Constraint Delegation, $ Parameters
 
 > Jonathan sneaks into Dracula's room during the day and sees him sleeping inside a coffin. Now Jonathan knows that Count Dracula is a vampire.
 >
-> A few days later Count Dracula says that he will leave tomorrow. Jonathan thinks this is a chance, and asks to leave now. Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and making loud sounds. Dracula says, "You are free to leave! Goodbye!" But Jonathan knows that the wolves will kill him if he steps outside. Jonathan also knows that Dracula called the wolves, and asks him to please close the door. Dracula smiles and closes the door...he knows that Jonathan is trapped.
+> A few days later Count Dracula comes with some news. He tells Jonathan that he will leave the castle tomorrow, and that Jonathan's stay at the castle has also come to an end. Jonathan thinks this is a chance, and asks to leave now instead of tomorrow.
 >
-> Later, Jonathan hears Dracula tell the vampire women that he will leave the castle tomorrow and that they can have Jonathan at that time. Dracula's friends take him away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan decides to climb out the window, because it is better to die by falling than to be alone with the vampire women.
->He writes "Good-bye, all! Mina!" in his journal and begins to climb the wall.
+> Dracula says, "Fine, if you wish..." and opens the door, but there are a lot of wolves outside, howling and getting ready to attack. Dracula smiles and begins to open the door as he says, "You are free to leave! Goodbye!" Jonathan knows that Dracula called the wolves, and panics. "Shut the door! I shall wait till morning!" says Jonathan. Dracula laughs, slams the door shut and walks away.
+>
+> Later, Jonathan hears Dracula tell the vampire women they can have Jonathan once he is alone in the castle. Some workers come to take Dracula away inside a coffin the next day, and Jonathan is alone...and soon it will be night. All the doors are locked. Jonathan has no choice and decides to climb out the window. It is better to die by falling than to be alone with the vampire women.
+>
+> After writing "Good-bye, all! Mina!" in his journal, Jonathan begins to climb the wall.
 
-## More constraints
+## More constraints and simple ordering
 
-While Jonathan climbs the wall, we can continue to work on our database schema. In our book, no character has the same name so there should only be one Mina Murray, one Count Dracula, and so on. This is a good time to put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
+While Jonathan climbs the wall, we can continue to work on our database schema. Let's give it some more constraints so that we are sure what data is acceptable and what is not.
+
+No character in our book has the same name, so so there should only be one Mina Murray, one Count Dracula, and so on. No `PC` object should have the same name either: imagine that you created a `PC` to play the game but the next day someone else shows up with the same name as you! Even worse, any `update` done to a `PC filter .name = your_name` might end up updating both characters at the same time.
+
+To avoid this, we can put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
 
 ```constraint max_value(120);```
 
@@ -21,15 +28,15 @@ We can give `name` a constraint too called `constraint exclusive` which prevents
 
 ```sdl
 abstract type Person {
-  required name: str { ## Add a block
-      constraint exclusive;       ## and the constraint
+  required name: str {      # Add a block
+      constraint exclusive; # and the constraint
   }
   multi places_visited: Place;
   lover: Person;
 }
 ```
 
-Now we know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
+With this constraint added, we now know that there will only be one `Jonathan Harker`, one `Mina Murray`, and so on. In real life this is often useful for email addresses, User IDs, and other properties that you always want to be unique. In our database we'll also add `constraint exclusive` to `name` inside `Place` because these places are also all unique:
 
 ```sdl
 abstract type Place {
@@ -41,18 +48,84 @@ abstract type Place {
 }
 ```
 
-Now let's do a migration. At this point, when you type `migration create` the database will apply the constraint to the existing objects. If one of them violates the constraint then the migration will fail until you change the objects to match the constraint. For example, if we tried to insert a `MinorVampire` object that had the same name as an existing `MinorVampire` object, we would see this output:
+We are going to do a migration now, but first let's insert an object that will violate the `exclusive` constraint. Remember the innkeeper from the city of Bistritz? Let's add him again:
+
+```edgeql
+insert NPC { name := 'The innkeeper' };
+```
+
+Great! Now our migration is going to fail. However, `edgedb migration create` will work, because this simply creates the commands to carry out the migration. After that comes `migration create`, which is when the database will apply the constraint to the existing objects. Fortunately, the output will tell us what has gone wrong:
 
 ```
-Detail: value of property 'name' of object type 'default::MinorVampire'
-violates exclusivity constraint
+edgedb error: ConstraintViolationError: name violates exclusivity constraint
+  Detail: property 'name' of object type 'default::NPC' violates exclusivity constraint
+edgedb error: error in one of the migrations
 ```
+
+"Property 'name' of object type 'default::NPC' violates exclusivity constraint" is a pretty clear error message.
+
+```edgeql
+select NPC { name };
+```
+
+The output shows us that there are two `NPC` objects called 'The innkeeper', which is not okay in our new schema.
+
+```
+{
+  default::NPC {name: 'The innkeeper'},
+  default::NPC {name: 'Mina Murray'},
+  default::NPC {name: 'Jonathan Harker'},
+  default::NPC {name: 'The innkeeper'},
+}
+```
+
+We are going to have to delete one, but let's order those results first. After all, there could have been 10 or 20 or more objects and trying to find a duplicate name would have been pretty tough.
+
+Ordering is pretty easy: just add `order by` and the property to order by: 
+
+```edgeql
+select NPC { name } order by .name;
+```
+
+Now the output shows 'The innkeeper' right next to the other object of the same name.
+
+```
+{
+  default::NPC {name: 'Jonathan Harker'},
+  default::NPC {name: 'Mina Murray'},
+  default::NPC {name: 'The innkeeper'},
+  default::NPC {name: 'The innkeeper'},
+}
+```
+
+We will learn more about ordering in Chapter 10. But in the meantime, let's get back to our duplicate objects so we can delete one. They are identical in every way except their `id`, so let's find out what they are:
+
+```
+select NPC { id } filter .name = 'The innkeeper';
+```
+
+Your `id` values will be different, but the output will look like this:
+
+```
+{
+  default::NPC {id: ebe395c4-19cc-11ee-bae7-f7a7bff901b9},
+  default::NPC {id: dbb3bb4c-19e6-11ee-9981-03a7bead0c6b},
+}
+```
+
+And now we'll just pick one id, put it inside a `str` and cast it to a `uuid` as a filter to delete the one `NPC` object. 
+
+```edgedb
+delete NPC filter .id = <uuid>'ebe395c4-19cc-11ee-bae7-f7a7bff901b9';
+```
+
+With the offending object gone, the `edgedb migrate` command now works!
 
 ## Passing constraints with delegated
 
-Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making any real `PC` type objects. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
+Now that our `Person` type has `constraint exclusive` for the property `name`, no type extending `Person` will be able to have the same name. That's fine for our game in this tutorial, because we already know all the character names in the book and won't be making many real `PC` type objects. But what if we later on wanted to make a `PC` named Jonathan Harker? Right now it wouldn't be allowed because we have an `NPC` with the same name, and `NPC` takes `name` from `Person`.
 
-Fortunately there's an easy way to get around this: the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. So the type is exactly the same except for this keyword:
+Fortunately there's an easy way to get around this: by putting the keyword `delegated` in front of `constraint`. That "delegates" (passes on) the constraint to the subtypes, so that the check for exclusivity will be done individually for `PC`, `NPC`, `Vampire`, and so on. That makes the `Person` type exactly the same except for the `delegated` keyword:
 
 ```sdl
 abstract type Person {
@@ -67,7 +140,7 @@ abstract type Person {
 
 With that you can have up to one Jonathan Harker the `PC`, the `NPC`, the `Vampire`, and anything else that extends `Person`.
 
-The `delegated constraint` should also apply to `Place` since a `Country` can have the same name as `City`, and so on for any other types that will extend `Place`. So let's update the constraint on the `name` property for the `Place` type:
+The `delegated constraint` should also apply to `Place` since a `Country` can have the same name as `City`, and so on for any other types that will extend `Place`. So let's update the constraint on the `name` property for the `Place` type to add `delegated` there too.
 
 ```sdl
 abstract type Place {
@@ -81,7 +154,7 @@ abstract type Place {
 
 ## Using functions in queries
 
-Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it will be more complicated but we can try something simple to mimic this:
+Let's also think about our game mechanics a bit. The book says that the doors inside the castle are too tough for Jonathan to open, but Dracula is strong enough to open them all. In a real game it would be more complicated but we can try something simple to mimic this:
 
 - Doors have a strength, and people have strength as well.
 - A `Person` with greater strength than the door will be able to open it.
@@ -107,7 +180,7 @@ update Castle filter .name = 'Castle Dracula'
   };
 ```
 
-Now we'll give Jonathan a strength of 5.  And now we can update Jonathan with `update` and `set` like before:
+Now we'll give Jonathan a strength of 5. That's another easy `update`:
 
 ```edgeql
 update Person filter .name = 'Jonathan Harker'
@@ -116,7 +189,7 @@ set {
 };
 ```
 
-Great. We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
+We can see that Jonathan doesn't have enough strength to break out of the castle, but let's try to show it using a query. To do that, he needs to have a strength greater than that of any a door. Or in other words, he needs a greater strength than the weakest door.
 
 Fortunately, there is a function called `min()` that gives the minimum value of a set, so we can use that. If his strength is higher than the door with the smallest number, then he can escape. This query looks like it should work, but not quite:
 
@@ -149,7 +222,7 @@ Instead, what we want to use is the {eql:func}` ``array_unpack()`` <docs:std::ar
 ```edgeql
 with
   jonathan := (select Person filter .name = 'Jonathan Harker'),
-  castle :=   (select Castle filter .name = 'Castle Dracula'),
+  castle   := (select Castle filter .name = 'Castle Dracula'),
   select jonathan.strength > min(array_unpack(castle.doors));
 ```
 
@@ -158,39 +231,39 @@ That gives us `{false}`. Perfect! Now we have shown that Jonathan can't open any
 Unsurprisingly, along with `min()` there is also a function called `max()`. `len()` and `count()` are also useful: `len()` gives you the length of an object, and `count()` the number of them. Here is an example of `len()` to get the name length of all the `NPC` type objects:
 
 ```edgeql
-select (NPC.name, 'Name length is: ' ++ <str>len(NPC.name));
+select ('Length of "' ++ NPC.name ++ '" is: ' ++ <str>len(NPC.name));
 ```
 
 Don't forget that we need to cast with `<str>` because `len()` returns an integer, and EdgeDB won't concatenate a string to an integer. Here is the result:
 
 ```
 {
-  ('The innkeeper', 'Name length is: 13'),
-  ('Mina Murray', 'Name length is: 11'),
-  ('Jonathan Harker', 'Name length is: 15'),
+  'Length of "Mina Murray" is: 11',
+  'Length of "Jonathan Harker" is: 15',
+  'Length of "The innkeeper" is: 13',
 }
 ```
 
-The other example is with `count()`, which also has a cast to a `<str>`:
+This next example uses `count()`, which also uses a cast to a `<str>`:
 
 ```edgeql
 select 'There are ' ++ <str>(select count(Place) 
       - count(Castle)) ++ ' more places than castles';
 ```
 
-It prints: `{'There are 8 more places than castles'}`. (Your query might return a different number if you have been experimenting with inserting `Place` objects.)
+It prints: `{'There are 8 more places than castles'}`. Or your query might return a different number if you have been experimenting with inserting `Place` objects.
 
-In a few chapters we will learn how to create our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
+In Chapter 11 we will learn how to write our own functions to make queries like these shorter. Once you learn to make your own functions you will be able to write something short like `select can_escape('Jonathan Harker', 'Castle Dracula');` and the function will do the rest! But in the meantime let's move on to a similar subject: setting parameters in queries.
 
 ## Using $ to set parameters
 
 Imagine we need to look up `City` type objects all the time, with this sort of query:
 
 ```edgeql
-select City {
+select Place {
   name,
   modern_name
-} filter .name ilike '%i%' and exists (.modern_name);
+} filter .name ilike '%i%' and exists .modern_name;
 ```
 
 This works fine, returning one city:
@@ -199,22 +272,24 @@ This works fine, returning one city:
 {default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
 ```
 
-But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) and would like to pass in parameters instead of rewriting the query every time.
+But this last line with all the filters can be a little annoying to change: there's a lot of moving about to delete and retype before we can hit enter again. Or we might be using EdgeDB through one of its [client libraries](https://www.edgedb.com/docs/clients/index) for languages like TypeScript, Python and Rust, and would like to pass in parameters instead of rewriting the query every time.
 
-This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and on the REPL it will ask us what value to give it. Let's start with something very simple:
+This could be a good time to add parameters to a query by using `$`. When EdgeDB sees the `$` it knows that this must be replaced with a value, and in the REPL it will ask us what value to give it. Let's start with something very simple:
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = 'London';
+} filter .name ilike '%ondon%';
 ```
+
+No surprise here: this will return the `City` object with the name `London`.
 
 Now let's change 'London' to `$name`. Note: this won't work yet. Try to guess why!
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = $name;
+} filter .name ilike $name;
 ```
 
 The problem is that `$name` could be anything, and EdgeDB doesn't know what type it's going to be. The error gives us a hint for what to do:
@@ -223,52 +298,55 @@ The problem is that `$name` could be anything, and EdgeDB doesn't know what type
 error: QueryError: missing a type cast before the parameter
   ┌─ <query>:3:18
   │
-3 │ } filter .name = $name;
-  │                  ^^^^^ error
+3 │ } filter .name ilike $name;
+  │                      ^^^^^ error
 ```
 
-In this case we will enter a `str`, and can use `<str>` to let EdgeDB know ahead of time that this is the type to expect:
+In this case we want to enter a `str`, so we can use `<str>` to let EdgeDB know ahead of time that this is the type to expect.
 
 ```edgeql
-select City {
+select Place {
   name
-} filter .name = <str>$name;
+} filter .name ilike <str>$name;
 ```
 
-When we do that, we get a prompt asking us to enter the value:
+When we do that we get a prompt asking us to enter the value:
 
 ```
 Parameter <str>$name:
 ```
 
-Just typing London and hitting enter will lead to this expected result:
+And now, just typing `%ondon%` or `London` and hitting enter will lead to this expected result:
 
 ```
 {default::City {name: 'London'}}
 ```
 
-Note that on the REPL it knows to expect a string so you don't need to type `'London'`. Give `'London'` a try though! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
+Here are two points to keep in mind before we continue:
 
-Now let's take that to make a much more complicated (and useful) query, using two parameters. We'll call them `$name` and `$has_modern_name`. Don't forget to cast them all:
+* The REPL now knows to expect a string so you don't need to surround it with quotes. Give `'London'` a try though and see what happens! The query works, but returns an empty set: `{}`. That's because it's looking for a `City` object where the name is `'London'`, not `London`.
+* The `<>` cast notation in EdgeDB actually has two uses: casting and type specification (letting the compiler know which type to expect). In this case, it is being used for type specification. That means that the compiler is not using `<str>` to cast input into a `str`, but simply to know to expect a `str` - and to reject input that is of a different type. The REPL is smart enough to not allow us to give it improper input when it expects a `str`, but if you are using a client library then there is no REPL to check a query before you send it to EdgeDB. So make sure that you are sending a string when it expects a `str`!
+
+Now let's use what we know to make a more useful query, using two parameters. We'll call them `$name` and `$name_has_changed`. Don't forget to use the cast notation for both:
 
 ```edgeql
-select City {
+select Place {
   name,
   modern_name
 } filter
     .name ilike '%' ++ <str>$name ++ '%'
   and
-    exists (.modern_name) = <bool>$has_modern_name;
+    exists .modern_name = <bool>$name_has_changed;
 ```
 
 Since there are two of them, EdgeDB will ask us to input two values. Here's one example of what it looks like:
 
 ```
 Parameter <str>$name: b
-Parameter <bool>$has_modern_name: true
+Parameter <bool>$name_has_changed: true
 ```
 
-So that will give all `City` type objects with "b" in the name and that have a different modern name. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
+So that will give all `Place` type objects with "b" in the name and which have a different name today than their name in the book. In our case, objects with the `modern_name` property have it because their modern name is different from the name in the book. The result:
 
 ```
 {
@@ -277,23 +355,17 @@ So that will give all `City` type objects with "b" in the name and that have a d
 }
 ```
 
-Parameters work just as well in inserts too. Here's a `Time` insert that prompts the user for the hour, minute, and second:
+Parameters work just as well in inserts too. Here's an update for our global `Time` object that prompts the user for the hour, minute, and second:
 
 ```
-with time := (
-   insert Time {
-     clock := <str>$hour ++ <str>$minute ++ <str>$second
-   }
- ),
- select time {
- clock,
- clock_time,
- hour,
- vampires_are
- };
-Parameter <str>$hour: 10
-Parameter <str>$minute: 09
-Parameter <str>$second: 09
+with new_time := <str>$hour ++ ':' ++ <str>$minute ++ ':' ++ <str>$second,
+ current_time := (update Time set {
+ clock := new_time
+ })
+ select current_time {*};
+Parameter <str>$hour: 20
+Parameter <str>$minute: 19
+Parameter <str>$second: 00
 ```
 
 And the output:
@@ -301,35 +373,69 @@ And the output:
 ```
 {
   default::Time {
-    clock: '100909',
-    clock_time: <cal::local_time>'10:09:09',
-    hour: '10',
-    vampires_are: Asleep,
+    id: eae7edc8-19cc-11ee-bae7-e3434cce8ad7,
+    clock: '20:19:00',
+    clock_time: <cal::local_time>'20:19:00',
+    hour: '20',
+    vampires_are: Awake,
   },
 }
 ```
 
-Note that the cast means you can just type 10, not '10'.
-
-## Optional parameters
-
-So what if you just want to have the _option_ of a parameter? No problem, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `City` object names above to allow a second filter for letters in the name:
+After doing this query, our `global time` will be updated as well:
 
 ```edgeql
-select City {
-  name,
-  modern_name
-} filter
-    .name ilike '%' ++ <str>$input1 ++ '%'
-  and
-    .name ilike '%' ++ <optional str>$input2 ++ '%';
+select global time {*};
 ```
 
-In this case you could search for cities containing both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or just search for cities containing `B` and not enter anything for the second input.
+The output will be the same as the `Time` object directly above.
+
+## Optional parameters and the coalescing operator
+
+There is also a way to do queries that just give the _option_ of a parameter. To do this, just put `optional` before the type name inside the cast (inside the `<>` brackets). We could use this to change the query on `Place` object names above to allow a second filter for letters in the name.
+
+With an optional parameter you could search for places that:
+
+* contain both `B` and `z` (which would return `Bistritz` but not `Buda-Pesth`), or
+* contain `B`, and not provide anything for the second input. In this case the query would return both `Bistritz` and `Buda-Pesth`.
 
 The opposite of `optional` is `required`, but `required` is the default so you don't need to write it.
 
-The `update` keyword that we learned last chapter can also take parameters, so that's four in total where you can use them: `select`, `insert`, `update`, and `delete`.
+Putting all this together ends up with a query like the following. Note that we want to check to see if the optional query `exists`, and to filter for `ilike '%'` if it doesn't (that is, to match everything).
+
+```edgeql
+with
+  f1 := <str>$filter_1,
+  f2 := <optional str>$filter_2,
+ select Place {
+   name,
+   modern_name
+ } filter 
+   .name ilike '%' ++ f1 ++ '%' and .name ilike '%' ++ f2 ++ '%' 
+     if exists f2 else 
+   .name ilike '%' ++ f1 ++ '%';
+```
+
+Here are two sample outputs for this query from the REPL:
+
+```
+Parameter <str>$filter_1: B
+Parameter <str>$filter_2 (Ctrl+D for empty set `{}`): z
+{default::City {name: 'Bistritz', modern_name: 'Bistrița'}}
+```
+
+And:
+
+```
+Parameter <str>$filter_1: B
+Parameter <str>$filter_2 (Ctrl+D for empty set `{}`):
+{
+  default::City {name: 'Buda-Pesth', modern_name: 'Budapest'},
+  default::City {name: 'Bistritz', modern_name: 'Bistrița'},
+}
+```
+
+The second parameter which asks us if we want to enter an empty string or an empty set is interesting, and has to do with some concepts called Cartesian multiplication and the "coalescing operator". But those subjects are too large to fit into the end of this chapter, so we'll have to wait until Chapter 11 to learn them.
 
 [Here is all our code so far up to Chapter 7.](code.md)
 

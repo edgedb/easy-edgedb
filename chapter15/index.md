@@ -72,7 +72,7 @@ function can_enter(person_name: str, place: HasCoffins) -> optional str
     );
 ```
 
-The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a string that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
+The function returns an `optional str` because it may return an empty set. You'll also notice that `person_name` in this function actually just takes a str that it uses to select a `Person`. So technically it could say something like 'Jonathan Harker cannot enter'. 
 
 If we can't trust the user of the function to always enter a `Vampire` or `MinorVampire` object, there are some options:
 
@@ -130,7 +130,7 @@ In this case we are still ignoring the argument `place` (the `City` type) but ma
 A notable example of a function that gets called on empty input is the coalescing operator.
 ```
 
-Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 12. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
+Interesting! You'll remember the coalescing operator `??` that we first saw in Chapter 11. And when we look at {eql:op}`its signature <docs:coalesce>`, you can see the `optional` in there:
 
 `optional anytype ?? set of anytype -> set of anytype`
 
@@ -198,12 +198,12 @@ vampire.name ++ ' is already dead on ' ++ <str>.date
 
 Let's look at some more constraints. We've seen `exclusive` and `max_value` already, but there are {ref}`some others <docs:ref_std_constraints>` that we can use as well.
 
-There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type. `NPC`s won't need this constraint because their names are already decided, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. We'll change it to look like this:
+There is one called `max_len_value` that makes sure that a string doesn't go over a certain length. That could be good for our `PC` type. `NPC`s won't need this constraint because their names are already decided by us the creators of the game, but `max_len_value()` is good for `PC`s to make sure that players don't choose names that are too long to display. This constraint doesn't exist on the original `Person` type, so we'll also need to add the `overloaded` keyword here. The `PC` type with the new constraint now looks like this:
 
 ```sdl
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
+  required created_at: datetime {
     default := datetime_of_statement()
   }
   required number: PCNumber {
@@ -233,7 +233,7 @@ than 30 characters.
   must be no longer than 30 characters.
 ```
 
-Another convenient constraint is called `one_of`, and is sort of like an enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
+Another convenient constraint is called `one_of`, and is sort of like a quick enum. One place in our schema where we could use it is `title: str;` in our `Person` type. You'll remember that we added that in case we wanted to generate names from various parts (first name, last name, title, degree...). This constraint could work to make sure that people don't just make up their own titles:
 
 ```sdl
 title: str {
@@ -241,7 +241,7 @@ title: str {
 }
 ```
 
-For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, German _Herr_, Lady, Dr., Ph.D., etc.).
+For us it's probably not worth it to add a `one_of` constraint though, as there are probably too many titles throughout the book (Count, the German _Herr_, Lady, Dr., Ph.D., etc.).
 
 Another place you could imagine using a `one_of` is in the months, because the book only goes from May to October of the same year. If we had an object type generating a date then you could have this sort of constraint inside it:
 
@@ -257,7 +257,7 @@ Now let's learn about perhaps the most interesting constraint in EdgeDB: an expr
 
 ## `expression on`: the most flexible constraint
 
-One particularly flexible constraint is called {eql:constraint}` ``expression on`` <docs:std::expression>`, which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must be true to create the type. In other words: "Create this type _as long as_ (insert expression here)".
+One particularly flexible constraint is called {eql:constraint}` ``expression on`` <docs:std::expression>`, which lets us add any expression we want. After `expression on` you add the expression (in brackets) that must return `true` to create an object. In other words: "Create this object _as long as_ (insert expression here)".
 
 Let's say we need a type `Lord` for some reason later on, and all `Lord` types must have the word 'Lord' in their name. We can constrain the type to make sure that this is always the case. For this, we will use a function called {eql:func}`docs:std::contains` that looks like this:
 
@@ -265,14 +265,14 @@ Let's say we need a type `Lord` for some reason later on, and all `Lord` types m
 std::contains(haystack: str, needle: str) -> bool
 ```
 
-It returns `{true}` if the `haystack` (a string) contains the `needle` (usually a shorter string).
+This function returns `{true}` if the `haystack` (a string) contains the `needle` (usually a shorter string).
 
 We can write the constraint with `expression on` and `contains()` like this:
 
 ```sdl
 type Lord extending Person {
   constraint expression on (
-    contains(__subject__.name, 'Lord');
+    contains(__subject__.name, 'Lord')
   );
 }
 ```
@@ -333,16 +333,16 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Setting your own error messages
 
-Since `expression on` is so flexible, you can use it in almost any way you can imagine. But it's not certain that the user will know how this constraint is meant to work - there's no message informing the user of this. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. But that flexibility also means that there is no built-in way to let the user know how any `expression on` is supposed to work when a constraint is violated. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
 
 ```
 edgedb error: ConstraintViolationError: invalid Lord
   Detail: invalid value of object type 'default::Lord'
 ```
 
-So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, all constraints allow you to set your own error message just by using `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
+So there's no way to tell that the problem is that `name` needs `'Lord'` inside it. Fortunately, all constraints allow you to set your own error message just by opening up a block with `{}` and specifying an `errmessage`, like this: `errmessage := "All lords need 'Lord' in their name."`
 
-Here's the `Lord` type now:
+Let's do that with our `Lord` type now:
 
 ```sdl
 type Lord extending Person {
@@ -363,7 +363,7 @@ Much better!
 
 ## Putting backlinks into the schema
 
-Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because `delete` becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
+Back in Chapter 6 we removed `master` link from `MinorVampire`, because `Vampire` already has the `multi slaves` link to the `MinorVampire` type. One reason was complexity, and the other was because deleting without a deletion policy becomes impossible because they both depend on each other. But now that we know how to use backlinks, we can put `master` back in `MinorVampire` if we want. Let's follow the thought process that often leads to choosing to use a backlink.
 
 First, here is the `MinorVampire` type at present:
 
@@ -394,7 +394,7 @@ type MinorVampire extending Person {
 };
 ```
 
-Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust the users to input `master_name` correctly by themselves — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink.
+Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust ourselves to input `master_name` correctly — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink. The syntax is the same as the syntax we used last chapter except that we don't need to specify that the link is to a `MinorVampire`, because we are already inside the `MinorVampire` type.
 
 ```sdl
 type MinorVampire extending Person {
@@ -462,13 +462,19 @@ And the result:
 
 Beautiful! All the information is right there.
 
-We won't see Kain and his slaves anymore so let's get rid of them with a quick delete query. We can just filter on their names because we know that no other objects are called Kain, Billy or Bob.
+We won't see Kain and his slaves anymore so let's get rid of them with a quick delete query. The `on source delete delete target` deletion policy on the `Vampire` policy makes this easy: just delete Kain.
 
 ```edgeql
+delete Vampire filter .name = 'Kain';
+```
+
+Of course, you don't have to depend on a deletion policy to delete objects. We could have deleted all three using this query for example:
+
+```
 delete Person filter .name in {'Kain', 'Billy', 'Bob'};
 ```
 
-You should see the three `id`s of the three objects and their types to show us that the deletion has worked.
+And the advantage to this deletion is that it will return all three deleted objects and their types (and even their properties and links if we wanted to show them) instead of just a single deleted `Vampire` object with the other two deletions happening unseen to us.
 
 ```
 {
@@ -477,6 +483,17 @@ You should see the three `id`s of the three objects and their types to show us t
   default::Vampire {id: d0170a16-ff45-11ed-8310-7b730ce4d4f2},
 }
 ```
+
+Finally, let's add a backlink to the Party type that we created in Chapter 13. That's easy! The `PC` type links to `Party` via a link called `party` so all we have to do is turn that around.
+
+```sdl
+type Party {
+  name: str;
+  link members := .<party[is PC];
+}
+```
+
+As you can see, once you understand how to write backlinks you start to wonder how you ever got anything done without them. They're one of the best reasons to use EdgeDB.
 
 [Here is all our code so far up to Chapter 15.](code.md)
 
@@ -493,6 +510,8 @@ You should see the three `id`s of the three objects and their types to show us t
    Try it first with `expression on`.
 
 4. How would you make a function called `display_coffins` that pulls up all the `HasCoffins` objects with more than 0 coffins?
+
+5. How would you give the `Place` type a backlink to every `Person` type that visited it?
 
 [See the answers here.](answers.md)
 

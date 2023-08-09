@@ -5,7 +5,10 @@ leadImage: illustration_04.jpg
 
 # Chapter 4 - "What a strange man this Count Dracula is."
 
-> Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. It's close to a mental asylum, but not too close. Dracula likes the idea. He then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost morning. They talked through the whole night again! Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
+The days and nights continue to go by, and Jonathan Harker is still in the castle. In this chapter it's time for us to learn how to work with time.
+
+> Jonathan Harker wakes up late and is alone in the castle. Dracula appears after nightfall and they talk **through the night**. Dracula is making plans to move to London, and Jonathan gives him some advice about buying houses. Jonathan tells Dracula that a big house called Carfax would be a good house to buy. It's very big and quiet. Carfax is close to a mental asylum, but not too close. Dracula loves the idea.
+>Dracula then tells Jonathan not to go into any of the locked rooms in the castle, because it could be dangerous. Jonathan sees that it's almost **morning**. They talked through the whole night again! Dracula suddenly stands up and says he must go, and leaves the room. Jonathan thinks about **Mina** back in London, who he is going to marry when he returns. He is beginning to feel that there is something wrong with Dracula, and the castle. Seriously, where are the other people?
 
 First let's create Jonathan's girlfriend, Mina Murray. It would be nice to represent their relationship somehow, so let's try by adding a new link to the `Person` type in the schema called `lover`. Let's change the `Person` type to what you see here and do a migration:
 
@@ -23,13 +26,60 @@ Mina is in London, and we don't know if she has been anywhere else. So let's do 
 
 ```edgeql
 insert City {
-    name := 'London',
+  name := 'London',
 };
 ```
 
-To give her the city of London, we can just do a quick `(select City filter .name = 'London')`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return a `{}` empty set. When giving her Jonathan Harker as a `lover` link, however, it is a bit more complicated. Let's see why.
+To give her the city of London, we can just do a quick `(select City filter .name = 'London')`. This will give her the `City` that matches `.name = 'London'`, but it won't give an error if the city's not there: it will just return an empty set. When giving her Jonathan Harker as a `lover` link, however, it is a bit more complicated. Let's see why.
 
 ## Using the keywords detached, exists, and limit
+
+The `insert` for Mina Murry is a bit more complicated. We might be tempted to try an `insert` this way, but there are two problems:
+
+```edgeql
+insert NPC {
+  name := 'Mina Murray',
+  lover := (select NPC filter .name = 'Jonathan Harker'),
+  places_visited := (select City filter .name = 'London'),
+ };
+```
+
+Fortunately, the compiler is smart enough to tell us exactly what the problems are! If you try this insert you will see the following error message:
+
+```
+error: QueryError: invalid reference to default::NPC: 
+self-referencing INSERTs are not allowed
+  ┌─ <query>:3:20
+  │
+3 │   lover := (select NPC filter .name = 'Jonathan Harker'),
+  │                    ^^^ Use DETACHED if you meant to refer 
+  to an uncorrelated default::NPC set
+```
+
+The issue here is that we are inside of an `insert` for the `NPC` type, but we want to link to another `NPC`, not the one we are inserting. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now.
+
+Sounds good. Let's change `select NPC` to `select detached NPC` so that we can filter on all of the `NPC` objects. There is one error left, and you might be able to guess what it is. What will the result of the `filter` be, and does it match with the link `lover`?
+
+```edgeql
+insert NPC {
+  name := 'Mina Murray',
+  lover := (select detached NPC filter .name = 'Jonathan Harker'),
+  places_visited := (select City filter .name = 'London'),
+ };
+```
+
+That's right! Our `filter` will return a set of `NPC` objects. This set might have zero or one `NPC` objects...but it also might be more than one. That's not okay for a `link`, which is by default a `single link`. Here is the error message:
+
+```
+error: QueryError: possibly more than one element returned by an expression 
+for a link 'lover' declared as 'single'
+  ┌─ <query>:3:3
+  │
+3 │   lover := (select detached NPC filter .name = 'Jonathan Harker'),
+  │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
+```
+
+To fix this, we can use a function called {eql:func}`docs:std::assert_single`. This is used here because the link is a single link. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a single link, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
 
 The full insert for Mina Murray will look like this:
 
@@ -37,30 +87,27 @@ The full insert for Mina Murray will look like this:
 insert NPC {
   name := 'Mina Murray',
   lover := assert_single(
-    (
-      select detached NPC
-      filter .name = 'Jonathan Harker'
-    )
+    (select detached NPC filter .name = 'Jonathan Harker')
   ),
   places_visited := (select City filter .name = 'London'),
 };
 ```
 
-You'll notice two things here:
+EdgeDB has another keyword called `limit` that limits the number of objects returned to any number we like, and in this case we could have gotten the `insert` to work by using `limit 1`.
 
-- `detached`. This is because we are inside of an `insert` for the `NPC` type, but we want to link to another `NPC`, not the one we are inserting. We need to add `detached` to specify that we are talking about `NPC` in general, not the `NPC` that we are inserting right now. Fortunately, the EdgeDB compiler wouldn't even let the insert happen if we forgot the `detached` keyword. Here's what the error would look like:
-
-```
-error: QueryError: invalid reference to default::NPC: self-referencing INSERTs are not allowed
-  ┌─ <query>:5:14
-  │
-5 │       select NPC
-  │              ^^^ Use DETACHED if you meant to refer to an uncorrelated default::NPC set
+```edgeql
+insert NPC {
+  name := 'Mina Murray',
+  lover := (select detached NPC filter .name = 'Jonathan Harker' limit 1),
+  places_visited := (select City filter .name = 'London'),
+ };
 ```
 
-- {eql:func}`docs:std::assert_single`. This is used here because the link is a single link. EdgeDB doesn't know how many results we might get: for all it knows, there might be 2 or 3 or more `Jonathan Harkers`. To guarantee that we are only creating a single link, we use the `assert_single()` function. Careful! This will return an error if more than one result is returned.
+However, in this case `assert_single()` is better because `filter .name = 'Jonathan Harker'` might have returned more than one object. Maybe there are four or five Jonathan Harkers in the database, and only one of them would be returned. And if we used `limit 1` again in the same way, we might get a different `NPC` called Jonathan Harker. Using `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
 
-Let's make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a basic query showing the names of each `Person` object's `lover`:
+We can (and will) add a constraint to ensure that names are unique, but in the meantime keep in mind the difference between `assert_single()` and `limit 1`.
+
+Now let's make a query to see who is single and who is not. This is easy by using a "computed" property, where we can create a new variable that we define with `:=`. First here is a basic query showing the names of each `Person` object's `lover`:
 
 ```edgeql
 select Person {
@@ -106,7 +153,7 @@ Now this prints:
 }
 ```
 
-This also shows why abstract types are useful. Here we did a quick search on `Person` for data from `Vampire`, `PC` and `NPC`, because they all come from `abstract type Person`.
+This also shows why abstract types are useful. Here we did a quick search on `Person` which returned data from `Vampire`, `PC`, and `NPC` objects, because they all extend the `abstract type Person`.
 
 We've got a lot of single characters, let's try selecting just one of them:
 
@@ -123,11 +170,9 @@ If the first `Person` type returned from the database is Count Dracula, then we 
 {default::Vampire {name: 'Count Dracula', is_single: true}}
 ```
 
-Notice that we use use `limit 1` instead of `assert_single()` because we want just one result, even if there are more that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. Similarly, `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
+Now this time we did want to use `limit 1` instead of `assert_single()` because we want just up to one result, even if there are multiple objects that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. Similarly, `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
 
-It's possible that the query above doesn't actually select Dracula, but instead some other single `Person`. The `limit 1` picks at most one result, but it says nothing about which one, just the first one that the database finds. Picking the order in which results get looked at is covered in [Chapter 10](../chapter10/index.md).
-
-We could also put the computed property in the type itself. Here's the same computed property except now it's inside the `Person` type:
+We could also put the computed property in the type itself, so let's do that. Here's the same computed property except now it's inside the `Person` type:
 
 ```sdl
 abstract type Person {
@@ -138,27 +183,27 @@ abstract type Person {
 }
 ```
 
-You'll notice that we have written `property is_single` this time instead of just `is_single`. With computed properties and links we need to give EdgeDB a little bit more help by letting it know whether the computed expression will result in a `property` or a `link`. So if you are working on your schema and the property or link uses a `:=` to make it computed, don't forget to choose between `property` or `link`!
+Notice that we have written `property is_single` this time instead of just `is_single`. With computed properties and links we need to give EdgeDB a little bit more help by letting it know whether the computed expression will result in a `property` or a `link`. So if you are working on your schema and the property or link uses a `:=` to make it computed, don't forget to choose between `property` or `link`!
 
-You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. Computed links also don't specify the type because the expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but the same up front.
+You might be curious about how computed links and properties are represented in databases on the back end. They are interesting because they {ref}`don't show up in the actual database <docs:ref_datamodel_computed>`, and only appear when you query them. Computed links also don't specify the type because the expression itself determines the type. You can kind of imagine this when you look at a query with a quick computed variable like `select country_name := 'Romania'`. Here, `country_name` is computed every time we do a query, and the type is determined to be a string. A computed link or property on a type does the same thing. But nevertheless, they still work in the same way as all other links and properties because the instructions for the computed ones are part of the type itself and do not change. In other words, they are a bit different on the back but mostly the same up front.
 
 ## Ways to tell time
 
-We will now learn about time, because it might be important for our game. Remember, vampires can only go outside at night.
+We will now learn about time, which is important for our game. Keeping track of time is important in general, but is especially important for us because vampires can only go outside at night.
 
 The part of Romania that Jonathan Harker is visiting has an average sunrise of around 7 am and a sunset of 7 pm. This changes by season, but to keep it simple we will just use 7 am and 7 pm to decide if it's day or night.
 
 EdgeDB uses two major types for time:
 
-- `std::datetime`, which is very precise and always has a timezone. Times in `datetime` use the [ISO 8601 standard](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1154675086).
-- `cal::local_datetime`, which doesn't worry about the timezone.
+- `std::datetime`, which is the most precise because it includes a timezone. Times in `datetime` use the [ISO 8601 standard](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1154675086).
+- `cal::local_datetime`, which includes the date and time but no information about the timezone.
 
-There are two others that are almost the same as `cal::local_datetime`:
+There are two others that each include half of the information found in `cal::local_datetime`:
 
-- `cal::local_time`, when you only need to know the time of day, and
-- `cal::local_date`, when you only need to know the month, the day, and year.
+- `cal::local_time`, for when you only need to know the time,
+- `cal::local_date`, for when you only need to know the month, the day, and year.
 
-We'll start with `cal::local_time` first. Take a close look at the name: this is the first time we have come across something in a different module in the standard library (it's `cal::local_time`, not `std::local_time`).
+Our first concern is whether vampires are sleeping or not, so we'll start with `cal::local_time` first. Take a close look at the name: this is the first time we have come across something in a different module in the standard library (it's `cal::local_time`, not `std::local_time`). The name `cal` here stands for calendar.
 
 `cal::local_time` is easy to create, because you can just cast to it from a `str` in the format 'HH:MM:SS':
 
@@ -172,7 +217,7 @@ This gives us the output:
 {<cal::local_time>'15:44:56'}
 ```
 
-We will imagine that our game engine has a clock that gives the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that will hold this `str` and use it to make two computed properties. It looks like this:
+We will imagine that our game engine has a clock that sends the database the time as a `str`, like the '15:44:56' in the example above. We'll make a quick `Time` type that will hold this `str` and use it to make two computed properties. It looks like this:
 
 ```sdl
 type Time { 
@@ -247,23 +292,21 @@ So `vampires_are` is calculated like this:
 Now let's do a `select` again with all the properties:
 
 ```edgeql
-select Time {
-  clock,
-  clock_time,
-  hour,
-  vampires_are
- };
+select Time {*};
 ```
 
 We then get this output:
 
 ```
-default::Time {
-  clock: '09:55:05',
-  clock_time: <cal::local_time>'09:55:05',
-  hour: '09',
-  vampires_are: Asleep,
-},
+{
+  default::Time {
+    id: 0fb1d964-1989-11ee-915e-5b585f9c9744,
+    clock: '09:55:05',
+    clock_time: <cal::local_time>'09:55:05',
+    hour: '09',
+    vampires_are: Asleep,
+  },
+}
 ```
 
 One more note on `else`: you can keep on using `else` as many times as you like in the format `(result) if (condition) else`. Here's an example showing how this could work if we had more values on the `SleepState` enum:

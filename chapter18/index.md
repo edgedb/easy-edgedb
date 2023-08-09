@@ -6,11 +6,13 @@ tags: Complex Inserts, Schema Cleanup, Triggers
 
 > Van Helsing was correct: Mina is connected to Dracula. Van Helsing continues to use hypnotism to find out more about where Dracula is and what he is doing. 
 >
-> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and never stops working to find Dracula.
+> Meanwhile, Jonathan does a lot of investigation into Dracula's activities in London. He visits all the companies that were involved in selling Dracula's house, and some moving companies who moved his coffins around. Jonathan is becoming more and more confident, and only has one thought in his mind: find Dracula, destroy him, and save Mina.
 >
-> Our heroes eventually find Dracula's other house in London with all his money. Knowing that he will come to get it, they wait for him to arrive...Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
+> Our heroes eventually find Dracula's other house in London with all of his money. Knowing that Dracula will come to get it, they wait for him to arrive.
+>
+> Suddenly, Dracula runs into the house and attacks. Jonathan hits out with his knife, and cuts Dracula's bag with all his money. Dracula grabs some of the money that fell and jumps out the window. He yells at them: "You shall be sorry yet, each one of you! You think you have left me without a place to rest; but I have more. My revenge is just begun!" Then he disappears.
 
-This is a good reminder that we should probably think about money in our game. Money in a regular fantasy game is generally pretty easy: you can use a parameter called `gold` or something, call that the currency and give everyone a `gold` property. But our game is based on the real world. The characters have been to countries like England, Romania, and Germany, and each of those have their own money.
+This is a good reminder that we should probably think about money in our game. Money in a regular fantasy game is generally pretty easy: you can use a parameter called `gold` or something, call that the currency and give everyone a `gold` property. But our game is based on the real world. The characters have been to countries like England, Romania, and Germany, each of which have their own money.
 
 On top of this is an extra difficulty: in the 1800s, monetary systems were more complicated than they are today. For example, the United Kingdom at the time didn't use a simple 100 pence to 1 pound conversion. Instead, it was as follows:
 
@@ -20,11 +22,11 @@ On top of this is an extra difficulty: in the 1800s, monetary systems were more 
 
 (There was also a _halfpenny_ that was half of one pence, but let's not get into that much detail in our game.)
 
-Fortunately, even in this case we can default to the smallest unit of money when it comes to things like buying and selling.  By using the smallest unit of currency possible, we can do all calculations with integers instead of floats. For example, if a `Person` object with 5 pounds, 3 shillings and 5 pence wants to buy something that costs 1 shilling and 15 pence, the buyer has:
+Fortunately, even in this case we can default to the smallest unit of money when it comes to things like buying and selling.  By using the smallest unit of currency possible, we can do all calculations with integers instead of floats. For example, if a `Person` object with 5 pounds, 3 shillings and 5 pence wants to buy something that costs 1 shilling and 15 pence, we can calculate how much money the buyer has in pence:
 
-- 5 pounds * 240 = 1200 pence
-- 3 shillings * 3 = 60 pence
-- 5 pence
+- 5 pounds, which equals 5 * 240 = 1200 pence,
+- 3 shillings, which equals 3 * 20 = 60 pence,
+- 5 pence.
 
 Which makes a total of 1265 pence for the buyer minus the item that costs 75 pence (3 shillings * 20, plus 15 pence). And since shopkeepers like to have small currencies (so they can give people change) and people like to have large currencies (so they aren't weighed down with too many coins), you can always subtract pence first, then shillings, and finally pounds when making a purchase.
 
@@ -78,7 +80,7 @@ Next, we can make all of these properties `required` and give them a default val
 
 And finally, to top it off let's add three computed properties called `total_pence`, `total_cents`, and `approx_wealth_in_pounds`. The first two represent the smallest units of currency in their respective countries, and so will represent a person's total wealth.
 
-The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this as a general benchmark and won't be using it to buy or sell anything so we will cast it to an `int64` for readability.
+The last `approx_wealth_in_pounds` property shows the character's total wealth in pounds, which we will use as a general benchmark to compare all wealth. The calculation to make this property returns a float, but we are just using this for general comparisons and won't be using it to buy or sell anything. So we will cast it to an `int64` for readability.
 
 At the time of the book, the exchange rate was about 8 US dollars to one pound (so 800 cents to one pound). Putting all that together, the final `HasMoney` type looks like this:
 
@@ -234,145 +236,11 @@ The output should be similar to the output below, with Count Dracula and Arthur 
 }
 ```
 
-## Cleaning up the schema
-
-We've come a long way since first setting up our database and doing our early object inserts. Let's look back and see how things might change if we were starting again, knowing what we now know.
-
-First, we have two inserts here where we could only have one.
-
-```edgeql
-insert City {
-  name := 'Munich',
-};
-
-insert City {
-  name := 'London',
-};
-```
-
-We'll change that to an insert with a `for` loop:
-
-```edgeql
-for city_name in {'Munich', 'London'}
-union (
-  insert City {
-    name := city_name
-  }
-);
-```
-
-Then we'll do the same for the four `Country` types that we inserted (Hungary, Romania, France, Slovakia). Now they are a single insert:
-
-```edgeql
-for country_name in {'Hungary', 'Romania', 'France', 'Slovakia'}
-union (
-  insert Country {
-    name := country_name
-  }
-);
-```
-
-The other `City` inserts are a bit different: some have `modern_name` and others have `population`. In a real game we would insert them all in this sort of form, all at once:
-
-```edgeql
-for city in {
-    ('City 1\'s name', 'City 1\'s modern name', 800),
-    ('City 2\'s name', 'City 2\'s modern name', 900),
-    ('City 3\'s name', 'City 3\'s modern name', 455),
-  }
-union (
-  insert City {
-    name := city.0,
-    modern_name := city.1,
-    population := city.2
-  }
-);
-```
-
-And we would do the same with all the `NPC` types, their `first_appearance` data, and so on. But we don't have that many cities and characters to insert in this tutorial so we don't need to be so systematic yet.
-
-We can also turn the inserts for the `Ship` type into a single one. Right now it looks like this:
-
-```edgeql
-for n in {1, 2, 3, 4, 5}
-union (
-  insert Crewman {
-    number := n,
-    first_appearance := cal::to_local_date(1893, 7, 6),
-    last_appearance  := cal::to_local_date(1893, 7, 16),
-  }
-);
-
-insert Sailor {
-  name := 'The Captain',
-  rank := Rank.Captain
-};
-
-insert Sailor {
-  name := 'The First Mate',
-  rank := Rank.FirstMate
-};
-
-insert Sailor {
-  name := 'The Second Mate',
-  rank := Rank.SecondMate
-};
-
-insert Sailor {
-  name := 'The Cook',
-  rank := Rank.Cook
-};
-
-insert Ship {
-  name := 'The Demeter',
-  sailors := Sailor,
-  crew := Crewman
-};
-```
-
-Let's put that all together:
-
-```edgeql
-insert Ship {
-  name := 'The Demeter',
-  sailors := {
-    (insert Sailor {
-      name := 'The Captain',
-      rank := Rank.Captain
-    }),
-    (insert Sailor {
-      name := 'The First Mate',
-      rank := Rank.FirstMate
-    }),
-    (insert Sailor {
-      name := 'The Second Mate',
-      rank := Rank.SecondMate
-    }),
-    (insert Sailor {
-      name := 'The Cook',
-      rank := Rank.Cook
-    })
-  },
-  crew := (
-    for n in {1, 2, 3, 4, 5}
-    union (
-      insert Crewman {
-        number := n,
-        first_appearance := cal::to_local_date(1893, 7, 6),
-        last_appearance  := cal::to_local_date(1893, 7, 16),
-      }
-    )
-  )
-};
-```
-
-Much better!
-
 ## Triggers
 
-Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help?) Count Dracula.
+Let's give some thought to the actual users of our game - the people who will be signing up to make player characters to try to save the world from (or to help??) Count Dracula.
 
-However the game takes shape, it will require some sort of account type to hold the information for the people using our game. A simplified example of what we might need is as follows:
+However the game takes shape, it will require some sort of account type to hold the information for the people using our game in real life. A simplified example of what we might need is as follows:
 
 ```sdl
 type Account {
@@ -397,7 +265,9 @@ Every single property in these types is required, which makes sense - it's all p
 
 Now let's think about what happens when an `Account` gets deleted. In almost every country, a company is legally bound to remove a user's personal information when they ask for an account to be deleted. With the `on source delete delete target` deletion policy, we have the `credit_card` link set up to delete any linked `CreditCardInfo` when an `Account` object is deleted. (A reminder: `on source delete delete target` means that when the source of the link is deleted, the target of the link gets deleted as well.) Deleting an `Account` object will delete absolutely everything to do with the user of our game.
 
-However, users often delete their accounts but then want to restore them again! But we can't keep the `Account` and `CreditCardInfo` objects around just in case, because we are legally obliged to remove the user's information. An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
+However, users tend to be fickle. They might delete their accounts and regret doing so, they might delete an account by mistake, and so on. In that case they will get into contact with us asking if an account can be restored. Legally, however, we can't just keep the `Account` and `CreditCardInfo` objects around just in case! We are obligated to delete all of a user's information when they ask. How to solve this issue?
+
+An easy way to solve this problem is by using _triggers_, which were added in EdgeDB 3.0. A trigger represents some sort of action that we want to take place every time an object is inserted, updated, or deleted. Let's first take a look at the official syntax for triggers to get an idea of how to use them:
 
 ```
 type type-name "{"
@@ -413,24 +283,25 @@ In other words:
 
 - Decide on a name for a trigger (like `validate_input` or `check_length`),
 - Add the keyword `after`,
-- Decide for which cases we want a trigger to happen (only on `insert`, or for `insert` and `update`, etc.),
+- Decide for which cases we want a trigger to happen (only after an `insert`, after either an `insert` or an `update`, etc.),
 - Decide whether a trigger should happen on `each` object or once per query with `all`,
 - And finally the expression of the trigger itself.
 
-Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, depending on the operation. When you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
+Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, though this depends on the operation. For example, when you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
 
-And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
+And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. None of this information can be used to track down a person in real life so it is safe to hold, and at the same time it is enough information for us to restore an account. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
 
-The `MinimalUserInfo` type is pretty simple:
+The `MinimalUserInfo` type is pretty simple, just a person's `username`, the `PC`s that they own, and an `int16` to hold a random number.
 
 ```sdl
 type MinimalUserInfo {
   username: str;
   multi pcs: PC;
+  passcode: int16;
 }
 ```
 
-And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it.
+And now let's add the trigger to `Account` that inserts a `MinimalUserInfo` object every time an `Account` object is deleted. With this trigger in place, we can freely delete any `Account` objects and the user's personal information will be removed: name, address, and credit card info. But a `MinimalUserInfo` will always be created at the same time which holds the `username` and the `PC` objects linked to it. It will also hold a `passcode` which holds a number in between 100 and 500.
 
 All together, the changes now look as follows:
 
@@ -447,7 +318,8 @@ type Account {
   trigger user_info_insert after delete for each do (
   insert MinimalUserInfo {
     username := __old__.name,
-    pcs := __old__.pcs
+    pcs := __old__.pcs,
+    passcode := <int16>(random() * 400) + 100,
   }
 );
 }
@@ -455,17 +327,17 @@ type Account {
 type CreditCardInfo {
   required name: str;
   required number: str;
-
   link card_holder := .<credit_card[is Account]
 }
 
 type MinimalUserInfo {
   username: str;
   multi pcs: PC;
+  passcode: int16;
 }
 ```
 
-Okay, let's do a migration and then insert an `Account` object!
+Okay, let's do a migration and then insert an `Account` object. Look at all the personal information inside!
 
 ```
 insert Account {
@@ -523,7 +395,7 @@ We have only one `Account` object so far so let's query with `select Account {**
 Looks good! That is, until Deborah decides she has been playing too many vampire games recently and would like to delete her account. We are sad to see her go but comply with her request:
 
 ```edgeql
-delete Account filter .name = 'Deborah Brown';
+delete Account filter .user_name = 'deb_deb_999';
 ```
 
 And now Deborah's personal information is all gone, as requested. But thanks to the trigger we added, we now have a `MinimalUserInfo` object in the database that was added automatically at the moment that we deleted Deborah's account. Let's take a look at it:
@@ -539,6 +411,7 @@ Here is the output:
   default::MinimalUserInfo {
     id: 5c17b0de-0d91-11ee-946c-6f411083ab25,
     username: 'deb_deb_999',
+    passcode: 453,
     pcs: {
       default::PC {
         last_appearance: {},
@@ -561,7 +434,19 @@ Here is the output:
 }
 ```
 
-With that we are holding none of Deborah's personal information anymore. All we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! And if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username.
+With that we are holding none of Deborah's personal information anymore. All that we know is that some user called `deb_deb_999` had a `PC` called `LordOfSalty` - no personal info anywhere! Our software will check for new `MinimalUserInfo` objects and send off an email to users that have deleted their accounts to let them know how to restore their account if they wish. It would look something like this:
+
+```
+We're sorry to see you go...
+
+Your personal information has been deleted from our database. Your PCs have been kept on file for the next 30 days should you choose to restore your account. Keep the passcode safe if you think you might want to restore your account! It's the only way to verify your identity now that all of your personal information has been removed.
+
+Account name: deb_deb_999
+PC names: LordOfSalty
+Passcode: 453
+```
+
+So if Deborah decides that she wants to get back into the world of vampire gaming she can choose to restore her account - as long as she remembers her username and passcode.
 
 [Here is all our code so far up to Chapter 18.](code.md)
 
