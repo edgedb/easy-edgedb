@@ -101,12 +101,11 @@ error: QueryError: cannot insert into abstract object type 'default::Person'
 
 However, `select` on an abstract type is just fine. A `select` on a `Person` type will select all of the objects of all the types that extend `Person`. So let's add a `PC` object now so that the result of a `select Person` query will be more interesting.
 
-We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just type `City` for his `places_visited` link which will link him to all three cities.
+We'll make a `PC` called Emil Sinclair who is a mystic. He hasn't visited anywhere yet so he won't have any `places_visited` to link to.
 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := Class.Mystic,
 };
 ```
@@ -118,7 +117,6 @@ However, EdgeDB also allows you to choose an enum just by writing a string that 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := 'Mystic',
 };
 ```
@@ -153,14 +151,7 @@ This gives us an output showing objects of both the `PC` and `NPC` type.
       default::City {name: 'Bistritz'},
     },
   },
-  default::PC {
-    name: 'Emil Sinclair',
-    places_visited: {
-      default::City {name: 'Munich'},
-      default::City {name: 'Buda-Pesth'},
-      default::City {name: 'Bistritz'},
-    },
-  },
+  default::PC {name: 'Emil Sinclair', places_visited: {}},
 }
 ```
 
@@ -295,16 +286,7 @@ select Person {
 The output now only shows a single `PC` object with a name that matches our filter:
 
 ```
-{
-  default::PC {
-    name: 'Emil Sinclair',
-    places_visited: {
-      default::City {name: 'Munich'},
-      default::City {name: 'Buda-Pesth'},
-      default::City {name: 'Bistritz'},
-    },
-  },
-}
+{default::PC {name: 'Emil Sinclair', places_visited: {}}}
 ```
 
 Let's filter the cities now. EdgeDB has two keywords called `like` or `ilike` which allow us to to match on parts of a string instead of just a whole string. They are slightly different:

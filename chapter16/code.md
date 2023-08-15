@@ -242,7 +242,6 @@ insert City {
 
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := Class.Mystic,
 };
 

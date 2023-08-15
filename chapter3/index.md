@@ -349,26 +349,7 @@ The output is...verbose!
   default::PC {
     id: 8b0633d2-0b04-11ee-bd1f-2f48cb19fb35,
     name: 'Emil Sinclair',
-    places_visited: {
-      default::City {
-        id: 8a6d06bc-0b04-11ee-bd1f-67f7c83004cb,
-        important_places: {},
-        modern_name: {},
-        name: 'Munich',
-      },
-      default::City {
-        id: 8a9e9222-0b04-11ee-bd1f-cfa57ad4cff6,
-        important_places: {},
-        modern_name: 'Budapest',
-        name: 'Buda-Pesth',
-      },
-      default::City {
-        id: 8ac23b46-0b04-11ee-bd1f-cf07e2483e97,
-        important_places: ['Golden Krone Hotel'],
-        modern_name: 'Bistrița',
-        name: 'Bistritz',
-      },
-    },
+    places_visited: {},
   },
   default::Vampire {
     id: 8b4aefcc-0b04-11ee-bd1f-c36d2df0b47a,
@@ -418,7 +399,9 @@ This is because `Person` is linked to `Place` via the `places_visited` link, and
 
 ## Deleting Bistritz
 
-We haven't learned how to `update` yet (we'll learn that in Chapter 6), but we do know how to `delete` so let's get rid of our duplicate Bistritz. Let's first do a query to remember what the two objects look like at the moment:
+Now that we know how to `delete`, let's try to get rid of our duplicate Bistritz. Later on we will learn how to do this smoothly thanks to learning how to `update` in Chapter 6, and how to manage deletion policies in Chapter 13. But even at this point we still know enough to make the deletion happen with a few extra steps.
+
+Let's first do a query to remember what the two objects look like at the moment:
 
 ```edgeql
 select City {*} filter .name = 'Bistritz';
@@ -443,7 +426,28 @@ And the output:
 }
 ```
 
-Ah yes, we have a `City` called Bistritz that was inserted before we added the `important_places` property. There are two differences between the two: they have different `id` numbers, and one has an `important_places` property. In the next chapter we will learn to to filter depending on whether a property or link `exists` or not, but in the meantime let's just delete one by its id. (`id` is always a unique number so on your database the `id` will be different from the one in this example.)
+Ah yes, we have a `City` called Bistritz that was inserted before we added the `important_places` property. There are two differences between the two: they have different `id` numbers, and one has an `important_places` property. Our plan is to delete one of them by filtering on its `id` property, so make a note of the `id` of the `City` that doesn't have any `important_places`. The `id` will naturally be different on your computer as an `id` is always unique.
+
+Now if we wanted to delete both of them, we would simply type `delete City;`. However, this wouldn't work in any case. Give it a try and see what happens!
+
+```edgeql
+delete City;
+```
+
+The problem here is that Jonathan Harker is standing in our way. He is an `NPC` object with a link to the other `City` objects, and by default you can't delete an object that is being linked to by another one.
+
+```
+edgedb error: ConstraintViolationError: deletion of default::City (f801a034-387c-11ee-95af-87dfbf43e85c) is prohibited by link target policy
+  Detail: Object is still referenced in link places_visited of default::Person (fc6522d6-387c-11ee-95af-f750f3ca3b62).
+```
+
+Within the limitations of what we know at the moment, the only thing we can do is to temporarily delete Jonathan Harker. We'll `insert` him again shortly, but in the meantime let's just get him out of the way:
+
+```edgeql
+delete NPC filter .name = 'Jonathan Harker';
+```
+
+And now that Jonathan is no longer standing in the way, let's try to delete one of the duplicate cities.
 
 This query almost works but not quite:
 
@@ -470,6 +474,15 @@ delete City filter .id = <uuid>'d1e38192-0bd6-11ee-ba45-d7ecb20723cf';
 ```
 
 And now it's gone! We are back to a single `City` object named Bistritz instead of two.
+
+Finally, let's put Jonathan Harker back into the database. Soon we'll learn enough about EdgeDB so that we won't have to delete him like we did in this chapter.
+
+```edgeql
+insert NPC {
+  name := 'Jonathan Harker',
+  places_visited := City,
+};
+```
 
 [Here is all our code so far up to Chapter 3.](code.md)
 
