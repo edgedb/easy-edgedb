@@ -7,25 +7,46 @@ leadImage: illustration_05.jpg
 
 Poor Jonathan is still at Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
 
-> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send Mina a letter. He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Now he is very afraid, and knows that Dracula is not human. A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
+> During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send a letter to Mina **in London**. He wonders what Mina is doing right about now. **What time is it in London**, and is she okay?
+>
+> He pretends that there is no problem, and keeps talking to Dracula during the night. One night he sees Dracula climb out of his window and down the castle wall, like a snake. Dracula is not a human, but a monster! Now Jonathan is very afraid.
+>
+> A few days later he breaks one of the doors and finds another part of the castle. The room is very strange and he feels sleepy. When he opens his eyes, he sees three vampire women next to him. He is attracted to them and afraid of them at the same time. He wants to kiss them, but knows that he will die if he does. They come closer, and he can't move...
 
 ## std::datetime
 
-Since Jonathan in Romania was thinking of Mina back in London, let's learn about `std::datetime` because it uses time zones. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. That format looks like this:
+Jonathan in Romania was thinking of Mina back in London, which is in a different timezone. This sounds like a good time to give the `std::datetime` type a try. To create a datetime, you can just cast a string in ISO 8601 format with `<datetime>`. The ISO 8601 format is `YYYY-MM-DDTHH:MM:SSZ`, which next to a concrete example looks like this:
 
-`YYYY-MM-DDTHH:MM:SSZ`
+```
+Format:  YYYY-MM-DDTHH:MM:SSZ
+Example: 2023-06-06T22:12:10Z
+```
 
 So a cast to an actual datetime looks like this:
 
 ```edgeql
-select <datetime>'2020-12-06T22:12:10Z';
+select <datetime>'2023-06-06T22:12:10Z';
 ```
 
-The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it is 0 different (offset) from UTC: in other words, it _is_ UTC.
+The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it has no offset — no difference — from UTC: in other words, it _is_ UTC.
 
-One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here are its signatures <docs:std::to_datetime>`, which show that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six you have chosen depending on what input you pass in.
+One way to set a timezone is to change the `T` to an offset: the hour difference between the current time zone and UTC. Our query above returns the time "22:12:10Z", so 10:12 PM in London. Let's change the `T` to `+09:00` (the timezone for Korea and Japan) and see what happens:
 
-Let's do a quick detour before getting back to datetime. Inside the `to_datetime()` function you'll notice one unfamiliar type inside called a {eql:type}` ``decimal`` <docs:std::decimal>`. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. The decimal type exists because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows the problem that floats have after too much precision:
+```edgeql
+select <datetime>'2023-06-06T22:12:10+09:00';
+```
+
+The output shows us the time in UTC again. In other words, it's 1:12 pm in London when it's 10:12 pm in Korea and Japan.
+
+```
+{<datetime>'2023-06-06T13:12:10Z'}
+```
+
+One other way to get a `datetime` is to use the `to_datetime()` function. {eql:func}`Here are its signatures <docs:std::to_datetime>`, which show that there are six ways to make a `datetime` with this function depending on how you want to make it. EdgeDB will know which one of the six function signatures you have chosen depending on what input you pass in.
+
+(Keep that point in mind, by the way! It's a hint for when we learn to write our own functions in Chapter 11.)
+
+Let's do a quick detour before getting back to datetime. Inside one of the `to_datetime()` function signatures you might have noticed one unfamiliar type called a {eql:type}` ``decimal`` <docs:std::decimal>`. A decimal is a float with "arbitrary precision", meaning that you can give it as many numbers after the decimal point as you want. The decimal type exists because float types on computers [become imprecise after a while](https://www.youtube.com/watch?v=PZRI1IfStY0&ab_channel=Computerphile) thanks to rounding errors. This example shows the problem that floats have after too much precision:
 
 ```
 db> select 6.777777777777777; # Good so far
@@ -34,7 +55,7 @@ db> select 6.7777777777777777; # Add one more digit...
 {6.777777777777778} # Where did the 8 come from?!
 ```
 
-If you want to avoid this, add an `n` to the end to get a `decimal` type which will be as precise as it needs to be.
+To avoid this imprecision you can use a `<decimal>` cast, or just add an `n` to the end. This will return a `decimal` type which will be as precise as it needs to be. Now the rounding errors are gone:
 
 ```
 db> select 6.7777777777777777n;
@@ -71,9 +92,24 @@ std::to_datetime(epochseconds: float64) -> datetime
 std::to_datetime(epochseconds: int64) -> datetime
 ```
 
-The easiest is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. With this, our game could have a function that generates integers for times that then use `to_datetime()` to get a proper time stamp.
+The last signature works well if you want to know the `datetime` right now and are getting the epoch seconds (the number of seconds since 1970) from your computer's system time. It's also kind of fun to just experiment with:
 
-Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep somewhere, and Jonathan is trying to use the time during the day to escape to send Mina a letter. In Romania the time zone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
+```
+db> select to_datetime(0);
+{<datetime>'1970-01-01T00:00:00Z'}
+db> select to_datetime(100);
+{<datetime>'1970-01-01T00:01:40Z'}
+db> select to_datetime(9879879870);
+{<datetime>'2283-01-30T11:04:30Z'}
+db> select to_datetime(87623);
+{<datetime>'1970-01-02T00:20:23Z'}
+db> select to_datetime(98723987213);
+{<datetime>'5098-06-09T17:46:53Z'}
+```
+
+But the easiest signature is probably the third if you find ISO 8601 unfamiliar or you have a bunch of separate numbers to make into a date. Let's give that signature a try.
+
+Let's imagine that it's May 12. It's a bright morning at 10:35 in Castle Dracula. The sun is up, Dracula is asleep in a coffin somewhere, and Jonathan is trying to use the time during the day to find a way to send Mina a letter. In Romania the timezone is 'EEST' (Eastern European Summer Time), and the year is (probably) 1893. We'll use `to_datetime()` to generate this.
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST');
@@ -94,7 +130,7 @@ select to_datetime(2003, 5, 12, 8, 15, 15, 'CET')
 
 This takes May 12 2003 8:15:15 am in Central European Time and subtracts May 12 2003 6:10 in Korean Standard Time. The result is: `{<duration>'10:05:15'}`, so 10 hours, 5 minutes, and 15 seconds.
 
-Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina is in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different time zones but we don't need to calculate it ourselves; we can just specify the time zone and EdgeDB will do the rest:
+Now let's try something similar with Jonathan as he tries to escape Castle Dracula. It's May 12 at 10:35 am in the `EEST` timezone. On the same day, Mina was in London at 6:10 am, drinking her morning tea. How many seconds passed between these two events? They are in different timezones, which makes the calculation a bit annoying. Fortunately, we don't need to calculate it ourselves! We can just specify the timezone and EdgeDB will do the rest.
 
 ```edgeql
 select to_datetime(1893, 5, 12, 10, 35, 0, 'EEST')
@@ -114,7 +150,7 @@ with
 select jonathan_wants_to_escape - mina_has_tea;
 ```
 
-The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`.
+The output is the same: `{<duration>'1:25:00'}`. As long as we know the timezone, the `datetime` type does the work for us when we need a `duration`. 
 
 ## Casting to a duration
 
@@ -128,7 +164,20 @@ select <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 
 This will return `{<duration>'6:06:00.688999'}`.
 
-EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`, and will ignore plurals and other signs. Even this horrible input will work:
+EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`. It and will ignore plurals, will recognize abbreviations, and so on:
+
+```
+edgedb> select <duration>'2 milliseconds';
+{<duration>'0:00:00.002'}
+edgedb> select <duration>'2 hour';
+{<duration>'2:00:00'}
+edgedb> select <duration>'1 seconds';
+{<duration>'0:00:01'}
+edgedb> select <duration>'1 H';
+{<duration>'1:00:00'}
+```
+
+It even ignores symbols and irrelevant characters so even this horrible input will work:
 
 ```edgeql
 select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds'
@@ -137,6 +186,14 @@ select <duration>'1 hours, 8 minute ** 5 second ()()()( //// 6 milliseconds'
 
 The result: `{<duration>'-3:59:04.99401'}`.
 
+It won't just accept anything, however, so there is a limit:
+
+```
+edgedb> select <duration>'three howers';
+edgedb error: InvalidValueError: invalid input syntax for type std::duration: 
+"three howers"
+```
+
 ## Relative duration
 
 The scene in the book today takes place on the 16th of May, 15 days after Jonathan Harker left London. Jonathan Harker was kind enough to even mark down the time of day during his first journal entry, which gives us a good idea of how much time has gone by since then. Here are the two relevant journal entries:
@@ -144,7 +201,9 @@ The scene in the book today takes place on the 16th of May, 15 days after Jonath
 ```
 3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at 
 Vienna early next morning;
+```
 
+```
 The Morning of 16 May.—God preserve my sanity, for to this I am reduced...
 All three had brilliant white teeth that shone like pearls against the 
 ruby of their voluptuous lips. There was something about them that made
@@ -156,7 +215,7 @@ Let's imagine that our `PC` named Emil Sinclair has been accomplishing some miss
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
 select today - game_start;
 ```
 
@@ -183,7 +242,7 @@ The player is currently in Romania so we will choose the EEST timezone. The code
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
   select
     cal::to_local_datetime(today, 'EEST') 
   - cal::to_local_datetime(game_start, 'EEST');
@@ -196,7 +255,7 @@ Another type called `date_duration` is useful when you only care about day to da
 ```edgeql
 with
   game_start := to_datetime(1893, 5, 3, 20, 35, 0, 'UTC'),
-  today :=      to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
+  today      := to_datetime(1893, 5, 16, 8, 3, 17, 'EEST'),
   select 
     cal::to_local_date(today, 'EEST') 
   - cal::to_local_date(game_start, 'EEST');
@@ -208,7 +267,7 @@ We will get the output `{<cal::date_duration>'P13D'}`. So even though only about
 
 ## Required links
 
-Now we need to make a type for the three female vampires. We'll call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`. This is because Dracula controls them and they only exist as `MinorVampire`s because he exists.
+The three female vampires that Jonathan encounters this chapter are controlled by Count Dracula. They have their own thoughts but Dracula can control them if he wants, and they only exist because he exists. We'll need a new type for this sort of vampire, so let's call it `MinorVampire`. These have a link to the `Vampire` type, which needs to be `required`:
 
 ```sdl
 type MinorVampire extending Person {
@@ -226,53 +285,30 @@ insert MinorVampire {
 };
 ```
 
-Trying this insert will give us this error: `edgedb error: MissingRequiredError: missing value for required link 'master' of object type 'default::MinorVampire'`. This is what we want. Now let's insert the same `MinorVampire` but this time we will connect her to Dracula. This next insert almost works, but not quite. Can you guess why?
+Trying this insert will give us this error: `edgedb error: MissingRequiredError: missing value for required link 'master' of object type 'default::MinorVampire'`. This is what we want. Now let's insert the same `MinorVampire` but this time we will connect her to Dracula. This link is to a single object, which means that we should filter on the name 'Count Dracula' and then use the `assert_single()` function to ensure that `master` doesn't link to more than one object.
+
+Our three `MinorVampire` inserts look like this:
 
 ```edgeql
 insert MinorVampire {
   name := 'Vampire Woman 1',
-  master := (select Vampire filter .name = 'Count Dracula')
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
-```
-
-The error is due to the fact that there might be more than one `Vampire` object with the name 'Count Dracula', because at the moment our schema allows this. And EdgeDB rightfully disallows us from trying to return a result that might be multiple links instead of a single link:
-
-```
-error: QueryError: possibly more than one element returned by an expression 
-for a link 'master' declared as 'single'
-  ┌─ <query>:3:3
-  │
-3 │   master := (select Vampire filter .name = 'Count Dracula')
-  │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ error
-```
-
-One way to get the insert to work would be to add `limit 1`:
-
-```edgeql
 insert MinorVampire {
-  name := 'Vampire Woman 1',
-  master := (select Vampire filter .name = 'Count Dracula' limit 1)
+  name := 'Vampire Woman 2',
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
-```
-
-But note that `limit 1` simply returns the first match to the filter. If our database had multiple `Vampire` objects called `Count Dracula`, it would return the first one it found. That's not ideal. Instead, we can wrap the `select` inside a function called `assert_single()`:
-
-```edgeql
 insert MinorVampire {
-  name := 'Vampire Woman 1',
-  master := assert_single(select Vampire filter .name = 'Count Dracula')
+  name := 'Vampire Woman 3',
+  master := assert_single((select Vampire filter .name = 'Count Dracula'))
 };
 ```
 
-This function makes sure that there's no more than a single element in the set it is given.
-
-Also note that `assert_single()` will return an error (a `CardinalityViolationError`) if more than one element is returned, so make sure to only use `assert_single()` if you are sure that there is only one element. In principle it's sort of like a "trust me, there is only one element" sort of function.
-
-Later on we will learn to add a constraint to ensure on the schema level that parameters like `name` have to be unique.
+Later on we will learn to add a constraint to ensure on the schema level that parameters like `name` have to be unique. And we will also learn how to insert three objects at the same time instead of doing three separate inserts like we did here.
 
 ## Using the 'describe' keyword to look inside types
 
-Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the more annoying it can be to try to picture it all together in your mind. This is where `describe` can help, because it shows exactly what any type is made of. There are three ways to do it:
+Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can continue to extend other types, and they can extend more than one type at the same time. The more you do this, the harder it can be to try to picture it all together in your mind. Or you might be in the middle of using the REPL and don't want to switch to the schema file to get some information about a type. EdgeDB has a keyword called `describe` that can help in this case. There are four ways to use `describe`:
 
 - `describe type MinorVampire` - this will give the {ref}`DDL (data definition language) <docs:ref_eql_ddl>` description of a type. DDL is the lower level language that we have seen in our migration files that end in `.edgeql` such as 00001.edgeql, 00002.edgeql, and so on. If we type `describe type MinorVampire` into the REPL, we will see the following output:
 
@@ -284,7 +320,7 @@ Our `MinorVampire` type extends `Person`, and so does `Vampire`. Types can conti
 }
 ```
 
-The `create` keyword shows that DDL is a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we don't want that. The next method is:
+The `create` keyword shows that DDL is a series of quick commands, which is why the order is important. In other words, SDL is _declarative_ (it _declares_ what something will be without worrying about order), while DDL is _imperative_ (it's a series of commands to change the state). Also, because it only shows the DDL commands to create it, it doesn't show us all the `Person` links and properties that it extends. So we probably don't want that. The next method is:
 
 - `describe type MinorVampire as sdl` - same thing, but in SDL.
 
@@ -298,9 +334,9 @@ The output is almost the same too, just the SDL version of the above. It's also 
 }
 ```
 
-You'll notice that it's basically the same as our SDL schema, just a bit more verbose and detailed when it comes to module paths: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
+This output is basically the same as our SDL schema, just a bit more detailed when it comes to module paths: `type default::MinorVampire` instead of `type MinorVampire`, and so on.
 
-- The third method is `describe type MinorVampire as text`. Now the output shows almost everything inside the type, including from the types that it extends. Here's the output:
+- The third method is `describe type MinorVampire as text`. Now the output shows almost everything we need to know inside the type, including from the types that it extends. Here's the output:
 
 ```
 {
@@ -339,11 +375,19 @@ If you want a bit more information, you can add the keyword `verbose` to make th
 }
 ```
 
-The parts that say `readonly := true` we don't need to worry about, as they are automatically generated and we can't touch them (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
+The parts that say `readonly := true` are parts of each type that are automatically generated and which we can't change (hence the word `readonly`). The next part we want to scan for is `required`, giving us the minimum we need to create an object. For `MinorVampire`, we can see that we need a `name` and a `master`, and could add a `lover` and `places_visited` for these `MinorVampire`s.
 
-And for a _really_ long output, try typing `describe schema` or `describe module default` (with `as sdl` or `as text` if you want). You'll get an output showing the whole schema we've built so far.
+The most interesting `readonly` part of an object is `__type__`, which is a link that every object type has to information about itself. We will learn more about this in Chapters 8 and 13, but if you are curious about what is inside then give it a try with the splat operator:
 
-So if `type` comes after `describe` for types and `module` after `describe` for modules, then what about links and all the rest? Here's the full list of keywords that can come after describe: `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, `type`. If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules). So `describe scalar type SleepState` and `describe object SleepState` will both return the same thing.
+```
+select Person.__type__ {*};
+```
+
+For a _really_ long output using `describe`, try typing `describe schema` or `describe module default` (with `as sdl` or `as text` if you want). You'll get an output showing the whole schema we've built so far.
+
+So if we can use `describe` to learn about a `type` or our `schema`, are there other things we can describe? Indeed there are: we can describe an `object`, `annotation`, `constraint`, `function`, `link`, `module`, `property`, `scalar type`, or `type`.
+
+If you don't want to remember them all, just go with `object`: it will match anything inside your schema (except modules). So `describe scalar type SleepState` and `describe object SleepState` will both return the same thing.
 
 [Here is all our code so far up to Chapter 5.](code.md)
 

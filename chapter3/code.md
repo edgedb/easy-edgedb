@@ -43,9 +43,7 @@ module default {
 
 # Data:
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',
@@ -68,13 +66,9 @@ insert PC {
   class := Class.Mystic,
 };
 
-insert Country {
-  name := 'Hungary'
-};
+insert Country { name := 'Hungary' };
 
-insert Country {
-  name := 'Romania'
-};
+insert Country { name := 'Romania' };
 
 insert Vampire {
   name := 'Count Dracula',

@@ -6,17 +6,17 @@ tags: Multiple Inheritance, Polymorphism
 
 We are finally away from Castle Dracula. Here is what happens in this chapter:
 
-> Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Inside is Dracula, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One of them tells them he saw a strange man walking around the deck, but the others don't believe him.
+> Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Dracula is also on the ship inside a coffin, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One crewman tells the others that he saw a strange man walking around the deck, but the others don't believe him.
 >
 > The days go by and more and more sailors disappear...
 >
 > Finally it's the last day before the ship reaches the city of Whitby in England, but the captain is alone - all the others have disappeared. The captain knows the truth now. He ties his hands to the wheel so that the ship will go straight even if Dracula finds him.
 >
-> The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula in his wolf form, but they don't know that. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
+> The next day the people in Whitby see a ship hit the beach, and a wolf jumps off and runs onto the shore - it's Dracula disguised as a wolf. People find the dead captain tied to the wheel with a notebook in his hand and start to read the story.
 >
 > Meanwhile, Mina and her friend Lucy are in Whitby on vacation...
 
-## Multiple inheritance
+## Multiple inheritance, defaults, and the overloaded keyword
 
 While Dracula arrives at Whitby, let's learn about multiple inheritance. We know that you can `extend` a type on another, and we have done this many times: `Person` on `NPC`, `Place` on `City`, etc. Multiple inheritance means to do this with more than one type at the same time.
 
@@ -28,12 +28,43 @@ abstract type HasNumber {
 }
 ```
 
-We will also remove `required` from `name` for the `Person` type. Not every `Person` type will have a name now, and we trust ourselves enough to input a name if there is one. We will of course keep it `exclusive`.
+Now let's put the `Crewman` type together, which will use multiple inheritance. Multiple inheritance is very simple: just add a comma between every type you want to extend.
 
-Now let's put the `Crewman` type together, which will use multiple inheritance. It's very simple: just add a comma between every type you want to extend.
+```sdl
+type Crewman extending HasNumber, Person;
+```
+
+However, here we have a problem: we never learn the names of the crewmen in the book, but the property `name` on `Person` is required. We know that every `Crewman` object will have a `number`, so it would be nice to use this to give them a name like "Crewman 1", "Crewman 2", and so on. How can we make this happen?
+
+We can make this happen by giving `name` a default for the `Crewman` type. To give a default value, just add `{}` after the parameter and then give an expression for the default value. So far that gives us a `Crewman` type that looks like the code below. However, a migration won't quite work yet. Can you guess why?
 
 ```sdl
 type Crewman extending HasNumber, Person {
+  name: str {
+    default := '' ++ <str>.number;
+  }
+}
+```
+
+Fortunately, the error message tells us _exactly_ what to do.
+
+```
+error: property 'name' of object type 'default::Crewman' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
+  ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:6:5
+  │
+6 │ ╭     name: str {
+7 │ │       default := '' ++ <str>.number;
+8 │ │     }
+  │ ╰─────^ error
+```
+
+In other words, `Person` is where the definition for `name` is, and this definition doesn't include any information about a default value. We still want to use `name`, but in a slightly different way. That's where the word `overloaded` comes in. Adding `overloaded` will keep the other rules for `name` (that it must be a `str`, and that it must be `exclusive`) and will add our new specification that it will have a `default` value for the `Crewman` type. So just add `overloaded` and our work is done!
+
+```sdl
+type Crewman extending HasNumber, Person {
+  overloaded name: str {
+    default := 'Crewman ' ++ <str>.number;
+  }
 }
 ```
 
@@ -43,7 +74,7 @@ Next is the `Sailor` type. The sailors have ranks, so first we will make an enum
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
 ```
 
-And then we will make a `Sailor` type that uses `Person` and this `Rank` enum:
+And then we will make a `Sailor` type that uses `Person` and this `Rank` enum. The sailors in the book all have their own names, so we don't need to overload their `name` keyword.
 
 ```sdl
 type Sailor extending Person {
@@ -51,7 +82,7 @@ type Sailor extending Person {
 }
 ```
 
-Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `Ship` object can move on its own without anyone alive on it so we won't make its sailors or crew `required`.
+Then we will make a `Ship` type to hold them all. As we saw in this chapter, a `Ship` object can move on its own even if all of its sailors and crewmen are dead, so we won't make its sailors or crew `required`.
 
 ```sdl
 type Ship {
@@ -72,15 +103,15 @@ with next_number := count(Crewman) + 1,
 };
 ```
 
-So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. So after doing this five times, we can `select Crewman {number};` to see the result. It gives us:
+So if there are no `Crewman` types, he will get the number 1. The next will get 2, and so on. After the five inserts we can `select Crewman {name, number};` to see the result. It gives us:
 
 ```
 {
-  default::Crewman {number: 1},
-  default::Crewman {number: 2},
-  default::Crewman {number: 3},
-  default::Crewman {number: 4},
-  default::Crewman {number: 5},
+  default::Crewman {name: 'Crewman 1', number: 1},
+  default::Crewman {name: 'Crewman 2', number: 2},
+  default::Crewman {name: 'Crewman 3', number: 3},
+  default::Crewman {name: 'Crewman 4', number: 4},
+  default::Crewman {name: 'Crewman 5', number: 5},
 }
 ```
 
@@ -128,6 +159,7 @@ select Ship {
     rank,
   },
   crew: {
+    name,
     number
   },
 };
@@ -142,15 +174,15 @@ The result is:
     sailors: {
       default::Sailor {name: 'The Captain', rank: Captain},
       default::Sailor {name: 'Petrofsky', rank: FirstMate},
-      default::Sailor {name: 'The First Mate', rank: SecondMate},
+      default::Sailor {name: 'The Second Mate', rank: SecondMate},
       default::Sailor {name: 'The Cook', rank: Cook},
     },
     crew: {
-      default::Crewman {number: 1},
-      default::Crewman {number: 2},
-      default::Crewman {number: 3},
-      default::Crewman {number: 4},
-      default::Crewman {number: 5},
+      default::Crewman {name: 'Crewman 1', number: 1},
+      default::Crewman {name: 'Crewman 2', number: 2},
+      default::Crewman {name: 'Crewman 3', number: 3},
+      default::Crewman {name: 'Crewman 4', number: 4},
+      default::Crewman {name: 'Crewman 5', number: 5},
     },
   },
 }
@@ -183,7 +215,7 @@ select Person {
 };
 ```
 
-So is there a way to include `age` if the type is an `NPC` and `number` if the type is a `Crewman`? Yes, there is! We can use the `is` keyword inside square brackets to specify the type. Here's how it works:
+So is there a way to include `age` if the type is an `NPC` and `number` if the type is a `Crewman`? Yes, there is! We can use the `is` keyword inside square brackets to specify the type. Here's how it works in our query on `Person` objects:
 
 - `.name`: this stays the same, because `Person` has this property
 - `.age`: this belongs to the `NPC` type, so change it to `[is NPC].age`
@@ -204,8 +236,8 @@ The output is now quite large, so here's just a part of it. You'll notice that t
 ```
 {
   # ... /snip
-  default::Crewman {name: {}, age: {}, number: 4},
-  default::Crewman {name: {}, age: {}, number: 5},
+  default::Crewman {name: 'Crewman 4', age: {}, number: 4},
+  default::Crewman {name: 'Crewman 5', age: {}, number: 5},
   default::PC {name: 'Emil Sinclair', age: {}, number: {}},
   default::NPC {name: 'The innkeeper', age: 30, number: {}},
   default::NPC {name: 'Mina Murray', age: {}, number: {}},
@@ -264,7 +296,7 @@ The result is close to what we want, but not quite. Take a look at two of the re
 }
 ```
 
-We can see that they are two different types now, but the type name isn't readable. To fix this, we can add the `name` property after `__type__` to display this instead of the id.
+The `id` property shows us that they are two different types, but the type name isn't readable. To fix this, we can add the `name` property after `__type__` to display this instead of the id.
 
 ```edgeql
 select <json>Person {
@@ -284,13 +316,67 @@ And now the two objects from out previous output have human-readble names.
 {"age": null, "name": "The Captain", "number": null, "__type__": {"name": "default::Sailor"}}
 ```
 
+So what is `__type__`, exactly? Well, it's a link that all objects have that are used to describe it. You can see this if you type `describe type PC as text;` (or with any other object in the schema). Inside the description returned you'll see this:
+
+```
+required single link __type__: schema::ObjectType {
+    readonly := true;
+};
+```
+
+Interesting! So it's just an object that can be queried like any other. Let's give it a try with `PC` and the splat operator to see everything inside:
+
+```edgeql
+select PC.__type__ {*};
+```
+
+This will show all of the properties for `ObjectType`, including the `name`:
+
+```
+{
+  schema::ObjectType {
+    id: c7c1983a-268c-11ee-8c82-c79bbe432a02,
+    name: 'default::PC',
+    internal: false,
+    builtin: false,
+    computed_fields: [],
+    final: false,
+    is_final: false,
+    abstract: false,
+    is_abstract: false,
+    inherited_fields: [],
+    from_alias: false,
+    is_from_alias: false,
+    expr: {},
+    compound_type: false,
+    is_compound_type: false,
+  },
+}
+```
+
+So that can be pretty useful.
+
+But if you *really* want to understand the inner workings of EdgeDB, try the same query with the double splat operator:
+
+```
+select PC.__type__ {**};
+```
+
+This will return pages and pages of information. You'll see a link called `pointers` that points to just about everything: a link to `__type__`, a link to `strength`, a link to `is_single` and that it is a computable made from the expression `not exists .lover`...and so on and so on. If you want to get a good feel for how EdgeDB works on the inside, definitely grab a cup of coffee and give this query a try!
+
 ## Supertypes, subtypes, and generic types
 
-The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). Because inheriting a type gives you all of its features, `subtype is supertype` will return `{true}`. And conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned.
+The official name for a type that gets extended by another type is a `supertype` (meaning 'above type'). The types that extend them are their `subtypes` ('below types'). You can visualize it like this:
 
-In our schema, that means that `select PC is Person` returns `{true}`, while `select Person is PC` will return `{true}` or `{false}` depending on whether the object is a `PC`.
+* abstract type Person (supertype, above)
+* ↳ type PC (subtype, under)
+* ↳ type NPC (subtype, under)
 
-To make a query that will show this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
+Because inheriting a type gives you all of its features, a query on objects with `subtype is supertype` will always return `{true}`. In our schema a `PC` object is always a `Person`, and an `NPC` object is always a `Person`.
+
+Conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned. A `Person` object _might_ be a `PC` object, and it _might_ be an `NPC` object.
+
+To make a query that will check this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
 
 ```edgeql
 select Person {
@@ -394,6 +480,11 @@ Which makes you wonder which is best to use: `multi` for a multi property, `arra
 So hopefully that explanation should help. You can see that you have a lot of choice, so remembering the points above should help you make a decision. Most of the time, you'll probably have a sense for which one you want.
 
 [Here is all our code so far up to Chapter 8.](code.md)
+
+<!--
+Todo: demonstrate turning array<int64> into multi int64 once this resolved:
+https://github.com/edgedb/edgedb/issues/5749
+ -->
 
 <!-- quiz-start -->
 

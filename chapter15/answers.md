@@ -24,7 +24,7 @@ type Horse {
 };
 ```
 
-#### 3. How would you make sure that `name` for type `PC` is always between 5 and 30 characters in length?
+#### 3. How would you make sure that `name` for type `NPC` is always between 5 and 30 characters in length?
 
 First of all, here is the type right now:
 
@@ -32,9 +32,6 @@ First of all, here is the type right now:
 type NPC extending Person {
   overloaded age: int16 {
     constraint max_value(120)
-  }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -48,9 +45,6 @@ type NPC extending Person {
   }
   overloaded age: int16 {
     constraint max_value(120)
-  }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
   }
 }
 ```
@@ -77,3 +71,18 @@ select display_coffins() {
 };
 ```
 
+#### 5. How would you give the `Place` type a backlink to every `Person` type that visited it?
+
+The `Person` type has a link called `places_visited`, so we can use this to create a backlink on `Place`. It looks like this:
+
+```sdl
+link visitors := .<places_visited[is Person];
+```
+
+With this backlink in place we could do a query like the following to see who has visited Munich:
+
+```edgeql
+select Place { visitors: {*}} filter .name = 'Munich';
+```
+
+The query should turn up Emil Sinclair the `PC`, Jonathan Harker, and Lord Billy. Feel free to keep the backlink in your schema if you like as it won't make a difference for the rest of the book.

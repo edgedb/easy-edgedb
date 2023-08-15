@@ -4,11 +4,11 @@ tags: Ddl, Sdl, Edgedb Community
 
 # Chapter 20 - The final battle
 
-You made it to the final chapter - congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending:
+You made it to the final chapter, congratulations! Here's the final scene from the last chapter, though we won't spoil the final ending in case you now plan to read the original book:
 
 > Mina is almost a vampire now, and says she can feel Dracula all the time, no matter what hour of the day. Van Helsing arrives at Castle Dracula and Mina waits outside. Van Helsing then goes inside and destroys the vampire women and Dracula's coffin.
 >
-> Meanwhile, the other men approach from the south and are also close to Castle Dracula. Dracula's friends have him inside his box, and are carrying him on a wagon towards the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. They get closer and closer, and grab the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down. Dracula smiles and opens his eyes, and...
+> At the same time the four other heroes (Jonathan Harker, Quincy Morris, Doctor Seward, Arthur Holmwood) are approaching from the south to try to catch up to Dracula. The sun is still up, so Dracula is inside his box protected from the sunlight on a wagon that his friends are taking to the castle as fast as they can. The sun is almost down, it is snowing, and our heroes need to hurry to catch him. A fight ensues, and the heroes drive back Dracula's friends and finally reach the box. They pull the nails back and open it up, and see Dracula lying inside. Jonathan pulls out his knife. But just then the sun goes down and night begins. Dracula smiles and opens his eyes, and...
 
 If you're curious about the ending to this scene, just [check out the book on Gutenberg](https://www.gutenberg.org/files/345/345-h/345-h.htm#chap19) and search for "the look of hate in them turned to triumph".
 
@@ -62,40 +62,40 @@ We could have gone with {eql:type}` ``int32`` <docs:std::int32>`, {eql:type}` ``
 Next is `abstract type Person`. This type is by far the largest, and does most of the work for all of our characters. Fortunately, all vampires used to be people and can have things like `name` and `age`, so they can extend from it too.
 
 ```sdl
-abstract type Person {
-  first: str;
-  last: str;
-  title: str;
-  degrees: str;
+abstract type Person extending HasMoney {
   required name: str {
     delegated constraint exclusive;
   }
-  age: int16;
-  property conversational_name := .title ++ ' ' ++ .name 
-    if exists .title else .name;
-  property pen_name := .name ++ ', ' ++ .degrees if exists .degrees else .name;
-  strength: int16;
   multi places_visited: Place;
   multi lovers: Person;
+  property is_single := not exists .lovers;
+  strength: int16;
   first_appearance: cal::local_date;
   last_appearance: cal::local_date;
+  age: int16;
+  title: str;
+  degrees: array<str>;
+  property conversational_name := .title ++ ' ' 
+    ++ .name if exists .title else .name;
+  property pen_name := .name ++ ', ' 
+    ++ array_join(.degrees, ', ') if exists .degrees else .name;
 }
 ```
 
 `exclusive` is probably the most common {ref}`constraint <docs:ref_datamodel_constraints>`, which we use to make sure that each character has a unique name. This works because we already know all the names of all the `NPC` types. But if there is a chance of more than one "Jonathan Harker" or other character, we could use the built-in `id` property instead. This built-in `id` is generated automatically and is already exclusive.
 
-Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard user database, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
+Properties like `conversational_name` are {ref}`computed properties <docs:ref_datamodel_computed>`. In our case, we added properties like `first` and `last` later on. It is tempting to remove `name` and only use `first` and `last` for every character, but the book has too many characters with names that wouldn't fit this like `Woman 2` and `The innkeeper`. In a standard database used to record the data for users of an app, we would certainly only use `first` and `last` and a field like `email` with `constraint exclusive` to make sure that all users are unique.
 
-Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`.
+Every property has a type (like `str`, `bigint`, etc.). Computed properties have them too but we don't need to tell EdgeDB the type because the computed expression itself tells the type. For example, `pen_name` takes `.name` which is a `str` and adds more strings, which will of course produce a `str`. The `++` used to join them together is called {eql:op}`concatenation <docs:strplus>`. On the other hand, with a computed property you do have to tell EdgeDB whether it is a `property` or a `link`.
 
-The two links are `multi` links, without which a link is to only one object: without the keyword `multi` it will be a single link. It means that you may need to add `assert_single()` when creating a link or it will give this error:
+The two links on the `Person` type are `multi` links. Without the keyword `multi` it will be a single link and can only link to a single other object. This means that you may need to add `assert_single()` when creating a link or it will give this error:
 
 ```
 error: possibly more than one element returned by an expression
 for a computed link 'former_self' declared as 'single'
 ```
 
-Meanwhile, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
+On the other hand, backlinks have the opposite behavior: a backlink is a `multi` link by default, meaning that you have to write `single` otherwise.
 
 For `first_appearance` and `last_appearance` we use {eql:type}`docs:cal::local_date` because our game is only based in one part of Europe inside a certain period. For a modern user database we would prefer {eql:type}`docs:std::datetime` because it is timezone aware and ISO8601 compliant.
 
@@ -119,30 +119,43 @@ We only used this for the `Crewman` type, which only extends two abstract types 
 
 ```sdl
 type Crewman extending HasNumber, Person {
+  overloaded name: str {
+    default := 'Crewman ' ++ <str>.number;
+  }
 }
 ```
 
-This `HasNumber` type was used for the five `Crewman` objects, who in the beginning didn't have a name. But later on, we used those numbers to create names based on the numbers:
+This `HasNumber` type was used for the five `Crewman` objects, who don't have names. Because their `name` property inherited from `Person` is required, we used their `number` property to give them each a name: Crewman 1, Crewman 2, and so on.
 
 ```edgeql
-update Crewman
-set {
-  name := 'Crewman ' ++ <str>.number
-};
+for n in {1, 2, 3, 4, 5}
+  union (
+    insert Crewman {
+      number := n,
+      first_appearance := cal::to_local_date(1893, 7, 6),
+      last_appearance := cal::to_local_date(1893, 7, 16),
+    }
+  );
 ```
 
-So even though it was rarely used, it could become useful later on. For types later in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
+So even though `HasNumber` was rarely used, it could become useful later on. For types later in the game you could imagine this being used for townspeople or random NPCs: 'Shopkeeper 2', 'Carriage Driver 12', etc.
 
 Our vampire types extend `Person`, while `MinorVampire` also has a single and non-required link to `Person`. This is because some characters begin as humans and are "reborn" as vampires. With this format, we can use the properties `first_appearance` and `last_appearance` from `Person` to have them appear in the game. And if one is turned into a `MinorVampire`, we can link the two.
 
 ```sdl
 type Vampire extending Person {
-  multi slaves: MinorVampire;
+  multi slaves: MinorVampire {
+    on source delete delete target;
+    property combined_strength := (Vampire.strength + .strength) / 2;
+  }
+  property army_strength := sum(.slaves@combined_strength);
 }
 
 type MinorVampire extending Person {
   former_self: Person;
-}
+  single link master := assert_single(.<slaves[is Vampire]);
+  property master_name := .master.name;
+};
 ```
 
 With this format we can do a query like this one that pulls up all people who have turned into `MinorVampire`s.
@@ -160,22 +173,35 @@ The `PC` and `Sailor` types show two enums and one sequence that we used:
 
 ```sdl
 scalar type Rank extending enum<Captain, FirstMate, SecondMate, Cook>;
+
 type Sailor extending Person {
   rank: Rank;
 }
 
 scalar type Class extending enum<Rogue, Mystic, Merchant>;
+
 scalar type PCNumber extending sequence;
+
 type PC extending Person {
   required class: Class;
-  created_at: datetime {
-    default := datetime_of_statement()
+  required created_at: datetime {
+    default := datetime_of_statement();
   }
   required number: PCNumber {
     default := sequence_next(introspect PCNumber);
   }
+  multi party: Party {
+    on source delete delete target;
+    on target delete allow;
+  }
   overloaded required name: str {
     constraint max_len_value(30);
+  }
+  last_updated: datetime {
+    rewrite insert, update using (datetime_of_statement());
+  }
+  bonus_item: LotteryTicket {
+    rewrite insert, update using (get_ticket());
   }
 }
 ```
@@ -187,7 +213,7 @@ with latest := (select <str>max(PC.number)),
 select {'Total PCs created: ' ++ latest ++ ' Current PCs: ' ++ <str>count(PC) };
 ```
 
-`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole most of it from the `Time` type that we created earlier but almost never used. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
+`ShipVisit` is one of our two "hackiest" (but most fun) types. We stole some of it from the `Time` type that we created earlier and later decided to turn into a single global object. Inside the `ShipVisit` type we have a `clock` property that is just a string, but gets used in this way:
 
 - by casting it into a {eql:type}`docs:cal::local_time` to make the `clock_time` property,
 - by slicing its first two characters to get the `hour` property, which is just a string. This is only possible because we know that even single digit numbers like `1` need to be written with two digits: `01`
@@ -213,9 +239,6 @@ type NPC extending Person {
   overloaded age: int16 {
     constraint max_value(120)
   }
-  overloaded multi places_visited: Place {
-    default := (select City filter .name = 'London');
-  }
 }
 ```
 
@@ -236,7 +259,7 @@ Annotations: we used `abstract annotation` to add a new annotation:
 abstract annotation warning;
 ```
 
-because by default a type {ref}`can only have annotations <docs:ref_datamodel_annotations>` called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
+This was necessary because by default a type {ref}`can only have annotations <docs:ref_datamodel_annotations>` called `title`, `description`, or `deprecated`. We only used annotations for fun for this one type, because nobody else is working on our database yet. But if we made a real database for a game with many people working on it, we would put annotations everywhere to make sure that they know how to use each type.
 
 Our `Lord` type was only created to show how to use `constraint expression on`, which lets us make our own constraints:
 
@@ -290,9 +313,9 @@ with
 select any(array_unpack(doors) < jonathan_strength); # Only this part is different
 ```
 
-And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name (Jonathan Harker and Castle Dracula), the function would also just take two strings and do the same query.
+And of course, we could also create a function to do the same now that we know how to write functions and how to use `any()`. Since we are filtering by name ('Jonathan Harker' and 'Castle Dracula'), the function would also just take two strings and do the same query.
 
-Don't forget, we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
+Also don't forget that we needed {eql:func}`docs:std::array_unpack` because the function {eql:func}`docs:std::any` works on sets:
 
 ```sdl
 std::any(values: set of bool) -> bool
@@ -302,14 +325,14 @@ So this (a set) will work: `select any({5, 6, 7} = 7);`
 
 But this (an array) will not: `select any([5, 6, 7] = 7);`
 
-Our next type is `BookExcerpt`, which we imagined being useful for the humans creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. Because of that, we chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `excerpt` property, which will then be faster to look up. Remember to use this only where needed: it will increase lookup speed, but make the database larger overall.
+Our next type is `BookExcerpt`, which we imagined being useful for the developers creating the database. It would need a lot of inserts from each part of the book, with the text exactly as written. We chose to use {ref}` ``index on`` <docs:ref_eql_sdl_indexes>` for the `date` property, which will then be faster when we need to order by date. Remember to use indexes only where needed: they speed up queries that filter, order, and group, but make the database larger overall and slow down inserts and updates.
 
 ```sdl
 type BookExcerpt {
   required date: cal::local_datetime;
-  required author: Person;
   required excerpt: str;
-  index on (.excerpt);
+  index on (.date);
+  required author: Person;
 }
 ```
 
@@ -322,11 +345,13 @@ type Event {
   required end_time: cal::local_datetime;
   required multi place: Place;
   required multi people: Person;
-  multi excerpt: BookExcerpt;
   location: tuple<float64, float64>;
-  east: bool;
-  property url := get_url() ++ <str>.location.0 ++ '_N_' 
-    ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
+  index on (.location);
+  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  property url := get_url() 
+    ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
+    ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }
 ```
 
@@ -394,9 +419,7 @@ And the output for the `Event` type is especially nice as JSON. You can imagine 
 }
 ```
 
-You'll notice that the `excerpt` part is empty. To fix this, we could add a computed property to `Event` that links to any `BookExcerpt` objects that have a `date` that falls between the `start_time` and `end_time` for `Event`.
-
-The last two types in our schema, `Currency` and `Pound`, were created just two chapters ago so they are still fresh in our Mind. We won't review them here.
+The last two types in our schema, `Currency` and `Pound`, were created just two chapters ago so they are still fresh in our mind. We won't need to review them here.
 
 ## Navigating EdgeDB documentation
 
@@ -450,7 +473,7 @@ Meanwhile, the {ref}`properties are more complex <docs:ref_eql_sdl_props>` and i
 
 The `{ | }` in documentation is used to show the possible options available to you. So `[{required | optional}]` means that you don't need to write either required or optional (because both are inside `[]` square brackets), but if you choose to use it, you must choose either `required` or `optional`, not both.
 
-You can think of the syntax as a helpful guide to keep your declarations in the right order.
+You can think of the syntax as a helpful guide to keep your declarations in the right order, and to give you ideas of the full range of possibilities.
 
 ### Dipping into DDL
 
@@ -467,7 +490,7 @@ error: QueryError: bare DDL statements are not allowed in this database
   = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.  The `edgedb migrate` command normally sets this to avoid accidental schema changes outside of the migration flow.
 ```
 
-If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run.
+If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run. Otherwise, the most recommended way to interact with DDL is by gaining a passive knowledge of it in case you want to double check a migration script before applying it.
 
 ## EdgeDB lexical structure
 

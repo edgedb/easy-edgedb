@@ -31,9 +31,7 @@ module default {
 
 # Data:
 
-insert City {
-  name := 'Munich',
-};
+insert City { name := 'Munich' };
 
 insert City {
   name := 'Buda-Pesth',
@@ -61,7 +59,5 @@ insert PC {
   class := Class.Mystic,
 };
 
-insert City {
-  name := ''
-};
+insert City { name := '' };
 ```

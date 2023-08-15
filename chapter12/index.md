@@ -6,7 +6,7 @@ tags: Overloading Functions, Coalescing
 
 There is no good news for our heroes this chapter:
 
-> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive.
+> Dracula continues to break into Lucy's room every time people don't listen to Van Helsing's advice, and every time the men give their blood to save her. Dracula always turns into a cloud to sneak in, drinks her blood and sneaks away before morning. Lucy is getting so weak that it's a surprise that she's still alive.
 >
 > Meanwhile, Renfield breaks out of his cell and attacks Dr. Seward with a knife, causing him to bleed. The moment Renfield sees Dr. Seward's blood he stops and tries to drink it, repeating: “The blood is the life! The blood is the life!”. The asylum security men take Renfield away and Dr. Seward is left confused and trying to understand him. Dr. Seward thinks there is a connection between him and the other events.
 >
@@ -16,7 +16,7 @@ But there is good news for us, because we are going to keep learning about Carte
 
 ## Overloading functions
 
-Functions can be overloaded in EdgeDB. Overloading a function means to give a function with the same name more than one signature, allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
+Functions can be overloaded in EdgeDB. Overloading a function means to create a function with the same name as another function but with a different signature, thereby allowing it to take in and return different types. The `cal::to_local_date()` function that we saw in Chapter 9 is an example of an overloaded function as there are three ways to use it:
 
 ```
 cal::to_local_date(s: str, fmt: optional str = {}) -> local_date
@@ -36,13 +36,15 @@ set {
 };
 ```
 
-Every other human should have a strength between 1 and 5. EdgeDB has a random function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
+Every other human should have a strength between 0 and 5. EdgeDB has a function called {eql:func}`docs:std::random` that gives a `float64` in between 0.0 and 1.0. If we multiply this by 5, we will get a `float64` in between 0.0 and 5.0. There is another function called {eql:func}`docs:std::round` that rounds numbers, so we'll use that too, and finally cast it to an `<int16>`. Give this a try a few times to see the `random()` function in action:
 
 ```edgeql
-select <int16>round(random() * 5);
+with before_rounded := random() * 5,
+  after_rounded := round(before_rounded),
+  select (before_rounded, after_rounded);
 ```
 
-So now we'll use it to update our `Person` objects (except for Jonathan, Dracula and Renfield) and give them all a random strength.
+The number will differ every time, but the output will look something like `{(3.9557656033819555, 4)}`. After that we'll just need to cast the rounded number into an `int16` and that will work as a random `strength` value for each of our `Person` objects (except for Jonathan, Dracula and Renfield). Here is what the update looks like:
 
 ```edgeql
 update Person
@@ -61,17 +63,40 @@ update MinorVampire
   };
 ```
 
-Now let's `select Person.strength;` and see if it works. The output should have mostly random numbers now:
+Now let's `select Person { name, strength };` and see if it works. The output should have mostly random numbers now, something similar to this:
 
 ```
-{1, 1, 7, 8, 10, 5, 3, 0, 0, 5, 10, 2, 4, 0, 2, 5, 3, 4, 0, 1, 20, 5, 5, 5, 5, 5}
+{
+  default::Crewman {name: 'Crewman 1', strength: 1},
+  default::Crewman {name: 'Crewman 2', strength: 4},
+  default::Crewman {name: 'Crewman 3', strength: 3},
+  default::Crewman {name: 'Crewman 4', strength: 2},
+  default::Crewman {name: 'Crewman 5', strength: 3},
+  default::MinorVampire {name: 'Vampire Woman 1', strength: 1},
+  default::MinorVampire {name: 'Vampire Woman 2', strength: 4},
+  default::MinorVampire {name: 'Vampire Woman 3', strength: 3},
+  default::Sailor {name: 'The Captain', strength: 0},
+  default::Sailor {name: 'Petrofsky', strength: 3},
+  default::Sailor {name: 'The First Mate', strength: 4},
+  default::Sailor {name: 'The Cook', strength: 1},
+  default::PC {name: 'Emil Sinclair', strength: 5},
+  default::PC {name: 'Max Demian', strength: 3},
+  default::NPC {name: 'Renfield', strength: 10},
+  default::NPC {name: 'Jonathan Harker', strength: 5},
+  default::NPC {name: 'The innkeeper', strength: 2},
+  default::NPC {name: 'Mina Murray', strength: 2},
+  default::NPC {name: 'Quincey Morris', strength: 3},
+  default::NPC {name: 'Arthur Holmwood', strength: 2},
+  default::NPC {name: 'John Seward', strength: 1},
+  default::NPC {name: 'Abraham Van Helsing', strength: 1},
+  default::NPC {name: 'Lucy Westenra', strength: 3},
+  default::Vampire {name: 'Count Dracula', strength: 20},
+}
 ```
 
 Looks like it worked.
 
 So now let's overload the `fight()` function. Right now it only works for one `Person` vs. another `Person`, but in the book all the characters get together to try to defeat Dracula. We'll need to overload the function so that more than one character can work together to fight.
-
-(Note: the array_join function in the signature joins an array of strings into a single string)
 
 ```sdl
 function fight(people_names: array<str>, opponent: Person) -> str
@@ -81,7 +106,7 @@ function fight(people_names: array<str>, opponent: Person) -> str
     select
         array_join(people_names, ', ') ++ ' win!'
         if sum(people.strength) > (opponent.strength ?? 0)
-        else (opponent.name ?? 'Opponent') ++ ' wins!'
+        else opponent.name ++ ' wins!'
   );
 ```
 
@@ -90,8 +115,6 @@ With this overloaded function we accept two arguments: an array of the names of 
 - We call `contains`, passing our array of names and the `.name` property. This allows us to filter only `Person` objects with a `.name` that matches one of those in the array.
 - `sum` in the next line of our `select` takes all the values in a set and adds them together. That gives us a total strength of the fighters to compare against their opponent's strength.
 
-You may wonder why we provide a default value for the opponent name (`opponent.name ?? 'Opponent'`) but not for the names of the people in the group. This is because, if the array of names is empty, the group cannot win since no `Person` object will be returned from the query. We can't have a case where `people_names` is empty but the party won the fight, so no need for a fallback name to call the group! The `.name` property isn't required though, so since you pass in the opponent's `Person` object directly, you could pass in a powerful opponent without a name. The group is selected by their names, so there's no way to do the same for their side.
-
 Note that overloading only works if the function signature is different. Here are the two signatures we have now for comparison:
 
 ```sdl
@@ -99,7 +122,7 @@ fight(one: Person, two: Person) -> str
 fight(people_names: array<str>, opponent: Person) -> str
 ```
 
-If we tried to overload our function with an input of `(Person, Person)`, it wouldn't work because that's the same as the original signature. EdgeDB uses the input we give it to know which form of the function to use, so without different signatures, it would have no way to decide between the two.
+If we tried to overload our function with an input of `(Person, Person)`, it wouldn't work because that's the same as the original signature. EdgeDB uses the input we give it to decide which form of the function to use, so without different signatures, it would have no way to decide between the two.
 
 The function name is the same, but to call it, we enter an array of the fighters' names and the `Person` they are fighting.
 
@@ -145,8 +168,6 @@ At this point it is most likely that the random `strength` values for everyone t
 
 So that's how function overloading works - you can create functions with the same name as long as the signature is different.
 
-You see overloading in a lot of existing functions, such as {eql:func}`docs:std::sum` which we used earlier to get our party strength. {eql:func}`docs:std::to_datetime` has even more interesting overloading with all sorts of inputs to create a `datetime`.
-
 `fight()` was pretty fun to make, but that sort of function is better done on the gaming side. So let's make a function that we might actually use. Since EdgeQL is a query language, the most useful functions are usually ones that make queries shorter.
 
 Here is a simple one that tells us if a `Person` type has visited a `Place` or not:
@@ -182,7 +203,14 @@ This prints `{('Did Mina visit Bistritz? false', 'What about Jonathan and Romani
 
 ## More about Cartesian products and the coalescing operator
 
-Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single `{}` input always results in an output of `{}`. That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
+Now let's learn more about Cartesian products in EdgeDB. You might recall from the previous chapter that even a single empty set always results in an output of `{}` when working with multiple sets:
+
+```
+edgedb> select 'My name is ' ++ <str>{} ++ '!';
+{}
+```
+
+That's why we had to change our `fight()` function to use the coalescing operator in the previous chapter. Let's dig a little deeper into why that is.
 
 Remember, a `{}` has a length of 0 and anything multiplied by 0 is also 0. For example, let's try to concatenate the names of places that start with b with those that start with x.
 
@@ -192,13 +220,13 @@ with b_places := (select Place filter Place.name ilike 'b%'),
 select b_places.name ++ ' ' ++ x_places.name;
 ```
 
-The result may not be what you'd expect.
+Yep, it's an empty set.
 
 ```
 {}
 ```
 
-Huh? It's an empty set! But a search for places that start with "b" gives us `{'Buda-Pesth', 'Bistritz'}`. Let's make sure that the output is the same when we manually type out the city names:
+Let's explore this a bit more. A search for places that start with "b" should give us `{'Buda-Pesth', 'Bistritz'}`. Let's manually type out the city names this time just to make sure and add an empty set after:
 
 ```edgeql
 select {'Buda-Pesth', 'Bistritz'} ++ {};
@@ -217,7 +245,7 @@ using an explicit type cast or a conversion function.
 
 Ah, that's right - we saw one example of an empty set with a cast in the last chapter when we tried the query `select <str>{} ?? 'Count Dracula is now in Whitby';`. EdgeDB requires a cast for an empty set, because there's no way to know the type of a set if all EdgeDB sees is `{}`.
 
-You can probably guess that the same is true for array constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`.
+You can probably guess that the same is true for array or set constructors too, so `select [];` returns an error: `QueryError: expression returns value of indeterminate type`. And `select {};` too.
 
 Okay, one more time, this time making sure that the `{}` empty set is of type `str`:
 
@@ -226,14 +254,12 @@ db> select {'Buda-Pesth', 'Bistritz'} ++ <str>{};
 {}
 ```
 
-Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But what if we want to:
+Good, so we have manually confirmed that using `{}` with another set always returns `{}`. But we would like to do the following:
 
 - Concatenate the two strings if they exist, and
-- Return what we have if one is an empty set?
+- Return what we have if one is an empty set.
 
-In other words, how to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty?
-
-To do that we can again use the {eql:op}`coalescing operator <docs:coalesce>`:
+In other words, we would like to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty. So we use the {eql:op}`coalescing operator <docs:coalesce>` to make it work:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
@@ -251,7 +277,7 @@ This returns:
 
 That's better.
 
-But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. So if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich):
+But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. Let's see what happens if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich). We would like to get the result `{'Buda-Pesth, Bistritz, Munich'}`, but it doesn't quite work that way:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
@@ -261,13 +287,13 @@ select b_places.name ++ ' ' ++ m_places.name
   else b_places.name ?? m_places.name;
 ```
 
-Then we'll get this result:
+We get this result instead:
 
 ```
 {'Buda-Pesth Munich', 'Bistritz Munich'}
 ```
 
-instead of something like 'Buda-Pesth, Bistritz, Munich'.
+In other words, we concatenated each item inside each set with each item inside the other. How can we just join one set with another one instead?
 
 One way to join the two together without thinking about Cartesian multiplication is to turn them into an array. The {eql:func}`docs:std::array_agg` function will do this: it 'aggregates' them.
 
@@ -305,21 +331,31 @@ This gives us the result:
 {'Slovakia', 'France', 'Castle Dracula', 'Buda-Pesth'}
 ```
 
-Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So then you can write a query like this:
+Similarly, you can use `?=` instead of `=` and `?!=` instead of `!=` when doing comparisons if you think one side might be an empty set. So if you can write a query like this:
 
 ```edgeql
-with cities1 := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
-     cities2 := <str>{}, # Don't forget to cast to <str>
-select cities1 ?= cities2;
+with city_names := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+     city_name := (select City.name filter City.name = "Hi I'm a City"),
+select city_names = city_name;
 ```
 
-This will return the output `{false, false, false}` instead of `{}` for the whole thing. Also, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
+It will return `{}` because `city_name` has returned an empty set. Now if we change `=` to `?=` then the query will work as we would like:
 
 ```edgeql
-select Vampire.lovers.name ?= Crewman.name;
+with city_names := {'Slovakia', 'Buda-Pesth', 'Castle Dracula'},
+     city_name := (select City.name filter City.name = "Hi I'm a City"),
+select city_names ?= city_name;
 ```
 
-It returns `{true}` because Dracula has no lover and the Crewmen have no names so both sides return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
+This will return the output `{false, false, false}` instead of `{}` for the whole thing. 
+
+In addition, two empty sets are treated as equal if you use `?=`. So this query will return `{true}`:
+
+```edgeql
+select Vampire.lovers.name ?= Crewman.lovers.name;
+```
+
+It returns `{true}` because neither Dracula nor any of the Crewmen have a lover: both sides of the query return empty sets of type `str`. If we had used `=` instead of `?=` in this case, we would have just seen an empty set.
 
 [Here is all our code so far up to Chapter 12.](code.md)
 
