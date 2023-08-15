@@ -84,7 +84,6 @@ error: QueryError: cannot insert into abstract object type 'default::Person'
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := Class.Mystic,
 };
 ```
@@ -165,11 +164,7 @@ select Person {
 {
   default::PC {
     name: 'Emil Sinclair',
-    places_visited: {
-      default::City {name: 'Munich'},
-      default::City {name: 'Buda-Pesth'},
-      default::City {name: 'Bistritz'},
-    },
+    places_visited: {},
   },
 }
 ```

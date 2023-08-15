@@ -324,7 +324,7 @@ The output is pretty short during `Info` mode:
     name: 'Emil Sinclair',
     class: Mystic,
     strength: 2,
-    locations: {'Munich', 'Buda-Pesth', 'Bistritz'},
+    locations: {},
     npc_info: {},
   },
 }
@@ -338,7 +338,7 @@ But if you use `set global tester_mode := Mode.Debug;` then all of a sudden the 
     name: 'Emil Sinclair',
     class: Mystic,
     strength: 2,
-    locations: {'Munich', 'Buda-Pesth', 'Bistritz'},
+    locations: {},
     npc_info: {
       default::NPC {name: 'Jonathan Harker', strength: 5},
       default::NPC {name: 'Renfield', strength: 10},

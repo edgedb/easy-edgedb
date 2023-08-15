@@ -78,24 +78,22 @@ No problem - just change `Person` to `NPC` and it will work.
 
 However, `select` on an abstract type is just fine - it will select all the types that extend from it. Let's add a `PC` object now to make a `select` on the abstract `Person` type more interesting. 
 
-We'll make a `PC` called Emil Sinclair who is a mystic. We'll also just type `City` for his `places_visited` link which will link him to all three cities.
+We'll make a `PC` called Emil Sinclair who is a mystic. He hasn't visited anywhere yet so he won't have any `places_visited` to link to.
 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := Class.Mystic,
 };
 ```
 
-Entering `places_visited := City` is short for `places_visited := (select City)` - you don't have to type `select` every time. Also note that we didn't just write `Mystic`, because we have to choose the enum `Class` and then make a choice of one of the values.
+Note that we didn't just write `Mystic`, because we have to choose the enum `Class` and then make a choice of one of the values.
 
 However, EdgeDB also allows you to choose an enum just by writing a string that matches the value. So this insert would have worked too:
 
 ```edgeql
 insert PC {
   name := 'Emil Sinclair',
-  places_visited := City,
   class := 'Mystic',
 };
 ```
@@ -130,14 +128,7 @@ This gives us an output showing objects of both the `PC` and `NPC` type.
       default::City {name: 'Bistritz'},
     },
   },
-  default::PC {
-    name: 'Emil Sinclair',
-    places_visited: {
-      default::City {name: 'Munich'},
-      default::City {name: 'Buda-Pesth'},
-      default::City {name: 'Bistritz'},
-    },
-  },
+  default::PC {name: 'Emil Sinclair', places_visited: {}},
 }
 ```
 
@@ -226,16 +217,7 @@ select Person {
 The output now only shows a single `PC` object with a name that matches our filter:
 
 ```
-{
-  default::PC {
-    name: 'Emil Sinclair',
-    places_visited: {
-      default::City {name: 'Munich'},
-      default::City {name: 'Buda-Pesth'},
-      default::City {name: 'Bistritz'},
-    },
-  },
-}
+{default::PC {name: 'Emil Sinclair', places_visited: {}}}
 ```
 
 Let's filter the cities now. One flexible way to search is with `like` or `ilike` which allow us to to match on parts of a string.
