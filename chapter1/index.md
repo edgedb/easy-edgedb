@@ -501,6 +501,25 @@ And here is the output:
 }
 ```
 
+If you need to give a parameter the same name as a keyword (like `insert`, `select`, and so on) you can enclose it in backticks. For example, if you wanted to call a parameter `select`, you would type \`select\`:
+
+```edgeql
+select City {
+  name,
+  `select` := "I like the word `select`"
+};
+```
+
+The output is nice and clear, showing the word `select` without any backticks:
+
+```
+{
+  default::City {name: 'Munich', select: 'I like the word `select`'},
+  default::City {name: 'Buda-Pesth', select: 'I like the word `select`'},
+  default::City {name: 'Bistritz', select: 'I like the word `select`'}
+}
+```
+
 This brings up an interesting discussion about type safety. EdgeDB is strongly typed, meaning that everything needs a type and EdgeDB will not try to mix different types together. So this query will not work: 
 
 ```edgeql
