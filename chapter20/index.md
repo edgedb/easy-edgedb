@@ -191,7 +191,7 @@ type PC extending Person {
     default := sequence_next(introspect PCNumber);
   }
   multi party: Party {
-    on source delete delete target;
+    on source delete delete target if orphan;
     on target delete allow;
   }
   overloaded required name: str {
