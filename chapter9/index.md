@@ -354,6 +354,14 @@ And this does indeed return Lucy with a link to her three lovers.
 }
 ```
 
+## An uninteresting migration
+
+This migration was pretty interesting, but what if you are doing a really boring migration that you are sure is safe to do? You might have pasted a schema that you've used before, or could have deleted everything inside a module, or anything else that makes you wish you didn't have to reply to every question from the CLI.
+
+In this case there is a solution: just add `--non-interactive` after `edgedb migration create`, and the CLI will be quiet and put your migration together — if it can. If there are any changes that do require your input, such as making a parameter `required`, you will instead see the following output: `edgedb error: Cannot apply migration without user input`.
+
+Note that a non-interactive migration still only creates a migration script, so it won't apply the migration before you have had a chance to review the script yourself. So don't worry!
+
 ## Overloading instead of making a new type
 
 Last chapter we learned the `overloaded` keyword, and we can use it now to improve our schema a bit. Remember the `HumanAge` scalar type we created before? Right now it looks like this:
