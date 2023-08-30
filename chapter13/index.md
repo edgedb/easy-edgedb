@@ -417,7 +417,7 @@ type PC extending Person {
     default := datetime_of_statement();
   }
   multi party: Party {
-    on source delete delete target;
+    on source delete delete target if orphan;
     on target delete allow;
   }
 }
@@ -579,7 +579,7 @@ select PC.places_visited.name except NPC.places_visited.name;
 
 That's right, the query simply returns a `{}` empty set. That's because EdgeDB went through the three names returned by `PC.places_visited.name` as follows:
 
-- 'Buda-Pesth': Is this one inside PC.places_visited.name? Yes. So don't return it.
+- 'Buda-Pesth': Is this one inside NPC.places_visited.name? Yes. So don't return it.
 - 'Bistritz': Same.
 - 'Munich': Same.
 
@@ -919,7 +919,7 @@ And with that, the sequence incrementing just works. That was easy! And thanks t
    };
    ```
 
-3. What would be the shortest way to see what links from the `Vampire` type?
+3. What would be the shortest way to see what links form the `Vampire` type?
 
 4. What do you think the output of `select distinct {1, 2} + {1, 2};` will be?
 
