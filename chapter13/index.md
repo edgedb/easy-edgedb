@@ -597,7 +597,7 @@ In other words, you can sort of think of `except` as meaning `minus`.
 
 ## Being introspective
 
-We saw back in Chapter 8 that we can use `__type__` to get object types in a query, and that `__type__` always has a `name` property that shows us the type's name (otherwise we will only see its `uuid`). In the same way that we can get all the names of `Person` objects with `select Person.name`, we can use `` get all the type names that extend the `Person` type:
+We saw back in Chapter 8 that we can use `__type__` to get object types in a query, and that `__type__` always has a `name` property that shows us the type's name (otherwise we will only see its `uuid`). In the same way that we can get all the names of `Person` objects with `select Person.name`, we can use `__type__.name` to get all the type names that extend the `Person` type:
 
 ```edgeql
 select Person.__type__.name;
