@@ -158,7 +158,7 @@ Here's the output:
     name: 'default::MinorVampire',
     annotations: {
       schema::Annotation {
-        name: 'std::description',
+        name: 'default::note',
         @value: 'first_appearance for MinorVampire should always match last_appearance for its matching NPC type',
       },
     },
