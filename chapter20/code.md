@@ -128,7 +128,7 @@ module default {
     population: int64;
     index on (.name ++ ': ' ++ <str>.population) {
       annotation title := 'Lists city name and population for display in Long Library stage';
-    } on (.name ++ ': ' ++ <str>.population);
+    }
   }
 
   type Country extending Place {
