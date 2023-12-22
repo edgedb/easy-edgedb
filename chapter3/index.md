@@ -219,7 +219,7 @@ Finally, let's insert Hungary and Romania again to finish the section on deletin
 
 ## The splat operator
 
-Sometimes a query can take some time to type. Let's say we want to look up all of our `PC` objects and their properties, plus check whether their name has changed since Bram Stoker's book Dracula was published. Such a query would look like this:
+Sometimes a query can take some time to type. Let's say we want to look up all of our `City` objects and their properties, plus check whether their name has changed since Bram Stoker's book Dracula was published. Such a query would look like this:
 
 ```edgeql
 select City {
