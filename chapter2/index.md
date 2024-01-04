@@ -373,7 +373,7 @@ So a good rule of thumb is to not use raw indexes when filtering unless you are 
 So what if you want to make sure that you won't get an error with an index number that might be too high? Here you can use `like` or `ilike` instead. If you replace the `.name[0]` part in the query above with `.name ilike 'B%'` we don't get an error, and the query still checks to see if there is a 'B' at index 0.
 
 ```edgeql
-db> select City {
+select City {
   name,
   modern_name,
  } filter .name ilike 'B%';
