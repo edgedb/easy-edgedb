@@ -164,7 +164,7 @@ select <duration>'6 hours 6 minutes 10 milliseconds 678999 microseconds';
 
 This will return `{<duration>'6:06:00.688999'}`.
 
-EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`. It and will ignore plurals, will recognize abbreviations, and so on:
+EdgeDB is pretty forgiving when it comes to inputs when casting to a `duration`. It will ignore plurals, will recognize abbreviations, and so on:
 
 ```
 edgedb> select <duration>'2 milliseconds';
