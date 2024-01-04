@@ -11,7 +11,7 @@ In this chapter we encounter a vampire for the first time - or rather, _the_ vam
 
 Now we are completely inside Dracula's castle, so this is a good time to create a `Vampire` type. We can extend it from `abstract type Person` because that type has `name` and `places_visited`, which are good for `Vampire` too.
 
-One possibility is adding `age` to `Person` so that all the other types can use it too. Then `Person' would look like this:
+One possibility is adding `age` to `Person` so that all the other types can use it too. Then `Person` would look like this:
 
 ```sdl
 abstract type Person {
