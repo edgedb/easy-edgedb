@@ -41,7 +41,7 @@ We can make this happen by giving `name` a default for the `Crewman` type. To gi
 ```sdl
 type Crewman extending HasNumber, Person {
   name: str {
-    default := '' ++ <str>.number;
+    default := 'Crewman ' ++ <str>.number;
   }
 }
 ```
@@ -53,7 +53,7 @@ error: property 'name' of object type 'default::Crewman' must be declared using 
   ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:6:5
   │
 6 │ ╭     name: str {
-7 │ │       default := '' ++ <str>.number;
+7 │ │       default := 'Crewman ' ++ <str>.number;
 8 │ │     }
   │ ╰─────^ error
 ```
