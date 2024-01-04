@@ -41,7 +41,7 @@ select Person {
 Just use `not exists`:
 
 ```edgeql
-select NPC {name} filter not exists .places_visited;
+select Person {name} filter not exists .places_visited;
 ```
 
 #### 4. How to display `{true}` if cal::local_time has a 9 and `{false}` otherwise?
