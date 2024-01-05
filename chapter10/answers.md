@@ -85,7 +85,6 @@ insert MinorVampire {
 else (
   update MinorVampire
   set {
-    name := 'Carmilla',
     strength := 10,
   }
 );
@@ -101,7 +100,6 @@ insert MinorVampire {
 else (
   update MinorVampire
   set {
-    name := 'Vampire Woman 1',
     strength := 7,
   }
 );
