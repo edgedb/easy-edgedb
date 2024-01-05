@@ -577,7 +577,7 @@ Abraham van Helsing, however, is single because he is a widower. Our schema does
 
 ## Time to practice
 
-1. How would you write a function called `lucy()` that just returns all the `NPC` types matching the name 'Lucy Westenra'?
+1. How would you write a function called `get_lucies()` that just returns all the `Person` types matching the name 'Lucy Westenra'?
 
 2. How would you write a function that takes two strings and returns `Person` objects with names that match each string?
 
