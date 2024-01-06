@@ -670,7 +670,7 @@ db> select PC { name, class, bonus_item, last_updated } filter .name = 'Sypha';
 
 2. The query in 1. showed a lot of numbers without any context. What should we do?
 
-3. How would you create an alias that contains all the months of the year?
+3. How would you create an alias that contains all the seasons of the year?
 
 4. How do you make sure that no data is lost when changing a type's properties from owned properties to properties extended from abstract types?
 
