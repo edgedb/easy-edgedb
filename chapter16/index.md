@@ -300,7 +300,7 @@ That's a big difference! The cost for both operations is barely over 1 of these 
 
 ## Two more notes on `index on`
 
-Another nice thing about `index on` is that it can also be used on expressions that you we make ourselves. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
+Another nice thing about `index on` is that it can also be used on expressions that we make ourselves. For example, if we always need to query a `City`'s name along with its population, we could index in this way:
 
 ```sdl
 type City extending Place {
