@@ -264,7 +264,7 @@ There are a lot of other commands beyond the commands for migration, though we w
 
 There are also a few places to download packages to highlight your syntax if you like. EdgeDB has these packages available for [Atom](https://atom.io/packages/edgedb), [Visual Studio Code](https://marketplace.visualstudio.com/itemdetails?itemName=magicstack.edgedb), [Sublime Text](https://packagecontrol.io/packages/EdgeDB), and [Vim](https://github.com/edgedb/edgedb-vim).
 
-And last but not least, here is the command if to use if you want to destroy your project and start again.
+And last but not least, here is the command to use if you want to destroy your project and start again.
 
 ```
 edgedb instance destroy -I instance_name --force
