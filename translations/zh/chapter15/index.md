@@ -61,7 +61,7 @@ type Ship extending HasCoffins {
 ```sdl
 function can_enter(person_name: str, place: HasCoffins) -> optional str
   using (
-    with vampire := (select Person filter .name = person_name),
+    with vampire := assert_single((select Person filter .name = person_name)),
     has_coffins := place.coffins > 0,
       select vampire.name ++ ' can enter.' if has_coffins else vampire.name ++ ' cannot enter.'
     );
