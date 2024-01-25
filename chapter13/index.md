@@ -571,7 +571,7 @@ The result is what we hoped to see: not just the names of the places visited by 
 
 The last set operator to learn is called `except`, and it's the opposite of `intersect`. While `intersect` returns items that are in the first set as well as the other, `except` returns items from the first set that are *not* shared with the second set.
 
-The `except` operator is a good opportunity to demonstrate that order can matter when using a set operator. Our `PC` objects have been to three cities: `{'Buda-Pesth', 'Bistritz', 'Munich'}`. The `NPC` objects have been to more places: `{'Romania', 'Castle Dracula', 'Buda-Pesth', 'Bistritz', 'London', 'Munich'}`. What do you think will happen in the query below that uses `intersect`? Note the order in which it is done.
+The `except` operator is a good opportunity to demonstrate that order can matter when using a set operator. Our `PC` objects have been to three cities: `{'Buda-Pesth', 'Bistritz', 'Munich'}`. The `NPC` objects have been to more places: `{'Romania', 'Castle Dracula', 'Buda-Pesth', 'Bistritz', 'London', 'Munich'}`. What do you think will happen in the query below that uses `except`? Note the order in which it is done.
 
 ```edgeql
 select PC.places_visited.name except NPC.places_visited.name;

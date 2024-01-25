@@ -33,6 +33,7 @@ abstract type Person {
   }
   multi places_visited: Place;
   lover: Person;
+  property is_single := not exists .lover;
 }
 ```
 
@@ -134,7 +135,7 @@ abstract type Person {
   }
   multi places_visited: Place;
   lover: Person;
-  strength: int16;
+  property is_single := not exists .lover;
 }
 ```
 
