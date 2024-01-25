@@ -50,7 +50,7 @@ Now the output looks a lot better:
 
 You could even name the tuple inside the tuple with the city name and population if you wanted.
 
-#### 3. How would you create an alias that contains all the months of the year?
+#### 3. How would you create an alias that contains all the seasons of the year?
 
 Easy! Just make a set of scalars and precede it with the keyword `alias`. You could make it out of `str`s:
 
