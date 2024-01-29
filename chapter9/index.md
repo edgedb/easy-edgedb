@@ -118,7 +118,7 @@ Let's imagine how it would look if we put it inside the `Person` type. This is c
 ```sdl
 type PC extending Person {
   required class: Class;
-  property created_at := datetime_of_statement(); # this is new
+  created_at := datetime_of_statement(); # this is new
 }
 ```
 

@@ -242,9 +242,9 @@ Speaking of time, remember our `Time` type? We originally made it so that we cou
 ```sdl
 type Time { 
   required clock: str; 
-  property clock_time := <cal::local_time>.clock; 
-  property hour := .clock[0:2]; 
-  property vampires_are := 
+  clock_time := <cal::local_time>.clock; 
+  hour := .clock[0:2]; 
+  vampires_are := 
     SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
 }
@@ -258,9 +258,9 @@ type ShipVisit {
   required place: Place;
   required date: cal::local_date;
   clock: str;
-  property clock_time := <cal::local_time>.clock;
-  property hour := .clock[0:2];
-  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+  clock_time := <cal::local_time>.clock;
+  hour := .clock[0:2];
+  vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
         else SleepState.Awake;
 }
 ```

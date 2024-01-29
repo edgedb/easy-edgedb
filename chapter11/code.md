@@ -27,16 +27,16 @@ module default {
     }
     multi places_visited: Place;
     multi lovers: Person;
-    property is_single := not exists .lovers;
+    is_single := not exists .lovers;
     strength: int16;
     first_appearance: cal::local_date;
     last_appearance: cal::local_date;
     age: int16;
     title: str;
     degrees: array<str>;
-    property conversational_name := .title ++ ' ' 
+    conversational_name := .title ++ ' ' 
       ++ .name if exists .title else .name;
-    property pen_name := .name ++ ', ' 
+    pen_name := .name ++ ', ' 
       ++ array_join(.degrees, ', ') if exists .degrees else .name;
   }
 
@@ -75,7 +75,7 @@ module default {
     location: tuple<float64, float64>;
     ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
     ew_suffix := '_E' if .location.1 > 0.0 else '_W';
-    property url := get_url() ++ <str>.location.0 ++ .ns_suffix 
+    url := get_url() ++ <str>.location.0 ++ .ns_suffix 
       ++ <str>.location.1 ++ .ew_suffix;
   }
 
@@ -108,9 +108,9 @@ module default {
 
   type Time { 
     required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    clock_time := <cal::local_time>.clock; 
+    hour := .clock[0:2]; 
+    vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
   } 
 

@@ -61,7 +61,9 @@ type Vampire extending Person {
 }
 ```
 
-And then we can add another interesting property to the `Vampire` type, called `army_strength`. This property will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this number will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
+Did you notice that we've written `property combined_strength` instead of just `combined_strength`? This is because, as of EdgeDB 4.0, the compiler is unable to determine whether a computable for a link property is a `property` or a `link`. In fact, this used to be the case for all computables even as recently as EdgeDB 3.0, but the compiler has become smarter over time and now link properties are the only case where a computable needs our help to know if we are computing a `property` or a `link`.
+
+With this link property set up, we can now another interesting property to the `Vampire` type, called `army_strength`. This property will be the combined total of all the `combined_strength` link properties between a `Vampire` and the `MinorVampire`s it controls. So this number will be the total strength of the `Vampire`'s army when it is fully concentrating on giving as much strength as possible to its `MinorVampires`.
 
 Here is what the `Vampire` type looks like after these changes. Notice anything in the syntax that looks different from what we've seen so far?
 
@@ -71,7 +73,7 @@ type Vampire extending Person {
     on source delete delete target;
     property combined_strength := (Vampire.strength + .strength) / 2;
   }
-  property army_strength := sum(.slaves@combined_strength);
+  army_strength := sum(.slaves@combined_strength);
 }
 ```
 

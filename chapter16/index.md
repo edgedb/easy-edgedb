@@ -121,7 +121,7 @@ type Event {
   multi excerpt: BookExcerpt; # Only this is new
   location: tuple<float64, float64>;
   east: bool;
-  property url := get_url() ++ <str>.location.0 
+  url := get_url() ++ <str>.location.0 
     ++ '_N_' ++ <str>.location.1 ++ '_' ++ ('E' if .east else 'W');
 }
 ```
@@ -272,9 +272,9 @@ type Event {
   required multi people: Person;
   location: tuple<float64, float64>;
   index on (.location); # <-------- Right here
-  property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
-  property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
-  property url := get_url() 
+  ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+  ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+  url := get_url() 
     ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
     ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
 }

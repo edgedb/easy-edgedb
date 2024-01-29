@@ -410,8 +410,8 @@ And if we still want to have a shortcut for `master_name`, we can just add `prop
 ```sdl
 type MinorVampire extending Person {
   former_self: Person;
-  single link master := assert_single(.<slaves[is Vampire]);
-  property master_name := .master.name;
+  single master := assert_single(.<slaves[is Vampire]);
+  master_name := .master.name;
 };
 ```
 

@@ -416,16 +416,16 @@ abstract type Person {
   }
   multi places_visited: Place;
   multi lovers: Person;
-  property is_single := not exists .lovers;
+  is_single := not exists .lovers;
   strength: int16;
   first_appearance: cal::local_date;
   last_appearance: cal::local_date;
   age: int16;
   title: str;
   degrees: array<str>;
-  property conversational_name := .title ++ ' ' 
+  conversational_name := .title ++ ' ' 
     ++ .name if exists .title else .name;
-  property pen_name := .name ++ ', ' 
+  pen_name := .name ++ ', ' 
      ++ array_join(.degrees, ', ') if exists .degrees else .name;
 }
 ```

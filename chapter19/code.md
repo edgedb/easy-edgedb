@@ -49,9 +49,9 @@ module default {
     required dollars: Money {
       default := 0;
     }
-    property total_pence := .pounds * 240 + .shillings * 20 + .pence;
-    property total_cents := .dollars * 100 + .cents;
-    property approx_wealth_in_pounds := <int64>(.total_pence / 240 + .total_cents / 800);
+    total_pence := .pounds * 240 + .shillings * 20 + .pence;
+    total_cents := .dollars * 100 + .cents;
+    approx_wealth_in_pounds := <int64>(.total_pence / 240 + .total_cents / 800);
   }
 
   abstract type HasNameAndCoffins {
@@ -74,16 +74,16 @@ module default {
     }
     multi places_visited: Place;
     multi lovers: Person;
-    property is_single := not exists .lovers;
+    is_single := not exists .lovers;
     strength: int16;
     first_appearance: cal::local_date;
     last_appearance: cal::local_date;
     age: int16;
     title: str;
     degrees: array<str>;
-    property conversational_name := .title ++ ' ' 
+    conversational_name := .title ++ ' ' 
       ++ .name if exists .title else .name;
-    property pen_name := .name ++ ', ' 
+    pen_name := .name ++ ', ' 
       ++ array_join(.degrees, ', ') if exists .degrees else .name;
   }
 
@@ -139,7 +139,7 @@ module default {
     required name: str;
     required number: str;
 
-    link card_holder := .<credit_card[is Account]
+    card_holder := .<credit_card[is Account]
   }
 
   type Crewman extending HasNumber, Person {
@@ -156,9 +156,9 @@ module default {
     required multi people: Person;
     location: tuple<float64, float64>;
     index on (.location);
-    property ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
-    property ew_suffix := '_E' if .location.1 > 0.0 else '_W';
-    property url := get_url() 
+    ns_suffix := '_N_' if .location.0 > 0.0 else '_S_';
+    ew_suffix := '_E' if .location.1 > 0.0 else '_W';
+    url := get_url() 
       ++ <str>(math::abs(.location.0)) ++ .ns_suffix 
       ++ <str>(math::abs(.location.1)) ++ .ew_suffix;
   }
@@ -182,8 +182,8 @@ module default {
 
   type MinorVampire extending Person {
     former_self: Person;
-    single link master := assert_single(.<slaves[is Vampire]);
-    property master_name := .master.name;
+    single master := assert_single(.<slaves[is Vampire]);
+    master_name := .master.name;
   };
 
   type NPC extending Person {
@@ -199,7 +199,7 @@ module default {
 
   type Party {
     name: str;
-    link members := .<party[is PC];
+    members := .<party[is PC];
   }
 
   type PC extending Person {
@@ -245,17 +245,17 @@ module default {
     required place: Place;
     required date: cal::local_date;
     clock: str;
-    property clock_time := <cal::local_time>.clock;
-    property hour := .clock[0:2];
-    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    clock_time := <cal::local_time>.clock;
+    hour := .clock[0:2];
+    vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
           else SleepState.Awake;
   }
 
   type Time { 
     required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    clock_time := <cal::local_time>.clock; 
+    hour := .clock[0:2]; 
+    vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
   }
 
@@ -264,7 +264,7 @@ module default {
       on source delete delete target;
       property combined_strength := (Vampire.strength + .strength) / 2;
     }
-    property army_strength := sum(.slaves@combined_strength);
+    army_strength := sum(.slaves@combined_strength);
   }
 
   # Aliases

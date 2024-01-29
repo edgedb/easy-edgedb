@@ -23,7 +23,7 @@ module default {
     required name: str;
     multi places_visited: Place;
     lover: Person;
-    property is_single := not exists .lover;
+    is_single := not exists .lover;
   }
 
   abstract type Place {
@@ -52,9 +52,9 @@ module default {
 
   type Time { 
     required clock: str; 
-    property clock_time := <cal::local_time>.clock; 
-    property hour := .clock[0:2]; 
-    property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+    clock_time := <cal::local_time>.clock; 
+    hour := .clock[0:2]; 
+    vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
       else SleepState.Awake;
   } 
 

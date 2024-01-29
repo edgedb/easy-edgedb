@@ -101,9 +101,9 @@ At the time of the book, the exchange rate was about 8 US dollars to one pound (
     required dollars: Money {
       default := 0;
     }
-    property total_pence := .pounds * 240 + .shillings * 20 + .pence;
-    property total_cents := .dollars * 100 + .cents;
-    property approx_wealth_in_pounds := <int64>.total_pence / 240 + .total_cents / 800;
+    total_pence := .pounds * 240 + .shillings * 20 + .pence;
+    total_cents := .dollars * 100 + .cents;
+    approx_wealth_in_pounds := <int64>.total_pence / 240 + .total_cents / 800;
   }
 ```
 
