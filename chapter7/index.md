@@ -59,7 +59,7 @@ Great! Now our migration is going to fail. However, `edgedb migration create` wi
 
 ```
 edgedb error: ConstraintViolationError: name violates exclusivity constraint
-  Detail: property 'name' of object type 'default::NPC' violates exclusivity constraint
+Detail: property 'name' of object type 'default::NPC' violates exclusivity constraint
 edgedb error: error in one of the migrations
 ```
 
@@ -436,7 +436,7 @@ Parameter <str>$filter_2 (Ctrl+D for empty set `{}`):
 }
 ```
 
-The second parameter which asks us if we want to enter an empty string or an empty set is interesting, and has to do with some concepts called Cartesian multiplication and the "coalescing operator". But those subjects are too large to fit into the end of this chapter, so we'll have to wait until Chapter 11 to learn them.
+The second parameter which asks us if we want to enter an empty string or an empty set is interesting, and has to do with some concepts called "Cartesian multiplication" and the "coalescing operator". But those subjects are too large to fit into the end of this chapter, so we'll have to wait until Chapter 11 to learn them.
 
 [Here is all our code so far up to Chapter 7.](code.md)
 

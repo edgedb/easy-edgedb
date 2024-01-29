@@ -4,7 +4,7 @@ tags: Multiple Inheritance, Polymorphism
 
 # Chapter 8 - Dracula takes the boat to England
 
-We are finally away from Castle Dracula. Here is what happens in this chapter:
+After seven chapters, we finally get to leave Castle Dracula. Let's see what is happening now:
 
 > Far away from Castle Dracula, a boat leaves from the city of Varna in Bulgaria, sailing into the Black Sea. It has a **captain, first mate, second mate, cook**, and **five crew**. Dracula is also on the ship inside a coffin, but the crew don't know that he's there. Every night Dracula leaves his coffin, and every night one of the men disappears. They become afraid but don't know what is happening or what to do. One crewman tells the others that he saw a strange man walking around the deck, but the others don't believe him.
 >
@@ -49,7 +49,9 @@ type Crewman extending HasNumber, Person {
 Fortunately, the error message tells us _exactly_ what to do.
 
 ```
-error: property 'name' of object type 'default::Crewman' must be declared using the `overloaded` keyword because it is defined in the following ancestor(s): default::Person
+error: property 'name' of object type 'default::Crewman' must be declared
+ using the `overloaded` keyword because it is defined
+ in the following ancestor(s): default::Person
   ┌─ c:\rust\easy-edgedb\dbschema\default.esdl:6:5
   │
 6 │ ╭     name: str {
@@ -316,7 +318,7 @@ And now the two objects from out previous output have human-readble names.
 {"age": null, "name": "The Captain", "number": null, "__type__": {"name": "default::Sailor"}}
 ```
 
-So what is `__type__`, exactly? Well, it's a link that all objects have that are used to describe it. You can see this if you type `describe type PC as text;` (or with any other object in the schema). Inside the description returned you'll see this:
+So what is `__type__`, exactly? Well, it's a link that all objects have that are used to describe them. You can see this if you type `describe type PC as text;` (or with any other object in the schema). Inside the description returned you'll see this:
 
 ```
 required single link __type__: schema::ObjectType {
@@ -376,7 +378,7 @@ Because inheriting a type gives you all of its features, a query on objects with
 
 Conversely, `supertype is subtype` will return `{true}` or `{false}` depending on the concrete type of each object returned. A `Person` object _might_ be a `PC` object, and it _might_ be an `NPC` object.
 
-To make a query that will check this, just add a shape query with the computed property `Person is PC` and EdgeDB will tell you:
+To make a query that will check this, just use a shape with a computed property that uses the expression `Person is PC` and EdgeDB will tell you:
 
 ```edgeql
 select Person {

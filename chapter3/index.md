@@ -437,8 +437,10 @@ delete City;
 The problem here is that Jonathan Harker is standing in our way. He is an `NPC` object with a link to the other `City` objects, and by default you can't delete an object that is being linked to by another one.
 
 ```
-edgedb error: ConstraintViolationError: deletion of default::City (f801a034-387c-11ee-95af-87dfbf43e85c) is prohibited by link target policy
-  Detail: Object is still referenced in link places_visited of default::Person (fc6522d6-387c-11ee-95af-f750f3ca3b62).
+edgedb error: ConstraintViolationError: deletion of default::City
+(f801a034-387c-11ee-95af-87dfbf43e85c) is prohibited by link target policy
+Detail: Object is still referenced in link places_visited of 
+default::Person (fc6522d6-387c-11ee-95af-f750f3ca3b62).
 ```
 
 Within the limitations of what we know at the moment, the only thing we can do is to temporarily delete Jonathan Harker. We'll `insert` him again shortly, but in the meantime let's just get him out of the way:

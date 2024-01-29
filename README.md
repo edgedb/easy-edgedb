@@ -10,13 +10,13 @@ Easy EdgeDB is a bit of a unique book. Here's how it differs from what you might
 
 ## A story to follow
 
-The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like [Python](https://www.edgedb.com/docs/clients/00_python/index/)/[JavaScript](https://www.edgedb.com/docs/clients/01_js/index/)/[Go](https://github.com/edgedb/edgedb-go) on the frontend, and EdgeDB as the game's database. (Why Python, JavaScript and Go? Because EdgeDB has drivers for all three of those languages.)
+The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like [Python](https://www.edgedb.com/docs/clients/00_python/index/)/[JavaScript](https://www.edgedb.com/docs/clients/01_js/index/)/[Go](https://github.com/edgedb/edgedb-go) on the frontend, and EdgeDB as the game's database.
 
 Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons:
 
 - It's a fun read. We're excited to see you give EdgeDB a try and hope to make the introduction as painless and immersive as possible. We think that anyone who has spent an hour or so with EdgeDB will walk away excited about its possibilities, but for that to happen it's our job to make the experience a pleasant one. Bram Stoker's novel has really helped out here.
 - It's a so-called *epistolary novel*: a novel written through the letters, diaries, and communications written by the main characters. That means that each entry has a date and an author, which makes it a great fit for a database.
-- It's copyright free. Our book only scratches the surface of what a real database for a game based on this book would be like, but who knows? Maybe some readers will like it enough to take the concept a bit farther and make it into the real thing. And if that's the case, then an open source database software based on a book completely free of copyright is the best way to start.
+- It's copyright free. Our book only scratches the surface of what a real database for a game based on this book would be like, but who knows? Maybe some readers will like it enough to take the concept a bit farther and make it into the real thing. And if that's the case, then an open source database based on a book completely free of copyright is the best way to start.
 
 ## Plain English
 
@@ -34,11 +34,7 @@ Going through the book, we will learn how to use queries that are more and more 
 
 ## Beauty
 
-We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. To give a feel for the beauty of the original work (with a steampunk-ish vibe added for good measure) we teamed up with Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)), an illustrator of 10 years from Katowice, Poland, to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter. You'll soon become familiar with his illustrations but here is how he describes them and what inspires him:
-
-> I try to take inspiration from everything that I have contact with. In my works, I like to build slightly surreal, understated/untold stories that leave the viewer room for their own interpretation. The works themselves are a loose stream of thoughts that make sense while creating, sometimes at the very end and sometimes not at all - because not everything has to make sense. My works often start with a small idea that grows into a much larger composition. I like to create works that are rich in detail, in which I sometimes hide what inspires me. They are a bit like little easter eggs for the watchful observer.
-
-We're pleased to have teamed up with Damian to put the final touch on a book that blends the old and the new in a form that we hope will keep you turning the page as you familiarize yourself with EdgeDB and discover what it has to offer you.
+We looked far and wide, and didn't see any rule that a text on database software has to be dry and image free. To give a feel for the beauty of the original work (with a steampunk-ish vibe added for good measure) we teamed up with Damian Dideńko ([didiusz on Instagram](https://www.instagram.com/didiusz/)), an illustrator from Katowice, Poland, to put together some beautiful sketches that combine the atmosphere of the book Dracula with the most important schema and query concepts per chapter.
 
 **[So let's get started - on to Chapter 1!](chapter1/index.md)** Or see the full chapter list below:
 

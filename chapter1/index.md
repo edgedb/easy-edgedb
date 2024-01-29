@@ -45,17 +45,17 @@ Do you want to initialize a new project? [Y/n]
 Specify the name of EdgeDB instance to use with this project [default: easy_edgedb]:
 > easy_edgedb
 Checking EdgeDB versions...
-Specify the version of EdgeDB to use with this project [default: 3.0]:
-> 3.0
+Specify the version of EdgeDB to use with this project [default: 4.5]:
+> 4.5
 ┌─────────────────────┬─────────────────────────────────────┐
 │ Project directory   │ \\?\C:\easy-edgedb                  │
 │ Project config      │ \\?\C:\easy-edgedb\edgedb.toml      │
 │ Schema dir (empty)  │ \\?\C:\easy-edgedb\dbschema         │
 │ Installation method │ WSL                                 │
-│ Version             │ 3.0-rc.2+02561bd                    │
+│ Version             │ 4.5-rc.2+02561bd                    │
 │ Instance name       │ easy_edgedb                         │
 └─────────────────────┴─────────────────────────────────────┘
-Version 3.0-rc.2+02561bd is already downloaded
+Version 4.5-rc.2+02561bd is already downloaded
 Initializing EdgeDB instance...
 Applying migrations...
 Everything is up to date. Revision initial
@@ -139,7 +139,8 @@ insert NPC;
 You should see this error message:
 
 ```
-error: MissingRequiredError: missing value for required property 'name' of object type 'default::NPC'
+error: MissingRequiredError: missing value for required property 
+  'name' of object type 'default::NPC'
   ┌─ <query>:1:1
   │
 1 │ insert NPC;

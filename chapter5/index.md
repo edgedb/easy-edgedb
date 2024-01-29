@@ -5,7 +5,7 @@ leadImage: illustration_05.jpg
 
 # Chapter 5 - Jonathan tries to leave the castle
 
-Poor Jonathan is still at Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
+Poor Jonathan is still inside Castle Dracula and is not having much luck. Here's what happens to him in this chapter:
 
 > During the day, Jonathan decides to try to explore the castle but too many doors and windows are locked. He doesn't know how to get out, and wishes he could at least send a letter to Mina **in London**. He wonders what Mina is doing right about now. **What time is it in London**, and is she okay?
 >

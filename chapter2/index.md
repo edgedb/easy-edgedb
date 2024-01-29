@@ -448,14 +448,14 @@ db> select 'Jonathan'[1:-1];
 
 Let's end the chapter with a quick note. Did you notice one of the queries used `#` to add a comment? Comments in EdgeDB are simple: anything to the right of `#` on a line gets ignored.
 
-So this:
+So this...
 
 ```edgeql
 select 1893#0503 is the first day of the book Dracula when...
 ;
 ```
 
-returns `{1893}`.
+...returns `{1893}`.
 
 [Here is all our code so far up to Chapter 2.](code.md)
 

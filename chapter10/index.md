@@ -488,7 +488,7 @@ If this were just a standard database with website users it would be much simple
 
 Besides `\n` and `\t` there are quite a few other escape characters - you can see the complete list {ref}`here <docs:ref_eql_lexical_str_escapes>`. Some are rare but hexadecimal with `\x` and unicode escape character with `\u` are two that might be useful.
 
-For a quick example of unicode escape characters, try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit.
+For a quick example of unicode escape characters, try pasting this into your REPL to decode it into what Van Helsing had to say during his first visit. The output is a surprise!
 
 ```edgeql
 select '\u004E\u0061\u0079\u002C\u0020\u0049\u0020\u0061\u006D
@@ -524,7 +524,7 @@ Now we get:
 }
 ```
 
-Finally, EdgeDB can also use `$$` to make raw string literals. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
+Finally, you can also use `$$` to make raw string literals. Any string inside this will ignore any and all quotation marks and escape characters, so you won't have to worry about the string ending in the middle. Here's one example with a bunch of single and double quotes inside:
 
 ```edgeql
 select $$ 

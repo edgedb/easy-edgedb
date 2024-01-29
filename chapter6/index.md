@@ -225,7 +225,7 @@ set {
 };
 ```
 
-And now `select` query now to make sure that it worked:
+And now a `select` query to make sure that it worked:
 
 ```edgeql
 select Person {
@@ -316,7 +316,8 @@ db> delete MinorVampire;
 db> delete Vampire;
 ERROR: ConstraintViolationError: deletion of default::Vampire
   (e5ef5bc6-006f-11ec-93a9-77e907d251d6) is prohibited by link target policy
-  Detail: Object is still referenced in link master of default::MinorVampire (ee6ca100-006f-11ec-93a9-4b5d85e60114).
+  Detail: Object is still referenced in link master of default::MinorVampire
+  (ee6ca100-006f-11ec-93a9-4b5d85e60114).
 ```
 
 There are two options for working with this known as _backlinks_ and _deletion policies_, which we will learn in chapters 14 and 18. With backlinks we can give `MinorVampire` a link based on what links _to_ it, and with deletion policies we can change the rules on what can be deleted or not. But we aren't learning advanced concepts just yet so let's just keep things simple by just linking one way.
