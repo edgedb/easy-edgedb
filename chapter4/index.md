@@ -287,6 +287,28 @@ So `vampires_are` is calculated like this:
 - First EdgeDB checks to see if the hour is greater than 7 and less than 19 (7 pm). But it's better to compare with a number than a string, so we cast into an `int16` with `<int16>.hour` instead of `.hour` so it can compare a number to a number.
 - Then it chooses between the 'Asleep' or 'Awake' values of the enum depending on that.
 
+Note: As of EdgeDB 4.0, you now have two choices when using `else` in expressions like the `vampires_are` computable above. The following simple example shows the `"expression" if "condition" else "expression"` syntax that you will see throughout this book:
+
+```edgeql
+with num := 10,
+select
+  'Big' if num > 50
+  else 'Medium' if num > 20
+  else 'Small';
+```
+
+This is similar to the syntax you see when using Python. But another option now available to you is the order `if "condition" then "expression" else "expression"`, which is similar to a number of other programming languages and was requested by many EdgeDB users over the years. This next example is identical to the one above, except written using the new syntax. You can use the syntax you prefer.
+
+```edgeql
+with num := 10,
+select
+  if num > 50 then 'Big'
+  else if num > 20 then 'Medium'
+  else 'Small';
+```
+
+Both examples will output `{'Small'}`, by the way, because `num` is lesser than both 50 and 20.
+
 Now let's do a `select` again with all the properties:
 
 ```edgeql
