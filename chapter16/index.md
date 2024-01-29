@@ -44,7 +44,7 @@ The {ref}` ``index on (.date)`` <docs:ref_datamodel_indexes>` part is new, and i
 `index` is good in limited quantities, but you don't want to index everything. Here is why:
 
 - It makes the queries faster, but increases the database size.
-- This may make `insert`s and `update`s slower if you have too many.
+- This may make `insert` and `update` operations slower if you have too many.
 
 If there were no downside to indexing, EdgeDB would just index everything for you by default. Since there is a downside, indexing only happens when you say so. A good rule of thumb for indexes might be to compare them to an index in a real book:
 
@@ -144,7 +144,7 @@ root │  0.0 0.01   1.0  1.0     1 │
 
 That's quite a bit of output even for a query as small as this one. Let's look at one part of the output at a time to make sure we understand it.
 
-Width: This refers to the average size in bytes per row. This is pretty easy to play around with by changing the query: `analyze select 9;` shows a width of 8 bytes, `analyze select <int16>9;` a width of 2 bytes. In Chapter 8 we learned that "The `__type__` link and `id` property together always make up 32 bytes", and this can be seen in an `analyze` query too. Try `analyze select Person;` and you'll see a width of 32.
+Width: This refers to the average size in bytes per row. This is pretty easy to play around with by changing the query: `analyze select 9;` shows a width of 8 bytes, `analyze select <int16>9;` a width of 2 bytes. In Chapter 8 we learned that the `__type__` link and `id` property together always make up 32 bytes, and this can be seen in an `analyze` query too. Try `analyze select Person;` and you'll see a width of 32.
 
 Rows: This refers to the number of items returned. Let's take a look at the output of `analyze select {8, 9};` to show this:
 
@@ -192,7 +192,7 @@ Cost: This is an arbitrary number used for comparison, so it doesn't mean dollar
 
 Loops: Loops refers to the number of "executions of the node", which is information that comes from EdgeDB's Postgres backend. You could think of loops as a number representing the complexity of a query.
 
-Relations: This refers to the links involved in a query. So while `analyze select NPC {*};` will not show any relations except to the type itself:
+Relations: This refers to the links involved in a query. Therefore, while `analyze select NPC {*};` will not show any relations except to the type itself:
 
 ```
 ─────────── Coarse-grained Query Plan ───────────

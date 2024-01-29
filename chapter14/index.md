@@ -77,7 +77,9 @@ type Vampire extending Person {
 }
 ```
 
-That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties as they are structurally somewhat different from regular properties. We don't need to get into the internal details but there are two things to keep in mind about link properties: they can only be `single`, and must always be optional.
+That's right, there is an `@` in there! EdgeDB uses `@` to represent link properties, because using `.` would take us to the properties of the *linked object*, whereas we need to access the property of the *link* itself. If we had used `.slaves.combined_strength`, EdgeDB would look for a property or link called `combined_strength` on the `MinorVampire` type, which it doesn't have.
+
+There are two things to keep in mind about link properties: they can only be `single`, and must always be optional.
 
 And with those schema changes made, we can do a query on Count Dracula to see what his army looks like. Don't forget the `@` when doing queries too!
 
@@ -116,7 +118,7 @@ The `strength` property of Dracula's vampire slaves is determined randomly so th
 
 ## Adding annotations to types
 
-Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it when using an `introspect` query or when we put `__type__` into a query on an object type. By default, annotations can use the titles `title` or `description`.
+Now that we know how to do introspection queries, we can start to give `annotations` to our types. An annotation is a string inside the type definition that gives us information about it when using an `introspect` query or when we put `__type__` into a query on an object type. By default, annotations can use the names `title`, `description`, or `deprecated`.
 
 Let's imagine that in our game a `City` needs at least 50 buildings, and we want the other developers to know this. Let's use an `annotation description` for this:
 
@@ -221,7 +223,7 @@ And now the actual annotation shows up in the output.
 }
 ```
 
-What if we want an annotation with a different name besides `title` and `description`? This is surprisingly easy, just declare a new annotation by typing `abstract annotation` inside the schema and give it a name. We want to add a `warning` for other developers to read so that's what we'll call it:
+What if we want an annotation with a different name besides `title`, `description`, or `deprecated`? Easy: just declare a new annotation by typing `abstract annotation` inside the schema and give it a name. We want to add a `warning` for other developers to read so that's what we'll call it:
 
 ```sdl
 abstract annotation warning;
@@ -386,7 +388,7 @@ But if you use `set global tester_mode := Mode.Debug;` then all of a sudden the 
 }
 ```
 
-You could imagine some other combinations of global modes such as a "God Mode" that also makes the character invincible - because it's annoying to try to debug test a game when other `PC`s think you are a regular player and keep killing your character without knowing that you are just there to test the game mechanics.
+You could imagine some other combinations of global modes such as a "God Mode" that also makes the character invincible - because it's annoying to try to debug test a game when other `PC`s keep killing your character without knowing that you are just there to test the game mechanics.
 
 ## Backlinks
 

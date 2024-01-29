@@ -196,8 +196,10 @@ delete MinorVampire filter .name = 'Vampire Woman 1';
 Here is the error:
 
 ```
-edgedb error: ConstraintViolationError: deletion of default::MinorVampire (db56215a-268c-11ee-ab5e-6322976b513c) is prohibited by link target policy
-  Detail: Object is still referenced in link slaves of default::Vampire (db561336-268c-11ee-ab5e-b338ce4886f8).
+edgedb error: ConstraintViolationError: deletion of default::MinorVampire
+(db56215a-268c-11ee-ab5e-6322976b513c) is prohibited by link target policy
+  Detail: Object is still referenced in link slaves of default::Vampire
+  (db561336-268c-11ee-ab5e-b338ce4886f8).
 ```
 
 Another deletion policy is `allow`, and simply allows you to delete the target. Inside the `Vampire` type it would look like this, which would let us delete any `MinorVampire` linked to a `Vampire` object.
@@ -339,8 +341,10 @@ insert PC {
 And now any attempt to `delete Party;` will give this error:
 
 ```
-edgedb error: ConstraintViolationError: deletion of default::Party (86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
-  Detail: Object is still referenced in link party of default::PC (9a6eaabe-299c-11ee-8bd8-c76e1f17a3f2).
+edgedb error: ConstraintViolationError: deletion of default::Party
+(86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
+  Detail: Object is still referenced in link party of default::PC
+  (9a6eaabe-299c-11ee-8bd8-c76e1f17a3f2).
 ```
 
 We don't want old `Party` objects to just sit around in our database when no `PC`s are using them anymore, so let's set up a deletion policy to delete any `Party` when all `PC` objects linking to it are deleted.
@@ -368,8 +372,10 @@ delete PC filter .name in { "Alena", "Talloon" };
 We get an error!
 
 ```
-edgedb error: ConstraintViolationError: deletion of default::Party (86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
-  Detail: Object is still referenced in link party of default::PC (a2bb7ce2-299c-11ee-8bd8-431f1e9112d6).
+edgedb error: ConstraintViolationError: deletion of default::Party
+(86b32874-299c-11ee-8bd8-737485b849cd) is prohibited by link target policy
+  Detail: Object is still referenced in link party of default::PC
+  (a2bb7ce2-299c-11ee-8bd8-431f1e9112d6).
 ```
 
 This is because EdgeDB is attempting to delete `Party` when we delete each `PC` object, but there is still an invisible `on target delete restrict` policy that prevents the `Party` object from being deleted. In other words, our query tries to delete the `PC` called Alena but can't because the `PC` called Talloon still links to the Party object.

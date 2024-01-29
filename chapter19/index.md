@@ -67,7 +67,7 @@ union (
 );
 ```
 
-The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. That is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to look at the message inside an annotation? It looks like this:
+The captain's book from the Demeter has a lot of other places too, so let's look at a few of them. The Demeter also passed through the Bosphorus. The Bosphorus is the strait in Turkey that connects the Black Sea to the Aegean Sea, and divides Europe from Asia, so it's not a city. We can use the `OtherPlace` type for it, which is also the type we added some annotations to in Chapter 14. Remember how to look at the message inside an annotation? It looks like this:
 
 ```edgeql
 select (introspect OtherPlace) {
@@ -116,7 +116,7 @@ for visit in {
   }
 union (
   insert ShipVisit {
-    ship  := (select Ship filter .name = visit.0),
+    ship  := (select Ship  filter .name = visit.0),
     place := (select Place filter .name = visit.1),
     date  := <cal::local_date>visit.2
   }

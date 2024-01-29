@@ -275,9 +275,9 @@ scalar type SleepState extending enum <Asleep, Awake>;
 
 type Time {
   required clock: str;
-  property clock_time := <cal::local_time>.clock;
-  property hour := .clock[0:2];
-  property vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
+  clock_time := <cal::local_time>.clock;
+  hour := .clock[0:2];
+  vampires_are := SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19
     else SleepState.Awake;
 }
 ```
@@ -310,7 +310,7 @@ We then get this output:
 Note that you can keep on using `else` as many times as you like in the format `(expression) if (condition) else`. Here's an example showing how this could work if we had more values on the `SleepState` enum:
 
 ```sdl
-property vampires_are := 
+vampires_are := 
   SleepState.JustWakingUp if <int16>.hour = 19 else
   SleepState.GoingToBed if <int16>.hour = 6 else
   SleepState.Asleep if <int16>.hour > 7 and <int16>.hour < 19 else

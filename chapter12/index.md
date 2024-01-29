@@ -259,7 +259,7 @@ Good, so we have manually confirmed that using `{}` with another set always retu
 - Concatenate the two strings if they exist, and
 - Return what we have if one is an empty set.
 
-In other words, we would like to add `{'Buda-Peth', 'Bistritz'}` to another set and return the original `{'Buda-Peth', 'Bistritz'}` if the second is empty. So we use the {eql:op}`coalescing operator <docs:coalesce>` to make it work:
+In other words, we would like to add `{'Buda-Pesth', 'Bistritz'}` to another set and return the original `{'Buda-Pesth', 'Bistritz'}` if the second is empty. So we use the {eql:op}`coalescing operator <docs:coalesce>` to make it work:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),
@@ -277,7 +277,7 @@ This returns:
 
 That's better.
 
-But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. Let's see what happens if we change the query to search for places that start with b (Buda-Pesth and Bistritz) and m (Munich). We would like to get the result `{'Buda-Pesth, Bistritz, Munich'}`, but it doesn't quite work that way:
+But now back to Cartesian products. Remember, when we add or concatenate sets we are working with _every item in each set_ separately. Let's see what happens if we change the query to search for places that start with a `b` (Buda-Pesth and Bistritz) and `m` (Munich). We would like to get the result `{'Buda-Pesth, Bistritz, Munich'}`, but it doesn't quite work that way:
 
 ```edgeql
 with b_places := (select Place filter .name ilike 'b%'),

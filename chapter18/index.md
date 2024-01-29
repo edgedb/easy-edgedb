@@ -257,7 +257,7 @@ type CreditCardInfo {
   required name: str;
   required number: str;
 
-  link card_holder := .<credit_card[is Account]
+  card_holder := .<credit_card[is Account]
 }
 ```
 
@@ -289,7 +289,7 @@ In other words:
 
 Inside a trigger we get access to the old object using `__old__` and the new object using `__new__`, though this depends on the operation. For example, when you `delete` there is no `__new__` object to access, nor is there an `__old__` object to access when doing an `insert`.
 
-And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. None of this information can be used to track down a person in real life so it is safe to hold, and at the same time it is enough information for us to restore an account. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind)
+And now back to our `Account` type. To keep a minimal amount of information after a user's account is deleted, we can create a new type that holds this information. We can call this type `MinimalUserInfo`, because it will only hold their username and the `PC` objects they made. None of this information can be used to track down a person in real life so it is safe to hold, and at the same time it is enough information for us to restore an account. (Perhaps we will hold on to `PC` objects for 30 days or so in case a user changes their mind.)
 
 The `MinimalUserInfo` type is pretty simple, just a person's `username`, the `PC`s that they own, and an `int16` to hold a random number.
 
@@ -327,7 +327,7 @@ type Account {
 type CreditCardInfo {
   required name: str;
   required number: str;
-  link card_holder := .<credit_card[is Account]
+  card_holder := .<credit_card[is Account]
 }
 
 type MinimalUserInfo {
@@ -337,7 +337,7 @@ type MinimalUserInfo {
 }
 ```
 
-Okay, let's do a migration and then insert an `Account` object. Look at all the personal information inside!
+Okay, let's do a migration and then insert an `Account` object. Look at all the personal information inside! We'd better be careful with this.
 
 ```
 insert Account {
@@ -439,7 +439,12 @@ With that we are holding none of Deborah's personal information anymore. All tha
 ```
 We're sorry to see you go...
 
-Your personal information has been deleted from our database. Your PCs have been kept on file for the next 30 days should you choose to restore your account. Keep the passcode safe if you think you might want to restore your account! It's the only way to verify your identity now that all of your personal information has been removed.
+Your personal information has been deleted from our database.
+Your PCs have been kept on file for the next 30 days should 
+you choose to restore your account. Keep the passcode safe 
+if you think you might want to restore your account! It's
+the only way to verify your identity now that all of your
+personal information has been removed.
 
 Account name: deb_deb_999
 PC names: LordOfSalty

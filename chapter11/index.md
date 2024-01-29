@@ -129,7 +129,7 @@ A function that takes an `int16` and returns a `float64` for example would have 
 function does_something(input: int16) -> float64
 ```
 
-The `->` skinny arrow is used to show the return value.
+The `->` (skinny arrow) is used to show the return value.
 
 For the body of the function we do the following:
 
@@ -169,7 +169,7 @@ type Event {
 
 Next, let's write a function that's less useful but more fun and which will teach us some interesting concepts in EdgeDB. The function will have two `Person` objects fight each other, so we'll call it `fight()`. We will make it as simple as possible: the character with more strength wins, and if their strength is the same then the second player wins.
 
-You might be tempted to write this function as follows, but it doesn't quite work!
+You might be tempted to write this function as follows, but it doesn't quite work yet!
 
 ```sdl
 function fight(one: Person, two: Person) -> str

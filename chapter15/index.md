@@ -126,7 +126,7 @@ In this case we are still ignoring the argument `place` (the `City` type) but ma
 {ref}`The documentation <docs:ref_sdl_function_typequal>` explains it like this: 
 
 ```
-...the function is called normally when the corresponding argument is empty ...
+...the function is called normally when the corresponding argument is empty [...]
 A notable example of a function that gets called on empty input is the coalescing operator.
 ```
 
@@ -333,7 +333,7 @@ Now that `.name` contains the substring `Lord`, it works like a charm:
 
 ## Setting your own error messages
 
-Since `expression on` is so flexible, you can use it in almost any way you can imagine. But that flexibility also means that there is no built-in way to let the user know how any `expression on` is supposed to work when a constraint is violated. Meanwhile, the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
+Since `expression on` is so flexible, you can use it in almost any way you can imagine. But that flexibility also means that there is no built-in way to let the user know how any `expression on` is supposed to work when a constraint is violated. After all, it's anyone's guess how a user might choose to use `expression on`. And that means that the automatically generated error message we have right now is not helping the user at all. Here's the message we got when we tried to insert a `Lord` named `Billy`:
 
 ```
 edgedb error: ConstraintViolationError: invalid Lord
@@ -394,16 +394,16 @@ type MinorVampire extending Person {
 };
 ```
 
-Note: it's a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust ourselves to input `master_name` correctly — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink. The syntax is the same as the syntax we used last chapter except that we don't need to specify that the link is to a `MinorVampire`, because we are already inside the `MinorVampire` type.
+Note: this is a single link, so we needed to add `assert_single()`. However, it looks a bit verbose, and we have to trust ourselves to input `master_name` correctly — definitely not ideal. In this case there is a simpler and more robust way to add `master`: using a backlink. The syntax is the same as the syntax we used last chapter except that we don't need to specify that the link is to a `MinorVampire`, because we are already inside the `MinorVampire` type.
 
 ```sdl
 type MinorVampire extending Person {
   former_self: Person;
-  single link master := assert_single(.<slaves[is Vampire]);
+  single master := assert_single(.<slaves[is Vampire]);
 };
 ```
 
-Here we have written `single link` to ensure that the backlink is not a `multi link`, which requires `assert_single()`. This might not be needed if our game allows vampires to share `MinorVampire` objects. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
+Here we have written `single` to ensure that the backlink is not a `multi link`, which requires `assert_single()`. This might not be needed if our game allows vampires to share `MinorVampire` objects. However, in this case we are sure that there will only be one Vampire master (Count Dracula is the only master vampire in the book) so we can declare it a `single link`.
 
 And if we still want to have a shortcut for `master_name`, we can just add `property master_name := .master.name;` in the above `{}` as follows:
 
@@ -484,7 +484,7 @@ And the advantage to this deletion is that it will return all three deleted obje
 }
 ```
 
-Finally, let's add a backlink to the Party type that we created in Chapter 13. That's easy! The `PC` type links to `Party` via a link called `party` so all we have to do is turn that around.
+Finally, let's add a backlink to the `Party` type that we created in Chapter 13. That's easy! The `PC` type links to `Party` via a link called `party` so all we have to do is turn that around.
 
 ```sdl
 type Party {

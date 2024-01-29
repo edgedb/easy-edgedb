@@ -153,7 +153,7 @@ type Vampire extending Person {
 
 type MinorVampire extending Person {
   former_self: Person;
-  single link master := assert_single(.<slaves[is Vampire]);
+  single master := assert_single(.<slaves[is Vampire]);
   master_name := .master.name;
 };
 ```
@@ -477,7 +477,7 @@ You can think of the syntax as a helpful guide to keep your declarations in the 
 
 ### Dipping into DDL
 
-We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL. Take this attempt to use DDL for example and the error output it generates:
+We have only seen DDL in our `.edgeql` files that are automatically generated every time a migration takes place. DDL used to be used sometimes in the past, and was even mentioned in the first edition of this book. But with better and better migration tools, there is little need for it. And in fact, EdgeDB is set by default to disallow DDL once you have completed a migration with the project tools. Take this attempt to use DDL for example and the error output it generates:
 
 ```
 db> create function hi() -> str using ("Hi");
@@ -487,7 +487,9 @@ error: QueryError: bare DDL statements are not allowed in this database
 1 │ create function hi() -> str using ("Hi");
   │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use the migration commands instead.
   │
-  = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.  The `edgedb migrate` command normally sets this to avoid accidental schema changes outside of the migration flow.
+  = The `allow_bare_ddl` configuration variable is set to 'NeverAllow'.
+  The `edgedb migrate` command normally sets this to avoid accidental schema changes
+  outside of the migration flow.
 ```
 
 If you absolutely do want to use DDL, the configuration [can be temporarily changed](https://www.edgedb.com/docs/reference/configuration#query-behavior) until a migration is run. Otherwise, the most recommended way to interact with DDL is by gaining a passive knowledge of it in case you want to double check a migration script before applying it.
