@@ -243,7 +243,7 @@ fill_expr>
 
 The CLI is essentially saying: "There might be `NPC` objects in the database already. But now they all need to have a property called `name`, which wasn't required before. How should I decide what `name` to give them?"
 
-Fortunately, the expression here is pretty simple: let's just give them all an empty string. Type `''` and hit enter, and the CLI will now be happy with the migration. Don't forget to complete the migration with `edgedb migration`, and we are done!
+Fortunately, the expression here is pretty simple: let's just give them all an empty string. Type `''` and hit enter, and the CLI will now be happy with the migration. Don't forget to complete the migration with `edgedb migrate`, and we are done!
 
 If you are curious, take a look inside the migration file that EdgeDB generated. You can see how it created a command to change the `NPC` type, including a default value for `name` for any objects in the database:
 
