@@ -502,6 +502,10 @@ You might want to take a look at or bookmark {ref}`this page <docs:ref_eql_lexic
 
 Help is always just a message away. The most active place to discuss EdgeDB and get help is [our Discord server](https://discord.gg/edgedb), while the [discussion board](https://github.com/edgedb/edgedb/discussions) on GitHub is another good place to start a conversation. You can also [start an issue here](https://github.com/edgedb/edgedb/issues/new/choose) on EdgeDB, or do the same for the Easy EdgeDB book on [its dedicated GitHub repo](https://github.com/edgedb/easy-edgedb/).
 
+## EdgeDB Cloud
+
+Your knowledge of EdgeDB and EdgeQL should be pretty good at this point, and you may be looking to take your EdgeDB-powered product to the next step. With [EdgeDB Cloud](https://www.edgedb.com/cloud) you can deploy your database instantly and connect from anywhere with near-zero configuration. Leave the infrastructure to us!
+
 ## And now it's time to say goodbye
 
 We hope you enjoyed learning EdgeDB through a story and are now familiar enough with it to implement it for your own projects. Ironically, if we wrote the book with enough detail to answer all your questions then we might never see you on our Discord! If that's the case, then we wish you the best of luck with your projects. Let's finish the book up with a poem from another book, the Lord of the Rings, on the endless possibilities of life.

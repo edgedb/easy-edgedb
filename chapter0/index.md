@@ -11,21 +11,23 @@ Welcome to Easy EdgeDB! It's an illustrated textbook designed as a one-stop shop
   This book is also available in `Chinese </easy-edgedb/zh>`_.
 ```
 
-We started writing this book shortly after the first alpha release of EdgeDB in Spring 2019. For the first time, we had a functional version of the thing we'd been thinking about for so long: an open-source database powered by PostgreSQL that combines the strictness of relational databases, the declarative schema of ORMs, and the painless deep querying of GraphQL—without sacrificing power, consistency, or performance. 
+We started writing this book shortly after the first alpha release of EdgeDB in Spring 2019. For the first time, we had a functional version of what we'd been thinking about for so long: an open-source database powered by PostgreSQL that combines the strictness of relational databases, the declarative schema of ORMs, and the painless deep querying of GraphQL—without sacrificing power, consistency, or performance.
 
-While plenty of learning material can be found in the [documentation](https://www.edgedb.com/docs/), [interactive tutorial](https://edgedb.com/tutorial), and [blog posts](https://www.edgedb.com/blog/we-can-do-better-than-sql), we wanted to put together a more immersive experience: a full textbook. The result is Easy EdgeDB: a book that's sufficiently comprehensive (and fun!) to shepherd an interested beginner through all basic and intermediate EdgeDB concepts.
+While plenty of learning material can be found in the [documentation](https://www.edgedb.com/docs/), [interactive tutorial](https://edgedb.com/tutorial), and [blog posts](https://www.edgedb.com/blog), we wanted to put together a more immersive experience: a full textbook. The result is Easy EdgeDB: a book that's sufficiently comprehensive (and fun!) to shepherd an interested beginner through all basic and intermediate EdgeDB concepts.
+
+Since then, EdgeDB has continued to grow — most recently with the launch of our [cloud service](https://www.edgedb.com/cloud) — and the Easy EdgeDB book [has grown along with it](https://github.com/edgedb/easy-edgedb/commits/master/).
 
 Easy EdgeDB is a bit of a unique book. Here's how it differs from what you might expect from a typical e-book:
 
 ## A story to follow
 
-The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like {ref}`Python <docs:edgedb-python-intro>`/{ref}`JavaScript <docs:edgedb-js-intro>`/[Go](https://github.com/edgedb/edgedb-go) on the frontend, and EdgeDB as the game's database. (Why Python, JavaScript and Go? Because EdgeDB has client libraries for all three of those languages.)
+The book is divided into 20 chapters in which we imagine that we are creating a database for a game. The setting for our imaginary game is the scenes and locations from the book Dracula by Bram Stoker, published in 1897. Our job is to think a little about how to represent items like characters, events, locations, and dates in the book in a database used by a role-playing game built separately. In other words, something like {ref}`Python <docs:edgedb-python-intro>`/{ref}`JavaScript <docs:edgedb-js-intro>`/[Go](https://github.com/edgedb/edgedb-go) on the frontend, and EdgeDB as the game's database.
 
 Bram Stoker's Dracula was the perfect choice for this textbook for a few reasons:
 
 * It's a fun read. We're excited to see you give EdgeDB a try and hope to make the introduction as painless and immersive as possible. We think that anyone who has spent an hour or so with EdgeDB will walk away excited about its possibilities, but for that to happen it's our job to make the experience a pleasant one. Bram Stoker's novel has really helped out here.
 * It's a so-called _epistolary novel_: a novel written through the letters, diaries, and communications written by the main characters. That means that each entry has a date and an author, which makes it a great fit for a database.
-* It's copyright free. Our book only scratches the surface of what a real database for a game based on this book would be like, but who knows? Maybe some readers will like it enough to take the concept a bit farther and make it into the real thing. And if that's the case, then an open source database software based on a book completely free of copyright is the best way to start.
+* It's copyright free. Our book only scratches the surface of what a real database for a game based on this book would be like, but who knows? Maybe some readers will decide to take the concept a bit farther and make it into the real thing. And if that's the case, then an open source database software based on a book completely free of copyright is the best way to start.
 
 ## Plain English
 
