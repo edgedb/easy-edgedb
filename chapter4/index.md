@@ -170,7 +170,7 @@ If the first `Person` type returned from the database is Count Dracula, then we 
 {default::Vampire {name: 'Count Dracula', is_single: true}}
 ```
 
-Now this time we did want to use `limit 1` instead of `assert_single()` because we want just up to one result, even if there are multiple objects that fit our `filter`. Using `assert_single()` would cause the database give us an error in case of multiple results. Similarly, `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
+Now this time we did want to use `limit 1` instead of `assert_single()` because we want just up to one result, even if there are multiple objects that fit our `filter`. Using `assert_single()` would cause the database to give us an error in case of multiple results. Similarly, `limit 2`, `limit 3` and any other number will work just fine if we only want a certain maximum number of objects.
 
 We could also put the computed property in the type itself, so let's do that. Here's the same computed property except now it's inside the `Person` type:
 
