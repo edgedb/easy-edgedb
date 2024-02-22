@@ -118,7 +118,7 @@ We will be doing a lot of that in this book! Even by the second chapter you will
 
 ```{eval-rst}
 .. note::
-  The CLI creates a new file upon each migration to generate the commands to change the schema to the one we want. The first file will be called 00001.edgeql, the second will be 00002.edgeql, and so on. These files are quite readable so feel free to take a look at if you are curious. But note that they use a syntax called DDL (Data Definition Language) that gives commands to EdgeDB one at a time, and you do not need to learn it. The language that we are using in the schema is called SDL (Schema Definition Language), which simply declares what a schema will look like. The CLI then automatically creates DDL commands to make it happen.
+  The CLI creates a new file upon each migration to generate the commands to change the schema to the one we want. The first file will be called 00001.edgeql, the second will be 00002.edgeql, and so on. These files are quite readable so feel free to take a look at it if you are curious. But note that they use a syntax called DDL (Data Definition Language) that gives commands to EdgeDB one at a time, and you do not need to learn it. The language that we are using in the schema is called SDL (Schema Definition Language), which simply declares what a schema will look like. The CLI then automatically creates DDL commands to make it happen.
 ```
 
 Now that we know how to do a schema migration, let's add some properties to our `NPC` type. Use the keyword `required` if the type needs it, and just the property name if it is optional. Let's give the `NPC` type a name and an array (a collection) of places visited:
@@ -329,7 +329,7 @@ insert City {
 
 insert City {
   name := 'Bistritz',
-  modern_name := 'Bistrița'
+  modern_name := 'Bistrița',
 };
 ```
 
