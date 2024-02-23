@@ -402,7 +402,7 @@ With an optional parameter you could search for places that:
 
 The opposite of `optional` is `required`, but `required` is the default so you don't need to write it.
 
-Putting all this together ends up with a query like the following. Note that we want to check to see if the optional query `exists`, and to filter for `ilike '%'` if it doesn't (that is, to match everything).
+Putting all this together ends up with a query like the following. Note that we want to check to see if the optional parameter `exists`, and to only filter on the required parameter if it doesn't.
 
 ```edgeql
 with
