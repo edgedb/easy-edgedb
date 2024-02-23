@@ -30,7 +30,7 @@ select <datetime>'2023-06-06T22:12:10Z';
 
 The `T` inside there is just a separator between date and time (in other words, `T` is where the _Time_ starts), and the `Z` at the end stands for "zero timeline". That means that it has no offset — no difference — from UTC: in other words, it _is_ UTC.
 
-One way to set a timezone is to change the `T` to an offset: the hour difference between the current time zone and UTC. Our query above returns the time "22:12:10Z", so 10:12 PM in London. Let's change the `T` to `+09:00` (the timezone for Korea and Japan) and see what happens:
+One way to set a timezone is to change the `Z` to an offset: the hour difference between the current time zone and UTC. Our query above returns the time "22:12:10Z", so 10:12 PM in London. Let's change the `Z` to `+09:00` (the timezone for Korea and Japan) and see what happens:
 
 ```edgeql
 select <datetime>'2023-06-06T22:12:10+09:00';
