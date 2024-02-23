@@ -18,7 +18,7 @@ tags: Constraint Delegation, $ Parameters
 
 While Jonathan climbs the wall, we can continue to work on our database schema. Let's give it some more constraints so that we are sure what data is acceptable and what is not.
 
-No character in our book has the same name, so so there should only be one Mina Murray, one Count Dracula, and so on. No `PC` object should have the same name either: imagine that you created a `PC` to play the game but the next day someone else shows up with the same name as you! Even worse, any `update` done to a `PC filter .name = your_name` might end up updating both characters at the same time.
+No character in our book has the same name, so there should only be one Mina Murray, one Count Dracula, and so on. No `PC` object should have the same name either: imagine that you created a `PC` to play the game but the next day someone else shows up with the same name as you! Even worse, any `update` done to a `PC filter .name = your_name` might end up updating both characters at the same time.
 
 To avoid this, we can put a {ref}`constraint <docs:ref_datamodel_constraints>` on `name` in the `Person` type to make sure that we don't have duplicate inserts. A `constraint` is a limitation, which we saw already in `age` for humans that can only go up to 120:
 
